@@ -63,6 +63,14 @@ visualization_msgs::Marker initPoseMarker()
   return raytrace_starting_pose_marker;
 }
 
+/**
+ * @brief Reads a tsdf global map and displays it in 
+ * 
+ * @todo use a tsdf-map datatype to read it and check intersection (separate class), marker should only be used as visualization,
+ * only visualize chunks, which are in the bounds of the "local map", which can be seen from the raytracing position.
+ * 
+ * @return visualization_msgs::Marker 
+ */
 visualization_msgs::Marker initTSDFmap()
 {
   // create marker.
