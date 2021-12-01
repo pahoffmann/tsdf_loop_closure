@@ -6,13 +6,29 @@
 #include <visualization_msgs/Marker.h>
 #include <dynamic_reconfigure/server.h>
 #include <loop_closure/LoopClosureConfig.h>
+#include <iostream>
+#include <highfive/H5File.hpp>
+#include "tsdf.h"
 
 geometry_msgs::Point raytrace_starting_pose;        // starting pose for ray tracing
 geometry_msgs::Vector3 raytrace_starting_direction; // aka, yaw, pitch, yaw
 std::vector<bool> lines_finished;
 visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
+visualization_msgs::Marker tsdf_map; // marker for the tsdf map
 loop_closure::LoopClosureConfig lc_config;
+
+// local map dependent stuff. #hardcode.
+/**
+ * log(CHUNK_SIZE).
+ * The side length is a power of 2 so that divisions by the side length can be accomplished by shifting.
+ */
+constexpr int CHUNK_SHIFT = 6;
+
+/// Side length of the cube-shaped chunks (2^CHUNK_SHIFT).
+constexpr int CHUNK_SIZE = 1 << CHUNK_SHIFT;
+
+constexpr int MAP_RESOLUTION = 64;
 
 /**
  * @brief Method, which generates the pose marker for the current ray trace position
@@ -45,6 +61,92 @@ visualization_msgs::Marker initPoseMarker()
   raytrace_starting_pose_marker.color.b = 0.0;
 
   return raytrace_starting_pose_marker;
+}
+
+visualization_msgs::Marker initTSDFmap()
+{
+  // create marker.
+  visualization_msgs::Marker cube_marker_list;
+  cube_marker_list.header.frame_id = "map";
+  cube_marker_list.header.stamp = ros::Time();
+  cube_marker_list.ns = "cube_list";
+  cube_marker_list.id = 0;
+  cube_marker_list.type = visualization_msgs::Marker::CUBE_LIST;
+  cube_marker_list.action = visualization_msgs::Marker::ADD;
+  cube_marker_list.pose.position.x = 0;
+  cube_marker_list.pose.position.y = 0;
+  cube_marker_list.pose.position.z = 0;
+  cube_marker_list.pose.orientation.x = 0.0;
+  cube_marker_list.pose.orientation.y = 0.0;
+  cube_marker_list.pose.orientation.z = 0.0;
+  cube_marker_list.pose.orientation.w = 1.0;
+  cube_marker_list.scale.x = 0.064;
+  cube_marker_list.scale.y = 0.064;
+  cube_marker_list.scale.z = 0.064;
+  cube_marker_list.color.a = 0.6; // Don't forget to set the alpha!
+  cube_marker_list.color.r = 0.0;
+  cube_marker_list.color.g = 1.0;
+  cube_marker_list.color.b = 0.0;
+  std::vector<geometry_msgs::Point> points; // 3 x 3 markers
+
+  HighFive::File f("/home/patrick/maps/GlobalMap.h5", HighFive::File::ReadOnly); // TODO: Path and name as command line input
+  HighFive::Group g = f.getGroup("/map");
+  // Fill the grid with the valid TSDF values of the map
+  for (auto tag : g.listObjectNames())
+  {
+    // Get the chunk data
+    HighFive::DataSet d = g.getDataSet(tag);
+    std::vector<TSDFValue::RawType> chunk_data;
+    d.read(chunk_data);
+    // Get the chunk position
+    std::vector<int> chunk_pos;
+    std::string delimiter = "_";
+    size_t pos = 0;
+    std::string token;
+    
+    while ((pos = tag.find(delimiter)) != std::string::npos)
+    {
+      token = tag.substr(0, pos);
+      chunk_pos.push_back(std::stoi(token));
+      tag.erase(0, pos + delimiter.length());
+    }
+    chunk_pos.push_back(std::stoi(tag));
+
+    for (int i = 0; i < CHUNK_SIZE; i++)
+    {
+      for (int j = 0; j < CHUNK_SIZE; j++)
+      {
+        for (int k = 0; k < CHUNK_SIZE; k++)
+        {
+          auto entry = TSDFValue(chunk_data[CHUNK_SIZE * CHUNK_SIZE * i + CHUNK_SIZE * j + k]);
+
+          auto tsdf_value = (float)(entry.value()) / MAP_RESOLUTION;
+          auto weight = entry.weight();
+
+          int x = CHUNK_SIZE * chunk_pos[0] + i;
+          int y = CHUNK_SIZE * chunk_pos[1] + j;
+          int z = CHUNK_SIZE * chunk_pos[2] + k;
+
+          // Only touched cells are considered
+          if (weight > 0)
+          {
+            // Insert TSDF value
+            //ROS_INFO("x: %f, y:%f, z:%f", (float)x * 0.064f, (float)y * 0.064f, (float)z * 0.064f);
+            geometry_msgs::Point tmp;
+            tmp.x = (float)x * 0.064f;
+            tmp.y = (float)y * 0.064f;
+            tmp.z = (float)z * 0.064f;
+
+            points.push_back(tmp);
+          }
+        }
+      }
+    }
+  }
+
+  cube_marker_list.points = points;
+
+  return cube_marker_list;
 }
 
 /**
@@ -144,7 +246,7 @@ void updateRays(visualization_msgs::Marker &rays)
   for (int i = 1; i < rays.points.size(); i += 2)
   {
     // if the current ray is finished ( reached bounding box or sign switch in tsdf), skip it
-    if(lines_finished[(i-1) / 2])
+    if (lines_finished[(i - 1) / 2])
     {
       continue;
     }
@@ -228,9 +330,9 @@ visualization_msgs::Marker initRayMarkers()
   std::vector<geometry_msgs::Point> points; // for line list
 
   // simulate sensor
-  const float start_degree = - (float)lc_config.opening_degree / 2.0f;
+  const float start_degree = -(float)lc_config.opening_degree / 2.0f;
   const float fin_degree = (float)lc_config.opening_degree / 2.0f;
-  const float x_res = 360.0f / (float)(lc_config.hor_res - 1);
+  const float x_res = 360.0f / (float)(lc_config.hor_res);
   const float y_res = (float)lc_config.opening_degree / (float)(lc_config.vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
 
   ROS_INFO("Hor-Resolution: %f, Vertical resolution: %f (in degree)", x_res, y_res);
@@ -286,9 +388,10 @@ visualization_msgs::Marker initRayMarkers()
  * @param config 
  * @param level 
  */
-void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint32_t level) {
-  ROS_INFO("Reconfigure Request: %d %d", 
-            config.hor_res, config.vert_res);
+void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint32_t level)
+{
+  ROS_INFO("Reconfigure Request: %d %d",
+           config.hor_res, config.vert_res);
 
   lc_config = config;
 
@@ -331,7 +434,7 @@ int main(int argc, char **argv)
 
   // get markers
   auto pose_marker = initPoseMarker();
-  auto cube_marker_list = initTSDFsimMarker();
+  auto cube_marker_list = initTSDFmap();
   ray_markers = initRayMarkers();
   bb_marker = initBoundingBox();
 

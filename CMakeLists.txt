@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(loop_closure)
 
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++17)
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -30,6 +33,15 @@ generate_dynamic_reconfigure_options(
 ## Build ##
 ###########
 
+# External interface for HDF5 (libhdf5) HighFive (https://github.com/BlueBrain/HighFive).
+set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
+set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
+add_subdirectory(ext/HighFive)
+include_directories("ext/HighFive/include")
+find_package(HDF5 REQUIRED COMPONENTS CXX C HL)
+include_directories(${HDF5_INCLUDE_DIRS})
+
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -46,7 +58,9 @@ add_executable(map_node src/map_node.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(map_node
   ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
 )
 
 # dynamic reconfigure
-add_dependencies(map_node loop_closure_gencfg)
+add_dependencies(map_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})

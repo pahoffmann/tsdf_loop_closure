@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/ext/HighFive/include/**",
                 "/opt/ros/noetic/include/**"
             ],
             "defines": [],
