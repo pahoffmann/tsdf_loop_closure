@@ -228,10 +228,10 @@ visualization_msgs::Marker initRayMarkers()
   std::vector<geometry_msgs::Point> points; // for line list
 
   // simulate sensor
-  const float start_degree = - lc_config.opening_degree / 2.0f;
-  const float fin_degree = lc_config.opening_degree / 2.0f;
-  const float x_res = 360.0f / lc_config.hor_res;
-  const float y_res = (float)lc_config.opening_degree / (float)lc_config.vert_res; // assuming, that the fin degree is positive and start degree negative.
+  const float start_degree = - (float)lc_config.opening_degree / 2.0f;
+  const float fin_degree = (float)lc_config.opening_degree / 2.0f;
+  const float x_res = 360.0f / (float)(lc_config.hor_res - 1);
+  const float y_res = (float)lc_config.opening_degree / (float)(lc_config.vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
 
   ROS_INFO("Hor-Resolution: %f, Vertical resolution: %f (in degree)", x_res, y_res);
 
@@ -245,12 +245,14 @@ visualization_msgs::Marker initRayMarkers()
 
       // no we need to calc the respective points for each of the rays. scary.
       // done with two angles in sphere coordinates
+      // formulas from http://wiki.ros.org/ainstein_radar/Tutorials/Tracking%20object%20Cartesian%20pose
+      // and https://math.libretexts.org/Bookshelves/Calculus/Book%3A_Calculus_(OpenStax)/12%3A_Vectors_in_Space/12.7%3A_Cylindrical_and_Spherical_Coordinates
       geometry_msgs::Point ray_point;
-      ray_point.x = raytrace_starting_pose.x + sin(i * M_PI / 180);
-      ray_point.y = raytrace_starting_pose.y + cos(i * M_PI / 180); // oppsite angle
+      ray_point.x = raytrace_starting_pose.x + cos(i * M_PI / 180) * cos(j * M_PI / 180);
+      ray_point.y = raytrace_starting_pose.y + sin(i * M_PI / 180) * cos(j * M_PI / 180); // oppsite angle
       ray_point.z = raytrace_starting_pose.z + sin(j * M_PI / 180);
 
-      // resize
+      // resize the vectors to the length defined by config.step_size
       auto &p1 = ray_point;
       auto &p2 = raytrace_starting_pose;
       float length = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z));
