@@ -7,14 +7,11 @@
 #include <dynamic_reconfigure/server.h>
 #include <loop_closure/LoopClosureConfig.h>
 
-const float localmap_side_length = 25.0f;           // used to stop ray tracing when a certain border is touched
 geometry_msgs::Point raytrace_starting_pose;        // starting pose for ray tracing
 geometry_msgs::Vector3 raytrace_starting_direction; // aka, yaw, pitch, yaw
-float step_size = 0.5f;                       // step size for ray tracing
-float start_degree = -22.5f;                  // FOV
-float fin_degree = 22.5f;                     // FOV
 std::vector<bool> lines_finished;
 visualization_msgs::Marker ray_markers;
+visualization_msgs::Marker bb_marker;
 loop_closure::LoopClosureConfig lc_config;
 
 /**
@@ -122,9 +119,9 @@ visualization_msgs::Marker initBoundingBox()
   cube.pose.orientation.y = 0.0;
   cube.pose.orientation.z = 0.0;
   cube.pose.orientation.w = 1.0;
-  cube.scale.x = localmap_side_length;
-  cube.scale.y = localmap_side_length;
-  cube.scale.z = localmap_side_length;
+  cube.scale.x = lc_config.side_length_xy;
+  cube.scale.y = lc_config.side_length_xy;
+  cube.scale.z = lc_config.side_length_z;
   cube.color.a = 0.2; // Don't forget to set the alpha!
   cube.color.r = 1.0;
   cube.color.g = 1.0;
@@ -156,7 +153,7 @@ void updateRays(visualization_msgs::Marker &rays)
     auto &p2 = rays.points[i - 1];
     float length = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z));
     //ROS_INFO("Cur Vector length: %f", length);
-    float factor = (length + step_size) / length; // vector enlargement
+    float factor = (length + lc_config.step_size) / length; // vector enlargement
 
     // enlarge "vector"
     p1.x = (p1.x - raytrace_starting_pose.x) * factor + raytrace_starting_pose.x; // translate to (0,0,0), enlarge, translate back
@@ -168,21 +165,21 @@ void updateRays(visualization_msgs::Marker &rays)
     bool needs_resize = false;
 
     // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
-    if (p1.x > raytrace_starting_pose.x + localmap_side_length / 2 || p1.x < raytrace_starting_pose.x - localmap_side_length / 2)
+    if (p1.x > raytrace_starting_pose.x + lc_config.side_length_xy / 2 || p1.x < raytrace_starting_pose.x - lc_config.side_length_xy / 2)
     {
-      float fac_x = (p1.x - raytrace_starting_pose.x) / (localmap_side_length / 2 - raytrace_starting_pose.x);
+      float fac_x = (p1.x - raytrace_starting_pose.x) / (lc_config.side_length_xy / 2 - raytrace_starting_pose.x);
       needs_resize = true;
     }
 
-    if (p1.y > raytrace_starting_pose.y + localmap_side_length / 2 || p1.y < raytrace_starting_pose.y - localmap_side_length / 2)
+    if (p1.y > raytrace_starting_pose.y + lc_config.side_length_xy / 2 || p1.y < raytrace_starting_pose.y - lc_config.side_length_xy / 2)
     {
-      float fac_y = (p1.y - raytrace_starting_pose.y) / (localmap_side_length / 2 - raytrace_starting_pose.y);
+      float fac_y = (p1.y - raytrace_starting_pose.y) / (lc_config.side_length_xy / 2 - raytrace_starting_pose.y);
       needs_resize = true;
     }
 
-    if (p1.z > raytrace_starting_pose.z + localmap_side_length / 2 || p1.z < raytrace_starting_pose.z - localmap_side_length / 2)
+    if (p1.z > raytrace_starting_pose.z + lc_config.side_length_z / 2 || p1.z < raytrace_starting_pose.z - lc_config.side_length_z / 2)
     {
-      float fac_z = (p1.z - raytrace_starting_pose.z) / (localmap_side_length / 2 - raytrace_starting_pose.z);
+      float fac_z = (p1.z - raytrace_starting_pose.z) / (lc_config.side_length_z / 2 - raytrace_starting_pose.z);
       needs_resize = true;
     }
 
@@ -231,8 +228,10 @@ visualization_msgs::Marker initRayMarkers()
   std::vector<geometry_msgs::Point> points; // for line list
 
   // simulate sensor
+  const float start_degree = - lc_config.opening_degree / 2.0f;
+  const float fin_degree = lc_config.opening_degree / 2.0f;
   const float x_res = 360.0f / lc_config.hor_res;
-  const float y_res = (fin_degree - start_degree) / lc_config.vert_res; // assuming, that the fin degree is positive and start degree negative.
+  const float y_res = (float)lc_config.opening_degree / (float)lc_config.vert_res; // assuming, that the fin degree is positive and start degree negative.
 
   ROS_INFO("Hor-Resolution: %f, Vertical resolution: %f (in degree)", x_res, y_res);
 
@@ -255,7 +254,7 @@ visualization_msgs::Marker initRayMarkers()
       auto &p1 = ray_point;
       auto &p2 = raytrace_starting_pose;
       float length = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z));
-      float factor = step_size / length; // vector enlargement
+      float factor = lc_config.step_size / length; // vector enlargement
 
       // ROS_INFO("INIT_RAYS: start length: %f, length factor; %f", length, factor);
 
@@ -293,6 +292,7 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
 
   // re-init the markers
   ray_markers = initRayMarkers();
+  bb_marker = initBoundingBox();
 }
 
 /**
@@ -331,7 +331,7 @@ int main(int argc, char **argv)
   auto pose_marker = initPoseMarker();
   auto cube_marker_list = initTSDFsimMarker();
   ray_markers = initRayMarkers();
-  auto bb_marker = initBoundingBox();
+  bb_marker = initBoundingBox();
 
   //ros loop
   while (ros::ok())
