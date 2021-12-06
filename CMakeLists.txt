@@ -41,6 +41,9 @@ include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS CXX C HL)
 include_directories(${HDF5_INCLUDE_DIRS})
 
+#eigen3
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -52,7 +55,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(map_node src/map_node.cpp)
+add_executable(map_node src/map_node.cpp src/map/global_map.cpp src/map/local_map.cpp)
 
 
 ## Specify libraries to link a library or executable target against
@@ -60,6 +63,7 @@ target_link_libraries(map_node
   ${catkin_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
 )
 
 # dynamic reconfigure

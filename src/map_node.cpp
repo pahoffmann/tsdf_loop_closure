@@ -442,7 +442,7 @@ int main(int argc, char **argv)
 
   // get markers
   auto pose_marker = initPoseMarker();
-  auto cube_marker_list = initTSDFmap();
+  auto cube_marker_list = initTSDFsimMarker();
   ray_markers = initRayMarkers();
   bb_marker = initBoundingBox();
 
