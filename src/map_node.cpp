@@ -243,26 +243,26 @@ void updateRays(visualization_msgs::Marker &rays)
     p1.y = (p1.y - raytrace_starting_pose.y) * factor + raytrace_starting_pose.y; // translate to (0,0,0), enlarge, translate back
     p1.z = (p1.z - raytrace_starting_pose.z) * factor + raytrace_starting_pose.z; // translate to (0,0,0), enlarge, translate back
 
-    // if we are out of the bounds of the local map, we need to set the the point directly on the bounding box. (calc relative enlargement factor)
-    float fac_x = 0, fac_y = 0, fac_z = 0;
+    // if we are out of the bounds of the local map, we want to set the the point directly on the bounding box. (calc relative enlargement factor)
+    float fac_x = 10.0f, fac_y = 10.0f, fac_z = 10.0f;
     bool needs_resize = false;
 
     // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
-    if (p1.x > raytrace_starting_pose.x + lc_config.side_length_xy / 2 || p1.x < raytrace_starting_pose.x - lc_config.side_length_xy / 2)
+    if (p1.x > raytrace_starting_pose.x + lc_config.side_length_xy / 2.0f || p1.x < raytrace_starting_pose.x - lc_config.side_length_xy / 2.0f)
     {
-      float fac_x = (p1.x - raytrace_starting_pose.x) / (lc_config.side_length_xy / 2 - raytrace_starting_pose.x);
+      fac_x = abs((lc_config.side_length_xy / 2.0f) / (p1.x - raytrace_starting_pose.x));
       needs_resize = true;
     }
 
-    if (p1.y > raytrace_starting_pose.y + lc_config.side_length_xy / 2 || p1.y < raytrace_starting_pose.y - lc_config.side_length_xy / 2)
+    if (p1.y > raytrace_starting_pose.y + lc_config.side_length_xy / 2.0f || p1.y < raytrace_starting_pose.y - lc_config.side_length_xy / 2.0f)
     {
-      float fac_y = (p1.y - raytrace_starting_pose.y) / (lc_config.side_length_xy / 2 - raytrace_starting_pose.y);
+      fac_y = abs((lc_config.side_length_xy / 2.0f) / (p1.y - raytrace_starting_pose.y));
       needs_resize = true;
     }
 
-    if (p1.z > raytrace_starting_pose.z + lc_config.side_length_z / 2 || p1.z < raytrace_starting_pose.z - lc_config.side_length_z / 2)
+    if (p1.z > raytrace_starting_pose.z + lc_config.side_length_z / 2.0f || p1.z < raytrace_starting_pose.z - lc_config.side_length_z / 2.0f)
     {
-      float fac_z = (p1.z - raytrace_starting_pose.z) / (lc_config.side_length_z / 2 - raytrace_starting_pose.z);
+      fac_z = abs((lc_config.side_length_z / 2.0f) / (p1.z - raytrace_starting_pose.z));
       needs_resize = true;
     }
 
@@ -270,13 +270,14 @@ void updateRays(visualization_msgs::Marker &rays)
     if (needs_resize)
     {
       //determine biggest adaption
-      // float min_xy = std::min(fac_x, fac_y);
-      // float min_xyz = std::min(min_xy, fac_z);
+      float min_xy = std::min(fac_x, fac_y);
+      
+      float min_xyz = std::min(min_xy, fac_z);
 
-      // // resize to bb size
-      // p1.x *= (p1.x - raytrace_starting_pose.x) * min_xyz + raytrace_starting_pose.x;
-      // p1.y *= (p1.y - raytrace_starting_pose.y) * min_xyz + raytrace_starting_pose.y;
-      // p1.z *= (p1.z - raytrace_starting_pose.z) * min_xyz + raytrace_starting_pose.z;
+      // resize to bb size
+      p1.x = (p1.x - raytrace_starting_pose.x) * min_xyz + raytrace_starting_pose.x;
+      p1.y = (p1.y - raytrace_starting_pose.y) * min_xyz + raytrace_starting_pose.y;
+      p1.z = (p1.z - raytrace_starting_pose.z) * min_xyz + raytrace_starting_pose.z;
 
       // the line doesnt need any further updates
       lines_finished[(i - 1) / 2] = true;
