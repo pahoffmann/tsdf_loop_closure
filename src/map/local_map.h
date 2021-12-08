@@ -56,8 +56,9 @@ public:
      * @param sY Side length of the local map in the y direction
      * @param sZ Side length of the local map in the z direction
      * @param map Pointer to the global map
+     * @param from_source defines, wether the local map is read from an already existing global map
      */
-    LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std::shared_ptr<GlobalMap>& map);
+    LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std::shared_ptr<GlobalMap>& map, bool from_source = false);
 
     /**
      * Destructor of the local map.

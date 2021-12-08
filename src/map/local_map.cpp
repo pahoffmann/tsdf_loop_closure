@@ -9,7 +9,7 @@
 #include <stdlib.h> // for abs
 #include <stdexcept>
 
-LocalMap::LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std::shared_ptr<GlobalMap>& map)
+LocalMap::LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std::shared_ptr<GlobalMap>& map, bool from_source)
     : size_{static_cast<int>(sX % 2 == 1 ? sX : sX + 1),
             static_cast<int>(sY % 2 == 1 ? sY : sY + 1),
             static_cast<int>(sZ % 2 == 1 ? sZ : sZ + 1)},
@@ -18,15 +18,26 @@ LocalMap::LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std:
       offset_{size_ / 2},
       map_{map}
 {
-    if (sX % 2 == 0 || sY % 2 == 0 || sZ % 2 == 0)
+
+    // if the localmap is not initiallized with an already existing global map, we simply fill it with default values.
+    if(!from_source)
     {
-        //fastsense::util::logging::Logger::warning("Changed LocalMap size from even (", sX, ", ", sY, ", ", sZ, ") to odd (", size_.x(), ", ", size_.y(), ", ", size_.z(), ")");
+        auto default_entry = map_->get_value(Vector3i(0, 0, 0));
+        for (int i = 0; i < size_.x() * size_.y() * size_.z(); i++)
+        {
+            data_[i] = default_entry;
+        }
     }
-    auto default_entry = map_->get_value(Vector3i(0, 0, 0));
-    for (int i = 0; i < size_.x() * size_.y() * size_.z(); i++)
+    else
     {
-        data_[i] = default_entry;
+        Vector3i offset(((size_.x() - 1) / 2), ((size_.y() - 1) / 2), ((size_.z() - 1) / 2));
+        Vector3i start = -1 * offset;
+        Vector3i end = offset;
+
+        load_area(start, end);
+        // determine area in global map
     }
+
 }
 
 void LocalMap::swap(LocalMap& rhs)

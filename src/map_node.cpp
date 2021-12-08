@@ -69,9 +69,6 @@ visualization_msgs::Marker initPoseMarker()
  */
 visualization_msgs::Marker initTSDFmarker()
 {
-  // vector which contains every point, attributed with a color
-  std::vector<std::pair<geometry_msgs::Point, std_msgs::ColorRGBA>> results;
-
   // create marker.
   visualization_msgs::Marker tsdf_markers;
   tsdf_markers.header.frame_id = "map";
@@ -80,30 +77,55 @@ visualization_msgs::Marker initTSDFmarker()
   tsdf_markers.id = 0;
   tsdf_markers.type = visualization_msgs::Marker::POINTS;
   tsdf_markers.action = visualization_msgs::Marker::ADD;
-  tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 0.6 * 0.001; // why this? @julian
-  tsdf_markers.color.a = 0.6; // Don't forget to set the alpha!
-  tsdf_markers.color.r = 0.0;
-  tsdf_markers.color.g = 1.0;
-  tsdf_markers.color.b = 0.0;
+  tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // why this? @julian -> 0.6 as parameter?
   std::vector<geometry_msgs::Point> points; // 3 x 3 markers
 
   // display the current local map...
 
   // iterate through the whole localmap [3d]
-  auto& buffer = local_map_ptr_.get()->getBuffer();
+  auto local_map = local_map_ptr_.get();
+  auto &size = local_map->get_size();
 
-  for(int i = 0; i < buffer.size(); i++)
+  // get values, ignore offset
+  for (int x = -1 * (size.x() - 1) / 2; x < (size.x() - 1) / 2; x++)
   {
-    auto value = buffer[i];
+    for (int y = -1 * (size.y() - 1) / 2; y < (size.y() - 1) / 2; y++)
+    {
+      for (int z = -1 * (size.z() - 1) / 2; z < (size.z() - 1) / 2; z++)
+      {
+        auto tsdf = local_map->value(x, y, z);
+        auto value = tsdf.value();
+        auto weight = tsdf.weight();
+        //ROS_INFO("Value: %d", value.value());
 
-    if(value.value() != 0)
-      ROS_INFO("Value: %d", value.value());
+        if (weight > 0 && value < 600)
+        {
+          geometry_msgs::Point point;
+          point.x = x * 0.001 * MAP_RESOLUTION;
+          point.y = y * 0.001 * MAP_RESOLUTION;
+          point.z = z * 0.001 * MAP_RESOLUTION;
+
+          std_msgs::ColorRGBA color;
+          if(value < 0)
+          {
+            color.r = 1;
+            color.g = 0;
+            color.b = 0;
+            color.a = 1;
+          }
+          else{
+            color.r = 0;
+            color.g = 1;
+            color.b = 0;
+            color.a = 1;
+          }
+
+          tsdf_markers.points.push_back(point);
+          tsdf_markers.colors.push_back(color);
+        }
+      }
+    }
   }
-
-
-  // display the current vers
-
-  tsdf_markers.points = points;
 
   return tsdf_markers;
 }
@@ -362,7 +384,7 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
 void initMaps()
 {
   global_map_ptr_ = std::make_shared<GlobalMap>(h5_file_name_, 0.0, 0.0);
-  local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_);
+  local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
 }
 
 /**
@@ -385,10 +407,10 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1);
-  ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1);
+  ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);
+  ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
-  ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1);
+  ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
   ros::Rate loop_rate(10);
 
   dynamic_reconfigure::Server<loop_closure::LoopClosureConfig> server;
@@ -413,16 +435,19 @@ int main(int argc, char **argv)
   // init local and global maps
   initMaps();
 
-    // for test purposes 
-  initTSDFmarker();
+  // for test purposes
+  auto tsdf_markers = initTSDFmarker();
 
+  cube_publisher.publish(tsdf_markers);
+  bb_publisher.publish(bb_marker);
+  pose_publisher.publish(pose_marker);
 
+  ros::spinOnce();
+  
   //ros loop
   while (ros::ok())
   {
     // publish the individual messages
-    cube_publisher.publish(cube_marker_list);
-    pose_publisher.publish(pose_marker);
     ray_publisher.publish(ray_markers);
     bb_publisher.publish(bb_marker);
 

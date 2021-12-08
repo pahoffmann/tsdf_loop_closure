@@ -10,7 +10,7 @@
 #include "global_map.h"
 
 GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight)
-    : file_{name, HighFive::File::OpenOrCreate | HighFive::File::Truncate}, // Truncate clears already existing file
+    : file_{name, HighFive::File::OpenOrCreate}, // Truncate clears already existing file
       initial_tsdf_value_{initial_tsdf_value, initial_weight},
       active_chunks_{},
       num_poses_{0}
