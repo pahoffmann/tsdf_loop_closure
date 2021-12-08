@@ -20,6 +20,8 @@ visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
 visualization_msgs::Marker tsdf_map; // marker for the tsdf map
 loop_closure::LoopClosureConfig lc_config;
+float side_length_xy = 0;
+float side_length_z = 0;
 std::string h5_file_name_;
 
 /// Map Stuff ///
@@ -202,9 +204,9 @@ visualization_msgs::Marker initBoundingBox()
   cube.pose.orientation.y = 0.0;
   cube.pose.orientation.z = 0.0;
   cube.pose.orientation.w = 1.0;
-  cube.scale.x = lc_config.side_length_xy;
-  cube.scale.y = lc_config.side_length_xy;
-  cube.scale.z = lc_config.side_length_z;
+  cube.scale.x = side_length_xy;
+  cube.scale.y = side_length_xy;
+  cube.scale.z = side_length_z;
   cube.color.a = 0.2; // Don't forget to set the alpha!
   cube.color.r = 1.0;
   cube.color.g = 1.0;
@@ -248,26 +250,34 @@ void updateRays(visualization_msgs::Marker &rays)
     bool needs_resize = false;
 
     // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
-    if (p1.x > raytrace_starting_pose.x + lc_config.side_length_xy / 2.0f || p1.x < raytrace_starting_pose.x - lc_config.side_length_xy / 2.0f)
+    if (p1.x > raytrace_starting_pose.x + side_length_xy / 2.0f || p1.x < raytrace_starting_pose.x - side_length_xy / 2.0f)
     {
-      fac_x = abs((lc_config.side_length_xy / 2.0f) / (p1.x - raytrace_starting_pose.x));
+      fac_x = abs((side_length_xy / 2.0f) / (p1.x - raytrace_starting_pose.x));
       needs_resize = true;
     }
 
-    if (p1.y > raytrace_starting_pose.y + lc_config.side_length_xy / 2.0f || p1.y < raytrace_starting_pose.y - lc_config.side_length_xy / 2.0f)
+    if (p1.y > raytrace_starting_pose.y + side_length_xy / 2.0f || p1.y < raytrace_starting_pose.y - side_length_xy / 2.0f)
     {
-      fac_y = abs((lc_config.side_length_xy / 2.0f) / (p1.y - raytrace_starting_pose.y));
+      fac_y = abs((side_length_xy / 2.0f) / (p1.y - raytrace_starting_pose.y));
       needs_resize = true;
     }
 
-    if (p1.z > raytrace_starting_pose.z + lc_config.side_length_z / 2.0f || p1.z < raytrace_starting_pose.z - lc_config.side_length_z / 2.0f)
+    if (p1.z > raytrace_starting_pose.z + side_length_z / 2.0f || p1.z < raytrace_starting_pose.z - side_length_z / 2.0f)
     {
-      fac_z = abs((lc_config.side_length_z / 2.0f) / (p1.z - raytrace_starting_pose.z));
+      fac_z = abs((side_length_z / 2.0f) / (p1.z - raytrace_starting_pose.z));
       needs_resize = true;
-    }
+    } 
 
-    // resize to bb if needed
-    if (needs_resize)
+    ROS_INFO("TEST1");
+    if(local_map_ptr_.get()->value(p1.x * 1000 / MAP_RESOLUTION, p1.y * 1000 / MAP_RESOLUTION, p1.z * 1000 / MAP_RESOLUTION).value() != 600)
+    {
+      ROS_INFO("Line hit tsdf");
+      // the line doesnt need any further updates
+      lines_finished[(i - 1) / 2] = true;
+
+      ROS_INFO("TEST2");
+    }
+    else if (needs_resize)
     {
       //determine biggest adaption
       float min_xy = std::min(fac_x, fac_y);
@@ -282,6 +292,7 @@ void updateRays(visualization_msgs::Marker &rays)
       // the line doesnt need any further updates
       lines_finished[(i - 1) / 2] = true;
     }
+    ROS_INFO("TEST3");
   }
 }
 
@@ -386,6 +397,10 @@ void initMaps()
 {
   global_map_ptr_ = std::make_shared<GlobalMap>(h5_file_name_, 0.0, 0.0);
   local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
+
+  auto& size = local_map_ptr_.get()->get_size();
+  side_length_xy = size.x();
+  side_length_z = size.z();
 }
 
 /**
@@ -408,6 +423,9 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+  // init local and global maps
+  initMaps();
+
   ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);
   ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
@@ -423,8 +441,8 @@ int main(int argc, char **argv)
   // define stuff for raytracer
 
   // starting position
-  raytrace_starting_pose.x = 10;
-  raytrace_starting_pose.y = 10;
+  raytrace_starting_pose.x = 0;
+  raytrace_starting_pose.y = 0;
   raytrace_starting_pose.z = 0;
 
   // get markers
@@ -433,10 +451,7 @@ int main(int argc, char **argv)
   ray_markers = initRayMarkers();
   bb_marker = initBoundingBox();
 
-  // init local and global maps
-  initMaps();
-
-  // for test purposes
+  // init tsdf
   auto tsdf_markers = initTSDFmarker();
 
   cube_publisher.publish(tsdf_markers);
