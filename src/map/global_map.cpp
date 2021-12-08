@@ -5,6 +5,7 @@
  */
 
 #include <sstream>
+#include <ros/ros.h>
 
 #include "global_map.h"
 
@@ -18,9 +19,18 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
     {
         file_.createGroup("/map");
     }
+    else
+    {
+        ROS_INFO("[GLOBAL_MAP] Using existing HDF5 Parameter [/map]");
+    }
+
     if (!file_.exist("/poses"))
     {
         file_.createGroup("/poses");
+    }
+    else
+    {
+        ROS_INFO("[GLOBAL_MAP] Using existing HDF5 Parameter [/poses]");
     }
 }
 

@@ -26,3 +26,8 @@ constexpr int MATRIX_RESOLUTION = 1 << 15; // == pow(2, 15)
  * // MARKER: TSDF SPLIT
  */
 constexpr int TSDF_SPLIT_FACTOR = 4;
+
+constexpr int CHUNK_SHIFT = 6;
+
+/// Side length of the cube-shaped chunks (2^CHUNK_SHIFT).
+constexpr int CHUNK_SIZE = 1 << CHUNK_SHIFT;
