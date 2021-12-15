@@ -190,6 +190,9 @@ visualization_msgs::Marker initTSDFsimMarker()
  */
 visualization_msgs::Marker initBoundingBox()
 {
+
+  ROS_INFO("[BOUNDING-BOX]: side_length: %f, %f, %f", side_length_xy, side_length_xy, side_length_z);
+  ROS_INFO("[BOUNDING-BOX]: starting_pose: %f, %f, %f", raytrace_starting_pose.x, raytrace_starting_pose.y, raytrace_starting_pose.z);
   visualization_msgs::Marker cube;
   cube.header.frame_id = "map";
   cube.header.stamp = ros::Time();
@@ -216,7 +219,8 @@ visualization_msgs::Marker initBoundingBox()
 }
 
 /**
- * @brief updates the rays of a specific marker.
+ * @brief updates the rays of a specific marker, catch intersection with current local map, find intersections
+ * @todo list global intersections in array. todo: what to do with those intersections?
  * 
  * @param rays (Line_List)
  */
@@ -246,7 +250,7 @@ void updateRays(visualization_msgs::Marker &rays)
     p1.z = (p1.z - raytrace_starting_pose.z) * factor + raytrace_starting_pose.z; // translate to (0,0,0), enlarge, translate back
 
     // if we are out of the bounds of the local map, we want to set the the point directly on the bounding box. (calc relative enlargement factor)
-    float fac_x = 10.0f, fac_y = 10.0f, fac_z = 10.0f;
+    float fac_x = 10.0f, fac_y = 10.0f, fac_z = 10.0f; // set to 10, as we calc the min of these
     bool needs_resize = false;
 
     // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
@@ -268,14 +272,10 @@ void updateRays(visualization_msgs::Marker &rays)
       needs_resize = true;
     } 
 
-    ROS_INFO("TEST1");
-    if(local_map_ptr_.get()->value(p1.x * 1000 / MAP_RESOLUTION, p1.y * 1000 / MAP_RESOLUTION, p1.z * 1000 / MAP_RESOLUTION).value() != 600)
+    if(!needs_resize && local_map_ptr_.get()->value(p1.x * 1000 / MAP_RESOLUTION, p1.y * 1000 / MAP_RESOLUTION, p1.z * 1000 / MAP_RESOLUTION).value() != 600)
     {
-      ROS_INFO("Line hit tsdf");
       // the line doesnt need any further updates
       lines_finished[(i - 1) / 2] = true;
-
-      ROS_INFO("TEST2");
     }
     else if (needs_resize)
     {
@@ -292,7 +292,6 @@ void updateRays(visualization_msgs::Marker &rays)
       // the line doesnt need any further updates
       lines_finished[(i - 1) / 2] = true;
     }
-    ROS_INFO("TEST3");
   }
 }
 
@@ -313,9 +312,9 @@ visualization_msgs::Marker initRayMarkers()
   ray_marker_list.pose.orientation.y = 0.0;
   ray_marker_list.pose.orientation.z = 0.0;
   ray_marker_list.pose.orientation.w = 1.0;
-  ray_marker_list.scale.x = 0.1;
-  ray_marker_list.scale.y = 0.1;
-  ray_marker_list.scale.z = 0.1;
+  ray_marker_list.scale.x = 0.005;
+  ray_marker_list.scale.y = 0.005;
+  ray_marker_list.scale.z = 0.005;
   ray_marker_list.color.a = 0.6; // Don't forget to set the alpha!
   ray_marker_list.color.r = 0.0;
   ray_marker_list.color.g = 0.0;
@@ -399,8 +398,8 @@ void initMaps()
   local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
 
   auto& size = local_map_ptr_.get()->get_size();
-  side_length_xy = size.x();
-  side_length_z = size.z();
+  side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
+  side_length_z = size.z() * MAP_RESOLUTION / 1000.0f;
 }
 
 /**
