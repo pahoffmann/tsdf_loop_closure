@@ -19,10 +19,14 @@ std::vector<bool> lines_finished;
 visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
 visualization_msgs::Marker tsdf_map; // marker for the tsdf map
+visualization_msgs::Marker cube_marker_list; // marker for the tsdf map
 loop_closure::LoopClosureConfig lc_config;
 float side_length_xy = 0;
 float side_length_z = 0;
 std::string h5_file_name_;
+
+bool done_tracing = false;
+bool done_iteration = false;
 
 /// Map Stuff ///
 std::shared_ptr<GlobalMap> global_map_ptr_;
@@ -87,6 +91,7 @@ visualization_msgs::Marker initTSDFmarker()
   // iterate through the whole localmap [3d]
   auto local_map = local_map_ptr_.get();
   auto &size = local_map->get_size();
+  int num_intersects = 0;
 
   // get values, ignore offset
   for (int x = -1 * (size.x() - 1) / 2; x < (size.x() - 1) / 2; x++)
@@ -98,8 +103,13 @@ visualization_msgs::Marker initTSDFmarker()
         auto tsdf = local_map->value(x, y, z);
         auto value = tsdf.value();
         auto weight = tsdf.weight();
-        //ROS_INFO("Value: %d", value.value());
+        auto intersect = tsdf.getIntersect();
+        if(intersect)
+        {
+          num_intersects++;
+        }
 
+        // just the cells, which actually have a weight and a value other than (and including) the default one
         if (weight > 0 && value < 600)
         {
           geometry_msgs::Point point;
@@ -108,7 +118,15 @@ visualization_msgs::Marker initTSDFmarker()
           point.z = z * 0.001 * MAP_RESOLUTION;
 
           std_msgs::ColorRGBA color;
-          if(value < 0)
+          
+          if(intersect)
+          {
+            color.r = 1;
+            color.g = 0;
+            color.b = 1;
+            color.a = 1;
+          }
+          else if(value < 0)
           {
             color.r = 1;
             color.g = 0;
@@ -129,6 +147,8 @@ visualization_msgs::Marker initTSDFmarker()
     }
   }
 
+  ROS_INFO("NUM_INTERSECTS: %d", num_intersects);
+
   return tsdf_markers;
 }
 
@@ -136,6 +156,7 @@ visualization_msgs::Marker initTSDFmarker()
  * @brief Method, which generates a tsdf sim volume.
  * 
  * @return visualization_msgs::Marker (Cube List)
+ * @deprecated deprecated due to the existance of initTSDFmarker() - Method 
  */
 visualization_msgs::Marker initTSDFsimMarker()
 {
@@ -229,6 +250,8 @@ void updateRays(visualization_msgs::Marker &rays)
   if (rays.points.size() == 0)
     return;
 
+  int num_updates = 0;
+
   // iterate over every 'line'
   for (int i = 1; i < rays.points.size(); i += 2)
   {
@@ -237,6 +260,8 @@ void updateRays(visualization_msgs::Marker &rays)
     {
       continue;
     }
+    
+    num_updates++;
 
     auto &p1 = rays.points[i];
     auto &p2 = rays.points[i - 1];
@@ -272,8 +297,11 @@ void updateRays(visualization_msgs::Marker &rays)
       needs_resize = true;
     } 
 
-    if(!needs_resize && local_map_ptr_.get()->value(p1.x * 1000 / MAP_RESOLUTION, p1.y * 1000 / MAP_RESOLUTION, p1.z * 1000 / MAP_RESOLUTION).value() != 600)
+    if(!needs_resize && local_map_ptr_.get()->value(p1.x * 1000.0f / MAP_RESOLUTION, p1.y * 1000.0f / MAP_RESOLUTION, p1.z * 1000.0f / MAP_RESOLUTION).value() < 600)
     {
+      auto& tsdf = local_map_ptr_.get()->value(p1.x * 1000.0f / MAP_RESOLUTION, p1.y * 1000.0f / MAP_RESOLUTION, p1.z * 1000.0f / MAP_RESOLUTION);
+      ROS_INFO("Value: %d", tsdf.value());
+      tsdf.setIntersect(true);
       // the line doesnt need any further updates
       lines_finished[(i - 1) / 2] = true;
     }
@@ -293,8 +321,21 @@ void updateRays(visualization_msgs::Marker &rays)
       lines_finished[(i - 1) / 2] = true;
     }
   }
+
+  // done updating
+  if(num_updates == 0)
+  {
+    ROS_INFO("Done Updating...");
+    ROS_INFO("Displaying intersections");
+    done_tracing = true;
+  }
 }
 
+/**
+ * @brief Function, which initializes the rays of a simulated laserscan using polar coordinates
+ * 
+ * @return visualization_msgs::Marker -> a marker containing the rays (as lines)
+ */
 visualization_msgs::Marker initRayMarkers()
 {
   // tsdf sim
@@ -312,9 +353,9 @@ visualization_msgs::Marker initRayMarkers()
   ray_marker_list.pose.orientation.y = 0.0;
   ray_marker_list.pose.orientation.z = 0.0;
   ray_marker_list.pose.orientation.w = 1.0;
-  ray_marker_list.scale.x = 0.005;
-  ray_marker_list.scale.y = 0.005;
-  ray_marker_list.scale.z = 0.005;
+  ray_marker_list.scale.x = lc_config.ray_size;
+  ray_marker_list.scale.y = lc_config.ray_size;
+  ray_marker_list.scale.z = lc_config.ray_size;
   ray_marker_list.color.a = 0.6; // Don't forget to set the alpha!
   ray_marker_list.color.r = 0.0;
   ray_marker_list.color.g = 0.0;
@@ -375,7 +416,22 @@ visualization_msgs::Marker initRayMarkers()
 }
 
 /**
- * @brief handles the dynamic reconfiguration
+ * @brief initializes the local and global map
+ * @todo don't harcode this
+ * 
+ */
+void initMaps()
+{
+  global_map_ptr_ = std::make_shared<GlobalMap>(h5_file_name_, 0.0, 0.0);
+  local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
+
+  auto& size = local_map_ptr_.get()->get_size();
+  side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
+  side_length_z = size.z() * MAP_RESOLUTION / 1000.0f;
+}
+
+/**
+ * @brief handles the dynamic reconfiguration, restarts scan simulation with new configuration
  * 
  * @param config 
  * @param level 
@@ -390,16 +446,12 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
   // re-init the markers
   ray_markers = initRayMarkers();
   bb_marker = initBoundingBox();
-}
+  
+  // reinitialize the map, as the intersections are now invalid
+  initMaps();
 
-void initMaps()
-{
-  global_map_ptr_ = std::make_shared<GlobalMap>(h5_file_name_, 0.0, 0.0);
-  local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
-
-  auto& size = local_map_ptr_.get()->get_size();
-  side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
-  side_length_z = size.z() * MAP_RESOLUTION / 1000.0f;
+  done_tracing = false;
+  done_iteration = false;
 }
 
 /**
@@ -446,16 +498,17 @@ int main(int argc, char **argv)
 
   // get markers
   auto pose_marker = initPoseMarker();
-  auto cube_marker_list = initTSDFsimMarker();
+  cube_marker_list = initTSDFsimMarker();
   ray_markers = initRayMarkers();
   bb_marker = initBoundingBox();
 
   // init tsdf
-  auto tsdf_markers = initTSDFmarker();
+  tsdf_map = initTSDFmarker();
 
-  cube_publisher.publish(tsdf_markers);
+
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
+  cube_publisher.publish(tsdf_map);
 
   ros::spinOnce();
   
@@ -466,8 +519,18 @@ int main(int argc, char **argv)
     ray_publisher.publish(ray_markers);
     bb_publisher.publish(bb_marker);
 
-    // every iteration, the rays length is enlarged, until every ray has either cut the bounding box, or has
-    updateRays(ray_markers);
+    if(done_tracing && !done_iteration){
+        ROS_INFO("Done tracing, displaying intersections from main loop..");
+        tsdf_map = initTSDFmarker();
+        cube_publisher.publish(tsdf_map);
+        done_iteration = true;
+    }
+
+    // every iteration, the rays length is enlarged, until every ray has either cut the bounding box, or the localmap
+    if(!done_tracing && !done_iteration)
+    {
+      updateRays(ray_markers);
+    }
 
     ros::spinOnce();
 

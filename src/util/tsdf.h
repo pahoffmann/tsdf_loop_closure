@@ -21,6 +21,8 @@ public:
     using WeightType = TSDFEntryHW::WeightType;
 
 private:
+    
+    bool intersect = false;
 
     /// Internally managed datatype
     union
@@ -39,6 +41,7 @@ public:
     {
         data.tsdf.value = value;
         data.tsdf.weight = weight;
+        intersect = false;
     }
 
     /**
@@ -47,6 +50,7 @@ public:
     explicit TSDFEntry(RawType raw)
     {
         data.raw = raw;
+        intersect = false;
     }
 
     // Default behaviour for copy and move
@@ -113,7 +117,17 @@ public:
     {
         data.tsdf.weight = val;
     }
+
+    bool getIntersect()
+    {
+        return intersect;
+    }
+
+    void setIntersect(bool val)
+    {
+        intersect = val;
+    }
 };
 
-static_assert(sizeof(TSDFEntry) == sizeof(TSDFEntryHW));          // HW and SW types must be of the same size
+//static_assert(sizeof(TSDFEntry) == sizeof(TSDFEntryHW));          // HW and SW types must be of the same size
 

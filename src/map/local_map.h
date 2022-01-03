@@ -7,6 +7,7 @@
  */
 
 #include "global_map.h"
+#include <ros/ros.h>
 
 /**
  * Three dimensional array that can be shifted without needing to copy every entry.
