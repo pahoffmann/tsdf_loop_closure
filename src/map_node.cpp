@@ -423,6 +423,7 @@ visualization_msgs::Marker initRayMarkers()
 void initMaps()
 {
   global_map_ptr_ = std::make_shared<GlobalMap>(h5_file_name_, 0.0, 0.0);
+  // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
   local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
 
   auto& size = local_map_ptr_.get()->get_size();
