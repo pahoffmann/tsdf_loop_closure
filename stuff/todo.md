@@ -79,3 +79,10 @@ e.g.: when a position in the posegraph is slightly translated and rotated, the s
 
 After the loop closure adaptions, there may be some problems with the TSDF, e.g. it might be ripped apart in corners etc., this needs to be 
 evaluated and possibly fixed
+
+
+
+##### Further Ideas #####
+
+* PCD to TSDF?
+* for tsdf to tsdf comparison (might also be found in the tsdf paper!!!)
