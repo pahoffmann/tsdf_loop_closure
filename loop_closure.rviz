@@ -57,7 +57,7 @@ Visualization Manager:
       Marker Topic: /cubes
       Name: Marker
       Namespaces:
-        {}
+        tsdf: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -65,7 +65,7 @@ Visualization Manager:
       Marker Topic: /ray_trace_pose
       Name: Marker
       Namespaces:
-        {}
+        ray_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -73,7 +73,7 @@ Visualization Manager:
       Marker Topic: /rays
       Name: Marker
       Namespaces:
-        {}
+        ray_list: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -81,7 +81,7 @@ Visualization Manager:
       Marker Topic: /bounding_box
       Name: Marker
       Namespaces:
-        {}
+        bounding_box: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -112,7 +112,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 36.934303283691406
+      Distance: 9.109807968139648
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -120,17 +120,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 8.07639217376709
-        Y: 1.0450693368911743
-        Z: 7.513642311096191
+        X: 0.3260340988636017
+        Y: -0.1344410926103592
+        Z: -0.040971457958221436
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6447983384132385
+      Pitch: 0.5397983193397522
       Target Frame: <Fixed Frame>
-      Yaw: 5.963438034057617
+      Yaw: 0.930251955986023
     Saved: ~
 Window Geometry:
   Displays:

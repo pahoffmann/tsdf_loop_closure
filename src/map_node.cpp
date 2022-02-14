@@ -10,6 +10,8 @@
 #include <highfive/H5File.hpp>
 #include "map/global_map.h"
 #include "map/local_map.h"
+#include "util/colors.h"
+#include "util/path.h"
 
 // ROS STUFF //
 
@@ -93,6 +95,15 @@ visualization_msgs::Marker initTSDFmarker()
   auto &size = local_map->get_size();
   int num_intersects = 0;
 
+  // define colors for the tsdf and intersections
+  // intersection color might need to vary
+
+  auto intersectColor = Colors::color_from_name(Colors::ColorNames::fuchsia);
+  auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
+  auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
+
+  ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
+
   // get values, ignore offset
   for (int x = -1 * (size.x() - 1) / 2; x < (size.x() - 1) / 2; x++)
   {
@@ -121,23 +132,15 @@ visualization_msgs::Marker initTSDFmarker()
           
           if(intersect)
           {
-            color.r = 1;
-            color.g = 0;
-            color.b = 1;
-            color.a = 1;
+            color = intersectColor;
           }
           else if(value < 0)
           {
-            color.r = 1;
-            color.g = 0;
-            color.b = 0;
-            color.a = 1;
+            color = redTSDFColor;
           }
-          else{
-            color.r = 0;
-            color.g = 1;
-            color.b = 0;
-            color.a = 1;
+          else
+          {
+            color = greenTSDFColor;
           }
 
           tsdf_markers.points.push_back(point);
@@ -300,7 +303,7 @@ void updateRays(visualization_msgs::Marker &rays)
     if(!needs_resize && local_map_ptr_.get()->value(p1.x * 1000.0f / MAP_RESOLUTION, p1.y * 1000.0f / MAP_RESOLUTION, p1.z * 1000.0f / MAP_RESOLUTION).value() < 600)
     {
       auto& tsdf = local_map_ptr_.get()->value(p1.x * 1000.0f / MAP_RESOLUTION, p1.y * 1000.0f / MAP_RESOLUTION, p1.z * 1000.0f / MAP_RESOLUTION);
-      ROS_INFO("Value: %d", tsdf.value());
+      // ROS_INFO("Value: %d", tsdf.value());
       tsdf.setIntersect(true);
       // the line doesnt need any further updates
       lines_finished[(i - 1) / 2] = true;
