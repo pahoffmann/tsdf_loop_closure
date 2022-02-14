@@ -7,6 +7,7 @@
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Geometry>
 #include <vector>
 #include <iostream>
 
@@ -18,6 +19,16 @@ using Eigen::Quaternionf;
 using ScanPoints_t = std::vector<Vector3i>;
 using ScanPointType = int32_t;
 using ScanPoint = Eigen::Matrix<ScanPointType, 3, 1>;
+
+struct Pose {
+    Eigen::Quaternionf quat;
+    Eigen::Vector3f pos;
+    
+    Eigen::Matrix3f rotationMatrixFromQuaternion()
+    {
+        return quat.matrix();
+    }
+};
 
 /**
  * @brief calculates floor(a / b), except that a is a Vector and all values are integers

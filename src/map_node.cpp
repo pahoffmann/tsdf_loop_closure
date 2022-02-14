@@ -12,11 +12,12 @@
 #include "map/local_map.h"
 #include "util/colors.h"
 #include "util/path.h"
+#include "util/point.h"
+#include "util/eigen_to_ros.h"
 
 // ROS STUFF //
 
-geometry_msgs::Point raytrace_starting_pose;        // starting pose for ray tracing
-geometry_msgs::Vector3 raytrace_starting_direction; // aka, yaw, pitch, yaw
+Pose raytrace_starting_pose;        // starting pose for ray tracing
 std::vector<bool> lines_finished;
 visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
@@ -49,9 +50,9 @@ visualization_msgs::Marker initPoseMarker()
   raytrace_starting_pose_marker.id = 0;
   raytrace_starting_pose_marker.type = visualization_msgs::Marker::SPHERE;
   raytrace_starting_pose_marker.action = visualization_msgs::Marker::ADD;
-  raytrace_starting_pose_marker.pose.position.x = raytrace_starting_pose.x;
-  raytrace_starting_pose_marker.pose.position.y = raytrace_starting_pose.y;
-  raytrace_starting_pose_marker.pose.position.z = raytrace_starting_pose.z;
+  raytrace_starting_pose_marker.pose.position.x = raytrace_starting_pose.pos.x();
+  raytrace_starting_pose_marker.pose.position.y = raytrace_starting_pose.pos.y();
+  raytrace_starting_pose_marker.pose.position.z = raytrace_starting_pose.pos.z();
   raytrace_starting_pose_marker.pose.orientation.x = 0.0;
   raytrace_starting_pose_marker.pose.orientation.y = 0.0;
   raytrace_starting_pose_marker.pose.orientation.z = 0.0;
@@ -216,7 +217,7 @@ visualization_msgs::Marker initBoundingBox()
 {
 
   ROS_INFO("[BOUNDING-BOX]: side_length: %f, %f, %f", side_length_xy, side_length_xy, side_length_z);
-  ROS_INFO("[BOUNDING-BOX]: starting_pose: %f, %f, %f", raytrace_starting_pose.x, raytrace_starting_pose.y, raytrace_starting_pose.z);
+  ROS_INFO("[BOUNDING-BOX]: starting_pose: %f, %f, %f", raytrace_starting_pose.pos.x(), raytrace_starting_pose.pos.y(), raytrace_starting_pose.pos.z());
   visualization_msgs::Marker cube;
   cube.header.frame_id = "map";
   cube.header.stamp = ros::Time();
@@ -224,9 +225,9 @@ visualization_msgs::Marker initBoundingBox()
   cube.id = 0;
   cube.type = visualization_msgs::Marker::CUBE;
   cube.action = visualization_msgs::Marker::ADD;
-  cube.pose.position.x = raytrace_starting_pose.x;
-  cube.pose.position.y = raytrace_starting_pose.y;
-  cube.pose.position.z = raytrace_starting_pose.z;
+  cube.pose.position.x = raytrace_starting_pose.pos.x();
+  cube.pose.position.y = raytrace_starting_pose.pos.y();
+  cube.pose.position.z = raytrace_starting_pose.pos.z();
   cube.pose.orientation.x = 0.0;
   cube.pose.orientation.y = 0.0;
   cube.pose.orientation.z = 0.0;
@@ -273,30 +274,30 @@ void updateRays(visualization_msgs::Marker &rays)
     float factor = (length + lc_config.step_size) / length; // vector enlargement
 
     // enlarge "vector"
-    p1.x = (p1.x - raytrace_starting_pose.x) * factor + raytrace_starting_pose.x; // translate to (0,0,0), enlarge, translate back
-    p1.y = (p1.y - raytrace_starting_pose.y) * factor + raytrace_starting_pose.y; // translate to (0,0,0), enlarge, translate back
-    p1.z = (p1.z - raytrace_starting_pose.z) * factor + raytrace_starting_pose.z; // translate to (0,0,0), enlarge, translate back
+    p1.x = (p1.x - raytrace_starting_pose.pos.x()) * factor + raytrace_starting_pose.pos.x(); // translate to (0,0,0), enlarge, translate back
+    p1.y = (p1.y - raytrace_starting_pose.pos.y()) * factor + raytrace_starting_pose.pos.y(); // translate to (0,0,0), enlarge, translate back
+    p1.z = (p1.z - raytrace_starting_pose.pos.z()) * factor + raytrace_starting_pose.pos.z(); // translate to (0,0,0), enlarge, translate back
 
     // if we are out of the bounds of the local map, we want to set the the point directly on the bounding box. (calc relative enlargement factor)
     float fac_x = 10.0f, fac_y = 10.0f, fac_z = 10.0f; // set to 10, as we calc the min of these
     bool needs_resize = false;
 
     // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
-    if (p1.x > raytrace_starting_pose.x + side_length_xy / 2.0f || p1.x < raytrace_starting_pose.x - side_length_xy / 2.0f)
+    if (p1.x > raytrace_starting_pose.pos.x() + side_length_xy / 2.0f || p1.x < raytrace_starting_pose.pos.x() - side_length_xy / 2.0f)
     {
-      fac_x = abs((side_length_xy / 2.0f) / (p1.x - raytrace_starting_pose.x));
+      fac_x = abs((side_length_xy / 2.0f) / (p1.x - raytrace_starting_pose.pos.x()));
       needs_resize = true;
     }
 
-    if (p1.y > raytrace_starting_pose.y + side_length_xy / 2.0f || p1.y < raytrace_starting_pose.y - side_length_xy / 2.0f)
+    if (p1.y > raytrace_starting_pose.pos.y() + side_length_xy / 2.0f || p1.y < raytrace_starting_pose.pos.y() - side_length_xy / 2.0f)
     {
-      fac_y = abs((side_length_xy / 2.0f) / (p1.y - raytrace_starting_pose.y));
+      fac_y = abs((side_length_xy / 2.0f) / (p1.y - raytrace_starting_pose.pos.y()));
       needs_resize = true;
     }
 
-    if (p1.z > raytrace_starting_pose.z + side_length_z / 2.0f || p1.z < raytrace_starting_pose.z - side_length_z / 2.0f)
+    if (p1.z > raytrace_starting_pose.pos.z() + side_length_z / 2.0f || p1.z < raytrace_starting_pose.pos.z() - side_length_z / 2.0f)
     {
-      fac_z = abs((side_length_z / 2.0f) / (p1.z - raytrace_starting_pose.z));
+      fac_z = abs((side_length_z / 2.0f) / (p1.z - raytrace_starting_pose.pos.z()));
       needs_resize = true;
     } 
 
@@ -316,9 +317,9 @@ void updateRays(visualization_msgs::Marker &rays)
       float min_xyz = std::min(min_xy, fac_z);
 
       // resize to bb size
-      p1.x = (p1.x - raytrace_starting_pose.x) * min_xyz + raytrace_starting_pose.x;
-      p1.y = (p1.y - raytrace_starting_pose.y) * min_xyz + raytrace_starting_pose.y;
-      p1.z = (p1.z - raytrace_starting_pose.z) * min_xyz + raytrace_starting_pose.z;
+      p1.x = (p1.x - raytrace_starting_pose.pos.x()) * min_xyz + raytrace_starting_pose.pos.x();
+      p1.y = (p1.y - raytrace_starting_pose.pos.y()) * min_xyz + raytrace_starting_pose.pos.y();
+      p1.z = (p1.z - raytrace_starting_pose.pos.z()) * min_xyz + raytrace_starting_pose.pos.z();
 
       // the line doesnt need any further updates
       lines_finished[(i - 1) / 2] = true;
@@ -379,29 +380,29 @@ visualization_msgs::Marker initRayMarkers()
     for (float j = start_degree; j <= fin_degree; j += y_res)
     {
       // every ray has the same starting position
-      points.push_back(geometry_msgs::Point(raytrace_starting_pose));
+      points.push_back(eigen_point_to_ros_point(raytrace_starting_pose.pos));
 
       // no we need to calc the respective points for each of the rays. scary.
       // done with two angles in sphere coordinates
       // formulas from http://wiki.ros.org/ainstein_radar/Tutorials/Tracking%20object%20Cartesian%20pose
       // and https://math.libretexts.org/Bookshelves/Calculus/Book%3A_Calculus_(OpenStax)/12%3A_Vectors_in_Space/12.7%3A_Cylindrical_and_Spherical_Coordinates
       geometry_msgs::Point ray_point;
-      ray_point.x = raytrace_starting_pose.x + cos(i * M_PI / 180) * cos(j * M_PI / 180);
-      ray_point.y = raytrace_starting_pose.y + sin(i * M_PI / 180) * cos(j * M_PI / 180); // oppsite angle
-      ray_point.z = raytrace_starting_pose.z + sin(j * M_PI / 180);
+      ray_point.x = raytrace_starting_pose.pos.x() + cos(i * M_PI / 180) * cos(j * M_PI / 180);
+      ray_point.y = raytrace_starting_pose.pos.y() + sin(i * M_PI / 180) * cos(j * M_PI / 180); // oppsite angle
+      ray_point.z = raytrace_starting_pose.pos.z() + sin(j * M_PI / 180);
 
       // resize the vectors to the length defined by config.step_size
       auto &p1 = ray_point;
-      auto &p2 = raytrace_starting_pose;
-      float length = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z));
+      auto &p2 = raytrace_starting_pose.pos;
+      float length = sqrt((p1.x - p2.x()) * (p1.x - p2.x()) + (p1.y - p2.y()) * (p1.y - p2.y()) + (p1.z - p2.z()) * (p1.z - p2.z()));
       float factor = lc_config.step_size / length; // vector enlargement
 
       // ROS_INFO("INIT_RAYS: start length: %f, length factor; %f", length, factor);
 
       // enlarge "vector"
-      ray_point.x = (p1.x - raytrace_starting_pose.x) * factor + raytrace_starting_pose.x; // translate to (0,0,0), enlarge, translate back
-      ray_point.y = (p1.y - raytrace_starting_pose.y) * factor + raytrace_starting_pose.y; // translate to (0,0,0), enlarge, translate back
-      ray_point.z = (p1.z - raytrace_starting_pose.z) * factor + raytrace_starting_pose.z; // translate to (0,0,0), enlarge, translate back
+      ray_point.x = (p1.x - raytrace_starting_pose.pos.x()) * factor + raytrace_starting_pose.pos.x(); // translate to (0,0,0), enlarge, translate back
+      ray_point.y = (p1.y - raytrace_starting_pose.pos.y()) * factor + raytrace_starting_pose.pos.y(); // translate to (0,0,0), enlarge, translate back
+      ray_point.z = (p1.z - raytrace_starting_pose.pos.z()) * factor + raytrace_starting_pose.pos.z(); // translate to (0,0,0), enlarge, translate back
 
       points.push_back(ray_point);
     }
@@ -496,9 +497,9 @@ int main(int argc, char **argv)
   // define stuff for raytracer
 
   // starting position
-  raytrace_starting_pose.x = 0;
-  raytrace_starting_pose.y = 0;
-  raytrace_starting_pose.z = 0;
+  raytrace_starting_pose.pos.x() = 0;
+  raytrace_starting_pose.pos.y() = 0;
+  raytrace_starting_pose.pos.z() = 0;
 
   // get markers
   auto pose_marker = initPoseMarker();

@@ -1,15 +1,17 @@
-#include <ros/ros.h>
+#pragma once
+
 #include <vector>
-#include <geometry_msgs/Pose.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include "point.h"
+
 
 class Path
 {
 private:
-    std::vector<geometry_msgs::Pose> poses;
+    std::vector<Pose> poses;
+    
 public:
     Path();
-    void addPoseFromEuler(float x, float y, float z, float eulerX, float eulerY, float eulerZ);
+    void addPoseFromEuler(float x, float y, float z, float roll, float pitch, float yaw);
 };
 
 /**
@@ -27,27 +29,27 @@ Path::Path(/* args */)
  * @param x       x - pose
  * @param y       y - pose
  * @param z       z - pose
- * @param eulerX  roll
- * @param eulerY  pitch
- * @param eulerZ  yawn
+ * @param roll
+ * @param pitch
+ * @param yaw
  */
-void Path::addPoseFromEuler(float x, float y, float z, float eulerX, float eulerY, float eulerZ) 
+void Path::addPoseFromEuler(float x, float y, float z, float roll, float pitch, float yaw) 
 {
-    geometry_msgs::Pose pose;
+    Pose pose;
+    // create eigen quaternion from euler
+    Eigen::Quaternionf q;
+    auto rollAngle = Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX());
+    auto pitchAngle = Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY());
+    auto yawAngle = Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ());
 
-    // get quaternion from rpy
-    tf2::Quaternion quat;
-    quat.setEuler(eulerX, eulerY, eulerZ);
+    q = yawAngle * pitchAngle * rollAngle; 
     
     // build point
-    geometry_msgs::Point point;
-    point.x = x;
-    point.y = y;
-    point.z = z;
+    Eigen::Vector3f point(x, y, z);
 
     //merge into pose msg
-    pose.orientation = tf2::toMsg(quat);
-    pose.position = point;
+    pose.quat = q;
+    pose.pos = point;
 
     poses.push_back(pose);
 }
