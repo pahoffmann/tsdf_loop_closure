@@ -451,10 +451,21 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
 
   lc_config = config;
 
+  //  re-init rotation component (todo: outsource)
+  Eigen::Quaternionf q;
+  auto rollAngle = Eigen::AngleAxisf(lc_config.roll_start * M_PI / 180, Eigen::Vector3f::UnitX()); // todo: create helper function for degree <-> radiants
+  auto pitchAngle = Eigen::AngleAxisf(lc_config.pitch_start * M_PI / 180, Eigen::Vector3f::UnitY());
+  auto yawAngle = Eigen::AngleAxisf(lc_config.yaw_start * M_PI / 180, Eigen::Vector3f::UnitZ());
+
+  q = yawAngle * pitchAngle * rollAngle; 
+
+  raytrace_starting_pose.quat = q;
+
   // re-init the markers
   ray_markers = initRayMarkers();
   bb_marker = initBoundingBox();
-  
+
+
   // reinitialize the map, as the intersections are now invalid
   initMaps();
 
@@ -505,9 +516,9 @@ int main(int argc, char **argv)
   raytrace_starting_pose.pos.z() = 0;
 
   Eigen::Quaternionf q;
-  auto rollAngle = Eigen::AngleAxisf(90 * M_PI / 180, Eigen::Vector3f::UnitX()); // todo: create helper function for degree <-> radiants
-  auto pitchAngle = Eigen::AngleAxisf(45 * M_PI / 180, Eigen::Vector3f::UnitY());
-  auto yawAngle = Eigen::AngleAxisf(45 * M_PI / 180, Eigen::Vector3f::UnitZ());
+  auto rollAngle = Eigen::AngleAxisf(lc_config.roll_start * M_PI / 180, Eigen::Vector3f::UnitX()); // todo: create helper function for degree <-> radiants
+  auto pitchAngle = Eigen::AngleAxisf(lc_config.pitch_start * M_PI / 180, Eigen::Vector3f::UnitY());
+  auto yawAngle = Eigen::AngleAxisf(lc_config.yaw_start * M_PI / 180, Eigen::Vector3f::UnitZ());
 
   q = yawAngle * pitchAngle * rollAngle; 
 
