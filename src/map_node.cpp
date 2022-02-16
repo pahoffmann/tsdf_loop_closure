@@ -336,7 +336,7 @@ void updateRays(visualization_msgs::Marker &rays)
 }
 
 /**
- * @brief Function, which initializes the rays of a simulated laserscan using polar coordinates
+ * @brief Function, which initializes the rays of a simulated laserscan using polar coordinates, also respecting the 6D starting pos of the scan
  * 
  * @return visualization_msgs::Marker -> a marker containing the rays (as lines)
  */
@@ -386,25 +386,28 @@ visualization_msgs::Marker initRayMarkers()
       // done with two angles in sphere coordinates
       // formulas from http://wiki.ros.org/ainstein_radar/Tutorials/Tracking%20object%20Cartesian%20pose
       // and https://math.libretexts.org/Bookshelves/Calculus/Book%3A_Calculus_(OpenStax)/12%3A_Vectors_in_Space/12.7%3A_Cylindrical_and_Spherical_Coordinates
-      geometry_msgs::Point ray_point;
-      ray_point.x = raytrace_starting_pose.pos.x() + cos(i * M_PI / 180) * cos(j * M_PI / 180);
-      ray_point.y = raytrace_starting_pose.pos.y() + sin(i * M_PI / 180) * cos(j * M_PI / 180); // oppsite angle
-      ray_point.z = raytrace_starting_pose.pos.z() + sin(j * M_PI / 180);
+      Eigen::Vector3f ray_point(
+        raytrace_starting_pose.pos.x() + cos(i * M_PI / 180) * cos(j * M_PI / 180),
+        raytrace_starting_pose.pos.y() + sin(i * M_PI / 180) * cos(j * M_PI / 180), // oppsite angle
+        raytrace_starting_pose.pos.z() + sin(j * M_PI / 180)
+      );
+
+      // now rotate using the 3d rotation matrix, translate to origin first and afterwards translate back.
+      ray_point = raytrace_starting_pose.rotationMatrixFromQuaternion() * (ray_point - raytrace_starting_pose.pos) + raytrace_starting_pose.pos;
 
       // resize the vectors to the length defined by config.step_size
       auto &p1 = ray_point;
       auto &p2 = raytrace_starting_pose.pos;
-      float length = sqrt((p1.x - p2.x()) * (p1.x - p2.x()) + (p1.y - p2.y()) * (p1.y - p2.y()) + (p1.z - p2.z()) * (p1.z - p2.z()));
+
+      float length = (p1 - p2).norm(); // get length
+
       float factor = lc_config.step_size / length; // vector enlargement
 
-      // ROS_INFO("INIT_RAYS: start length: %f, length factor; %f", length, factor);
+      // enlarge "vector" by translating to (0,0,0), rotating it in space and putting it back alla
+      ray_point = (p1 - raytrace_starting_pose.pos) * factor + raytrace_starting_pose.pos;
 
-      // enlarge "vector"
-      ray_point.x = (p1.x - raytrace_starting_pose.pos.x()) * factor + raytrace_starting_pose.pos.x(); // translate to (0,0,0), enlarge, translate back
-      ray_point.y = (p1.y - raytrace_starting_pose.pos.y()) * factor + raytrace_starting_pose.pos.y(); // translate to (0,0,0), enlarge, translate back
-      ray_point.z = (p1.z - raytrace_starting_pose.pos.z()) * factor + raytrace_starting_pose.pos.z(); // translate to (0,0,0), enlarge, translate back
-
-      points.push_back(ray_point);
+      // add to points list for ray marker (line list)
+      points.push_back(eigen_point_to_ros_point(ray_point));
     }
   }
 
@@ -500,6 +503,15 @@ int main(int argc, char **argv)
   raytrace_starting_pose.pos.x() = 0;
   raytrace_starting_pose.pos.y() = 0;
   raytrace_starting_pose.pos.z() = 0;
+
+  Eigen::Quaternionf q;
+  auto rollAngle = Eigen::AngleAxisf(90 * M_PI / 180, Eigen::Vector3f::UnitX()); // todo: create helper function for degree <-> radiants
+  auto pitchAngle = Eigen::AngleAxisf(45 * M_PI / 180, Eigen::Vector3f::UnitY());
+  auto yawAngle = Eigen::AngleAxisf(45 * M_PI / 180, Eigen::Vector3f::UnitZ());
+
+  q = yawAngle * pitchAngle * rollAngle; 
+
+  raytrace_starting_pose.quat = q;
 
   // get markers
   auto pose_marker = initPoseMarker();

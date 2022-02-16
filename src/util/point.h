@@ -2,7 +2,7 @@
 
 /**
  * @file point.h
- * @author Malte Hillmann
+ * @author Malte Hillmann, Patrick Hoffmann
  */
 
 #include <eigen3/Eigen/Core>
