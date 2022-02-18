@@ -6,8 +6,8 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sstream>
+#include <loop_closure/LoopClosureConfig.h>
 #include <visualization_msgs/Marker.h>
-#include <loop_closure/RayTracerConfig.h>
 
 /**
  * @brief Class used to emulate a laserscan, by tracing artifical rays in space based on a 6D pose.
@@ -17,13 +17,10 @@ class RayTracer {
 private:
 
     // configuration for the ray tracer
-    loop_closure::RayTracerConfig* rt_config; 
+    loop_closure::LoopClosureConfig* lc_config; 
     
     // current pose used for tracing
     Pose* current_pose;
-
-    // current tsdf marker
-    visualization_msgs::Marker marker;
 
     // pointer to the current local map
     std::shared_ptr<LocalMap> local_map_ptr_;
@@ -31,11 +28,29 @@ private:
     // used to store the rays, which have been finished, will be cleared after each tracing
     std::vector<bool> lines_finished;
 
-    // the actual rays
-    std::vector<std::pair<Eigen::Vector3f, Eigen::Vector3f>> rays;
+    // counter, which tracks, how many lines have been finished, works hand in hand with above array.
+    int finished_counter = 0;
 
+    // the actual rays, every ray starts at the current position of the tracer
+    std::vector<Eigen::Vector3f> rays;
+
+    /**
+     * @brief initializes the rays for the current position
+     * 
+     */
     void initRays();
+
+    /**
+     * @brief updates the rays, until every single one is finished
+     * 
+     */
     void updateRays();
+
+    /**
+     * @brief does some cleanup work in between runs.
+     * 
+     */
+    void cleanup();
 public:
 
     RayTracer();
@@ -45,18 +60,18 @@ public:
      * @param new_config 
      * @param local_map_in 
      */
-    RayTracer(loop_closure::RayTracerConfig* new_config, std::shared_ptr<LocalMap> local_map_in, Pose* start_pose);
-
-    /**
-     * @brief Get the ros marker object, might be better set up inside the localmap code.
-     * 
-     * @return visualization_msgs::Marker* 
-     */
-    visualization_msgs::Marker* get_ros_marker();
+    RayTracer(loop_closure::LoopClosureConfig* new_config, std::shared_ptr<LocalMap> local_map_in, Pose* start_pose);
 
     /**
      * @brief Starts the tracing process
      * 
      */
     void start();
+
+    /**
+     * @brief Get the ros marker for the current ray trace
+     * 
+     * @return visualization_msgs::Marker 
+     */
+    visualization_msgs::Marker get_ros_marker();
 };

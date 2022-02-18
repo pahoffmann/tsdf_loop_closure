@@ -14,37 +14,33 @@
 #include "util/colors.h"
 #include "util/path.h"
 #include "util/point.h"
-#include "util/eigen_to_ros.h"
 #include "ray_tracer/ray_tracer.h"
 
 // ROS STUFF //
 
-Pose raytrace_starting_pose;        // starting pose for ray tracing
+Pose raytrace_starting_pose; // starting pose for ray tracing
 std::vector<bool> lines_finished;
 visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
-visualization_msgs::Marker tsdf_map; // marker for the tsdf map
-visualization_msgs::Marker cube_marker_list; // marker for the tsdf map
+visualization_msgs::Marker tsdf_map;         // marker for the tsdf map
 loop_closure::LoopClosureConfig lc_config;
-loop_closure::RayTracerConfig rt_config;
+//loop_closure::RayTracerConfig rt_config;
 float side_length_xy = 0;
 float side_length_z = 0;
 std::string h5_file_name_;
-
-bool done_tracing = false;
-bool done_iteration = false;
+bool has_update = true;
 
 /// Map Stuff ///
 std::shared_ptr<GlobalMap> global_map_ptr_;
 std::shared_ptr<LocalMap> local_map_ptr_;
 
 /// Ray Tracer ///
-RayTracer* ray_tracer;
+RayTracer *ray_tracer;
 
 /**
  * @brief Method, which generates the pose marker for the current ray trace position
- * 
- * @return visualization_msgs::Marker (Sphere) 
+ *
+ * @return visualization_msgs::Marker (Sphere)
  */
 visualization_msgs::Marker initPoseMarker()
 {
@@ -75,12 +71,12 @@ visualization_msgs::Marker initPoseMarker()
 }
 
 /**
- * @brief Reads a tsdf global map and displays it in 
- * 
+ * @brief Reads a tsdf global map and displays it in
+ *
  * @todo use a tsdf-map datatype to read it and check intersection (separate class), marker should only be used as visualization,
  * only visualize chunks, which are in the bounds of the "local map", which can be seen from the raytracing position.
- * 
- * @return visualization_msgs::Marker 
+ *
+ * @return visualization_msgs::Marker
  */
 visualization_msgs::Marker initTSDFmarker()
 {
@@ -93,7 +89,7 @@ visualization_msgs::Marker initTSDFmarker()
   tsdf_markers.type = visualization_msgs::Marker::POINTS;
   tsdf_markers.action = visualization_msgs::Marker::ADD;
   tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // why this? @julian -> 0.6 as parameter?
-  std::vector<geometry_msgs::Point> points; // 3 x 3 markers
+  std::vector<geometry_msgs::Point> points;                                   // 3 x 3 markers
 
   // display the current local map...
 
@@ -122,7 +118,7 @@ visualization_msgs::Marker initTSDFmarker()
         auto value = tsdf.value();
         auto weight = tsdf.weight();
         auto intersect = tsdf.getIntersect();
-        if(intersect)
+        if (intersect)
         {
           num_intersects++;
         }
@@ -136,12 +132,12 @@ visualization_msgs::Marker initTSDFmarker()
           point.z = z * 0.001 * MAP_RESOLUTION;
 
           std_msgs::ColorRGBA color;
-          
-          if(intersect)
+
+          if (intersect)
           {
             color = intersectColor;
           }
-          else if(value < 0)
+          else if (value < 0)
           {
             color = redTSDFColor;
           }
@@ -163,61 +159,9 @@ visualization_msgs::Marker initTSDFmarker()
 }
 
 /**
- * @brief Method, which generates a tsdf sim volume.
- * 
- * @return visualization_msgs::Marker (Cube List)
- * @deprecated deprecated due to the existance of initTSDFmarker() - Method 
- */
-visualization_msgs::Marker initTSDFsimMarker()
-{
-  // tsdf sim
-  visualization_msgs::Marker cube_marker_list;
-  cube_marker_list.header.frame_id = "map";
-  cube_marker_list.header.stamp = ros::Time();
-  cube_marker_list.ns = "cube_list";
-  cube_marker_list.id = 0;
-  cube_marker_list.type = visualization_msgs::Marker::CUBE_LIST;
-  cube_marker_list.action = visualization_msgs::Marker::ADD;
-  cube_marker_list.pose.position.x = 0;
-  cube_marker_list.pose.position.y = 0;
-  cube_marker_list.pose.position.z = 0;
-  cube_marker_list.pose.orientation.x = 0.0;
-  cube_marker_list.pose.orientation.y = 0.0;
-  cube_marker_list.pose.orientation.z = 0.0;
-  cube_marker_list.pose.orientation.w = 1.0;
-  cube_marker_list.scale.x = 1;
-  cube_marker_list.scale.y = 1;
-  cube_marker_list.scale.z = 1;
-  cube_marker_list.color.a = 0.6; // Don't forget to set the alpha!
-  cube_marker_list.color.r = 0.0;
-  cube_marker_list.color.g = 1.0;
-  cube_marker_list.color.b = 0.0;
-  std::vector<geometry_msgs::Point> points; // 3 x 3 markers
-
-  for (int i = 0; i < 3; i++)
-  {
-    for (int j = 0; j < 3; j++)
-    {
-      for (int z = 0; z < 3; z++)
-      {
-        geometry_msgs::Point point;
-        point.x = i;
-        point.y = j;
-        point.z = z;
-        points.push_back(point);
-      }
-    }
-  }
-
-  cube_marker_list.points = points;
-
-  return cube_marker_list;
-}
-
-/**
  * @brief Method, which generates a bounding box for to show the current size of the local map.
- * 
- * @return visualization_msgs::Marker 
+ *
+ * @return visualization_msgs::Marker
  */
 visualization_msgs::Marker initBoundingBox()
 {
@@ -245,193 +189,15 @@ visualization_msgs::Marker initBoundingBox()
   cube.color.r = 1.0;
   cube.color.g = 1.0;
   cube.color.b = 0.0;
+  cube.lifetime.fromSec(30);
 
   return cube;
 }
 
 /**
- * @brief updates the rays of a specific marker, catch intersection with current local map, find intersections
- * @todo list global intersections in array. todo: what to do with those intersections?
- * 
- * @param rays (Line_List)
- */
-void updateRays(visualization_msgs::Marker &rays)
-{
-  if (rays.points.size() == 0)
-    return;
-
-  int num_updates = 0;
-
-  // iterate over every 'line'
-  for (int i = 1; i < rays.points.size(); i += 2)
-  {
-    // if the current ray is finished ( reached bounding box or sign switch in tsdf), skip it
-    if (lines_finished[(i - 1) / 2])
-    {
-      continue;
-    }
-    
-    num_updates++;
-
-    auto &p1 = rays.points[i];
-    auto &p2 = rays.points[i - 1];
-    float length = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z));
-    //ROS_INFO("Cur Vector length: %f", length);
-    float factor = (length + lc_config.step_size) / length; // vector enlargement
-
-    // enlarge "vector"
-    p1.x = (p1.x - raytrace_starting_pose.pos.x()) * factor + raytrace_starting_pose.pos.x(); // translate to (0,0,0), enlarge, translate back
-    p1.y = (p1.y - raytrace_starting_pose.pos.y()) * factor + raytrace_starting_pose.pos.y(); // translate to (0,0,0), enlarge, translate back
-    p1.z = (p1.z - raytrace_starting_pose.pos.z()) * factor + raytrace_starting_pose.pos.z(); // translate to (0,0,0), enlarge, translate back
-
-    // if we are out of the bounds of the local map, we want to set the the point directly on the bounding box. (calc relative enlargement factor)
-    float fac_x = 10.0f, fac_y = 10.0f, fac_z = 10.0f; // set to 10, as we calc the min of these
-    bool needs_resize = false;
-
-    // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
-    if (p1.x > raytrace_starting_pose.pos.x() + side_length_xy / 2.0f || p1.x < raytrace_starting_pose.pos.x() - side_length_xy / 2.0f)
-    {
-      fac_x = abs((side_length_xy / 2.0f) / (p1.x - raytrace_starting_pose.pos.x()));
-      needs_resize = true;
-    }
-
-    if (p1.y > raytrace_starting_pose.pos.y() + side_length_xy / 2.0f || p1.y < raytrace_starting_pose.pos.y() - side_length_xy / 2.0f)
-    {
-      fac_y = abs((side_length_xy / 2.0f) / (p1.y - raytrace_starting_pose.pos.y()));
-      needs_resize = true;
-    }
-
-    if (p1.z > raytrace_starting_pose.pos.z() + side_length_z / 2.0f || p1.z < raytrace_starting_pose.pos.z() - side_length_z / 2.0f)
-    {
-      fac_z = abs((side_length_z / 2.0f) / (p1.z - raytrace_starting_pose.pos.z()));
-      needs_resize = true;
-    } 
-
-    if(!needs_resize && local_map_ptr_.get()->value(p1.x * 1000.0f / MAP_RESOLUTION, p1.y * 1000.0f / MAP_RESOLUTION, p1.z * 1000.0f / MAP_RESOLUTION).value() < 600)
-    {
-      auto& tsdf = local_map_ptr_.get()->value(p1.x * 1000.0f / MAP_RESOLUTION, p1.y * 1000.0f / MAP_RESOLUTION, p1.z * 1000.0f / MAP_RESOLUTION);
-      // ROS_INFO("Value: %d", tsdf.value());
-      tsdf.setIntersect(true);
-      // the line doesnt need any further updates
-      lines_finished[(i - 1) / 2] = true;
-    }
-    else if (needs_resize)
-    {
-      //determine biggest adaption
-      float min_xy = std::min(fac_x, fac_y);
-      
-      float min_xyz = std::min(min_xy, fac_z);
-
-      // resize to bb size
-      p1.x = (p1.x - raytrace_starting_pose.pos.x()) * min_xyz + raytrace_starting_pose.pos.x();
-      p1.y = (p1.y - raytrace_starting_pose.pos.y()) * min_xyz + raytrace_starting_pose.pos.y();
-      p1.z = (p1.z - raytrace_starting_pose.pos.z()) * min_xyz + raytrace_starting_pose.pos.z();
-
-      // the line doesnt need any further updates
-      lines_finished[(i - 1) / 2] = true;
-    }
-  }
-
-  // done updating
-  if(num_updates == 0)
-  {
-    ROS_INFO("Done Updating...");
-    ROS_INFO("Displaying intersections");
-    done_tracing = true;
-  }
-}
-
-/**
- * @brief Function, which initializes the rays of a simulated laserscan using polar coordinates, also respecting the 6D starting pos of the scan
- * 
- * @return visualization_msgs::Marker -> a marker containing the rays (as lines)
- */
-visualization_msgs::Marker initRayMarkers()
-{
-  // tsdf sim
-  visualization_msgs::Marker ray_marker_list;
-  ray_marker_list.header.frame_id = "map";
-  ray_marker_list.header.stamp = ros::Time();
-  ray_marker_list.ns = "ray_list";
-  ray_marker_list.id = 0;
-  ray_marker_list.type = visualization_msgs::Marker::LINE_LIST;
-  ray_marker_list.action = visualization_msgs::Marker::ADD;
-  ray_marker_list.pose.position.x = 0;
-  ray_marker_list.pose.position.y = 0;
-  ray_marker_list.pose.position.z = 0;
-  ray_marker_list.pose.orientation.x = 0.0;
-  ray_marker_list.pose.orientation.y = 0.0;
-  ray_marker_list.pose.orientation.z = 0.0;
-  ray_marker_list.pose.orientation.w = 1.0;
-  ray_marker_list.scale.x = lc_config.ray_size;
-  ray_marker_list.scale.y = lc_config.ray_size;
-  ray_marker_list.scale.z = lc_config.ray_size;
-  ray_marker_list.color.a = 0.6; // Don't forget to set the alpha!
-  ray_marker_list.color.r = 0.0;
-  ray_marker_list.color.g = 0.0;
-  ray_marker_list.color.b = 1.0;
-  std::vector<geometry_msgs::Point> points; // for line list
-
-  // simulate sensor
-  const float start_degree = -(float)lc_config.opening_degree / 2.0f;
-  const float fin_degree = (float)lc_config.opening_degree / 2.0f;
-  const float x_res = 360.0f / (float)(lc_config.hor_res);
-  const float y_res = (float)lc_config.opening_degree / (float)(lc_config.vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
-
-  ROS_INFO("Hor-Resolution: %f, Vertical resolution: %f (in degree)", x_res, y_res);
-
-  // double for loop iterating over the specified resolution of the scanner (360 degrees horizontally, predefines angle vertically)
-  for (float i = -180.0f; i < 180.0f; i += x_res)
-  {
-    for (float j = start_degree; j <= fin_degree; j += y_res)
-    {
-      // every ray has the same starting position
-      points.push_back(eigen_point_to_ros_point(raytrace_starting_pose.pos));
-
-      // no we need to calc the respective points for each of the rays. scary.
-      // done with two angles in sphere coordinates
-      // formulas from http://wiki.ros.org/ainstein_radar/Tutorials/Tracking%20object%20Cartesian%20pose
-      // and https://math.libretexts.org/Bookshelves/Calculus/Book%3A_Calculus_(OpenStax)/12%3A_Vectors_in_Space/12.7%3A_Cylindrical_and_Spherical_Coordinates
-      Eigen::Vector3f ray_point(
-        raytrace_starting_pose.pos.x() + cos(i * M_PI / 180) * cos(j * M_PI / 180),
-        raytrace_starting_pose.pos.y() + sin(i * M_PI / 180) * cos(j * M_PI / 180), // oppsite angle
-        raytrace_starting_pose.pos.z() + sin(j * M_PI / 180)
-      );
-
-      // now rotate using the 3d rotation matrix, translate to origin first and afterwards translate back.
-      ray_point = raytrace_starting_pose.rotationMatrixFromQuaternion() * (ray_point - raytrace_starting_pose.pos) + raytrace_starting_pose.pos;
-
-      // resize the vectors to the length defined by config.step_size
-      auto &p1 = ray_point;
-      auto &p2 = raytrace_starting_pose.pos;
-
-      float length = (p1 - p2).norm(); // get length
-
-      float factor = lc_config.step_size / length; // vector enlargement
-
-      // enlarge "vector" by translating to (0,0,0), rotating it in space and putting it back alla
-      ray_point = (p1 - raytrace_starting_pose.pos) * factor + raytrace_starting_pose.pos;
-
-      // add to points list for ray marker (line list)
-      points.push_back(eigen_point_to_ros_point(ray_point));
-    }
-  }
-
-  ROS_INFO("There are %d rays in the simulated scan", (int)(points.size() / 2));
-
-  // update the lines finished vector, as we need to track, if a line is already finished
-  lines_finished = std::vector<bool>(points.size() / 2, false);
-
-  // attach to marker
-  ray_marker_list.points = points;
-
-  return ray_marker_list;
-}
-
-/**
  * @brief initializes the local and global map
  * @todo don't harcode this
- * 
+ *
  */
 void initMaps()
 {
@@ -439,23 +205,28 @@ void initMaps()
   // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
   local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
 
-  auto& size = local_map_ptr_.get()->get_size();
+  auto &size = local_map_ptr_.get()->get_size();
   side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
   side_length_z = size.z() * MAP_RESOLUTION / 1000.0f;
 }
 
 /**
  * @brief handles the dynamic reconfiguration, restarts scan simulation with new configuration
- * 
- * @param config 
- * @param level 
+ *
+ * @param config
+ * @param level
  */
 void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint32_t level)
 {
-  ROS_INFO("Reconfigure Request: %d %d",
-           config.hor_res, config.vert_res);
-
+  ROS_INFO("-------------------------------------------------------------------------");
+  ROS_INFO("Reconfigure Request for Ray Tracer. Overwriting config..."); // todo: add new params to info call
   lc_config = config;
+  ROS_INFO("Done Overwriting!");
+  ROS_INFO("-------------------------------------------------------------------------");
+  ROS_INFO("\n");
+
+  // reinitialize the map, as the intersections are now invalid TODO: where and how! this is important shit alla
+  //initMaps();
 
   //  re-init rotation component (todo: outsource)
   Eigen::Quaternionf q;
@@ -463,34 +234,54 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
   auto pitchAngle = Eigen::AngleAxisf(lc_config.pitch_start * M_PI / 180, Eigen::Vector3f::UnitY());
   auto yawAngle = Eigen::AngleAxisf(lc_config.yaw_start * M_PI / 180, Eigen::Vector3f::UnitZ());
 
-  q = yawAngle * pitchAngle * rollAngle; 
+  q = yawAngle * pitchAngle * rollAngle;
 
   raytrace_starting_pose.quat = q;
 
+  // restart the ray tracer
+  ray_tracer->start();
+
+
+  ROS_INFO("Obtaining new ray marker from ray tracer");
+
+  // update the ray marker
+  ray_markers = ray_tracer->get_ros_marker();
+
+  has_update = true;
   // re-init the markers
-  ray_markers = initRayMarkers();
   bb_marker = initBoundingBox();
-
-
-  // reinitialize the map, as the intersections are now invalid
-  initMaps();
-
-  done_tracing = false;
-  done_iteration = false;
 }
 
+/**
+ * @brief handles the reconfigure request for the ray tracer config
+ * 
+ * @param config 
+ * @param level 
+ */
 void ray_tracer_reconfigure_callback(loop_closure::RayTracerConfig &config, uint32_t level)
 {
-  ROS_INFO("Reconfigure Request for Ray Tracer"); //todo: add new params to info call
+  ROS_INFO("-------------------------------------------------------------------------");
+  ROS_INFO("Reconfigure Request for Ray Tracer. Overwriting config..."); // todo: add new params to info call
+  //rt_config = config; // overwrite config
+  ROS_INFO("Done Overwriting!");
+  ROS_INFO("-------------------------------------------------------------------------");
+  ROS_INFO("\n");
+  
+  // restart the ray tracer
+  ray_tracer->start();
 
+  // update the ray marker
+  ray_markers = ray_tracer->get_ros_marker();
+
+  has_update = true;
 }
 
 /**
  * @brief Main method
- * 
- * @param argc 
- * @param argv 
- * @return int 
+ *
+ * @param argc
+ * @param argv
+ * @return int
  */
 int main(int argc, char **argv)
 {
@@ -512,21 +303,10 @@ int main(int argc, char **argv)
   ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
   ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
+
+
   ros::Rate loop_rate(10);
 
-  dynamic_reconfigure::Server<loop_closure::LoopClosureConfig> server;
-  dynamic_reconfigure::Server<loop_closure::LoopClosureConfig>::CallbackType f;
-
-  f = boost::bind(&dynamic_reconfigure_callback, _1, _2);
-  server.setCallback(f);
-
-  dynamic_reconfigure::Server<loop_closure::RayTracerConfig> server1;
-  dynamic_reconfigure::Server<loop_closure::RayTracerConfig>::CallbackType f1;
-
-  f1 = boost::bind(&ray_tracer_reconfigure_callback, _1, _2);
-  server1.setCallback(f1);
-
-  // define stuff for raytracer
 
   // starting position
   raytrace_starting_pose.pos.x() = 0;
@@ -538,44 +318,53 @@ int main(int argc, char **argv)
   auto pitchAngle = Eigen::AngleAxisf(lc_config.pitch_start * M_PI / 180, Eigen::Vector3f::UnitY());
   auto yawAngle = Eigen::AngleAxisf(lc_config.yaw_start * M_PI / 180, Eigen::Vector3f::UnitZ());
 
-  q = yawAngle * pitchAngle * rollAngle; 
+  q = yawAngle * pitchAngle * rollAngle;
 
   raytrace_starting_pose.quat = q;
 
+  // define stuff for raytracer
+  ray_tracer = new RayTracer(&lc_config, local_map_ptr_, &raytrace_starting_pose);
+
+  // and lastly: reconfigure callbacks
+  dynamic_reconfigure::Server<loop_closure::LoopClosureConfig> server;
+  dynamic_reconfigure::Server<loop_closure::LoopClosureConfig>::CallbackType f;
+
+  f = boost::bind(&dynamic_reconfigure_callback, _1, _2);
+  server.setCallback(f);
+
   // get markers
   auto pose_marker = initPoseMarker();
-  cube_marker_list = initTSDFsimMarker();
-  ray_markers = initRayMarkers();
+
+  // initialize the bounding box 
   bb_marker = initBoundingBox();
 
   // init tsdf
   tsdf_map = initTSDFmarker();
 
 
+  // some stuff doesnt need to be published every iteration...
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
   cube_publisher.publish(tsdf_map);
 
   ros::spinOnce();
   
-  //ros loop
+  // ros loop
   while (ros::ok())
   {
-    // publish the individual messages
-    ray_publisher.publish(ray_markers);
+
     bb_publisher.publish(bb_marker);
 
-    if(done_tracing && !done_iteration){
-        ROS_INFO("Done tracing, displaying intersections from main loop..");
-        tsdf_map = initTSDFmarker();
-        cube_publisher.publish(tsdf_map);
-        done_iteration = true;
-    }
-
-    // every iteration, the rays length is enlarged, until every ray has either cut the bounding box, or the localmap
-    if(!done_tracing && !done_iteration)
+    if (has_update)
     {
-      updateRays(ray_markers);
+      ROS_INFO("WE GOT AN UPDATE FOR YOU..");
+
+      // publish the individual messages
+      ray_publisher.publish(ray_markers);
+      tsdf_map = initTSDFmarker();
+      cube_publisher.publish(tsdf_map);
+
+      has_update = false;
     }
 
     ros::spinOnce();
