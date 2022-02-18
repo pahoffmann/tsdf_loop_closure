@@ -6,6 +6,7 @@
 #include <visualization_msgs/Marker.h>
 #include <dynamic_reconfigure/server.h>
 #include <loop_closure/LoopClosureConfig.h>
+#include <loop_closure/RayTracerConfig.h>
 #include <iostream>
 #include <highfive/H5File.hpp>
 #include "map/global_map.h"
@@ -14,6 +15,7 @@
 #include "util/path.h"
 #include "util/point.h"
 #include "util/eigen_to_ros.h"
+#include "ray_tracer/ray_tracer.h"
 
 // ROS STUFF //
 
@@ -24,6 +26,7 @@ visualization_msgs::Marker bb_marker;
 visualization_msgs::Marker tsdf_map; // marker for the tsdf map
 visualization_msgs::Marker cube_marker_list; // marker for the tsdf map
 loop_closure::LoopClosureConfig lc_config;
+loop_closure::RayTracerConfig rt_config;
 float side_length_xy = 0;
 float side_length_z = 0;
 std::string h5_file_name_;
@@ -34,6 +37,9 @@ bool done_iteration = false;
 /// Map Stuff ///
 std::shared_ptr<GlobalMap> global_map_ptr_;
 std::shared_ptr<LocalMap> local_map_ptr_;
+
+/// Ray Tracer ///
+RayTracer* ray_tracer;
 
 /**
  * @brief Method, which generates the pose marker for the current ray trace position
@@ -473,6 +479,12 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
   done_iteration = false;
 }
 
+void ray_tracer_reconfigure_callback(loop_closure::RayTracerConfig &config, uint32_t level)
+{
+  ROS_INFO("Reconfigure Request for Ray Tracer"); //todo: add new params to info call
+
+}
+
 /**
  * @brief Main method
  * 
@@ -507,6 +519,12 @@ int main(int argc, char **argv)
 
   f = boost::bind(&dynamic_reconfigure_callback, _1, _2);
   server.setCallback(f);
+
+  dynamic_reconfigure::Server<loop_closure::RayTracerConfig> server1;
+  dynamic_reconfigure::Server<loop_closure::RayTracerConfig>::CallbackType f1;
+
+  f1 = boost::bind(&ray_tracer_reconfigure_callback, _1, _2);
+  server1.setCallback(f1);
 
   // define stuff for raytracer
 

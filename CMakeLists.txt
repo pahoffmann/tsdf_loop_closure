@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 generate_dynamic_reconfigure_options(
   cfg/LoopClosure.cfg
+  cfg/RayTracer.cfg
 )
 
 ###########
@@ -45,7 +46,6 @@ include_directories(${HDF5_INCLUDE_DIRS})
 #eigen3
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
-
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -56,8 +56,10 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(map_node src/map_node.cpp src/map/global_map.cpp src/map/local_map.cpp)
+add_executable(map_node src/map_node.cpp src/map/global_map.cpp src/map/local_map.cpp src/ray_tracer/ray_tracer.cpp)
 
+# dynamic reconfigure
+add_dependencies(map_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(map_node
@@ -67,5 +69,4 @@ target_link_libraries(map_node
   Eigen3::Eigen
 )
 
-# dynamic reconfigure
-add_dependencies(map_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+

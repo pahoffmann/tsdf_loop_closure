@@ -1,3 +1,5 @@
+#pragma once
+
 #include <std_msgs/ColorRGBA.h>
 
 class Colors {
