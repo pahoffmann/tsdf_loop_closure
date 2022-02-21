@@ -74,4 +74,13 @@ public:
      * @return visualization_msgs::Marker 
      */
     visualization_msgs::Marker get_ros_marker();
+
+    /**
+     * @brief updates the local map pointer, due to a dynamic reconfigure
+     * 
+     * @param local_map_in 
+     */
+    inline void update_map_pointer(std::shared_ptr<LocalMap> local_map_in) {
+        local_map_ptr_ = local_map_in;
+    };
 };

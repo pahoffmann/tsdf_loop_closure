@@ -211,6 +211,41 @@ void initMaps()
 }
 
 /**
+ * @brief Set the Starting Position object, gets rotation from lc config, if not specified
+ * 
+ * @param x 
+ * @param y 
+ * @param z 
+ * @param roll 
+ * @param pitch 
+ * @param yaw 
+ */
+void set_starting_position(float x, float y, float z, float roll = std::numeric_limits<float>::infinity(),
+                           float pitch = std::numeric_limits<float>::infinity(), float yaw = std::numeric_limits<float>::infinity())
+{
+  // starting position (6D)
+  raytrace_starting_pose.pos.x() = 0;
+  raytrace_starting_pose.pos.y() = 0;
+  raytrace_starting_pose.pos.z() = 0;
+
+  float infinity = std::numeric_limits<float>::infinity();
+
+  // get roll pitch yaw
+  float my_roll = roll == infinity ? lc_config.roll_start : roll;
+  float my_pitch = pitch == infinity ? lc_config.pitch_start : pitch;
+  float my_yaw = yaw == infinity ? lc_config.yaw_start : yaw;
+
+  Eigen::Quaternionf q;
+  auto rollAngle = Eigen::AngleAxisf(my_roll * M_PI / 180, Eigen::Vector3f::UnitX()); // todo: create helper function for degree <-> radiants
+  auto pitchAngle = Eigen::AngleAxisf(my_pitch * M_PI / 180, Eigen::Vector3f::UnitY());
+  auto yawAngle = Eigen::AngleAxisf(my_yaw * M_PI / 180, Eigen::Vector3f::UnitZ());
+
+  q = yawAngle * pitchAngle * rollAngle;
+
+  raytrace_starting_pose.quat = q;
+}
+
+/**
  * @brief handles the dynamic reconfiguration, restarts scan simulation with new configuration
  *
  * @param config
@@ -226,21 +261,25 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
   ROS_INFO("\n");
 
   // reinitialize the map, as the intersections are now invalid TODO: where and how! this is important shit alla
-  //initMaps();
+  initMaps();
+  ray_tracer->update_map_pointer(local_map_ptr_); // after the maps are reinitialized, we need to update the pointers
 
   //  re-init rotation component (todo: outsource)
-  Eigen::Quaternionf q;
-  auto rollAngle = Eigen::AngleAxisf(lc_config.roll_start * M_PI / 180, Eigen::Vector3f::UnitX()); // todo: create helper function for degree <-> radiants
-  auto pitchAngle = Eigen::AngleAxisf(lc_config.pitch_start * M_PI / 180, Eigen::Vector3f::UnitY());
-  auto yawAngle = Eigen::AngleAxisf(lc_config.yaw_start * M_PI / 180, Eigen::Vector3f::UnitZ());
-
-  q = yawAngle * pitchAngle * rollAngle;
-
-  raytrace_starting_pose.quat = q;
+  set_starting_position(0, 0, 0);
 
   // restart the ray tracer
+  // and do some time measuring
+  auto start_time = ros::Time::now();
+
   ray_tracer->start();
 
+  // more time measuring
+  auto end_time = ros::Time::now();
+
+  // calc duration
+  auto duration = end_time - start_time;
+
+  ROS_INFO("[RayTracer] Time Measurement: %.2f ms", duration.toNSec() / 1000000.0f); // display time in ms, with two decimal points
 
   ROS_INFO("Obtaining new ray marker from ray tracer");
 
@@ -299,28 +338,17 @@ int main(int argc, char **argv)
   // init local and global maps
   initMaps();
 
+  // feberate publishers
   ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);
   ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
   ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
 
-
+  // specify ros loop rate
   ros::Rate loop_rate(10);
 
 
-  // starting position
-  raytrace_starting_pose.pos.x() = 0;
-  raytrace_starting_pose.pos.y() = 0;
-  raytrace_starting_pose.pos.z() = 0;
-
-  Eigen::Quaternionf q;
-  auto rollAngle = Eigen::AngleAxisf(lc_config.roll_start * M_PI / 180, Eigen::Vector3f::UnitX()); // todo: create helper function for degree <-> radiants
-  auto pitchAngle = Eigen::AngleAxisf(lc_config.pitch_start * M_PI / 180, Eigen::Vector3f::UnitY());
-  auto yawAngle = Eigen::AngleAxisf(lc_config.yaw_start * M_PI / 180, Eigen::Vector3f::UnitZ());
-
-  q = yawAngle * pitchAngle * rollAngle;
-
-  raytrace_starting_pose.quat = q;
+  set_starting_position(0, 0, 0);
 
   // define stuff for raytracer
   ray_tracer = new RayTracer(&lc_config, local_map_ptr_, &raytrace_starting_pose);
@@ -351,22 +379,21 @@ int main(int argc, char **argv)
   
   // ros loop
   while (ros::ok())
-  {
-
-    bb_publisher.publish(bb_marker);
-
+  { 
+    // if there is an update, aka there has been some dynamic reconfiguration, we need to reinit the tsdf map
     if (has_update)
     {
-      ROS_INFO("WE GOT AN UPDATE FOR YOU..");
-
-      // publish the individual messages
-      ray_publisher.publish(ray_markers);
+      // ROS_INFO("WE GOT AN UPDATE FOR YOU..");
       tsdf_map = initTSDFmarker();
-      cube_publisher.publish(tsdf_map);
-
       has_update = false;
     }
 
+    // publish the individual messages
+    bb_publisher.publish(bb_marker);
+    ray_publisher.publish(ray_markers);
+    cube_publisher.publish(tsdf_map);
+
+    // more ros related stuff
     ros::spinOnce();
 
     loop_rate.sleep();
