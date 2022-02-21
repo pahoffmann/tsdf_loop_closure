@@ -15,6 +15,7 @@
 #include "util/path.h"
 #include "util/point.h"
 #include "ray_tracer/ray_tracer.h"
+#include "ray_tracer/tracer.h"
 
 // ROS STUFF //
 
@@ -386,6 +387,7 @@ int main(int argc, char **argv)
       // ROS_INFO("WE GOT AN UPDATE FOR YOU..");
       tsdf_map = initTSDFmarker();
       has_update = false;
+      CudaTracing::helloWorld(); // test cuda
     }
 
     // publish the individual messages

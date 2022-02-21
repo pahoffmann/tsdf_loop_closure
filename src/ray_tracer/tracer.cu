@@ -1,20 +1,32 @@
-#include <iostream>
-#include <math.h>
-#include <cuda_profiler_api.h>
+#include "tracer.h"
 
 // little bit of GPU testing biatch
 
+namespace CudaTracing {
+    __global__ void test_kernel() {
+        printf("Hello from the GPU\n");
+    }
+
+    int helloWorld() {
+        test_kernel<<<1,1>>>();
+        cudaDeviceSynchronize();
+        return 0;
+    }
+}
+
 // Kernel function to add the elements of two arrays
-__global__
+/*__global__
 void add(int n, float *x, float *y)
 {
   int index = blockIdx.x * blockDim.x + threadIdx.x;
   int stride = blockDim.x * gridDim.x;
   for (int i = index; i < n; i += stride)
     y[i] = x[i] + y[i];
-}
+}*/
 
-int main(void)
+
+
+/*int main(void)
 {
     int N = 1 << 20;
     float *x, *y;
@@ -51,4 +63,4 @@ int main(void)
     cudaFree(y);
     
     return 0;
-}
+}*/
