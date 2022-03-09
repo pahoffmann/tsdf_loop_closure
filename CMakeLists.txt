@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(loop_closure LANGUAGES CXX CUDA)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++17) # use -std=c++11 for cuda, check how to fix the warnings
 
 
 ## Find catkin macros and libraries
@@ -56,7 +56,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(map_node src/map_node.cpp src/map/global_map.cpp src/map/local_map.cpp src/ray_tracer/ray_tracer.cpp src/ray_tracer/tracer.cu)
+add_executable(map_node src/map_node.cpp src/map/global_map.cpp src/map/local_map.cpp src/ray_tracer/ray_tracer.cpp) #src/ray_tracer/tracer.cu)
 
 set_target_properties(map_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 

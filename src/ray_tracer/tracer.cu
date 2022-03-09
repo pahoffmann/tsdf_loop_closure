@@ -7,10 +7,33 @@ namespace CudaTracing {
         printf("Hello from the GPU\n");
     }
 
+    __global__ void update(std::vector<Eigen::Vector3f> *rays, int N, Pose *start_pose, loop_closure::LoopClosureConfig *config) {
+        
+        //printf("Inside the kernel");
+        // first: calculate the index and stride size for this operation
+        int index = blockIdx.x * blockDim.x + threadIdx.x;
+        int stride = blockDim.x * gridDim.x;
+
+        for(int i = index; i < N; i+= stride) {
+            
+        }
+    }
+
     int helloWorld() {
         test_kernel<<<1,1>>>();
         cudaDeviceSynchronize();
         return 0;
+    }
+
+    /*
+    * Function, which takes in the rays, calls upon the kernel function until ready
+    */
+    void updateRays(std::vector<Eigen::Vector3f> *rays, Pose *start_pose, loop_closure::LoopClosureConfig *config) {
+        //printf("Inside the function running the kernel");
+        // Run kernel on 1M elements on the GPU
+        int blockSize = 256;
+        int numBlocks = (rays->size() + blockSize - 1) / blockSize;
+        update<<<numBlocks, blockSize>>>(rays, rays->size(), start_pose, config);
     }
 }
 

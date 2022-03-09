@@ -218,3 +218,12 @@ void LocalMap::write_back()
 
     map_->write_back();
 }
+
+/**
+ * @brief todo once prototyping is finished to ensure acceleration
+ * 
+ * @return std::pair<float*, float*> 
+ */
+std::pair<float*, float*> LocalMap::get_GPU_representation() {
+    return std::make_pair<float*, float*>(NULL, NULL);
+}

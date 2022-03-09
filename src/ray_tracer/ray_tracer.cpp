@@ -1,48 +1,67 @@
 #include "ray_tracer.h"
 
-RayTracer::RayTracer() {
-    // default
-}
-
-RayTracer::RayTracer(loop_closure::LoopClosureConfig* new_config, std::shared_ptr<LocalMap> local_map_in, Pose* start_pose) 
+RayTracer::RayTracer()
 {
-    lc_config = new_config;
-    local_map_ptr_ = local_map_in;
-    current_pose = start_pose;
+  // default
 }
 
-void RayTracer::start() {
-    // we casually ignore calls to this function, when 
-    if(lc_config == NULL || current_pose == NULL)
-    {
-        return;
-    }
-
-    ROS_INFO("[RayTracer] Started Tracing...");
-
-    // before doing anything, we need to cleanup the data from the last run
-    cleanup();
-
-    // first initialize the rays with the current pose and config data
-    ROS_INFO("[RayTracer] Intitializing Rays...");
-    initRays();
-    ROS_INFO("[RayTracer] Intitializing Rays done...");
-
-    // now we initialized the "lines finished" - array and know exactly, when to stop updating the rays.
-    // exactly when all rays are finished :D
-    ROS_INFO("[RayTracer] Updating Rays...");
-    
-    while(finished_counter < rays.size())
-    {
-        updateRays();
-    }
-
-    ROS_INFO("[RayTracer] Updating Rays done...");
-
-    ROS_INFO("[RayTracer] Done Tracing...");
+RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_ptr<LocalMap> local_map_in, Pose *start_pose)
+{
+  lc_config = new_config;
+  local_map_ptr_ = local_map_in;
+  current_pose = start_pose;
 }
 
-void RayTracer::initRays() {
+void RayTracer::start()
+{
+  // we casually ignore calls to this function, when
+  if (lc_config == NULL || current_pose == NULL)
+  {
+    return;
+  }
+
+  ROS_INFO("[RayTracer] Started Tracing...");
+
+  // before doing anything, we need to cleanup the data from the last run
+  cleanup();
+
+  // first initialize the rays with the current pose and config data
+  ROS_INFO("[RayTracer] Intitializing Rays...");
+  initRays();
+  ROS_INFO("[RayTracer] Intitializing Rays done...");
+
+  // now we initialized the "lines finished" - array and know exactly, when to stop updating the rays.
+  // exactly when all rays are finished :D
+  ROS_INFO("[RayTracer] Updating Rays...");
+
+  /*while(finished_counter < rays.size())
+  {
+    CudaTracing::updateRays(&rays, current_pose, lc_config);
+  }*/
+  
+  // and do some time measuring
+  auto start_time = ros::Time::now();
+
+  while (finished_counter < rays.size())
+  {
+    updateRays();
+  }
+
+  // more time measuring
+  auto end_time = ros::Time::now();
+
+  // calc duration
+  auto duration = end_time - start_time;
+
+  ROS_INFO("[RayTracer] Time Measurement updates only: %.2f ms", duration.toNSec() / 1000000.0f); // display time in ms, with two decimal points
+
+  ROS_INFO("[RayTracer] Updating Rays done...");
+
+  ROS_INFO("[RayTracer] Done Tracing...");
+}
+
+void RayTracer::initRays()
+{
 
   // simulate sensor
   const float start_degree = -(float)lc_config->opening_degree / 2.0f;
@@ -83,8 +102,6 @@ void RayTracer::initRays() {
       // add to points list for ray marker (line list)
       rays.push_back(ray_point);
     }
-
-    
   }
 
   ROS_INFO("There are %d rays in the simulated scan", (int)(rays.size()));
@@ -92,7 +109,8 @@ void RayTracer::initRays() {
   lines_finished = std::vector<bool>(rays.size(), false);
 }
 
-void RayTracer::updateRays() {
+void RayTracer::updateRays()
+{
 
   float side_length_xy = local_map_ptr_->get_size().x() * MAP_RESOLUTION / 1000.0f;
   float side_length_z = local_map_ptr_->get_size().z() * MAP_RESOLUTION / 1000.0f;
@@ -166,26 +184,25 @@ void RayTracer::updateRays() {
       // the line doesnt need any further updates
       lines_finished[i] = true;
       finished_counter++;
-
     }
   }
 }
 
 void RayTracer::cleanup()
 {
-    // clear the finished lines array
-    lines_finished.clear();
+  // clear the finished lines array
+  lines_finished.clear();
 
-    // reset counter
-    finished_counter = 0;
+  // reset counter
+  finished_counter = 0;
 
-    // clear last runs rays
-    rays.clear();
+  // clear last runs rays
+  rays.clear();
 }
 
-visualization_msgs::Marker RayTracer::get_ros_marker() 
+visualization_msgs::Marker RayTracer::get_ros_marker()
 {
-      // tsdf sim
+  // tsdf sim
   visualization_msgs::Marker ray_marker_list;
   ray_marker_list.header.frame_id = "map";
   ray_marker_list.header.stamp = ros::Time();
@@ -215,21 +232,20 @@ visualization_msgs::Marker RayTracer::get_ros_marker()
   start.y = current_pose->pos.y();
   start.z = current_pose->pos.z();
 
-  for(auto& point : rays)
+  for (auto &point : rays)
   {
-      geometry_msgs::Point ros_point;
-      ros_point.x = point.x();
-      ros_point.y = point.y();
-      ros_point.z = point.z();
+    geometry_msgs::Point ros_point;
+    ros_point.x = point.x();
+    ros_point.y = point.y();
+    ros_point.z = point.z();
 
-      // push start and end of ray
-      points.push_back(start);
+    // push start and end of ray
+    points.push_back(start);
 
-      points.push_back(ros_point);
+    points.push_back(ros_point);
   }
 
   ray_marker_list.points = points;
 
   return ray_marker_list;
 }
-

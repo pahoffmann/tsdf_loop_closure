@@ -3,6 +3,7 @@
 #include "../util/point.h"
 #include "../util/colors.h"
 #include "../map/local_map.h"
+//#include "tracer.h"
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sstream>

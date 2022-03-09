@@ -387,7 +387,7 @@ int main(int argc, char **argv)
       // ROS_INFO("WE GOT AN UPDATE FOR YOU..");
       tsdf_map = initTSDFmarker();
       has_update = false;
-      CudaTracing::helloWorld(); // test cuda
+      //CudaTracing::helloWorld(); // test cuda
     }
 
     // publish the individual messages

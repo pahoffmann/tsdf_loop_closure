@@ -233,6 +233,13 @@ public:
      */
     void write_back();
 
+    /**
+     * @brief returns a representation of the localmap suitable for the gpu, aka an array of floats
+     * 
+     * @return std::pair<float*, float*> 
+     */
+    std::pair<float*, float*> get_GPU_representation();
+
 private:
     /**
      * @brief writes to the global map in an area
