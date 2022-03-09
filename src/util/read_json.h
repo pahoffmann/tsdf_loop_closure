@@ -50,15 +50,21 @@ namespace PATH
 
         const Json::Value poses = json["poses"];
 
-        for (int i = 0; i < poses.size(); i++)
+
+
+        for (Json::ValueConstIterator it = poses.begin(); it != poses.end(); ++it)
         {
+            const Json::Value pose = (*it);
+
+            std::cout << pose << std::endl;
+
             path.push_back(poseFromEuler(
-                poses[i]["x"].asFloat(),
-                poses[i]["y"].asFloat(),
-                poses[i]["z"].asFloat(),
-                poses[i]["roll"].asFloat(),
-                poses[i]["pitch"].asFloat(),
-                poses[i]["yaw"].asFloat()
+                (*it)["x"].asFloat(),
+                (*it)["y"].asFloat(),
+                (*it)["z"].asFloat(),
+                (*it)["roll"].asFloat(),
+                (*it)["pitch"].asFloat(),
+                (*it)["yaw"].asFloat()
             ));
         }
     }
