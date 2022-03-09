@@ -1,0 +1,86 @@
+{
+    "description": "[DEBUG] This JSON contains debug poses which can be used to test the path features of the thesis",
+    "num_poses": 10,
+    "poses": {
+        "1": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0     
+        },
+        "2": {
+            "x": 1,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        },
+        "3": {
+            "x": -1,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        },
+        "4": {
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        },
+        "5": {
+            "x": -2,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        },
+        "6": {
+            "x": 3,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        },
+        "7": {
+            "x": -3,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        },
+        "8": {
+            "x": 4,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        },
+        "9": {
+            "x": -4,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        },
+        "10": {
+            "x": 5,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0  
+        }
+    }
+}

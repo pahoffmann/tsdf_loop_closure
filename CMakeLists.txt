@@ -46,6 +46,11 @@ include_directories(${HDF5_INCLUDE_DIRS})
 #eigen3
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
+# json
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+link_libraries(${JSONCPP_LIBRARIES})
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -69,6 +74,7 @@ target_link_libraries(map_node
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
+  ${JSONCPP_LIBRARIES}
 )
 
 

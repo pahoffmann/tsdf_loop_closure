@@ -46,3 +46,35 @@ static inline Vector3i floor_divide(const Vector3i& a, int b)
            );
 }
 
+/**
+ * @brief Creates a pose from euler angles and position
+ * 
+ * @param x 
+ * @param y 
+ * @param z 
+ * @param roll 
+ * @param pitch 
+ * @param yaw 
+ * @return Pose 
+ */
+static Pose poseFromEuler(float x, float y, float z, float roll, float pitch, float yaw)
+{
+    Pose pose;
+    // create eigen quaternion from euler
+    Eigen::Quaternionf q;
+    auto rollAngle = Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX());
+    auto pitchAngle = Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY());
+    auto yawAngle = Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ());
+
+    q = yawAngle * pitchAngle * rollAngle;
+
+    // build point
+    Eigen::Vector3f point(x, y, z);
+
+    // merge into pose msg
+    pose.quat = q;
+    pose.pos = point;
+
+    return pose;
+}
+
