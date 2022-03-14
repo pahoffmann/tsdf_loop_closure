@@ -351,18 +351,18 @@ int main(int argc, char **argv)
     ROS_INFO("[DEBUG] Global Map file delivered: %s", h5_file_name_.c_str());
   }
 
-  if (!nh.getParam("file_path", poses_file_name_))
+  if (!nh.getParam("poses", poses_file_name_))
   {
-    ROS_WARN("No Poses file delivered, use _file_path:=[Path], shutting down...");
+    ROS_WARN("No Poses file delivered, use _poses:=[Path], shutting down...");
     exit(EXIT_FAILURE);
   }
   else {
     ROS_INFO("[DEBUG] Poses file delivered: %s", poses_file_name_.c_str());
   }
 
-  if (!nh.getParam("base_path", file_base_path_))
+  if (!nh.getParam("basepath", file_base_path_))
   {
-    ROS_WARN("No File Base Path file delivered, use _base_path:=[Path], shutting down...");
+    ROS_WARN("No File Base Path file delivered, use _basepath:=[Path], shutting down...");
     exit(EXIT_FAILURE);
   }
   else {

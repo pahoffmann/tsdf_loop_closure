@@ -11,12 +11,21 @@
  * 
  */
 
+#include <map>
+#include <iostream>
+#include <cassert>
+#include "association.h"
+#include "../path/path.h"
+
 
 class AssociationManager
 {
 private:
+    std::vector<Association> associations;
+    Path *path;
+    std::string base_path;
 public:
-    AssociationManager(/* args */);
+    AssociationManager(Path *path, std::string file_path);
     ~AssociationManager();
 };
 
