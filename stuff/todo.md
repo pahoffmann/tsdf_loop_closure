@@ -86,3 +86,4 @@ evaluated and possibly fixed
 
 * PCD to TSDF?
 * for tsdf to tsdf comparison (might also be found in the tsdf paper!!!)
+* when updating the cells, the new position might be outside the local map, thus we need an update rule for those edge cases. (just ignore or store each special case in a vector and check how and where the localmap needs to be shifted)
