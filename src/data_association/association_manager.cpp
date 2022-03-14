@@ -1,5 +1,16 @@
 #include "association_manager.h"
 
+/**
+ * @file association_manager.h
+ * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
+ * @brief Class used to manage (e.g. load and unload associations)
+ * @version 0.1
+ * @date 2022-03-14
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 AssociationManager::AssociationManager(Path *path, std::string file_path) : base_path(file_path)
 {
     auto poses = path->getPoses();

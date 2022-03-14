@@ -1,5 +1,18 @@
 #include "association.h"
 
+/**
+ * @file association.h
+ * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
+ * @brief Associates a pose with the corresponding data, needs some form of caching
+ *        For caching we need to check multiple different strategies concerning speed
+ *        Candidates: HDF5, JSON, SQL-Database (might make sense for models other than greedy)
+ * @version 0.1
+ * @date 2022-03-14
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 Association::Association(Pose start_pose, int num_pose, std::string base_path, SerializationStrategy ser_strat) : pose(start_pose)
 {
     strat = ser_strat;

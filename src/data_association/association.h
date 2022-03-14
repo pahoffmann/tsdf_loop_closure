@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @file association.h
  * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
