@@ -24,9 +24,20 @@ struct Pose {
     Eigen::Quaternionf quat;
     Eigen::Vector3f pos;
     
+    // gets the rotation matrix from the quat
     Eigen::Matrix3f rotationMatrixFromQuaternion()
     {
         return quat.matrix();
+    }
+    
+    Pose() {
+        // default
+    }
+
+    // copy constructor
+    Pose(const Pose &other) {
+        quat = other.quat;
+        pos = other.pos;
     }
 };
 

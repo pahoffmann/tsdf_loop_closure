@@ -13,7 +13,6 @@
 
 #include <jsoncpp/json/json.h>
 #include "point.h"
-#include "path.h"
 #include <fstream>
 #include <string>
 

@@ -1,4 +1,13 @@
-/* Create a map node, that publishes multiple cells of a specific size, trying to find bases for algorithm parts */
+/**
+ * @file map_node.cpp
+ * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
+ * @brief 
+ * @version 0.1
+ * @date 2022-03-14
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -12,7 +21,7 @@
 #include "map/global_map.h"
 #include "map/local_map.h"
 #include "util/colors.h"
-#include "util/path.h"
+#include "path/path.h"
 #include "util/point.h"
 #include "ray_tracer/ray_tracer.h"
 #include "ray_tracer/tracer.h"
@@ -31,6 +40,7 @@ float side_length_xy = 0;
 float side_length_z = 0;
 std::string h5_file_name_;
 std::string poses_file_name_;
+std::string file_base_path_;
 bool has_update = true;
 
 /// Map Stuff ///
@@ -334,23 +344,32 @@ int main(int argc, char **argv)
   // if no map was set, we won't go on from here.
   if (!nh.getParam("map", h5_file_name_))
   {
-    ROS_WARN("No Global Map file delivered, shutting down...");
+    ROS_WARN("No Global Map file delivered, use _map:=[Path] shutting down...");
     exit(EXIT_FAILURE);
   }
   else {
     ROS_INFO("[DEBUG] Global Map file delivered: %s", h5_file_name_.c_str());
   }
 
-  if (!nh.getParam("poses", poses_file_name_))
+  if (!nh.getParam("file_path", poses_file_name_))
   {
-    ROS_WARN("No Poses file delivered, shutting down...");
+    ROS_WARN("No Poses file delivered, use _file_path:=[Path], shutting down...");
     exit(EXIT_FAILURE);
   }
   else {
     ROS_INFO("[DEBUG] Poses file delivered: %s", poses_file_name_.c_str());
   }
 
-  // init path
+  if (!nh.getParam("base_path", file_base_path_))
+  {
+    ROS_WARN("No File Base Path file delivered, use _base_path:=[Path], shutting down...");
+    exit(EXIT_FAILURE);
+  }
+  else {
+    ROS_INFO("[DEBUG] Base file path delivered: %s", file_base_path_.c_str());
+  }
+
+  // init path and read from json
   Path path;
   path.fromJSON(poses_file_name_);
 

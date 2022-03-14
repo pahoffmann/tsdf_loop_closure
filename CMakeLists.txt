@@ -61,7 +61,14 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(map_node src/map_node.cpp src/map/global_map.cpp src/map/local_map.cpp src/ray_tracer/ray_tracer.cpp) #src/ray_tracer/tracer.cu)
+add_executable(map_node src/map_node.cpp 
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp 
+                        src/ray_tracer/ray_tracer.cpp
+                        src/color_matrix_deprecated/color_matrix.cpp
+                        src/path/path.cpp
+                        src/data_association/association.cpp
+                        src/data_association/association_manager.cpp) #src/ray_tracer/tracer.cu)
 
 set_target_properties(map_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 

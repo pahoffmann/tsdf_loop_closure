@@ -37,6 +37,7 @@ class Colors {
         };
 
         static std_msgs::ColorRGBA color_from_name(Colors::ColorNames color) {
+            
             switch (color)
             {
                 case ColorNames::aqua:

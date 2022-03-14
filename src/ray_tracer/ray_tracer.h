@@ -35,6 +35,9 @@ private:
     // the actual rays, every ray starts at the current position of the tracer
     std::vector<Eigen::Vector3f> rays;
 
+    // a 3D array representing colors from individual scans
+    std::vector<std::vector<std::vector<std_msgs::ColorRGBA>>> colors;
+
     /**
      * @brief initializes the rays for the current position
      * 
