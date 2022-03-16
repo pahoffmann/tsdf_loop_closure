@@ -8,15 +8,15 @@
  *        Candidates: HDF5, JSON, SQL-Database (might make sense for models other than greedy)
  * @version 0.1
  * @date 2022-03-14
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 Association::Association(Pose start_pose, int num_pose, std::string base_path, SerializationStrategy ser_strat) : pose(start_pose)
 {
     strat = ser_strat;
-    
+
     std::string type = "";
 
     switch (ser_strat)
@@ -24,14 +24,14 @@ Association::Association(Pose start_pose, int num_pose, std::string base_path, S
     case SerializationStrategy::SQL:
         type = ".h5";
         break;
-    
+
     default:
         type = ".json";
         break;
     }
 
     // check if the base path contains a trailing slash, if not: add it
-    if(base_path.at(base_path.length() - 1) != '/')
+    if (base_path.at(base_path.length() - 1) != '/')
     {
         base_path += "/";
     }
@@ -81,31 +81,30 @@ Association::~Association()
 {
 }
 
-
 /**
  * Below: different serialization / deserialization methods
  */
 
-void Association::serialize_JSON() {
-
+void Association::serialize_JSON()
+{
 }
 
-void Association::deserialize_JSON() {
-    
+void Association::deserialize_JSON()
+{
 }
 
-void Association::serialize_HDF5() {
-
+void Association::serialize_HDF5()
+{
 }
 
-void Association::deserialize_HDF5() {
-    
+void Association::deserialize_HDF5()
+{
 }
 
-void Association::serialize_SQL() {
-
+void Association::serialize_SQL()
+{
 }
 
-void Association::deserialize_SQL() {
-    
+void Association::deserialize_SQL()
+{
 }

@@ -23,10 +23,26 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
         Association association(poses[i], i, file_path, Association::SerializationStrategy::JSON);
         associations.push_back(association);
     }
+
+    // create timestamp
+    time = std::time(nullptr);
+    std::string time_string(std::asctime(std::localtime(&time)));
+
+    std::cout << "[AssociationManager] The current time is: " << time_string << std::endl;
+
+    time_string = std::regex_replace(time_string, std::regex(" "), "_");
+    time_string = std::regex_replace(time_string, std::regex(":"), "_");
+
+    std::cout << "[AssociationManager] Current time with replacements: " << time_string << std::endl;
 }
 
 AssociationManager::~AssociationManager()
 {
+}
+
+void AssociationManager::create_serialization_folder()
+{
+    // create a folder inside the given filepath, for the current timestamp
 }
 
 void AssociationManager::greedy_associations()
@@ -39,11 +55,10 @@ void AssociationManager::greedy_associations()
         ray_tracer->update_association(&associations[i]);
         ray_tracer->start(); // start tracing, given the current association.
 
-
+        associations[i].serialize(); // serialize data
     }
 }
 
 void AssociationManager::plane_limited_associations()
 {
-
 }

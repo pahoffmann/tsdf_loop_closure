@@ -12,7 +12,7 @@
  */
 
 #include <jsoncpp/json/json.h>
-#include "point.h"
+#include "../util/point.h"
 #include <fstream>
 #include <string>
 
@@ -54,8 +54,6 @@ namespace PATH
         for (Json::ValueConstIterator it = poses.begin(); it != poses.end(); ++it)
         {
             const Json::Value pose = (*it);
-
-            std::cout << pose << std::endl;
 
             path.push_back(poseFromEuler(
                 (*it)["x"].asFloat(),

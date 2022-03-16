@@ -17,7 +17,8 @@
 #include "association.h"
 #include "../path/path.h"
 #include "../ray_tracer/ray_tracer.h"
-#include "../map/local_map.h"
+#include <ctime>
+#include <regex>
 
 
 class AssociationManager
@@ -25,9 +26,12 @@ class AssociationManager
 private:
     std::vector<Association> associations;
     Path *path;
+    std::time_t time;
     std::string base_path;
     RayTracer *ray_tracer;
     std::shared_ptr<LocalMap> local_map_ptr;
+
+    void create_serialization_folder();
 
 public:
 
@@ -53,7 +57,10 @@ public:
     /**
      * @brief This is just an idea at the moment, given the following: a ray is interupted, once it crosses a plane between the closest X poses
      *        This plane needs to be calculated for each pose "pair", with the average of the poses as location vector.
-     *        This makes sure, that every tsdf cell gets only matched to the closest pose, inluding (hopefully) an 
+     *        This makes sure, that every tsdf cell gets only matched to the closest pose, inluding (hopefully) an acceleration in speed.
+     *        Might be necessary to span a net of planes to limit each poses ranging, which somehow spans multiple boxes in which every position operates
+     *        This seems pretty similiar to a 3D Voronoi Approach, i didnt even see that until now lol. nice.
+     *        see: https://stackoverflow.com/questions/9227285/calculating-a-voronoi-diagram-for-planes-in-3d
      */
     void plane_limited_associations();
 };

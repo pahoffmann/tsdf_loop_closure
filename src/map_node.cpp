@@ -25,7 +25,8 @@
 #include "util/point.h"
 #include "ray_tracer/ray_tracer.h"
 #include "ray_tracer/tracer.h"
-#include "util/read_json.h"
+#include "serialization/read_path_json.h"
+#include "data_association/association_manager.h"
 
 // ROS STUFF //
 
@@ -373,6 +374,7 @@ int main(int argc, char **argv)
   Path path;
   path.fromJSON(poses_file_name_);
 
+
   // init local and global maps
   initMaps();
 
@@ -389,6 +391,9 @@ int main(int argc, char **argv)
 
   // define stuff for raytracer
   ray_tracer = new RayTracer(&lc_config, local_map_ptr_, &raytrace_starting_pose);
+
+  // create associationmanager
+  AssociationManager manager(&path, file_base_path_, ray_tracer, local_map_ptr_);
 
   // and lastly: reconfigure callbacks
   dynamic_reconfigure::Server<loop_closure::LoopClosureConfig> server;

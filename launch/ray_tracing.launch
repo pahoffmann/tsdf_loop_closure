@@ -1,0 +1,12 @@
+<launch>
+
+    <arg name="map" default="~/maps/GlobalMap.h5" />
+    <arg name="poses" default="~/thesis/code/patrick_ws/src/loop_closure/cfg/path.json" />
+    <arg name="basepath" default="~/thesis/associations/" />
+
+    <node pkg="loop_closure" type="map_node" name="ray_tracer">
+        <param name="map" value="$(arg map)"/>
+        <param name="poses" value="$(arg poses)"/>
+        <param name="basepath" value="$(arg basepath)"/>
+    </node>
+</launch>

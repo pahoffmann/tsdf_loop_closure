@@ -15,7 +15,7 @@
 #include <vector>
 #include "../util/point.h"
 #include <string>
-#include "../util/read_json.h"
+#include "../serialization/read_path_json.h"
 
 class Path
 {
