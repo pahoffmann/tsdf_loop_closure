@@ -20,6 +20,11 @@ using ScanPoints_t = std::vector<Vector3i>;
 using ScanPointType = int32_t;
 using ScanPoint = Eigen::Matrix<ScanPointType, 3, 1>;
 
+/**
+ * @brief struct defining a pose, might also use combinded 4x4 matrix representation, see:
+ *        https://stackoverflow.com/questions/25504397/eigen-combine-rotation-and-translation-into-one-matrix
+ * 
+ */
 struct Pose {
     Eigen::Quaternionf quat;
     Eigen::Vector3f pos;
@@ -38,6 +43,20 @@ struct Pose {
     Pose(const Pose &other) {
         quat = other.quat;
         pos = other.pos;
+    }
+
+    /**
+     * @brief Used to add two poses
+     * 
+     * @param other 
+     * @return Pose 
+     */
+    Pose operator+(const Pose& other)
+    {
+        Pose tmp;
+        tmp.quat = this->quat * other.quat;
+        tmp.pos = this->pos + other.pos;
+        return tmp;
     }
 };
 

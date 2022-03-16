@@ -3,12 +3,14 @@
 #include "../util/point.h"
 #include "../util/colors.h"
 #include "../map/local_map.h"
+#include "../data_association/association.h"
 //#include "tracer.h"
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sstream>
 #include <loop_closure/LoopClosureConfig.h>
 #include <visualization_msgs/Marker.h>
+
 
 /**
  * @brief Class used to emulate a laserscan, by tracing artifical rays in space based on a 6D pose.
@@ -38,6 +40,9 @@ private:
     // a 3D array representing colors from individual scans
     std::vector<std::vector<std::vector<std_msgs::ColorRGBA>>> colors;
 
+    // the current data association we are working with
+    Association *cur_association;
+
     /**
      * @brief initializes the rays for the current position
      * 
@@ -65,6 +70,16 @@ public:
      * @param local_map_in 
      */
     RayTracer(loop_closure::LoopClosureConfig* new_config, std::shared_ptr<LocalMap> local_map_in, Pose* start_pose);
+
+    /**
+     * @brief function used to update the association the ray tracer is working with.
+     * 
+     * @param association 
+     */
+    inline void update_association(Association *association)
+    {
+        cur_association = association;
+    }
 
     /**
      * @brief Starts the tracing process

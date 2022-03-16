@@ -14,6 +14,7 @@ RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_pt
 
 void RayTracer::start()
 {
+
   // we casually ignore calls to this function, when
   if (lc_config == NULL || current_pose == NULL)
   {
