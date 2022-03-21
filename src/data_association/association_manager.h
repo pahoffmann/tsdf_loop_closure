@@ -32,7 +32,12 @@ private:
     RayTracer *ray_tracer;
     std::shared_ptr<LocalMap> local_map_ptr;
 
-    void create_serialization_folder();
+    /**
+     * @brief Create a serialization folder at the requested path using filesystem utils
+     * 
+     * @param path 
+     */
+    void create_serialization_folder(std::string path);
 
 public:
 

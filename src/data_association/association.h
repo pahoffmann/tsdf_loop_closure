@@ -16,7 +16,9 @@
 #include <vector>
 #include "../util/point.h"
 #include "../util/tsdf.h"
+#include "../map/local_map.h"
 #include <jsoncpp/json/json.h>
+#include <fstream>
 
 class Association
 {
@@ -36,7 +38,9 @@ public:
     Association(Pose start_pose, int num_pose, std::string base_path, SerializationStrategy ser_strat = SerializationStrategy::JSON);
     ~Association();
     // maybe use indexing here insead of actual global pose
-    void addAssociation(Eigen::Vector3f pose, TSDFEntry entry);
+    inline void addAssociation(Eigen::Vector3f pose, TSDFEntry entry) {
+        associations.push_back(std::make_pair(pose, entry));
+    }
 
     // serialize data if no longer needed
     void serialize();
@@ -60,11 +64,21 @@ public:
         return associations[index];
     }
 
+    /**
+     * @brief Get the pose associated with this association
+     * 
+     * @return Pose 
+     */
+    inline Pose* getPose() {
+        return &pose;
+    }
+
 
 private:
     Pose pose; // pose of the association
     SerializationStrategy strat;
     std::string file_path;
+    std::shared_ptr<LocalMap> local_map_ptr;
 
     // we might need a hashmap depending on the case to speedup the search for association on specific positions.
     // hashmap should uses indices rather than pure global positioning information

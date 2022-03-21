@@ -51,6 +51,9 @@ std::shared_ptr<LocalMap> local_map_ptr_;
 /// Ray Tracer ///
 RayTracer *ray_tracer;
 
+// Association Manager */
+AssociationManager *manager;
+
 /**
  * @brief Method, which generates the pose marker for the current ray trace position
  *
@@ -121,12 +124,14 @@ visualization_msgs::Marker initTSDFmarker()
 
   ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
 
+  Vector3i tmp_pos = (raytrace_starting_pose.pos * 1000.0f / MAP_RESOLUTION).cast<int>();
+
   // get values, ignore offset
-  for (int x = -1 * (size.x() - 1) / 2; x < (size.x() - 1) / 2; x++)
+  for (int x = tmp_pos.x() + (-1 * (size.x() - 1) / 2); x < tmp_pos.x() + ((size.x() - 1) / 2); x++)
   {
-    for (int y = -1 * (size.y() - 1) / 2; y < (size.y() - 1) / 2; y++)
+    for (int y = tmp_pos.y() + (-1 * (size.y() - 1) / 2); y < tmp_pos.y() + ((size.y() - 1) / 2); y++)
     {
-      for (int z = -1 * (size.z() - 1) / 2; z < (size.z() - 1) / 2; z++)
+      for (int z = tmp_pos.z() + (-1 * (size.z() - 1) / 2); z < tmp_pos.z() + ((size.z() - 1) / 2); z++)
       {
         auto tsdf = local_map->value(x, y, z);
         auto value = tsdf.value();
@@ -279,11 +284,13 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
   ray_tracer->update_map_pointer(local_map_ptr_); // after the maps are reinitialized, we need to update the pointers
 
   //  re-init rotation component (todo: outsource)
-  set_starting_position(0, 0, 0);
+  //set_starting_position(0, 0, 0);
+
+  manager->greedy_associations();
 
   // restart the ray tracer
   // and do some time measuring
-  auto start_time = ros::Time::now();
+  /*auto start_time = ros::Time::now();
 
   ray_tracer->start();
 
@@ -293,7 +300,7 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
   // calc duration
   auto duration = end_time - start_time;
 
-  ROS_INFO("[RayTracer] Time Measurement: %.2f ms", duration.toNSec() / 1000000.0f); // display time in ms, with two decimal points
+  ROS_INFO("[RayTracer] Time Measurement: %.2f ms", duration.toNSec() / 1000000.0f); // display time in ms, with two decimal points*/
 
   ROS_INFO("Obtaining new ray marker from ray tracer");
 
@@ -369,7 +376,7 @@ int main(int argc, char **argv)
   ray_tracer = new RayTracer(&lc_config, local_map_ptr_, &raytrace_starting_pose);
 
   // create associationmanager
-  AssociationManager manager(&path, file_base_path_, ray_tracer, local_map_ptr_);
+  manager = new AssociationManager(&path, file_base_path_, ray_tracer, local_map_ptr_);
 
   // and lastly: reconfigure callbacks
   dynamic_reconfigure::Server<loop_closure::LoopClosureConfig> server;

@@ -57,6 +57,9 @@ void Association::serialize()
         serialize_JSON();
         return;
     }
+
+    // now delete data from array ( free data )
+    associations.clear();
 }
 
 void Association::deserialze()
@@ -87,6 +90,32 @@ Association::~Association()
 
 void Association::serialize_JSON()
 {
+    Json::Value root;
+
+    for(int i = 0; i < numAssociations(); i++)
+    {
+        auto& first = associations[i].first;
+        auto& second = associations[i].second;
+
+        std::string index = std::to_string(i); 
+        root[index] = Json::arrayValue;
+
+        Json::Value association_val;
+        association_val["x"] = first.x();
+        association_val["y"] = first.y();
+        association_val["z"] = first.z();
+
+        association_val["value"] = second.value();
+        association_val["weight"] = second.weight();
+        association_val["raw"] = second.raw();
+
+        root[index].append(association_val);
+    }
+    
+    // write json data to output file
+    std::ofstream file;
+    file.open(file_path);
+    file << root;
 }
 
 void Association::deserialize_JSON()

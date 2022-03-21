@@ -30,7 +30,6 @@ private:
 
 public:
     Path();
-    void addPoseFromEuler(float x, float y, float z, float roll, float pitch, float yaw);
     void fromJSON(std::string filename);
     inline std::vector<Pose>& getPoses() {
         return poses;

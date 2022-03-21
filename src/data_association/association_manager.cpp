@@ -34,9 +34,8 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
         file_path += "/";
     }
 
-    file_path = file_path +  time_string + "/"; // append time string to filepath, to get a new directory every time the code is executed.
-
-    std::cout << "[AssociationManager] Creating new association directiory: " << file_path << std::endl;
+    // create serialization folder
+    create_serialization_folder(file_path);
 
     std::filesystem::create_directories(file_path);
 
@@ -52,9 +51,12 @@ AssociationManager::~AssociationManager()
 {
 }
 
-void AssociationManager::create_serialization_folder()
+void AssociationManager::create_serialization_folder(std::string path)
 {
     // create a folder inside the given filepath, for the current timestamp
+    std::cout << "[AssociationManager] Creating new association directiory: " << path << std::endl;
+
+    std::filesystem::create_directories(path);
 }
 
 void AssociationManager::greedy_associations()
@@ -62,8 +64,11 @@ void AssociationManager::greedy_associations()
 
     for (int i = associations.size() - 1; i >= 0; i--)
     {
-        // configure and start the ray tracer for every iteration, which will fill
-        ray_tracer->update_map_pointer(local_map_ptr);
+        // configure and start the ray tracer for every iteration, which will fill each association
+        // ray_tracer->update_map_pointer(local_map_ptr);
+
+        // update ray tracer data for the next trace
+        ray_tracer->update_pose(associations[i].getPose());
         ray_tracer->update_association(&associations[i]);
         ray_tracer->start(); // start tracing, given the current association.
 

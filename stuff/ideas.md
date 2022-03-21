@@ -1,21 +1,8 @@
-## TODO ##
+## IDEAS ##
 
-* use globalmap and localmap from fastsense, adapt everything needed  !!DONE!!
-* check the functionality of the globalmap to create a map from file  !!DONE SELFMADE!!
-* start using the maps efficently !! WIP !!
-* create a method in the localmap, which checks the current intersection of a ray with the localmap
-* create a way ( in the localmap ) to read, which part of the globalmap can be seen from a certain position
-* read this part
-* find a way to display intersections in a nice manner (e.g. some weird weight or a new variable) !! WIP !!
+
 
 ### 02.02.2022 ###
-
-* read paper on loop closure, write down most important points
-* fix bugs in intersections
-* get a better understanding on weights (using the original doc thesis)
-* possibility to do ray tracing from different positions
-* define the data mapping problem -> which "data" comes from which scan? and: where do we actually put it kekw?
-* define a way to serialize the path to a hdf5 possibly
 
 
 ## Important ##
@@ -87,8 +74,6 @@ evaluated and possibly fixed
 * PCD to TSDF?
 * for tsdf to tsdf comparison (might also be found in the tsdf paper!!!)
 * when updating the cells, the new position might be outside the local map, thus we need an update rule for those edge cases. (just ignore or store each special case in a vector and check how and where the localmap needs to be shifted)
-
-* [ ] Add functionality for a Pose to add, substract etc. (will be needed) 
 
 ### Ideas for Evaluation ###
 Use existing methods (e.g. Slam6d with a defined dataset which includes a closed loop and do a slam approach.)
