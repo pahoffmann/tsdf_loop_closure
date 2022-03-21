@@ -1,5 +1,5 @@
 /**
- * @file map_node.cpp
+ * @file lc_test_node.cpp
  * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
  * @brief 
  * @version 0.1
@@ -18,15 +18,15 @@
 #include <loop_closure/RayTracerConfig.h>
 #include <iostream>
 #include <highfive/H5File.hpp>
-#include "map/global_map.h"
-#include "map/local_map.h"
-#include "util/colors.h"
-#include "path/path.h"
-#include "util/point.h"
-#include "ray_tracer/ray_tracer.h"
-#include "ray_tracer/tracer.h"
-#include "serialization/read_path_json.h"
-#include "data_association/association_manager.h"
+#include "../map/global_map.h"
+#include "../map/local_map.h"
+#include "../util/colors.h"
+#include "../path/path.h"
+#include "../util/point.h"
+#include "../ray_tracer/ray_tracer.h"
+#include "../ray_tracer/tracer.h"
+#include "../serialization/read_path_json.h"
+#include "../data_association/association_manager.h"
 
 // ROS STUFF //
 
@@ -338,7 +338,7 @@ void ray_tracer_reconfigure_callback(loop_closure::RayTracerConfig &config, uint
  */
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "map_node");
+  ros::init(argc, argv, "lc_test_node");
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
 

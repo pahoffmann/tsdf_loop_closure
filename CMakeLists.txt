@@ -61,7 +61,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(map_node src/map_node.cpp 
+add_executable(lc_test_node src/test/lc_test_node.cpp 
                         src/map/global_map.cpp 
                         src/map/local_map.cpp 
                         src/ray_tracer/ray_tracer.cpp
@@ -70,13 +70,24 @@ add_executable(map_node src/map_node.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp) #src/ray_tracer/tracer.cu)
 
-set_target_properties(map_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+add_executable(loop_closure src/loop_closure_node.cpp 
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp 
+                        src/ray_tracer/ray_tracer.cpp
+                        src/color_matrix_deprecated/color_matrix.cpp
+                        src/path/path.cpp
+                        src/data_association/association.cpp
+                        src/data_association/association_manager.cpp)
+                  
+# currently only for the test node.
+set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # dynamic reconfigure
-add_dependencies(map_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+add_dependencies(lc_test_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+add_dependencies(loop_closure loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(map_node
+target_link_libraries(lc_test_node
   ${catkin_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}
@@ -84,4 +95,11 @@ target_link_libraries(map_node
   ${JSONCPP_LIBRARIES}
 )
 
+target_link_libraries(loop_closure
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${JSONCPP_LIBRARIES}
+)
 

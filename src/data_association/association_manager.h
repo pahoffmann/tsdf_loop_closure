@@ -19,6 +19,7 @@
 #include "../ray_tracer/ray_tracer.h"
 #include <ctime>
 #include <regex>
+#include <filesystem>
 
 
 class AssociationManager

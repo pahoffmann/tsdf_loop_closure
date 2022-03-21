@@ -17,13 +17,6 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
     ray_tracer = tracer;
     local_map_ptr = local_map_ptr_;
 
-    for (int i = 0; i < poses.size(); i++)
-    {
-        // create new association and add it to the array
-        Association association(poses[i], i, file_path, Association::SerializationStrategy::JSON);
-        associations.push_back(association);
-    }
-
     // create timestamp
     time = std::time(nullptr);
     std::string time_string(std::asctime(std::localtime(&time)));
@@ -34,6 +27,25 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
     time_string = std::regex_replace(time_string, std::regex(":"), "_");
 
     std::cout << "[AssociationManager] Current time with replacements: " << time_string << std::endl;
+
+    // check if the file path contains a trailing slash, if not: add it
+    if (file_path.at(file_path.length() - 1) != '/')
+    {
+        file_path += "/";
+    }
+
+    file_path = file_path +  time_string + "/"; // append time string to filepath, to get a new directory every time the code is executed.
+
+    std::cout << "[AssociationManager] Creating new association directiory: " << file_path << std::endl;
+
+    std::filesystem::create_directories(file_path);
+
+    for (int i = 0; i < poses.size(); i++)
+    {
+        // create new association and add it to the array
+        Association association(poses[i], i, file_path, Association::SerializationStrategy::JSON);
+        associations.push_back(association);
+    }
 }
 
 AssociationManager::~AssociationManager()

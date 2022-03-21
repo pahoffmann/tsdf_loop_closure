@@ -4,7 +4,7 @@
     <arg name="poses" default="~/thesis/code/patrick_ws/src/loop_closure/cfg/path.json" />
     <arg name="basepath" default="~/thesis/associations/" />
 
-    <node pkg="loop_closure" type="map_node" name="ray_tracer">
+    <node pkg="loop_closure" type="lc_test_node" name="ray_tracer">
         <param name="map" value="$(arg map)"/>
         <param name="poses" value="$(arg poses)"/>
         <param name="basepath" value="$(arg basepath)"/>

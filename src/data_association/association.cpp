@@ -21,7 +21,7 @@ Association::Association(Pose start_pose, int num_pose, std::string base_path, S
 
     switch (ser_strat)
     {
-    case SerializationStrategy::SQL:
+    case SerializationStrategy::HDF5:
         type = ".h5";
         break;
 
@@ -35,7 +35,7 @@ Association::Association(Pose start_pose, int num_pose, std::string base_path, S
     {
         base_path += "/";
     }
-
+    
     file_path = base_path + std::to_string(num_pose) + "_association" + type;
 
     std::cout << "Created new Association, using file path: " << file_path << std::endl;
