@@ -15,7 +15,6 @@
 #include "util/path.h"
 #include "util/point.h"
 #include "ray_tracer/ray_tracer.h"
-#include "ray_tracer/tracer.h"
 
 // ROS STUFF //
 
