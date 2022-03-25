@@ -24,7 +24,7 @@
 #include "../path/path.h"
 #include "../util/point.h"
 #include "../ray_tracer/ray_tracer.h"
-#include "../ray_tracer/tracer.h"
+//#include "../ray_tracer/tracer.h"
 #include "../serialization/read_path_json.h"
 #include "../data_association/association_manager.h"
 

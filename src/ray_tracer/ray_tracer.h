@@ -109,22 +109,6 @@ public:
      * 
      * @param new_pose 
      */
-    inline void update_pose(Pose *new_pose) {
-        // calculate how much the local map needs to be shifted
-        Vector3f diff = new_pose->pos - current_pose->pos;
+    void update_pose(Pose *new_pose);
 
-        // calc real word to global map coordinates
-
-        std::cout << "Vector before pose update: " << diff << std:: endl;
-
-        Vector3i diff_map = (diff  * 1000.0f / MAP_RESOLUTION).cast<int>();
-
-        std::cout << "Vector after pose update: " << diff_map << std:: endl;
-
-        // shift the local map 
-        local_map_ptr_->shift(diff_map);
-
-        // update the pose
-        current_pose = new_pose;
-    }
 };

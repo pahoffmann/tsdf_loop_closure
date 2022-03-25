@@ -39,7 +39,7 @@ void RayTracer::start()
   {
     CudaTracing::updateRays(&rays, current_pose, lc_config);
   }*/
-  
+
   // and do some time measuring
   auto start_time = ros::Time::now();
 
@@ -199,6 +199,29 @@ void RayTracer::cleanup()
 
   // clear last runs rays
   rays.clear();
+}
+
+void RayTracer::update_pose(Pose *new_pose)
+{
+  /*// calculate how much the local map needs to be shifted
+  Vector3f diff = new_pose->pos - current_pose->pos;
+
+  // calc real word to global map coordinates
+
+  std::cout << "Vector before pose update: " << diff << std::endl;
+
+  Vector3i diff_map = (diff * 1000.0f / MAP_RESOLUTION).cast<int>();
+
+  std::cout << "Vector after pose update: " << diff_map << std::endl;*/
+
+  Eigen::Vector3i new_pose_map = (new_pose->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
+
+  // shift the local map
+  //local_map_ptr_->shift(diff_map);
+  local_map_ptr_->shift(new_pose_map);
+
+  // update the pose
+  current_pose = new_pose;
 }
 
 visualization_msgs::Marker RayTracer::get_ros_marker()

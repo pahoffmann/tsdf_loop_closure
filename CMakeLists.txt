@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(loop_closure LANGUAGES CXX CUDA)
+project(loop_closure LANGUAGES)# CXX CUDA)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17) # use -std=c++11 for cuda, check how to fix the warnings
@@ -80,7 +80,7 @@ add_executable(loop_closure src/loop_closure_node.cpp
                         src/data_association/association_manager.cpp)
                   
 # currently only for the test node.
-set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+#set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # dynamic reconfigure
 add_dependencies(lc_test_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})

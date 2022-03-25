@@ -37,8 +37,6 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
     // create serialization folder
     create_serialization_folder(file_path);
 
-    std::filesystem::create_directories(file_path);
-
     for (int i = 0; i < poses.size(); i++)
     {
         // create new association and add it to the array
