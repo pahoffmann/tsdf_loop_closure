@@ -51,6 +51,10 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 link_libraries(${JSONCPP_LIBRARIES})
 
+#boost
+FIND_PACKAGE(Boost COMPONENTS program_options REQUIRED)
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -77,7 +81,8 @@ add_executable(loop_closure src/loop_closure_node.cpp
                         src/color_matrix_deprecated/color_matrix.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
-                        src/data_association/association_manager.cpp)
+                        src/data_association/association_manager.cpp
+                        src/options/options_reader.cpp)
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -101,5 +106,6 @@ target_link_libraries(loop_closure
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 

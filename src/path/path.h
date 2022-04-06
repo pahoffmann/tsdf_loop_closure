@@ -30,8 +30,28 @@ private:
 
 public:
     Path();
+
+    /**
+     * @brief Reads a path from a json
+     * 
+     * @param filename 
+     */
     void fromJSON(std::string filename);
+
+    /**
+     * @brief Get the Poses object
+     * 
+     * @return std::vector<Pose>& 
+     */
     inline std::vector<Pose>& getPoses() {
         return poses;
     }
+
+    /**
+     * @brief The real magic: looks for a closed loop
+     * 
+     * @param start_idx 
+     * @return int 
+     */
+    int find_next_loop(int start_idx);
 };

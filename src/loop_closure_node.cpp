@@ -27,6 +27,7 @@
 //#include "ray_tracer/tracer.h"
 #include "serialization/read_path_json.h"
 #include "data_association/association_manager.h"
+#include "options/options_reader.h"
 
 // ROS STUFF //
 
@@ -325,33 +326,9 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
 
-  // if no map was set, we won't go on from here.
-  if (!nh.getParam("map", h5_file_name_))
-  {
-    ROS_WARN("No Global Map file delivered, use _map:=[Path] shutting down...");
-    exit(EXIT_FAILURE);
-  }
-  else {
-    ROS_INFO("[DEBUG] Global Map file delivered: %s", h5_file_name_.c_str());
-  }
-
-  if (!nh.getParam("poses", poses_file_name_))
-  {
-    ROS_WARN("No Poses file delivered, use _poses:=[Path], shutting down...");
-    exit(EXIT_FAILURE);
-  }
-  else {
-    ROS_INFO("[DEBUG] Poses file delivered: %s", poses_file_name_.c_str());
-  }
-
-  if (!nh.getParam("basepath", file_base_path_))
-  {
-    ROS_WARN("No File Base Path file delivered, use _basepath:=[Path], shutting down...");
-    exit(EXIT_FAILURE);
-  }
-  else {
-    ROS_INFO("[DEBUG] Base file path delivered: %s", file_base_path_.c_str());
-  }
+  // read options from cmdline
+  lc_options_reader reader;
+  reader.read_options(argc, argv);
 
   // init path and read from json
   Path path;

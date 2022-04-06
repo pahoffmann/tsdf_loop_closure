@@ -15,9 +15,9 @@
 # TODO's #
 
 [ ] Use boost program options for actual loop closure instead of dynamic reconfigure (maybe)
-[ ] Add functionality for a Pose to add, substract etc. (will be needed) 
-[ ] create a method in the localmap, which checks the current intersection of a ray with the localmap
-[ ] create a way ( in the localmap ) to read, which part of the globalmap can be seen from a certain position
+[-] Add functionality for a Pose to add, substract etc. (will be needed) 
+[?] create a method in the localmap, which checks the current intersection of a ray with the localmap
+[?] create a way ( in the localmap ) to read, which part of the globalmap can be seen from a certain position
 [ ] read paper on loop closure, write down most important points
 [ ] get a better understanding on weights (using the original doc thesis)
 [ ] define the serialization of the path to json
