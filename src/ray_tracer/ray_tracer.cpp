@@ -29,6 +29,7 @@ void RayTracer::start()
   {
     return;
   }
+  std::cout << std::endl;
 
   ROS_INFO("[RayTracer] Started Tracing...");
 
@@ -68,6 +69,8 @@ void RayTracer::start()
   ROS_INFO("[RayTracer] Updating Rays done...");
 
   ROS_INFO("[RayTracer] Done Tracing...");
+
+  std::cout << std::endl;
 }
 
 void RayTracer::initRays()
@@ -76,11 +79,6 @@ void RayTracer::initRays()
   int hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
   int vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
   double step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
-
-  std::cout << "[RayTracer] Opening Degree " << opening_degree << std::endl;
-  std::cout << "[RayTracer] Hor Res " << hor_res << std::endl;
-  std::cout << "[RayTracer] Vert Res " << vert_res << std::endl;
-  std::cout << "[RayTracer] Step size " << step_size << std::endl;
 
   // simulate sensor
   const float start_degree = -(float)opening_degree / 2.0f;

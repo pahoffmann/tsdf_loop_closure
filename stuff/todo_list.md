@@ -22,3 +22,7 @@
 [ ] get a better understanding on weights (using the original doc thesis)
 [ ] define the serialization of the path to json
 [ ] Update localmap with a function, that converts a Vector3f in real word coordinates to map coordinates (Vector3i)
+
+# ASAP #
+
+[ ] Check association file and directory creation, as it does not work as intended.

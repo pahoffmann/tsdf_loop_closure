@@ -120,12 +120,12 @@ int main(int argc, char **argv)
 
   // define stuff for raytracer
   ray_tracer = new RayTracer(&options, local_map_ptr_, path.at(0));
-  ray_tracer->start();
-  ray_markers = ray_tracer->get_ros_marker();
+  //ray_tracer->start();
+  //ray_markers = ray_tracer->get_ros_marker();
 
   // create associationmanager
   manager = new AssociationManager(&path, options.get_base_file_name(), ray_tracer, local_map_ptr_);
-  //manager->greedy_associations();
+  manager->greedy_associations();
 
   // get markers
   auto pose_marker = ROSViewhelper::initPoseMarker(path.at(0));

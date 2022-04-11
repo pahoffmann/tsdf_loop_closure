@@ -114,6 +114,9 @@ void Association::serialize_JSON()
     
     // write json data to output file
     std::ofstream file;
+
+    std::cout << "[Association] Created association file with path: " << file_path << std::endl;
+
     file.open(file_path);
     file << root;
 }

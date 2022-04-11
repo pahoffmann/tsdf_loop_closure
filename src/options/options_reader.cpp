@@ -77,9 +77,12 @@ std::string chars(int n, char c = ' ') {
 
 void lc_options_reader::print_options() {
 
+    // assuming the longest parameter value is one of the paths
     int max_length = std::max(std::max(map_file_name.length(), poses_file_name.length()), base_file_name.length());
 
-    std::cout << "***********" << chars(max_length + 2, '*') << std::endl;
+    std::cout << std::endl;
+
+    std::cout << chars(max_length + 21, '*') << std::endl;
 
     std::string cur_param = std::to_string((*vm)["hor_res"].as<int>());
     std::cout << "* Hor-Res:         " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
@@ -105,5 +108,7 @@ void lc_options_reader::print_options() {
     cur_param = (*vm)["base_file_name"].as<std::string>();
     std::cout << "* Base-File-Name:  " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
 
-    std::cout << "***********" << chars(max_length + 2, '*') << std::endl;
+    std::cout << chars(max_length + 21, '*') << std::endl;
+
+    std::cout << std::endl;
 }

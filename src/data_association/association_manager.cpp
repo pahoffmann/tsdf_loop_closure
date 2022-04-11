@@ -26,6 +26,9 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
     time_string = std::regex_replace(time_string, std::regex(" "), "_");
     time_string = std::regex_replace(time_string, std::regex(":"), "_");
 
+    // somehow there is a line break in this string :D
+    time_string = std::regex_replace(time_string, std::regex("\n"), "");
+
     std::cout << "[AssociationManager] Current time with replacements: " << time_string << std::endl;
 
     // check if the file path contains a trailing slash, if not: add it
@@ -33,6 +36,8 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
     {
         file_path += "/";
     }
+
+    file_path += time_string + "/";
 
     // create serialization folder
     create_serialization_folder(file_path);
