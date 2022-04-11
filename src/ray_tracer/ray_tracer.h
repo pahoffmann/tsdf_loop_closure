@@ -1,10 +1,22 @@
 #pragma once
 
+
+/**
+ * @file ray_tracer.h
+ * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
+ * @brief 
+ * @version 0.1
+ * @date 2022-04-11
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include "../util/point.h"
 #include "../util/colors.h"
 #include "../map/local_map.h"
 #include "../data_association/association.h"
-//#include "tracer.h"
+#include "../options/options_reader.h"
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sstream>
@@ -20,7 +32,10 @@ class RayTracer {
 private:
 
     // configuration for the ray tracer
-    loop_closure::LoopClosureConfig* lc_config; 
+    loop_closure::LoopClosureConfig  *lc_config;
+
+    // options reader configuration for the ray_tracer
+    lc_options_reader *options;
     
     // current pose used for tracing
     Pose* current_pose;
@@ -66,10 +81,21 @@ public:
     /**
      * @brief Construct a new Raytracer object, inserts the respective config, including a shared pointer to the current local map.
      * 
+     * @deprecated This constructor is only used by a ros test node, which uses dynamic reconfigure to test functionality. For all other
+     *             purposes, the constructor down below is supposed to be used
+     * 
      * @param new_config 
      * @param local_map_in 
      */
     RayTracer(loop_closure::LoopClosureConfig* new_config, std::shared_ptr<LocalMap> local_map_in, Pose* start_pose);
+
+    /*
+     * @brief Construct a new Raytracer object, inserts the respective config, including a shared pointer to the current local map.
+     * 
+     * @param new_config 
+     * @param local_map_in 
+     */
+    RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in, Pose* start_pose);
 
     /**
      * @brief function used to update the association the ray tracer is working with.

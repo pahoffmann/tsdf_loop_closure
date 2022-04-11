@@ -18,7 +18,7 @@ int lc_options_reader::read_options(int argc, char **argv)
         po::store(po::parse_command_line(argc, argv, *desc), *vm);
 
         if(vm->count("help")) {
-            std::cout << desc << std::endl;
+            std::cout << *desc << std::endl;
             return 2;
         }
 
@@ -50,11 +50,9 @@ void lc_options_reader::create_options() {
         ("help", "produce help message")
         ("hor_res", po::value<int>(&hor_res)->default_value(16), "Set horizontal resolution")
         ("vert_res", po::value<int>(&vert_res)->default_value(16), "Set vertical resolution")
-        ("side_length_xy", po::value<int>(&side_length_xy)->default_value(201), "Set sidelength xy")
-        ("side_length_z", po::value<int>(&side_length_z)->default_value(95), "Set sidelength z")
-        ("opening_degree", po::value<int>(&opening_degree)->default_value(16), "Set raytracer opening degree")
-        ("step_size", po::value<double>(&step_size)->default_value(16), "Set step size")
-        ("ray_size", po::value<double>(&ray_size)->default_value(16), "Set ray size")
+        ("opening_degree", po::value<int>(&opening_degree)->default_value(45), "Set raytracer opening degree")
+        ("step_size", po::value<double>(&step_size)->default_value(0.064), "Set step size")
+        ("ray_size", po::value<double>(&ray_size)->default_value(0.01), "Set ray size")
         ("map_file_name", po::value<std::string>(&map_file_name)->required(), "Set global map filename (.h5)")
         ("poses_file_name", po::value<std::string>(&poses_file_name)->required(), "Set poses filename (.json)")
         ("base_file_name", po::value<std::string>(&base_file_name)->required(), "Set base file name to store association data")
@@ -83,25 +81,19 @@ void lc_options_reader::print_options() {
 
     std::cout << "***********" << chars(max_length + 2, '*') << std::endl;
 
-    std::string cur_param = (*vm)["hor_res"].as<std::string>();
+    std::string cur_param = std::to_string((*vm)["hor_res"].as<int>());
     std::cout << "* Hor-Res:         " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
 
-    cur_param = (*vm)["vert_res"].as<std::string>();
+    cur_param = std::to_string((*vm)["vert_res"].as<int>());
     std::cout << "* Vert-Res:        " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
 
-    cur_param = (*vm)["side_length_xy"].as<std::string>();
-    std::cout << "* Side-Length-XY:  " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
-
-    cur_param = (*vm)["side_length_z"].as<std::string>();
-    std::cout << "* Side-Length-Z:   " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
-
-    cur_param = (*vm)["opening_degree"].as<std::string>();
+    cur_param = std::to_string((*vm)["opening_degree"].as<int>());
     std::cout << "* Opening-Degree:  " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
 
-    cur_param = (*vm)["step_size"].as<std::string>();
+    cur_param = std::to_string((*vm)["step_size"].as<double>());
     std::cout << "* Step-Size:       " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
 
-    cur_param = (*vm)["ray_size"].as<std::string>();
+    cur_param = std::to_string((*vm)["ray_size"].as<double>());
     std::cout << "* Ray-Size:        " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
 
     cur_param = (*vm)["map_file_name"].as<std::string>();

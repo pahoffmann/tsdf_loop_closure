@@ -54,4 +54,21 @@ public:
      * @return int 
      */
     int find_next_loop(int start_idx);
+
+    /**
+     * @brief returns a pose of the path for a given idx
+     * 
+     * @param idx 
+     * @return Pose* or NULL, if index is out of bounds
+     * @throw std::out_of_range  if the passed index is in bounds of the path
+     */
+    inline Pose* at(int idx) {
+        if(idx < poses.size() && idx >= 0)
+        {
+            return &poses[idx];
+        }
+        else {
+            throw std::out_of_range("[Path] There is no Pose at the requested Path-Index.");
+        }
+    }
 };

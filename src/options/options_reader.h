@@ -29,8 +29,6 @@ private:
     // option values
     int hor_res;
     int vert_res;
-    int side_length_xy;
-    int side_length_z;
     int opening_degree;
     double step_size;
     double ray_size;
@@ -59,4 +57,77 @@ public:
     int read_options(int argc, char **argv);
 
     // TODO: write getters which wrap around the boost program options and make the config-values accessible in an easy fashion
+
+    
+    /**
+     * @brief Get the hor res object
+     * 
+     * @return int 
+     */
+    inline int get_hor_res() {
+        return hor_res;
+    }
+    
+    /**
+     * @brief Get the vert res object
+     * 
+     * @return int 
+     */
+    inline int get_vert_res() {
+        return vert_res;
+    }
+    
+    /**
+     * @brief Get the opening degree object
+     * 
+     * @return int 
+     */
+    inline int get_opening_degree() {
+        return opening_degree;
+    }
+    
+    /**
+     * @brief Get the step size object
+     * 
+     * @return double 
+     */
+    inline double get_step_size() {
+        return step_size;
+    }
+    
+    /**
+     * @brief Get the ray size object
+     * 
+     * @return double 
+     */
+    inline double get_ray_size() {
+        return ray_size;
+    }
+    
+    /**
+     * @brief Get the map file name object
+     * 
+     * @return std::string 
+     */
+    inline std::string get_map_file_name() {
+        return map_file_name;
+    }
+    
+    /**
+     * @brief Get the poses file name object
+     * 
+     * @return std::string 
+     */
+    inline std::string get_poses_file_name() {
+        return poses_file_name;
+    }
+    
+    /**
+     * @brief Get the base file name object
+     * 
+     * @return std::string 
+     */
+    inline std::string get_base_file_name() {
+        return base_file_name;
+    }
 };

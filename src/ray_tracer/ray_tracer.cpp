@@ -12,11 +12,20 @@ RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_pt
   current_pose = start_pose;
 }
 
+
+RayTracer::RayTracer(lc_options_reader* new_options, std::shared_ptr<LocalMap> local_map_in, Pose *start_pose)
+{
+  options = new_options;
+  local_map_ptr_ = local_map_in;
+  current_pose = start_pose;
+}
+
+
 void RayTracer::start()
 {
 
   // we casually ignore calls to this function, when
-  if (lc_config == NULL || current_pose == NULL)
+  if ((lc_config == NULL || options == NULL) || current_pose == NULL)
   {
     return;
   }
@@ -63,12 +72,21 @@ void RayTracer::start()
 
 void RayTracer::initRays()
 {
+  int opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
+  int hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
+  int vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
+  double step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
+
+  std::cout << "[RayTracer] Opening Degree " << opening_degree << std::endl;
+  std::cout << "[RayTracer] Hor Res " << hor_res << std::endl;
+  std::cout << "[RayTracer] Vert Res " << vert_res << std::endl;
+  std::cout << "[RayTracer] Step size " << step_size << std::endl;
 
   // simulate sensor
-  const float start_degree = -(float)lc_config->opening_degree / 2.0f;
-  const float fin_degree = (float)lc_config->opening_degree / 2.0f;
-  const float x_res = 360.0f / (float)(lc_config->hor_res);
-  const float y_res = (float)lc_config->opening_degree / (float)(lc_config->vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
+  const float start_degree = -(float)opening_degree / 2.0f;
+  const float fin_degree = (float)opening_degree / 2.0f;
+  const float x_res = 360.0f / (float)(hor_res);
+  const float y_res = (float)opening_degree / (float)(vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
 
   ROS_INFO("Hor-Resolution: %f, Vertical resolution: %f (in degree)", x_res, y_res);
 
@@ -95,7 +113,7 @@ void RayTracer::initRays()
 
       float length = (p1 - p2).norm(); // get length
 
-      float factor = lc_config->step_size / length; // vector enlargement
+      float factor = step_size / length; // vector enlargement
 
       // enlarge "vector" by translating to (0,0,0), rotating it in space and putting it back alla
       ray_point = (p1 - current_pose->pos) * factor + current_pose->pos;
@@ -112,6 +130,11 @@ void RayTracer::initRays()
 
 void RayTracer::updateRays()
 {
+
+  int opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
+  int hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
+  int vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
+  double step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
 
   float side_length_xy = local_map_ptr_->get_size().x() * MAP_RESOLUTION / 1000.0f;
   float side_length_z = local_map_ptr_->get_size().z() * MAP_RESOLUTION / 1000.0f;
@@ -133,7 +156,7 @@ void RayTracer::updateRays()
     auto &p2 = current_pose->pos;
     float length = (p1 - p2).norm();
     // ROS_INFO("Cur Vector length: %f", length);
-    float factor = (length + lc_config->step_size) / length; // vector enlargement
+    float factor = (length + step_size) / length; // vector enlargement
 
     // enlarge "vector"
     p1 = (p1 - current_pose->pos) * factor + current_pose->pos; // translate to (0,0,0), enlarge, translate back
@@ -226,6 +249,9 @@ void RayTracer::update_pose(Pose *new_pose)
 
 visualization_msgs::Marker RayTracer::get_ros_marker()
 {
+
+  double ray_size = options != NULL ? options->get_ray_size() : lc_config->ray_size;
+
   // tsdf sim
   visualization_msgs::Marker ray_marker_list;
   ray_marker_list.header.frame_id = "map";
@@ -241,9 +267,9 @@ visualization_msgs::Marker RayTracer::get_ros_marker()
   ray_marker_list.pose.orientation.y = 0.0;
   ray_marker_list.pose.orientation.z = 0.0;
   ray_marker_list.pose.orientation.w = 1.0;
-  ray_marker_list.scale.x = lc_config->ray_size;
-  ray_marker_list.scale.y = lc_config->ray_size;
-  ray_marker_list.scale.z = lc_config->ray_size;
+  ray_marker_list.scale.x = ray_size;
+  ray_marker_list.scale.y = ray_size;
+  ray_marker_list.scale.z = ray_size;
   ray_marker_list.color.a = 0.6; // Don't forget to set the alpha!
   ray_marker_list.color.r = 0.0;
   ray_marker_list.color.g = 0.0;

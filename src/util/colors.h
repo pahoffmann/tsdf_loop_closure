@@ -90,4 +90,6 @@ class Colors {
             }
 
         }
+
+        Colors() = delete;
 };
