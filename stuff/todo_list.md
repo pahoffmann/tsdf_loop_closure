@@ -23,6 +23,10 @@
 [ ] define the serialization of the path to json
 [ ] Update localmap with a function, that converts a Vector3f in real word coordinates to map coordinates (Vector3i)
 
+# Important TODO's for future me #
+
+[ ] In Loop closure node, the indexing of the local map is not correct now, as the starting pose is no longer (0,0,0), fix this
+
 # ASAP #
 
 [ ] Check association file and directory creation, as it does not work as intended.

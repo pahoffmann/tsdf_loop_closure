@@ -31,6 +31,11 @@
 class RayTracer {
 private:
 
+    enum RayStatus {
+        OK,
+        FINISHED,
+        ZERO_CROSSED
+    };
     // configuration for the ray tracer
     loop_closure::LoopClosureConfig  *lc_config;
 
@@ -44,7 +49,12 @@ private:
     std::shared_ptr<LocalMap> local_map_ptr_;
 
     // used to store the rays, which have been finished, will be cleared after each tracing
-    std::vector<bool> lines_finished;
+    // a ray is finished when
+    // 1. it crossed the boundaries of the local map
+    // 2. it encountered a.) a sign change and b.)  if it has crossed tsdf which actually has a meaning, went through a (value change)
+    //    -> this means, that the ray actually hit a 'wall', or to be exact, the tsdf, which describes a surface implicitly
+    // each of these states is covered in the 'RayStatus' enum, which will be used.
+    std::vector<RayStatus> lines_finished;
 
     // counter, which tracks, how many lines have been finished, works hand in hand with above array.
     int finished_counter = 0;

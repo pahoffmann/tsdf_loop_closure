@@ -64,7 +64,9 @@ void AssociationManager::create_serialization_folder(std::string path)
 
 void AssociationManager::greedy_associations()
 {
+    // go backwards through the path and greedily add all the cells, that are visible.
 
+    std::cout << "[AssociationManager::greedy_associations] Num associations: " << associations.size() << std::endl; 
     for (int i = associations.size() - 1; i >= 0; i--)
     {
         // configure and start the ray tracer for every iteration, which will fill each association

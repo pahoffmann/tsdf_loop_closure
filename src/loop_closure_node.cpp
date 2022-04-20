@@ -34,7 +34,7 @@
 #include "visualization/ros_viewhelper.h"
 
 // Configuration stuff //
-lc_options_reader options;
+lc_options_reader *options;
 
 // ROS STUFF //
 visualization_msgs::Marker ray_markers;
@@ -53,7 +53,7 @@ std::shared_ptr<LocalMap> local_map_ptr_;
 RayTracer *ray_tracer;
 
 /// Path ///
-Path path;
+Path *path;
 
 /// Association Manager, used to manage and keep track of the associations ///
 AssociationManager *manager;
@@ -65,7 +65,7 @@ AssociationManager *manager;
  */
 void initMaps()
 {
-  global_map_ptr_ = std::make_shared<GlobalMap>(options.get_map_file_name(), 0.0, 0.0);
+  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name(), 0.0, 0.0);
   // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
   local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
 
@@ -88,7 +88,8 @@ int main(int argc, char **argv)
   ros::NodeHandle nh("~");
 
   // read options from cmdline
-  int status = options.read_options(argc, argv);
+  options = new lc_options_reader();
+  int status = options->read_options(argc, argv);
 
   if (status == 1)
   {
@@ -104,12 +105,13 @@ int main(int argc, char **argv)
   }
 
   // init path and read from json
-  path.fromJSON(options.get_poses_file_name());
+  path = new Path();
+  path->fromJSON(options->get_poses_file_name());
 
   // init local and global maps
   initMaps();
 
-  // feberate publishers
+  // generate publishers
   ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);
   ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
@@ -119,22 +121,25 @@ int main(int argc, char **argv)
   ros::Rate loop_rate(10);
 
   // define stuff for raytracer
-  ray_tracer = new RayTracer(&options, local_map_ptr_, path.at(0));
+  ray_tracer = new RayTracer(options, local_map_ptr_, path->at(0));
   //ray_tracer->start();
   //ray_markers = ray_tracer->get_ros_marker();
 
   // create associationmanager
-  manager = new AssociationManager(&path, options.get_base_file_name(), ray_tracer, local_map_ptr_);
+  manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_);
   manager->greedy_associations();
 
+  // obtain the ros marker for visualization
+  ray_markers = ray_tracer->get_ros_marker();
+
   // get markers
-  auto pose_marker = ROSViewhelper::initPoseMarker(path.at(0));
+  auto pose_marker = ROSViewhelper::initPoseMarker(path->at(0));
 
   // initialize the bounding box
-  bb_marker = ROSViewhelper::getBoundingBoxMarker(side_length_xy, side_length_z, path.at(0));
+  bb_marker = ROSViewhelper::getBoundingBoxMarker(side_length_xy, side_length_z, path->at(0));
 
   // init tsdf
-  tsdf_map = ROSViewhelper::initTSDFmarker(local_map_ptr_, path.at(0));
+  tsdf_map = ROSViewhelper::initTSDFmarker(local_map_ptr_, path->at(0));
 
   // some stuff doesnt need to be published every iteration...
   bb_publisher.publish(bb_marker);

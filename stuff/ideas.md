@@ -74,6 +74,15 @@ evaluated and possibly fixed
 * PCD to TSDF?
 * for tsdf to tsdf comparison (might also be found in the tsdf paper!!!)
 * when updating the cells, the new position might be outside the local map, thus we need an update rule for those edge cases. (just ignore or store each special case in a vector and check how and where the localmap needs to be shifted)
+* when updating the cells, the new position might be outside the local map, thus we need an update rule for those edge cases. (just ignore or store 
+each special case in a vector and check how and where the localmap needs to be shifted)
+
+### TSDF to TSDF ###
+
+* needed?
+* other approach: one point per tsdf cell in association (as association-method, use enum)
+* OR: sample multiple points per cell, use exponential function. the closer the cell to the surface, the more points we sample. this way we get good
+      comparision
 
 ### Ideas for Evaluation ###
 Use existing methods (e.g. Slam6d with a defined dataset which includes a closed loop and do a slam approach.)
