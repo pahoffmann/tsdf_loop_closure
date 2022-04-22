@@ -1,0 +1,14 @@
+{
+    "description": "[DEBUG] This JSON contains debug poses which can be used to test the path features of the thesis",
+    "num_poses": 1,
+    "poses": {
+        "1": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "roll": 0,
+            "pitch": 0,
+            "yaw": 0     
+        }
+    }
+}

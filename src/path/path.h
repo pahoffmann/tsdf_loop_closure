@@ -47,6 +47,10 @@ public:
         return poses;
     }
 
+    inline int get_length() {
+        return poses.size();
+    }
+
     /**
      * @brief The real magic: looks for a closed loop
      * 

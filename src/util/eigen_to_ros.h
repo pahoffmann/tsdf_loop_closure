@@ -11,7 +11,7 @@
  * @param pos 
  * @return geometry_msgs::Point 
  */
-geometry_msgs::Point eigen_point_to_ros_point1(Eigen::Vector3f pos)
+geometry_msgs::Point eigen_point_to_ros_point(Eigen::Vector3f pos)
 {
   geometry_msgs::Point point;
   point.x = pos.x();

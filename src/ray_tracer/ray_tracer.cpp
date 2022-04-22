@@ -1,6 +1,7 @@
 #include "ray_tracer.h"
 
-RayTracer::RayTracer() {
+RayTracer::RayTracer()
+{
   // default
 }
 
@@ -27,6 +28,16 @@ void RayTracer::start()
     throw std::logic_error("[RayTracer] - Major Error, no configuration data delivered to ray-tracer");
   }
 
+  opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
+  hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
+  vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
+  step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
+
+  side_length_xy = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
+  side_length_z = (local_map_ptr_->get_size().z() - 1) * MAP_RESOLUTION / 1000.0f;
+
+  ray_size = options != NULL ? options->get_ray_size() : lc_config->ray_size;
+
   // just for better readablity
   std::cout << std::endl;
 
@@ -44,17 +55,16 @@ void RayTracer::start()
   // exactly when all rays are finished :D
   ROS_INFO("[RayTracer] Updating Rays...");
 
-  /*while(finished_counter < rays.size())
-  {
-    CudaTracing::updateRays(&rays, current_pose, lc_config);
-  }*/
-
   // and do some time measuring
   auto start_time = ros::Time::now();
+
+  int num_iterations = 0;
 
   while (finished_counter < rays.size())
   {
     updateRays();
+    num_iterations++;
+    // std::cout << "Num_Iterations: " << num_iterations << " | Finished Counter: " << finished_counter << " | num_rays: " << rays.size() << std::endl;
   }
 
   // more time measuring
@@ -74,11 +84,6 @@ void RayTracer::start()
 
 void RayTracer::initRays()
 {
-  int opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
-  int hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
-  int vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
-  double step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
-
   // simulate sensor
   const float start_degree = -(float)opening_degree / 2.0f;
   const float fin_degree = (float)opening_degree / 2.0f;
@@ -129,18 +134,11 @@ void RayTracer::initRays()
 
 void RayTracer::updateRays()
 {
-
-  int opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
-  int hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
-  int vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
-  double step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
-
-  float side_length_xy = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
-  float side_length_z = (local_map_ptr_->get_size().z() - 1) * MAP_RESOLUTION / 1000.0f;
-
-  // why would we update, when there are no rays?
+  // why would we update, when there are no rays? This is more of a fatal thing here.
   if (rays.size() == 0)
-    return;
+  {
+    throw std::logic_error("[RayTracer] Logic Error: when trying to update the rays, there were none. this should never happen.");
+  }
 
   // iterate over every 'line'
   for (int i = 0; i < rays.size(); i++)
@@ -151,6 +149,7 @@ void RayTracer::updateRays()
       continue;
     }
 
+    // get the two ray-points and calculate the current rays length
     auto &p1 = rays[i];
     auto &p2 = current_pose->pos;
     float length = (p1 - p2).norm();
@@ -186,16 +185,8 @@ void RayTracer::updateRays()
 
     try
     {
-      if (!needs_resize && local_map_ptr_.get()->value(p1.x() * 1000.0f / MAP_RESOLUTION, p1.y() * 1000.0f / MAP_RESOLUTION, p1.z() * 1000.0f / MAP_RESOLUTION).value() < 600)
-      {
-        auto &tsdf = local_map_ptr_.get()->value(p1.x() * 1000.0f / MAP_RESOLUTION, p1.y() * 1000.0f / MAP_RESOLUTION, p1.z() * 1000.0f / MAP_RESOLUTION);
-        // ROS_INFO("Value: %d", tsdf.value());
-        tsdf.setIntersect(true);
-        // the line doesnt need any further updates
-        lines_finished[i] = RayStatus::FINISHED;
-        finished_counter++;
-      }
-      else if (needs_resize)
+      // if the current ray surpasses the border of the bounding box, the ray is finished
+      if (needs_resize)
       {
         // determine biggest adaption
         float min_xy = std::min(fac_x, fac_y);
@@ -203,23 +194,58 @@ void RayTracer::updateRays()
         float min_xyz = std::min(min_xy, fac_z);
 
         // resize to bb size
-        p1.x() = (p1.x() - current_pose->pos.x()) * min_xyz + current_pose->pos.x();
-        p1.y() = (p1.y() - current_pose->pos.y()) * min_xyz + current_pose->pos.y();
-        p1.z() = (p1.z() - current_pose->pos.z()) * min_xyz + current_pose->pos.z();
+        p1 = (p1 - current_pose->pos) * min_xyz + current_pose->pos;
 
-        // the line doesnt need any further updates
         lines_finished[i] = RayStatus::FINISHED;
         finished_counter++;
+
+        // no need to proceed further
+        continue;
+      }
+
+      // now we can obtain the current tsdf value, as we are sure the ray is inbounds the bounding box (local map)
+      auto &tsdf = local_map_ptr_.get()->value(p1.x() * 1000.0f / MAP_RESOLUTION, p1.y() * 1000.0f / MAP_RESOLUTION, p1.z() * 1000.0f / MAP_RESOLUTION);
+
+      // now check if a status change is necessary.
+      if (lines_finished[i] == RayStatus::OK)
+      {
+        if (tsdf.value() < 0 && tsdf.weight() > 0)
+        {
+          lines_finished[i] = RayStatus::ZERO_CROSSED;
+          cur_association->addAssociation(p1, tsdf);
+          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+        }
+        else
+        {
+          cur_association->addAssociation(p1, tsdf);
+          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
+        }
+      }
+      else if (lines_finished[i] == RayStatus::ZERO_CROSSED)
+      {
+        // if we have already had a sign change in tsdf and the value gets positive again, we are done.
+        // else, we are still in the negative value range and therefore, we add the association and mark the intersection in the local map
+        if (!(tsdf.value() < 0 && tsdf.weight() > 0))
+        {
+          lines_finished[i] = RayStatus::FINISHED;
+          finished_counter++;
+        }
+        else
+        {
+          cur_association->addAssociation(p1, tsdf);
+          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_NEG);
+        }
       }
     }
     catch (...)
     {
       Eigen::Vector3f globalMapPos = local_map_ptr_->get_pos().cast<float>();
       globalMapPos *= MAP_RESOLUTION / 1000.0f;
-      std::cout << "[RayTracer] Error while checking the local map values for local-map with global pose " << globalMapPos 
-                << std::endl << "Pos checked: " << p1 << std::endl
+      std::cout << "[RayTracer] Error while checking the local map values for local-map with global pose " << globalMapPos
+                << std::endl
+                << "Pos checked: " << p1 << std::endl
                 << "Distanze between center and checked pos: " << (p1 - globalMapPos).norm() << std::endl;
-      
+
       throw std::logic_error("[RAY_TRACER] If this fires, there is a huge bug in your code m8.");
     }
   }
@@ -239,21 +265,10 @@ void RayTracer::cleanup()
 
 void RayTracer::update_pose(Pose *new_pose)
 {
-  /*// calculate how much the local map needs to be shifted
-  Vector3f diff = new_pose->pos - current_pose->pos;
-
-  // calc real word to global map coordinates
-
-  std::cout << "Vector before pose update: " << diff << std::endl;
-
-  Vector3i diff_map = (diff * 1000.0f / MAP_RESOLUTION).cast<int>();
-
-  std::cout << "Vector after pose update: " << diff_map << std::endl;*/
-
+  // calc the new localmap pose
   Eigen::Vector3i new_pose_map = (new_pose->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
 
   // shift the local map
-  // local_map_ptr_->shift(diff_map);
   local_map_ptr_->shift(new_pose_map);
 
   // update the pose
@@ -262,9 +277,6 @@ void RayTracer::update_pose(Pose *new_pose)
 
 visualization_msgs::Marker RayTracer::get_ros_marker()
 {
-
-  double ray_size = options != NULL ? options->get_ray_size() : lc_config->ray_size;
-
   // tsdf sim
   visualization_msgs::Marker ray_marker_list;
   ray_marker_list.header.frame_id = "map";

@@ -6,9 +6,9 @@
  * @brief Used to create ROS visualization Markers, which can later be displayed for evaluation
  * @version 0.1
  * @date 2022-04-11
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include <ros/ros.h>
@@ -16,6 +16,7 @@
 #include "../util/point.h"
 #include "../util/constants.h"
 #include "../util/colors.h"
+#include "../util/eigen_to_ros.h"
 
 namespace ROSViewhelper
 {
@@ -90,6 +91,32 @@ namespace ROSViewhelper
         return raytrace_starting_pose_marker;
     }
 
+    visualization_msgs::Marker initPathMarker(Path *path)
+    {
+        // raytrace pose
+        visualization_msgs::Marker path_marker;
+        path_marker.header.frame_id = "map";
+        path_marker.header.stamp = ros::Time();
+        path_marker.ns = "path";
+        path_marker.id = 0;
+        path_marker.type = visualization_msgs::Marker::CUBE_LIST;
+        path_marker.action = visualization_msgs::Marker::ADD;
+        path_marker.scale.x = 0.2;
+        path_marker.scale.y = 0.2;
+        path_marker.scale.z = 0.2;
+        path_marker.color.a = 0.5; // Don't forget to set the alpha!
+        path_marker.color.r = 64 / 255.0f;
+        path_marker.color.g = 224 / 255.0f;
+        path_marker.color.b = 208 / 255.0f;
+
+        for (Pose pose : path->getPoses())
+        {
+            path_marker.points.push_back(eigen_point_to_ros_point(pose.pos));
+        }
+
+        return path_marker;
+    }
+
     /**
      * @brief Reads a tsdf global map and displays it in
      *
@@ -98,7 +125,7 @@ namespace ROSViewhelper
      *
      * @return visualization_msgs::Marker
      */
-    visualization_msgs::Marker initTSDFmarker(std::shared_ptr<LocalMap> local_map_ptr_, Pose *pose)
+    visualization_msgs::Marker initTSDFmarkerPose(std::shared_ptr<LocalMap> local_map_ptr_, Pose *pose)
     {
         // create marker.
         visualization_msgs::Marker tsdf_markers;
@@ -117,11 +144,15 @@ namespace ROSViewhelper
         auto local_map = local_map_ptr_.get();
         auto &size = local_map->get_size();
         int num_intersects = 0;
+        int not_intersected = 0;
+        int num_free = 0;
 
         // define colors for the tsdf and intersections
         // intersection color might need to vary
 
         auto intersectColor = Colors::color_from_name(Colors::ColorNames::fuchsia);
+        auto intersectNegColor = Colors::color_from_name(Colors::ColorNames::yellow);
+        auto intersectZeroColor = Colors::color_from_name(Colors::ColorNames::aqua);
         auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
         auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
 
@@ -140,7 +171,9 @@ namespace ROSViewhelper
                     auto value = tsdf.value();
                     auto weight = tsdf.weight();
                     auto intersect = tsdf.getIntersect();
-                    if (intersect)
+
+                    // if there is an intersect...
+                    if (intersect != TSDFEntry::IntersectStatus::NO_INT)
                     {
                         num_intersects++;
                     }
@@ -148,6 +181,15 @@ namespace ROSViewhelper
                     // just the cells, which actually have a weight and a value other than (and including) the default one
                     if (weight > 0 && value < 600)
                     {
+                        if (intersect != TSDFEntry::IntersectStatus::NO_INT)
+                        {
+                            not_intersected++;
+                        }
+                        else
+                        {
+                            num_free++;
+                        }
+
                         geometry_msgs::Point point;
                         point.x = x * 0.001 * MAP_RESOLUTION;
                         point.y = y * 0.001 * MAP_RESOLUTION;
@@ -155,9 +197,17 @@ namespace ROSViewhelper
 
                         std_msgs::ColorRGBA color;
 
-                        if (intersect)
+                        if (intersect == TSDFEntry::IntersectStatus::INT)
                         {
                             color = intersectColor;
+                        }
+                        else if (intersect == TSDFEntry::IntersectStatus::INT_NEG)
+                        {
+                            color = intersectNegColor;
+                        }
+                        else if (intersect == TSDFEntry::IntersectStatus::INT_ZERO)
+                        {
+                            color = intersectZeroColor;
                         }
                         else if (value < 0)
                         {
@@ -176,6 +226,129 @@ namespace ROSViewhelper
         }
 
         ROS_INFO("NUM_INTERSECTS: %d", num_intersects);
+        ROS_INFO("NUM_NOT_INTERSECTED: %d", not_intersected);
+        ROS_INFO("NUM_Free: %d", num_free);
+
+        return tsdf_markers;
+    }
+
+    /**
+     * @brief Reads the full range of the map, which can be possibly seen from the path positions, and stores it into a marker array
+     * 
+     *  @todo make this work
+     *
+     * @return visualization_msgs::Marker
+     */
+    visualization_msgs::Marker initTSDFmarkerPath(std::shared_ptr<LocalMap> local_map_ptr_, Path *path)
+    {
+        // create marker.
+        visualization_msgs::Marker tsdf_markers;
+        tsdf_markers.header.frame_id = "map";
+        tsdf_markers.header.stamp = ros::Time();
+        tsdf_markers.ns = "tsdf";
+        tsdf_markers.id = 0;
+        tsdf_markers.type = visualization_msgs::Marker::POINTS;
+        tsdf_markers.action = visualization_msgs::Marker::ADD;
+        tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // why this? @julian -> 0.6 as parameter?
+        std::vector<geometry_msgs::Point> points;                                   // 3 x 3 markers
+
+        // display the current local map...
+
+        // iterate through the whole localmap [3d]
+        auto local_map = local_map_ptr_.get();
+        auto &size = local_map->get_size();
+        int num_intersects = 0;
+        int not_intersected = 0;
+        int num_free = 0;
+
+        // define colors for the tsdf and intersections
+        // intersection color might need to vary
+
+        auto intersectColor = Colors::color_from_name(Colors::ColorNames::fuchsia);
+        auto intersectNegColor = Colors::color_from_name(Colors::ColorNames::yellow);
+        auto intersectZeroColor = Colors::color_from_name(Colors::ColorNames::aqua);
+        auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
+        auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
+
+        ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
+
+        for (int i = 0; i < path->get_length(); i++)
+        {
+            Vector3i tmp_pos = (path->at(i)->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
+
+            // shift local map to new path pos
+            local_map->shift(tmp_pos);
+
+            // get values, ignore offset
+            for (int x = tmp_pos.x() + (-1 * (size.x() - 1) / 2); x < tmp_pos.x() + ((size.x() - 1) / 2); x++)
+            {
+                for (int y = tmp_pos.y() + (-1 * (size.y() - 1) / 2); y < tmp_pos.y() + ((size.y() - 1) / 2); y++)
+                {
+                    for (int z = tmp_pos.z() + (-1 * (size.z() - 1) / 2); z < tmp_pos.z() + ((size.z() - 1) / 2); z++)
+                    {
+                        auto tsdf = local_map->value(x, y, z);
+                        auto value = tsdf.value();
+                        auto weight = tsdf.weight();
+                        auto intersect = tsdf.getIntersect();
+
+                        // if there is an intersect...
+                        if (intersect != TSDFEntry::IntersectStatus::NO_INT)
+                        {
+                            num_intersects++;
+                        }
+
+                        // just the cells, which actually have a weight and a value other than (and including) the default one
+                        if (weight > 0 && value < 600)
+                        {
+                            if (intersect != TSDFEntry::IntersectStatus::NO_INT)
+                            {
+                                not_intersected++;
+                            }
+                            else
+                            {
+                                num_free++;
+                            }
+
+                            geometry_msgs::Point point;
+                            point.x = x * 0.001 * MAP_RESOLUTION;
+                            point.y = y * 0.001 * MAP_RESOLUTION;
+                            point.z = z * 0.001 * MAP_RESOLUTION;
+
+                            std_msgs::ColorRGBA color;
+
+                            if (intersect == TSDFEntry::IntersectStatus::INT)
+                            {
+                                color = intersectColor;
+                            }
+                            else if (intersect == TSDFEntry::IntersectStatus::INT_NEG)
+                            {
+                                color = intersectNegColor;
+                            }
+                            else if (intersect == TSDFEntry::IntersectStatus::INT_ZERO)
+                            {
+                                color = intersectZeroColor;
+                            }
+                            else if (value < 0)
+                            {
+                                color = redTSDFColor;
+                            }
+                            else
+                            {
+                                color = greenTSDFColor;
+                            }
+
+                            // here duplicates are possible atm
+                            tsdf_markers.points.push_back(point);
+                            tsdf_markers.colors.push_back(color);
+                        }
+                    }
+                }
+            }
+        }
+
+        ROS_INFO("NUM_INTERSECTS: %d", num_intersects);
+        ROS_INFO("NUM_NOT_INTERSECTED: %d", not_intersected);
+        ROS_INFO("NUM_Free lel: %d", num_free);
 
         return tsdf_markers;
     }

@@ -68,6 +68,16 @@ private:
     // the current data association we are working with
     Association *cur_association;
 
+    int opening_degree;
+    int hor_res;
+    int vert_res;
+    double step_size;
+
+    float side_length_xy; 
+    float side_length_z;
+
+    double ray_size;
+
     /**
      * @brief initializes the rays for the current position
      * 

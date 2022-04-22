@@ -39,7 +39,8 @@ lc_options_reader *options;
 // ROS STUFF //
 visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
-visualization_msgs::Marker tsdf_map; // marker for the tsdf map
+visualization_msgs::Marker tsdf_map; // marker for the tsdf map (local)
+visualization_msgs::Marker tsdf_map_full; // marker for the full tsdf map (global)
 
 // both of these side lengths are in real world coordinates
 float side_length_xy = 0;
@@ -93,13 +94,13 @@ int main(int argc, char **argv)
 
   if (status == 1)
   {
-    std::cout << "Terminate node, because there were some errors while reading from cmd-line" << std::endl;
+    std::cout << "[CLI] Terminate node, because there were some errors while reading from cmd-line" << std::endl;
 
     return 1;
   }
   else if (status == 2)
   {
-    std::cout << "Terminate node, because help was requested" << std::endl;
+    std::cout << "[CLI] Terminate node, because help was requested" << std::endl;
 
     return 0;
   }
@@ -114,6 +115,7 @@ int main(int argc, char **argv)
   // generate publishers
   ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);
   ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
+  ros::Publisher path_publisher = n.advertise<visualization_msgs::Marker>("path", 1, true);
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
   ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
 
@@ -134,17 +136,21 @@ int main(int argc, char **argv)
 
   // get markers
   auto pose_marker = ROSViewhelper::initPoseMarker(path->at(0));
+  auto path_marker = ROSViewhelper::initPathMarker(path);
 
   // initialize the bounding box
   bb_marker = ROSViewhelper::getBoundingBoxMarker(side_length_xy, side_length_z, path->at(0));
 
   // init tsdf
-  tsdf_map = ROSViewhelper::initTSDFmarker(local_map_ptr_, path->at(0));
+  tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
+  tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
 
   // some stuff doesnt need to be published every iteration...
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
-  cube_publisher.publish(tsdf_map);
+  path_publisher.publish(path_marker);
+  //cube_publisher.publish(tsdf_map);
+  cube_publisher.publish(tsdf_map_full);
 
   ros::spinOnce();
 
