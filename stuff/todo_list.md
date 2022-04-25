@@ -21,6 +21,7 @@
 [ ] define the serialization of the path to json
 [ ] Update localmap with a function, that converts a Vector3f in real word coordinates to map coordinates (Vector3i) and vice versa
 [ ] Outsource raytracers function to detect raytrace status changes to a function for that
+[ ] Stop hardcoding tsdf values in code (600, 0, ...)
 
 # Important TODO's for future me #
 

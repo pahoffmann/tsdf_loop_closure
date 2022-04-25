@@ -265,8 +265,7 @@ void RayTracer::updateRays()
     {
       Eigen::Vector3f globalMapPos = local_map_ptr_->get_pos().cast<float>();
       globalMapPos *= MAP_RESOLUTION / 1000.0f;
-      std::cout << "[RayTracer] Error while checking the local map values for local-map with global pose " << globalMapPos
-                << std::endl
+      std::cout << "[RayTracer] Error while checking the local map values for local-map with global pose " << globalMapPos << std::endl
                 << "Pos checked: " << p1 << std::endl
                 << "Distanze between center and checked pos: " << (p1 - globalMapPos).norm() << std::endl;
 

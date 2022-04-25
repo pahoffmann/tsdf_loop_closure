@@ -69,7 +69,6 @@ add_executable(lc_test_node src/test/lc_test_node.cpp
                         src/map/global_map.cpp 
                         src/map/local_map.cpp 
                         src/ray_tracer/ray_tracer.cpp
-                        src/color_matrix_deprecated/color_matrix.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp) #src/ray_tracer/tracer.cu)
@@ -78,7 +77,6 @@ add_executable(loop_closure src/loop_closure_node.cpp
                         src/map/global_map.cpp 
                         src/map/local_map.cpp 
                         src/ray_tracer/ray_tracer.cpp
-                        src/color_matrix_deprecated/color_matrix.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
