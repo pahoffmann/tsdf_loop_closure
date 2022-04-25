@@ -17,6 +17,7 @@
 struct ActiveChunk
 {
     std::vector<TSDFEntry::RawType> data;
+    //std::vector<TSDFEntry::IntersectStatus> intersects;
     Vector3i pos;
     int age;
 };

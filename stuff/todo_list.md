@@ -26,14 +26,16 @@
 # Important TODO's for future me #
 
 [ ] get a better understanding on weights (using the original doc thesis)
-[ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
-[ ] Update local map with a feature, which returns global index coordinates for a 3d point
 [ ] Cleanup job for global map, removing artifacts, single floating tsdf cells etc.
 
 # ASAP #
+[ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
+[ ] or: find a different way to store the association information
+[ ] write a ros node, which converts a globalmap h5 to a more usable version including metadata and intersection status.
 
 # Junkyard #
 
+[-] Update local map with a feature, which returns global index coordinates for a 3d point
 [-] Add functionality for a Pose to add, substract etc. (will be needed) 
 [?] create a way ( in the localmap ) to read, which part of the globalmap can be seen from a certain position
 [?] create a method in the localmap, which checks the current intersection of a ray with the localmap

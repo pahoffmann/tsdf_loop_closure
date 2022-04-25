@@ -386,8 +386,6 @@ namespace ROSViewhelper
                     }
                 }
             }
-
-            std::cout << "Num TSDF Cells after position " << i << ": " << tsdf_markers.points.size() << std::endl;
         }
 
         ROS_INFO("[Visualization] Time Measurement hashmap access: %.2f ms", hashmap_duration.toNSec() / 1000000.0f); // display time in ms, with two decimal points

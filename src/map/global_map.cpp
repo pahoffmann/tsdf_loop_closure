@@ -51,6 +51,8 @@ std::vector<TSDFEntry::RawType>& GlobalMap::activate_chunk(const Vector3i& chunk
 {
     int index = -1;
     int n = active_chunks_.size();
+
+    // instead maybe a hashmap of chunks?
     for (int i = 0; i < n; i++)
     {
         if (active_chunks_[i].pos == chunkPos)
@@ -59,6 +61,7 @@ std::vector<TSDFEntry::RawType>& GlobalMap::activate_chunk(const Vector3i& chunk
             index = i;
         }
     }
+
     if (index == -1)
     {
         // chunk is not already active
