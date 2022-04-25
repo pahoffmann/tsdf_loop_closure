@@ -25,6 +25,7 @@
 
 [ ] get a better understanding on weights (using the original doc thesis)
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
+[ ] Update local map with a feature, which returns global index coordinates for a 3d point
 
 # ASAP #
 

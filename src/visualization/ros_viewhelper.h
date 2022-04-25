@@ -13,6 +13,7 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <unordered_map>
 #include "../util/point.h"
 #include "../util/constants.h"
 #include "../util/colors.h"
@@ -158,6 +159,7 @@ namespace ROSViewhelper
 
         ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
 
+        // global cell index
         Vector3i tmp_pos = (pose->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
 
         // get values, ignore offset
@@ -234,7 +236,7 @@ namespace ROSViewhelper
 
     /**
      * @brief Reads the full range of the map, which can be possibly seen from the path positions, and stores it into a marker array
-     * 
+     *
      *  @todo make this work
      *
      * @return visualization_msgs::Marker
@@ -247,10 +249,16 @@ namespace ROSViewhelper
         tsdf_markers.header.stamp = ros::Time();
         tsdf_markers.ns = "tsdf";
         tsdf_markers.id = 0;
+        tsdf_markers.lifetime.fromSec(100);
         tsdf_markers.type = visualization_msgs::Marker::POINTS;
         tsdf_markers.action = visualization_msgs::Marker::ADD;
-        tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // why this? @julian -> 0.6 as parameter?
+        tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
         std::vector<geometry_msgs::Point> points;                                   // 3 x 3 markers
+
+        // hashmap to avoid adding duplicate points
+        // the string (hash) being the point in the following way:
+        // (x)-(y)-(z)
+        std::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
 
         // display the current local map...
 
@@ -261,52 +269,86 @@ namespace ROSViewhelper
         int not_intersected = 0;
         int num_free = 0;
 
+        // check for duplicates when creating the map marker.
+        int num_duplicates = 0;
+
         // define colors for the tsdf and intersections
         // intersection color might need to vary
-
         auto intersectColor = Colors::color_from_name(Colors::ColorNames::fuchsia);
         auto intersectNegColor = Colors::color_from_name(Colors::ColorNames::yellow);
         auto intersectZeroColor = Colors::color_from_name(Colors::ColorNames::aqua);
         auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
         auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
-
-        ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
-
+        
+        ros::Duration hashmap_duration;
+            
         for (int i = 0; i < path->get_length(); i++)
         {
+            // global cell index
             Vector3i tmp_pos = (path->at(i)->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
+
+            std::cout << "Gettings the tsdf marker for the whole path. Current pos: " << tmp_pos << std::endl;
 
             // shift local map to new path pos
             local_map->shift(tmp_pos);
 
             // get values, ignore offset
+
+
             for (int x = tmp_pos.x() + (-1 * (size.x() - 1) / 2); x < tmp_pos.x() + ((size.x() - 1) / 2); x++)
             {
                 for (int y = tmp_pos.y() + (-1 * (size.y() - 1) / 2); y < tmp_pos.y() + ((size.y() - 1) / 2); y++)
                 {
                     for (int z = tmp_pos.z() + (-1 * (size.z() - 1) / 2); z < tmp_pos.z() + ((size.z() - 1) / 2); z++)
                     {
+                        // calculate the hash for the current pos
+                        std::string point_hash = "(" + std::to_string(x) + ")-(" + std::to_string(y) + ")-(" + std::to_string(z) + ")";
+
                         auto tsdf = local_map->value(x, y, z);
                         auto value = tsdf.value();
                         auto weight = tsdf.weight();
                         auto intersect = tsdf.getIntersect();
+
+                        auto start_time = ros::Time::now();
+
+                        bool is_duplicate = !(map.find(point_hash) == map.end());
+
+                        if (is_duplicate)
+                        {
+                            // if it is a duplicate we can skip everything else
+                            num_duplicates++;
+                            continue;
+                        }
+                        else
+                        {
+                            // insert into hashmap and proceed
+                            map[point_hash] = intersect;
+                        }
+
+                        // more time measuring
+                        auto end_time = ros::Time::now();
+
+                        // calc duration
+                        hashmap_duration += end_time - start_time;
 
                         // if there is an intersect...
                         if (intersect != TSDFEntry::IntersectStatus::NO_INT)
                         {
                             num_intersects++;
                         }
+                        else if (weight == 0)
+                        {
+                            num_free++;
+                        }
 
                         // just the cells, which actually have a weight and a value other than (and including) the default one
                         if (weight > 0 && value < 600)
                         {
-                            if (intersect != TSDFEntry::IntersectStatus::NO_INT)
+                            // every cell, which has a considerable value and weight AND is considered not intersected,
+                            // is a miss
+                            if (intersect == TSDFEntry::IntersectStatus::NO_INT)
                             {
                                 not_intersected++;
-                            }
-                            else
-                            {
-                                num_free++;
                             }
 
                             geometry_msgs::Point point;
@@ -337,18 +379,25 @@ namespace ROSViewhelper
                                 color = greenTSDFColor;
                             }
 
-                            // here duplicates are possible atm
+                            map[point_hash] = intersect;
                             tsdf_markers.points.push_back(point);
                             tsdf_markers.colors.push_back(color);
                         }
                     }
                 }
             }
+
+            std::cout << "Num TSDF Cells after position " << i << ": " << tsdf_markers.points.size() << std::endl;
         }
 
-        ROS_INFO("NUM_INTERSECTS: %d", num_intersects);
-        ROS_INFO("NUM_NOT_INTERSECTED: %d", not_intersected);
-        ROS_INFO("NUM_Free lel: %d", num_free);
+        ROS_INFO("[Visualization] Time Measurement hashmap access: %.2f ms", hashmap_duration.toNSec() / 1000000.0f); // display time in ms, with two decimal points
+
+        ROS_INFO("Num-Hit: %d", num_intersects);
+        ROS_INFO("Num-missed: %d", not_intersected);
+        ROS_INFO("Num-free: %d", num_free);
+        ROS_INFO("Number of duplicates: %d", num_duplicates);
+
+        ROS_INFO("Number of cells missing: %ld", map.size() - num_intersects - not_intersected - num_free);
 
         return tsdf_markers;
     }
