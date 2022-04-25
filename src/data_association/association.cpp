@@ -37,8 +37,6 @@ Association::Association(Pose start_pose, int num_pose, std::string base_path, S
     }
     
     file_path = base_path + std::to_string(num_pose) + "_association" + type;
-
-    std::cout << "Created new Association, using file path: " << file_path << std::endl;
 }
 
 void Association::serialize()

@@ -32,9 +32,10 @@ class RayTracer {
 private:
 
     enum RayStatus {
-        OK,
-        FINISHED,
-        ZERO_CROSSED
+        INIT,
+        HIT,
+        ZERO_CROSSED,
+        FINISHED
     };
     // configuration for the ray tracer
     loop_closure::LoopClosureConfig  *lc_config;

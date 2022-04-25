@@ -20,12 +20,14 @@
 [ ] read paper on loop closure, write down most important points
 [ ] define the serialization of the path to json
 [ ] Update localmap with a function, that converts a Vector3f in real word coordinates to map coordinates (Vector3i) and vice versa
+[ ] Outsource raytracers function to detect raytrace status changes to a function for that
 
 # Important TODO's for future me #
 
 [ ] get a better understanding on weights (using the original doc thesis)
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] Update local map with a feature, which returns global index coordinates for a 3d point
+[ ] Cleanup job for global map, removing artifacts, single floating tsdf cells etc.
 
 # ASAP #
 

@@ -14,6 +14,8 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <unordered_map>
+#include <map>
+#include <boost/unordered_map.hpp>
 #include "../util/point.h"
 #include "../util/constants.h"
 #include "../util/colors.h"
@@ -236,6 +238,9 @@ namespace ROSViewhelper
 
     /**
      * @brief Reads the full range of the map, which can be possibly seen from the path positions, and stores it into a marker array
+     *        Prints information about:
+     *          1.) Number of intersected tsdf cells (unique)
+     *          2.) Number of cells, which have been missed by the ray tracer
      *
      *  @todo make this work
      *
@@ -258,7 +263,9 @@ namespace ROSViewhelper
         // hashmap to avoid adding duplicate points
         // the string (hash) being the point in the following way:
         // (x)-(y)-(z)
-        std::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
+        // std::map<std::string, TSDFEntry::IntersectStatus> map;
+        boost::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
+        // std::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
 
         // display the current local map...
 
@@ -267,7 +274,7 @@ namespace ROSViewhelper
         auto &size = local_map->get_size();
         int num_intersects = 0;
         int not_intersected = 0;
-        int num_free = 0;
+        int num_interesting = 0;
 
         // check for duplicates when creating the map marker.
         int num_duplicates = 0;
@@ -279,9 +286,9 @@ namespace ROSViewhelper
         auto intersectZeroColor = Colors::color_from_name(Colors::ColorNames::aqua);
         auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
         auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
-        
+
         ros::Duration hashmap_duration;
-            
+
         for (int i = 0; i < path->get_length(); i++)
         {
             // global cell index
@@ -293,62 +300,55 @@ namespace ROSViewhelper
             local_map->shift(tmp_pos);
 
             // get values, ignore offset
-
-
             for (int x = tmp_pos.x() + (-1 * (size.x() - 1) / 2); x < tmp_pos.x() + ((size.x() - 1) / 2); x++)
             {
                 for (int y = tmp_pos.y() + (-1 * (size.y() - 1) / 2); y < tmp_pos.y() + ((size.y() - 1) / 2); y++)
                 {
                     for (int z = tmp_pos.z() + (-1 * (size.z() - 1) / 2); z < tmp_pos.z() + ((size.z() - 1) / 2); z++)
                     {
-                        // calculate the hash for the current pos
-                        std::string point_hash = "(" + std::to_string(x) + ")-(" + std::to_string(y) + ")-(" + std::to_string(z) + ")";
-
                         auto tsdf = local_map->value(x, y, z);
                         auto value = tsdf.value();
                         auto weight = tsdf.weight();
                         auto intersect = tsdf.getIntersect();
 
-                        auto start_time = ros::Time::now();
-
-                        bool is_duplicate = !(map.find(point_hash) == map.end());
-
-                        if (is_duplicate)
-                        {
-                            // if it is a duplicate we can skip everything else
-                            num_duplicates++;
-                            continue;
-                        }
-                        else
-                        {
-                            // insert into hashmap and proceed
-                            map[point_hash] = intersect;
-                        }
-
-                        // more time measuring
-                        auto end_time = ros::Time::now();
-
-                        // calc duration
-                        hashmap_duration += end_time - start_time;
-
-                        // if there is an intersect...
-                        if (intersect != TSDFEntry::IntersectStatus::NO_INT)
-                        {
-                            num_intersects++;
-                        }
-                        else if (weight == 0)
-                        {
-                            num_free++;
-                        }
-
                         // just the cells, which actually have a weight and a value other than (and including) the default one
                         if (weight > 0 && value < 600)
                         {
+                            // calculate the hash for the current pos
+                            auto start_time = ros::Time::now();
+
+                            std::string point_hash = "(" + std::to_string(x) + ")-(" + std::to_string(y) + ")-(" + std::to_string(z) + ")";
+                            bool is_duplicate = !(map.find(point_hash) == map.end());
+
+                            if (is_duplicate)
+                            {
+                                // if it is a duplicate we can skip everything else
+                                num_duplicates++;
+                                continue;
+                            }
+                            else
+                            {
+                                // insert into hashmap and proceed
+                                map[point_hash] = intersect;
+                            }
+
+                            // more time measuring
+                            auto end_time = ros::Time::now();
+
+                            // calc duration
+                            hashmap_duration += end_time - start_time;
+
+                            num_interesting++;
+
                             // every cell, which has a considerable value and weight AND is considered not intersected,
                             // is a miss
                             if (intersect == TSDFEntry::IntersectStatus::NO_INT)
                             {
                                 not_intersected++;
+                            }
+                            else
+                            {
+                                num_intersects++;
                             }
 
                             geometry_msgs::Point point;
@@ -394,11 +394,9 @@ namespace ROSViewhelper
 
         ROS_INFO("Num-Hit: %d", num_intersects);
         ROS_INFO("Num-missed: %d", not_intersected);
-        ROS_INFO("Num-free: %d", num_free);
         ROS_INFO("Number of duplicates: %d", num_duplicates);
 
-        ROS_INFO("Number of cells missing: %ld", map.size() - num_intersects - not_intersected - num_free);
-
+        ROS_INFO("Hit Percentage: %.2f", (num_intersects * 1.0f / num_interesting) * 100.0f);
         return tsdf_markers;
     }
 }

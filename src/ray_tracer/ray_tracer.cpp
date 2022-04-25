@@ -129,7 +129,7 @@ void RayTracer::initRays()
 
   // update the lines finished vector, as we need to track, if a line is already finished
   // initially, all rays have a status of OK, meaning they neither passed a zero crossing, nor are already finished.
-  lines_finished = std::vector<RayStatus>(rays.size(), RayStatus::OK);
+  lines_finished = std::vector<RayStatus>(rays.size(), RayStatus::INIT);
 }
 
 void RayTracer::updateRays()
@@ -207,13 +207,37 @@ void RayTracer::updateRays()
       auto &tsdf = local_map_ptr_.get()->value(p1.x() * 1000.0f / MAP_RESOLUTION, p1.y() * 1000.0f / MAP_RESOLUTION, p1.z() * 1000.0f / MAP_RESOLUTION);
 
       // now check if a status change is necessary.
-      if (lines_finished[i] == RayStatus::OK)
+      if (lines_finished[i] == RayStatus::INIT)
+      {
+        // interesting case: if the ray directly hits a negative valued tsdf cell, the ray is finished, as
+        // this cell cannot have been seen from the current position.
+        if (tsdf.value() < 0 && tsdf.weight() > 0)
+        {
+          lines_finished[i] = RayStatus::FINISHED;
+          finished_counter++;
+        }
+        else if(tsdf.value() < 600 && tsdf.weight() > 0)
+        {
+          // now that the ray hit it's first positvely valued cell, we update it's status
+          cur_association->addAssociation(p1, tsdf);
+          lines_finished[i] = RayStatus::HIT;
+          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
+        }
+      }
+      else if (lines_finished[i] == RayStatus::HIT)
       {
         if (tsdf.value() < 0 && tsdf.weight() > 0)
         {
+          // if we detect a negative valued cell with a weight in this mode, we switch the mode
           lines_finished[i] = RayStatus::ZERO_CROSSED;
           cur_association->addAssociation(p1, tsdf);
           tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+        }
+        else if (!(tsdf.value() < 600 && tsdf.weight() > 0))
+        {
+          // if we are currently in hit mode, but the ray suddenly hits a meaningless cell, the tracing is also finished.
+          lines_finished[i] = RayStatus::FINISHED;
+          finished_counter++;
         }
         else
         {
