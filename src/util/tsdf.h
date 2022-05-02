@@ -20,9 +20,17 @@ public:
     using ValueType = TSDFEntryHW::ValueType;
     using WeightType = TSDFEntryHW::WeightType;
 
+        // currently used to store information on the type of intersection
+    enum IntersectStatus {
+        NO_INT,
+        INT,
+        INT_NEG,
+        INT_ZERO
+    };
+
 private:
-    
-    bool intersect = false;
+
+    IntersectStatus intersect = IntersectStatus::NO_INT;
 
     /// Internally managed datatype
     union
@@ -41,7 +49,7 @@ public:
     {
         data.tsdf.value = value;
         data.tsdf.weight = weight;
-        intersect = false;
+        intersect = IntersectStatus::NO_INT;
     }
 
     /**
@@ -50,7 +58,7 @@ public:
     explicit TSDFEntry(RawType raw)
     {
         data.raw = raw;
-        intersect = false;
+        intersect = IntersectStatus::NO_INT;
     }
 
     // Default behaviour for copy and move
@@ -118,12 +126,12 @@ public:
         data.tsdf.weight = val;
     }
 
-    bool getIntersect()
+    IntersectStatus getIntersect()
     {
         return intersect;
     }
 
-    void setIntersect(bool val)
+    void setIntersect(IntersectStatus val)
     {
         intersect = val;
     }

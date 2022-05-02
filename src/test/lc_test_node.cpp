@@ -1,4 +1,13 @@
-/* Create a map node, that publishes multiple cells of a specific size, trying to find bases for algorithm parts */
+/**
+ * @file lc_test_node.cpp
+ * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
+ * @brief 
+ * @version 0.1
+ * @date 2022-03-14
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -9,12 +18,15 @@
 #include <loop_closure/RayTracerConfig.h>
 #include <iostream>
 #include <highfive/H5File.hpp>
-#include "map/global_map.h"
-#include "map/local_map.h"
-#include "util/colors.h"
-#include "util/path.h"
-#include "util/point.h"
-#include "ray_tracer/ray_tracer.h"
+#include "../map/global_map.h"
+#include "../map/local_map.h"
+#include "../util/colors.h"
+#include "../path/path.h"
+#include "../util/point.h"
+#include "../ray_tracer/ray_tracer.h"
+//#include "../ray_tracer/tracer.h"
+#include "../serialization/read_path_json.h"
+#include "../data_association/association_manager.h"
 
 // ROS STUFF //
 
@@ -22,12 +34,14 @@ Pose raytrace_starting_pose; // starting pose for ray tracing
 std::vector<bool> lines_finished;
 visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
-visualization_msgs::Marker tsdf_map;         // marker for the tsdf map
+visualization_msgs::Marker tsdf_map; // marker for the tsdf map
 loop_closure::LoopClosureConfig lc_config;
-//loop_closure::RayTracerConfig rt_config;
+// loop_closure::RayTracerConfig rt_config;
 float side_length_xy = 0;
 float side_length_z = 0;
 std::string h5_file_name_;
+std::string poses_file_name_;
+std::string file_base_path_;
 bool has_update = true;
 
 /// Map Stuff ///
@@ -212,13 +226,13 @@ void initMaps()
 
 /**
  * @brief Set the Starting Position object, gets rotation from lc config, if not specified
- * 
- * @param x 
- * @param y 
- * @param z 
- * @param roll 
- * @param pitch 
- * @param yaw 
+ *
+ * @param x
+ * @param y
+ * @param z
+ * @param roll
+ * @param pitch
+ * @param yaw
  */
 void set_starting_position(float x, float y, float z, float roll = std::numeric_limits<float>::infinity(),
                            float pitch = std::numeric_limits<float>::infinity(), float yaw = std::numeric_limits<float>::infinity())
@@ -293,19 +307,19 @@ void dynamic_reconfigure_callback(loop_closure::LoopClosureConfig &config, uint3
 
 /**
  * @brief handles the reconfigure request for the ray tracer config
- * 
- * @param config 
- * @param level 
+ *
+ * @param config
+ * @param level
  */
 void ray_tracer_reconfigure_callback(loop_closure::RayTracerConfig &config, uint32_t level)
 {
   ROS_INFO("-------------------------------------------------------------------------");
   ROS_INFO("Reconfigure Request for Ray Tracer. Overwriting config..."); // todo: add new params to info call
-  //rt_config = config; // overwrite config
+  // rt_config = config; // overwrite config
   ROS_INFO("Done Overwriting!");
   ROS_INFO("-------------------------------------------------------------------------");
   ROS_INFO("\n");
-  
+
   // restart the ray tracer
   ray_tracer->start();
 
@@ -324,16 +338,42 @@ void ray_tracer_reconfigure_callback(loop_closure::RayTracerConfig &config, uint
  */
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "map_node");
+  ros::init(argc, argv, "lc_test_node");
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
 
   // if no map was set, we won't go on from here.
   if (!nh.getParam("map", h5_file_name_))
   {
-    ROS_WARN("No Global Map file delivered, shutting down...");
+    ROS_WARN("No Global Map file delivered, use _map:=[Path] shutting down...");
     exit(EXIT_FAILURE);
   }
+  else {
+    ROS_INFO("[DEBUG] Global Map file delivered: %s", h5_file_name_.c_str());
+  }
+
+  if (!nh.getParam("poses", poses_file_name_))
+  {
+    ROS_WARN("No Poses file delivered, use _poses:=[Path], shutting down...");
+    exit(EXIT_FAILURE);
+  }
+  else {
+    ROS_INFO("[DEBUG] Poses file delivered: %s", poses_file_name_.c_str());
+  }
+
+  if (!nh.getParam("basepath", file_base_path_))
+  {
+    ROS_WARN("No File Base Path file delivered, use _basepath:=[Path], shutting down...");
+    exit(EXIT_FAILURE);
+  }
+  else {
+    ROS_INFO("[DEBUG] Base file path delivered: %s", file_base_path_.c_str());
+  }
+
+  // init path and read from json
+  Path path;
+  path.fromJSON(poses_file_name_);
+
 
   // init local and global maps
   initMaps();
@@ -347,11 +387,13 @@ int main(int argc, char **argv)
   // specify ros loop rate
   ros::Rate loop_rate(10);
 
-
   set_starting_position(0, 0, 0);
 
   // define stuff for raytracer
   ray_tracer = new RayTracer(&lc_config, local_map_ptr_, &raytrace_starting_pose);
+
+  // create associationmanager
+  AssociationManager manager(&path, file_base_path_, ray_tracer, local_map_ptr_);
 
   // and lastly: reconfigure callbacks
   dynamic_reconfigure::Server<loop_closure::LoopClosureConfig> server;
@@ -363,12 +405,11 @@ int main(int argc, char **argv)
   // get markers
   auto pose_marker = initPoseMarker();
 
-  // initialize the bounding box 
+  // initialize the bounding box
   bb_marker = initBoundingBox();
 
   // init tsdf
   tsdf_map = initTSDFmarker();
-
 
   // some stuff doesnt need to be published every iteration...
   bb_publisher.publish(bb_marker);
@@ -376,17 +417,17 @@ int main(int argc, char **argv)
   cube_publisher.publish(tsdf_map);
 
   ros::spinOnce();
-  
+
   // ros loop
   while (ros::ok())
-  { 
+  {
     // if there is an update, aka there has been some dynamic reconfiguration, we need to reinit the tsdf map
     if (has_update)
     {
       // ROS_INFO("WE GOT AN UPDATE FOR YOU..");
       tsdf_map = initTSDFmarker();
       has_update = false;
-      //CudaTracing::helloWorld(); // test cuda
+      // CudaTracing::helloWorld(); // test cuda
     }
 
     // publish the individual messages
