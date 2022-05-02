@@ -71,6 +71,7 @@ std::vector<TSDFEntry::RawType>& GlobalMap::activate_chunk(const Vector3i& chunk
 
         HighFive::Group g = file_.getGroup("/map");
         auto tag = tag_from_chunk_pos(chunkPos);
+        
         if (g.exist(tag))
         {
             // read chunk from file
