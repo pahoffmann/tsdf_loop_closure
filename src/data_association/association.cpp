@@ -80,6 +80,7 @@ void Association::deserialze()
 
 Association::~Association()
 {
+    //TODO: eval, whether this destructor might be used to actually remove the file on the harddrive, should be called from association manager
 }
 
 /**

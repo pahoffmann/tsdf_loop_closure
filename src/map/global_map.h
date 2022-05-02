@@ -123,5 +123,13 @@ public:
      * Writes all active chunks into the HDF5 file.
      */
     void write_back();
-
+    
+    /**
+     * @brief basic function, which checks if a specific chunk exists
+     * 
+     * @param chunk_pos 
+     * @return true 
+     * @return false 
+     */
+    bool chunk_exists(const Eigen::Vector3i &chunk_pos);
 };

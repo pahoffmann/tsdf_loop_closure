@@ -142,7 +142,9 @@ int main(int argc, char **argv)
   bb_marker = ROSViewhelper::getBoundingBoxMarker(side_length_xy, side_length_z, path->at(0));
 
   // init tsdf
-  //tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
+  tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
+
+  //FIXME: use this full map, once i have an accurate path.
   tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
 
   // some stuff doesnt need to be published every iteration...
@@ -150,7 +152,7 @@ int main(int argc, char **argv)
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
   //cube_publisher.publish(tsdf_map);
-  cube_publisher.publish(tsdf_map_full);
+  cube_publisher.publish(tsdf_map);
 
   ros::spinOnce();
 
@@ -160,7 +162,7 @@ int main(int argc, char **argv)
     // publish the individual messages
     bb_publisher.publish(bb_marker);
     ray_publisher.publish(ray_markers);
-    cube_publisher.publish(tsdf_map_full);
+    //cube_publisher.publish(tsdf_map_full);
 
     // more ros related stuff
     ros::spinOnce();

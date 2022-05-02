@@ -80,7 +80,8 @@ add_executable(loop_closure src/loop_closure_node.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
-                        src/options/options_reader.cpp)
+                        src/options/options_reader.cpp
+                        src/path/path_exploration.cpp)
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)

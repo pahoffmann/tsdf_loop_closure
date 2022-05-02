@@ -34,20 +34,20 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
     }
 }
 
-std::string GlobalMap::tag_from_chunk_pos(const Vector3i& pos)
+std::string GlobalMap::tag_from_chunk_pos(const Vector3i &pos)
 {
     std::stringstream ss;
     ss << pos.x() << "_" << pos.y() << "_" << pos.z();
     return ss.str();
 }
 
-int GlobalMap::index_from_pos(Vector3i pos, const Vector3i& chunkPos)
+int GlobalMap::index_from_pos(Vector3i pos, const Vector3i &chunkPos)
 {
     pos -= chunkPos * CHUNK_SIZE;
     return (pos.x() * CHUNK_SIZE * CHUNK_SIZE + pos.y() * CHUNK_SIZE + pos.z());
 }
 
-std::vector<TSDFEntry::RawType>& GlobalMap::activate_chunk(const Vector3i& chunkPos)
+std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunkPos)
 {
     int index = -1;
     int n = active_chunks_.size();
@@ -71,7 +71,7 @@ std::vector<TSDFEntry::RawType>& GlobalMap::activate_chunk(const Vector3i& chunk
 
         HighFive::Group g = file_.getGroup("/map");
         auto tag = tag_from_chunk_pos(chunkPos);
-        
+
         if (g.exist(tag))
         {
             // read chunk from file
@@ -120,7 +120,7 @@ std::vector<TSDFEntry::RawType>& GlobalMap::activate_chunk(const Vector3i& chunk
     }
     // update ages
     int age = active_chunks_[index].age;
-    for (auto& chunk : active_chunks_)
+    for (auto &chunk : active_chunks_)
     {
         if (chunk.age < age)
         {
@@ -131,18 +131,18 @@ std::vector<TSDFEntry::RawType>& GlobalMap::activate_chunk(const Vector3i& chunk
     return active_chunks_[index].data;
 }
 
-TSDFEntry GlobalMap::get_value(const Vector3i& pos)
+TSDFEntry GlobalMap::get_value(const Vector3i &pos)
 {
     Vector3i chunkPos = floor_divide(pos, CHUNK_SIZE);
-    const auto& chunk = activate_chunk(chunkPos);
+    const auto &chunk = activate_chunk(chunkPos);
     int index = index_from_pos(pos, chunkPos);
     return TSDFEntry(chunk[index]);
 }
 
-void GlobalMap::set_value(const Vector3i& pos, const TSDFEntry& value)
+void GlobalMap::set_value(const Vector3i &pos, const TSDFEntry &value)
 {
     Vector3i chunkPos = floor_divide(pos, CHUNK_SIZE);
-    auto& chunk = activate_chunk(chunkPos);
+    auto &chunk = activate_chunk(chunkPos);
     int index = index_from_pos(pos, chunkPos);
     chunk[index] = value.raw();
 }
@@ -150,7 +150,7 @@ void GlobalMap::set_value(const Vector3i& pos, const TSDFEntry& value)
 void GlobalMap::write_back()
 {
     HighFive::Group g = file_.getGroup("/map");
-    for (auto& chunk : active_chunks_)
+    for (auto &chunk : active_chunks_)
     {
         auto tag = tag_from_chunk_pos(chunk.pos);
 
@@ -165,4 +165,20 @@ void GlobalMap::write_back()
         }
     }
     file_.flush();
+}
+
+bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
+{
+    HighFive::Group g = file_.getGroup("/map");
+
+    auto tag = tag_from_chunk_pos(chunk_pos);
+
+    if (g.exist(tag))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }

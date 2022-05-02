@@ -9,7 +9,7 @@
 #include <stdlib.h> // for abs
 #include <stdexcept>
 
-LocalMap::LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std::shared_ptr<GlobalMap>& map, bool from_source)
+LocalMap::LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std::shared_ptr<GlobalMap> &map, bool from_source)
     : size_{static_cast<int>(sX % 2 == 1 ? sX : sX + 1),
             static_cast<int>(sY % 2 == 1 ? sY : sY + 1),
             static_cast<int>(sZ % 2 == 1 ? sZ : sZ + 1)},
@@ -20,7 +20,7 @@ LocalMap::LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std:
 {
 
     // if the localmap is not initiallized with an already existing global map, we simply fill it with default values.
-    if(!from_source)
+    if (!from_source)
     {
         auto default_entry = map_->get_value(Vector3i(0, 0, 0));
         for (int i = 0; i < size_.x() * size_.y() * size_.z(); i++)
@@ -37,10 +37,9 @@ LocalMap::LocalMap(unsigned int sX, unsigned int sY, unsigned int sZ, const std:
         load_area(start, end);
         // determine area in global map
     }
-
 }
 
-void LocalMap::swap(LocalMap& rhs)
+void LocalMap::swap(LocalMap &rhs)
 {
     this->data_.swap(rhs.data_);
     std::swap(this->size_, rhs.size_);
@@ -58,7 +57,7 @@ void LocalMap::swap(LocalMap& rhs)
 //     this->map_ = rhs.map_;
 // }
 
-void LocalMap::shift(const Vector3i& new_pos)
+void LocalMap::shift(const Vector3i &new_pos)
 {
     // Explanation:
     // shifting consists of 3 Steps:
@@ -125,8 +124,8 @@ void LocalMap::shift(const Vector3i& new_pos)
     }
 }
 
-template<bool save>
-void LocalMap::save_load_area(const Vector3i& bottom_corner, const Vector3i& top_corner)
+template <bool save>
+void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top_corner)
 {
     // Explanation: We only want to touch each Chunk once instead of every time that
     // GlobalMap::get/set_value is called.
@@ -152,7 +151,7 @@ void LocalMap::save_load_area(const Vector3i& bottom_corner, const Vector3i& top
         {
             for (int chunk_z = chunk_start.z(); chunk_z <= chunk_end.z(); ++chunk_z)
             {
-                auto& chunk = map_->activate_chunk(Vector3i(chunk_x, chunk_y, chunk_z));
+                auto &chunk = map_->activate_chunk(Vector3i(chunk_x, chunk_y, chunk_z));
 
                 // The usual scenario is to iterate over [0, CHUNK_SIZE) in x,y,z, unless the
                 // current chunk is on the boundary of the area.
@@ -188,7 +187,7 @@ void LocalMap::save_load_area(const Vector3i& bottom_corner, const Vector3i& top
                             index = index_x + index_y + dz;
                             global_pos.z() = chunk_z * CHUNK_SIZE + dz;
 
-                            if constexpr(save)
+                            if constexpr (save)
                             {
                                 // We did a bounds check at the start of the function => unchecked is fine
                                 chunk[index] = value_unchecked(global_pos).raw();
@@ -205,7 +204,7 @@ void LocalMap::save_load_area(const Vector3i& bottom_corner, const Vector3i& top
     }
 }
 
-std::vector<TSDFEntry>& LocalMap::getBuffer()
+std::vector<TSDFEntry> &LocalMap::getBuffer()
 {
     return data_;
 }
@@ -219,11 +218,37 @@ void LocalMap::write_back()
     map_->write_back();
 }
 
-/**
- * @brief todo once prototyping is finished to ensure acceleration
- * 
- * @return std::pair<float*, float*> 
- */
-std::pair<float*, float*> LocalMap::get_GPU_representation() {
-    return std::make_pair<float*, float*>(NULL, NULL);
+bool LocalMap::is_full_occupied(Eigen::Vector3i &pos)
+{
+    const Vector3i &bottom_corner = pos - size_ / 2;
+    const Vector3i &top_corner = pos + size_ / 2;
+
+    Vector3i start = bottom_corner.cwiseMin(top_corner);
+    Vector3i end = bottom_corner.cwiseMax(top_corner);
+
+    // calculate the chunk index
+    constexpr int CHUNK_SIZE = GlobalMap::CHUNK_SIZE;
+    Vector3i chunk_start = floor_divide(start, CHUNK_SIZE);
+    Vector3i chunk_end = floor_divide(end, CHUNK_SIZE);
+
+    std::cout << "Start Positon: " << start << std::endl;
+    std::cout << "End Positon: " << end << std::endl;
+
+    // check all chunks in the local-map sized bounding box around "pos"
+    for (int chunk_x = chunk_start.x(); chunk_x <= chunk_end.x(); ++chunk_x)
+    {
+        for (int chunk_y = chunk_start.y(); chunk_y <= chunk_end.y(); ++chunk_y)
+        {
+            for (int chunk_z = chunk_start.z(); chunk_z <= chunk_end.z(); ++chunk_z)
+            {
+                if (!map_->chunk_exists(Eigen::Vector3i(chunk_x, chunk_y, chunk_z)))
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    // when all chunks are already generated, the local map would be fully occupied and no further chunk would need to be generated.
+    return true;
 }
