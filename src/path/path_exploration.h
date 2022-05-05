@@ -3,6 +3,8 @@
 #include "../map/global_map.h"
 #include "../ray_tracer/ray_tracer.h"
 
+#include <queue>
+
 class path_exploration
 {
 private:
@@ -11,27 +13,42 @@ private:
     std::shared_ptr<LocalMap> local_map_ptr;
     RayTracer *ray_tracer;
 
-    // to keep track of the minimum distances needed to go to chunk xyz
-    std::map<std::string, std::pair<int, Eigen::Vector3i>> distance_map;
+    // struct used to store 
+    struct dijkstra_vertex
+    {
+        dijkstra_vertex *previous = NULL;
+        Vector3i chunk_pos;
+        float distance = std::numeric_limits<float>::infinity();
+    };
 
-    /**
-     * @brief used to recursively explore the 3d space
-     *
-     * @param distance_map used to check, if the current path is any good.
-     * @param cnt used to track the number of positions
-     * @return Vector3i
-     */
-    Vector3i explore_recursive(Vector3i new_pos, int cnt = 0);
+    // used to compare two dijkstra vertices, for the min priority queue
+    struct compare : public std::binary_function<dijkstra_vertex*, dijkstra_vertex*, bool>  
+    {
+        bool operator()(const dijkstra_vertex &l, const dijkstra_vertex &r)
+        {
+            return l.distance < r.distance;
+        }
+    };
+
+    // priority queue used for dijkstra
+    std::priority_queue<dijkstra_vertex*, std::vector<dijkstra_vertex*>, compare> pq;
+
 
     /**
      * @brief Creates a string hash from a 3d integer point
-     * 
-     * @return std::string 
+     *
+     * @return std::string
      */
     std::string hash_from_point(Eigen::Vector3i);
 
+    /**
+     * @brief fills the priority queue with all possible chunks.
+     * 
+     */
+    void fill_pq();
+
 public:
-    path_exploration(std::shared_ptr<LocalMap> l_map_ptr, Path *path_ptr, RayTracer *tracer_ptr);
+    path_exploration(std::shared_ptr<LocalMap> l_map_ptr, std::shared_ptr<GlobalMap> g_map_ptr, Path *path_ptr, RayTracer *tracer_ptr);
     ~path_exploration();
 
     /**
@@ -44,4 +61,10 @@ public:
      * @return int
      */
     int explore(int num_randoms, int max_num_selects);
+
+    /**
+     * @brief Performs a dijkstra operation to find the (longest shortest) path
+     * 
+     */
+    void dijsktra();
 };

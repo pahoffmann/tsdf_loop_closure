@@ -182,3 +182,47 @@ bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
         return false;
     }
 }
+
+std::vector<Vector3i> GlobalMap::all_chunk_poses()
+{
+
+    HighFive::Group g = file_.getGroup("/map");
+    auto object_names = g.listObjectNames();
+    std::vector<Vector3i> poses;
+
+    for (auto name : object_names)
+    {
+        if (!g.exist(name))
+        {
+            throw std::logic_error("Error when reading chunks from h5");
+        }
+
+        poses.push_back(chunk_pos_from_tag(name));
+    }
+
+    return poses;
+}
+
+Vector3i GlobalMap::chunk_pos_from_tag(std::string &tag)
+{
+    std::stringstream tmp(tag);
+    std::string segment;
+    std::vector<std::string> seglist;
+
+    while (std::getline(tmp, segment, '_'))
+    {
+        seglist.push_back(segment);
+    }
+
+    if (seglist.size() != 3)
+    {
+        throw std::logic_error("Error when transforming a tag into a chunk pos");
+    }
+
+    // get coords
+    int x = std::stoi(seglist[0]);
+    int y = std::stoi(seglist[1]);
+    int z = std::stoi(seglist[2]);
+
+    return Vector3i(x, y, z);
+}

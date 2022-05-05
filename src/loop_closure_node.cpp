@@ -32,6 +32,7 @@
 #include "data_association/association_manager.h"
 #include "options/options_reader.h"
 #include "visualization/ros_viewhelper.h"
+#include "path/path_exploration.h"
 
 // Configuration stuff //
 lc_options_reader *options;
@@ -105,12 +106,15 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  // init path and read from json
-  path = new Path();
-  path->fromJSON(options->get_poses_file_name());
-
   // init local and global maps
   initMaps();
+
+  // init path and read from json
+  path = new Path();
+  //path->fromJSON(options->get_poses_file_name());
+
+  path_exploration exploration(local_map_ptr_, global_map_ptr_, path, ray_tracer);
+  exploration.dijsktra();
 
   // generate publishers
   ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);

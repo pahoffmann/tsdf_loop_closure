@@ -11,13 +11,14 @@
 #include <cmath>
 #include <string>
 #include <utility>
+#include <sstream>
 #include "../util/point.h"
 #include "../util/tsdf.h"
 
 struct ActiveChunk
 {
     std::vector<TSDFEntry::RawType> data;
-    //std::vector<TSDFEntry::IntersectStatus> intersects;
+    // std::vector<TSDFEntry::IntersectStatus> intersects;
     Vector3i pos;
     int age;
 };
@@ -59,12 +60,12 @@ private:
     /// Number of poses that are saved in the HDF5 file
     int num_poses_;
 
-    /** 
+    /**
      * Given a position in a chunk the tag of the chunk gets returned.
      * @param pos the position
      * @return tag of the chunk
      */
-    std::string tag_from_chunk_pos(const Vector3i& pos);
+    std::string tag_from_chunk_pos(const Vector3i &pos);
 
     /**
      * Returns the index of a global position in a chunk.
@@ -73,10 +74,11 @@ private:
      * @param pos the position
      * @return index in the chunk
      */
-    int index_from_pos(Vector3i pos, const Vector3i& chunkPos);
+    int index_from_pos(Vector3i pos, const Vector3i &chunkPos);
+
+    Vector3i chunk_pos_from_tag(std::string &tag);
 
 public:
-
     /// Side length of the cube-shaped chunks
     static constexpr int CHUNK_SIZE = 64;
 
@@ -98,14 +100,14 @@ public:
      * @param pos the position
      * @return value pair from the map
      */
-    TSDFEntry get_value(const Vector3i& pos);
+    TSDFEntry get_value(const Vector3i &pos);
 
     /**
      * Sets a value pair consisting of a tsdf value and a weight on the map.
      * @param pos the position
      * @param value value pair that is set
      */
-    void set_value(const Vector3i& pos, const TSDFEntry& value);
+    void set_value(const Vector3i &pos, const TSDFEntry &value);
 
     /**
      * Activates a chunk and returns it by reference.
@@ -117,19 +119,21 @@ public:
      * @param chunk position of the chunk that gets activated
      * @return reference to the activated chunk
      */
-    std::vector<TSDFEntry::RawType>& activate_chunk(const Vector3i& chunk);
+    std::vector<TSDFEntry::RawType> &activate_chunk(const Vector3i &chunk);
 
     /**
      * Writes all active chunks into the HDF5 file.
      */
     void write_back();
-    
+
     /**
      * @brief basic function, which checks if a specific chunk exists
-     * 
-     * @param chunk_pos 
-     * @return true 
-     * @return false 
+     *
+     * @param chunk_pos
+     * @return true
+     * @return false
      */
     bool chunk_exists(const Eigen::Vector3i &chunk_pos);
+
+    std::vector<Vector3i> all_chunk_poses();
 };
