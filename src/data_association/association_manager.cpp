@@ -73,10 +73,14 @@ void AssociationManager::greedy_associations()
         // ray_tracer->update_map_pointer(local_map_ptr);
 
         // update ray tracer data for the next trace
+        std::cout << "[AssociationManager] Updating Pose" << std::endl;
         ray_tracer->update_pose(associations[i].getPose());
+        std::cout << "[AssociationManager] Updating Association" << std::endl;
         ray_tracer->update_association(&associations[i]);
+        std::cout << "[AssociationManager] Start Tracing" << std::endl;
         ray_tracer->start(); // start tracing, given the current association.
 
+        std::cout << "[AssociationManager] Serialization" << std::endl;
         associations[i].serialize(); // serialize data
     }
 }

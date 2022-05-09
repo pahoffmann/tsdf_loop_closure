@@ -290,10 +290,9 @@ void RayTracer::update_pose(Pose *new_pose)
 {
   // calc the new localmap pose
   Eigen::Vector3i new_pose_map = (new_pose->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
-
+  std::cout << "New Pose: " << std::endl << new_pose_map << std::endl;
   // shift the local map
   local_map_ptr_->shift(new_pose_map);
-
   // update the pose
   current_pose = new_pose;
 }

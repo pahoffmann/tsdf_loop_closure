@@ -122,6 +122,7 @@ int main(int argc, char **argv)
   ros::Publisher path_publisher = n.advertise<visualization_msgs::Marker>("path", 1, true);
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
   ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
+  ros::Publisher chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
 
   // specify ros loop rate
   ros::Rate loop_rate(10);
@@ -141,6 +142,7 @@ int main(int argc, char **argv)
   // get markers
   auto pose_marker = ROSViewhelper::initPoseMarker(path->at(0));
   auto path_marker = ROSViewhelper::initPathMarker(path);
+  auto chunk_marker = ROSViewhelper::initPathExtractionVisualizion(global_map_ptr_, local_map_ptr_);
 
   // initialize the bounding box
   bb_marker = ROSViewhelper::getBoundingBoxMarker(side_length_xy, side_length_z, path->at(0));
@@ -156,7 +158,8 @@ int main(int argc, char **argv)
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
   //cube_publisher.publish(tsdf_map);
-  cube_publisher.publish(tsdf_map);
+  cube_publisher.publish(tsdf_map_full);
+  chunk_publisher.publish(chunk_marker);
 
   ros::spinOnce();
 

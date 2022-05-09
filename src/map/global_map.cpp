@@ -173,7 +173,7 @@ bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
 
     auto tag = tag_from_chunk_pos(chunk_pos);
 
-    std::cout << "Checking if chunk exists: " << tag << std::endl;
+    //std::cout << "Checking if chunk exists: " << tag << std::endl;
 
     if (g.exist(tag))
     {
@@ -205,7 +205,7 @@ std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
     std::vector<Vector3i> poses;
 
     // local map size (in chunks), already halved.
-    Vector3i chunked_lmap_size = ceil_divide(l_map_size, CHUNK_SIZE * 2);
+    Vector3i chunked_lmap_size = floor_divide(l_map_size, CHUNK_SIZE * 2);
 
     std::cout << "Localmap size: " << std::endl << l_map_size << std::endl;
     std::cout << "Chunked map size: " << std::endl << chunked_lmap_size << std::endl;
@@ -241,9 +241,9 @@ std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
             {
                 if (!chunk_exists(corner))
                 {
-                    std::cout << "There is a non existing chunk here..." << std::endl;
+                    //std::cout << "There is a non existing chunk here..." << std::endl;
                     check = false;
-                    break;
+                    //break;
                 }
             }
 

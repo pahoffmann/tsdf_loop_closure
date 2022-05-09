@@ -4,6 +4,7 @@
 #include "../ray_tracer/ray_tracer.h"
 
 #include <queue>
+#include <algorithm>
 
 class path_exploration
 {

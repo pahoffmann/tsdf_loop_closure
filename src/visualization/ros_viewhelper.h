@@ -397,4 +397,45 @@ namespace ROSViewhelper
         ROS_INFO("Hit Percentage: %.2f", (num_intersects * 1.0f / num_interesting) * 100.0f);
         return tsdf_markers;
     }
+
+    visualization_msgs::Marker initPathExtractionVisualizion(std::shared_ptr<GlobalMap> global_map_ptr_, std::shared_ptr<LocalMap> local_map_ptr_)
+    {
+        auto chunks = global_map_ptr_->all_chunk_poses();
+        std::cout << "Number of chunks: " << chunks.size() << std::endl;
+
+        auto chunks_1 = global_map_ptr_->all_chunk_poses(local_map_ptr_->get_size());
+        std::cout << "Number filtered chunks: " << chunks_1.size() << std::endl;
+
+        visualization_msgs::Marker path_marker;
+        path_marker.header.frame_id = "map";
+        path_marker.header.stamp = ros::Time();
+        path_marker.ns = "chunks";
+        path_marker.id = 0;
+        path_marker.type = visualization_msgs::Marker::CUBE_LIST;
+        path_marker.action = visualization_msgs::Marker::ADD;
+        path_marker.scale.x = (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f));
+        path_marker.scale.y = (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f));
+        path_marker.scale.z = (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f));
+        path_marker.color.a = 0.5; // Don't forget to set the alpha!
+        path_marker.color.r = 255 / 255.0f;
+        path_marker.color.g =  15 / 255.0f;
+        path_marker.color.b =  15 / 255.0f;
+
+        std_msgs::ColorRGBA color_non_filtered = Colors::color_from_name(Colors::ColorNames::aqua);
+        color_non_filtered.a = 0.5;
+
+        for (auto chunk : chunks)
+        {
+            path_marker.points.push_back(eigen_point_to_ros_point(chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f))));
+            path_marker.colors.push_back(color_non_filtered);
+        }
+
+        for (auto chunk : chunks_1)
+        {
+            path_marker.points.push_back(eigen_point_to_ros_point(chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f))));
+            path_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::red));
+        }
+
+        return path_marker;
+    }
 }

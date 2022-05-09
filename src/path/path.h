@@ -47,6 +47,20 @@ public:
         return poses;
     }
 
+    /**
+     * @brief function which adds a pose to the path
+     * 
+     * @param pose 
+     */
+    inline void add_pose(Pose pose) {
+        poses.push_back(pose);
+    }
+
+    /**
+     * @brief Get the length of the path
+     * 
+     * @return int 
+     */
     inline int get_length() {
         return poses.size();
     }
