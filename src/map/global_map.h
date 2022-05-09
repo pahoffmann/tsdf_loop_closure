@@ -61,13 +61,6 @@ private:
     int num_poses_;
 
     /**
-     * Given a position in a chunk the tag of the chunk gets returned.
-     * @param pos the position
-     * @return tag of the chunk
-     */
-    std::string tag_from_chunk_pos(const Vector3i &pos);
-
-    /**
      * Returns the index of a global position in a chunk.
      * The returned index is that of the tsdf value.
      * The index of the weight is one greater.
@@ -75,8 +68,6 @@ private:
      * @return index in the chunk
      */
     int index_from_pos(Vector3i pos, const Vector3i &chunkPos);
-
-    Vector3i chunk_pos_from_tag(std::string &tag);
 
 public:
     /// Side length of the cube-shaped chunks
@@ -135,5 +126,34 @@ public:
      */
     bool chunk_exists(const Eigen::Vector3i &chunk_pos);
 
-    std::vector<Vector3i> all_chunk_poses();
+    /**
+     * @brief returns all chunk poses of the global map
+     * 
+     * @param valid_for_path  boolean used to check, if all chunk poses are valid.
+     * @return std::vector<Vector3i> 
+     */
+    std::vector<Vector3i> all_chunk_poses(Vector3i l_map_size = Vector3i(0,0,0));
+
+    int num_chunks();
+
+    /**
+     * Given a position in a chunk the tag of the chunk gets returned.
+     * @param pos the position
+     * @return tag of the chunk
+     */
+    std::string tag_from_chunk_pos(const Vector3i &pos);
+
+    /**
+     * @brief gets the adjacent chunk positions of chunk_pos
+     * 
+     */
+    std::vector<Vector3i> get_adjacent_chunks(Vector3i chunk_pos);
+
+    /**
+     * @brief gets the chunk pos from the tag
+     * 
+     * @param tag 
+     * @return Vector3i 
+     */
+    Vector3i chunk_pos_from_tag(std::string &tag);
 };

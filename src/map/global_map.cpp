@@ -173,6 +173,8 @@ bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
 
     auto tag = tag_from_chunk_pos(chunk_pos);
 
+    std::cout << "Checking if chunk exists: " << tag << std::endl;
+
     if (g.exist(tag))
     {
         return true;
@@ -183,12 +185,30 @@ bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
     }
 }
 
-std::vector<Vector3i> GlobalMap::all_chunk_poses()
+std::vector<Vector3i> GlobalMap::get_adjacent_chunks(Vector3i chunk_pos)
 {
+    std::vector<Vector3i> chunks;
+    chunks.push_back(chunk_pos + Vector3i(0, 0, 1));
+    chunks.push_back(chunk_pos + Vector3i(0, 0, -1));
+    chunks.push_back(chunk_pos + Vector3i(0, 1, 0));
+    chunks.push_back(chunk_pos + Vector3i(0, -1, 0));
+    chunks.push_back(chunk_pos + Vector3i(1, 0, 0));
+    chunks.push_back(chunk_pos + Vector3i(-1, 0, 0));
 
+    return chunks;
+}
+
+std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
+{
     HighFive::Group g = file_.getGroup("/map");
     auto object_names = g.listObjectNames();
     std::vector<Vector3i> poses;
+
+    // local map size (in chunks), already halved.
+    Vector3i chunked_lmap_size = ceil_divide(l_map_size, CHUNK_SIZE * 2);
+
+    std::cout << "Localmap size: " << std::endl << l_map_size << std::endl;
+    std::cout << "Chunked map size: " << std::endl << chunked_lmap_size << std::endl;
 
     for (auto name : object_names)
     {
@@ -197,7 +217,46 @@ std::vector<Vector3i> GlobalMap::all_chunk_poses()
             throw std::logic_error("Error when reading chunks from h5");
         }
 
-        poses.push_back(chunk_pos_from_tag(name));
+        // if the local map size is passed to the function, it checks, whether all chunks in an area as big as the local map
+        // around the current chunk are already loaded in the global map
+        if (l_map_size != Vector3i(0, 0, 0))
+        {
+            Vector3i tmp = chunk_pos_from_tag(name);
+
+            // 8 chunks need to be checked here ( 8 corners in 3d)
+            std::vector<Vector3i> corners;
+            corners.push_back(tmp + chunked_lmap_size);
+            corners.push_back(tmp + Vector3i(chunked_lmap_size.x(), chunked_lmap_size.y(), -chunked_lmap_size.z()));
+            corners.push_back(tmp + Vector3i(chunked_lmap_size.x(), -chunked_lmap_size.y(), chunked_lmap_size.z()));
+            corners.push_back(tmp + Vector3i(chunked_lmap_size.x(), -chunked_lmap_size.y(), -chunked_lmap_size.z()));
+            corners.push_back(tmp + Vector3i(-chunked_lmap_size.x(), chunked_lmap_size.y(), chunked_lmap_size.z()));
+            corners.push_back(tmp + Vector3i(-chunked_lmap_size.x(), chunked_lmap_size.y(), -chunked_lmap_size.z()));
+            corners.push_back(tmp + Vector3i(-chunked_lmap_size.x(), -chunked_lmap_size.y(), chunked_lmap_size.z()));
+            corners.push_back(tmp - chunked_lmap_size);
+
+            bool check = true;
+
+            // check for every corner, if it exists.
+            for (auto corner : corners)
+            {
+                if (!chunk_exists(corner))
+                {
+                    std::cout << "There is a non existing chunk here..." << std::endl;
+                    check = false;
+                    break;
+                }
+            }
+
+            // if still every chunk around the current chunk is registered, it is a possible valid path pos
+            if (check)
+            {
+                poses.push_back(chunk_pos_from_tag(name));
+            }
+        }
+        else
+        {
+            poses.push_back(chunk_pos_from_tag(name));
+        }
     }
 
     return poses;
@@ -225,4 +284,12 @@ Vector3i GlobalMap::chunk_pos_from_tag(std::string &tag)
     int z = std::stoi(seglist[2]);
 
     return Vector3i(x, y, z);
+}
+
+int GlobalMap::num_chunks()
+{
+    HighFive::Group g = file_.getGroup("/map");
+    auto object_names = g.listObjectNames();
+
+    return object_names.size();
 }

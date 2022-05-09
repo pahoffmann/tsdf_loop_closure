@@ -24,9 +24,9 @@ private:
     // used to compare two dijkstra vertices, for the min priority queue
     struct compare : public std::binary_function<dijkstra_vertex*, dijkstra_vertex*, bool>  
     {
-        bool operator()(const dijkstra_vertex &l, const dijkstra_vertex &r)
+        bool operator()(const dijkstra_vertex *l, const dijkstra_vertex *r)
         {
-            return l.distance < r.distance;
+            return l->distance < r->distance;
         }
     };
 

@@ -77,6 +77,22 @@ static inline Vector3i floor_divide(const Vector3i& a, int b)
 }
 
 /**
+ * @brief calculates floor(a / b), except that a is a Vector and all values are integers
+ *
+ * @param a the numerator
+ * @param b the denominator
+ * @return floor(a / b)
+ */
+static inline Vector3i ceil_divide(const Vector3i& a, int b)
+{
+    return Vector3i(
+               std::ceil(static_cast<float>(a[0]) / b),
+               std::ceil(static_cast<float>(a[1]) / b),
+               std::ceil(static_cast<float>(a[2]) / b)
+           );
+}
+
+/**
  * @brief Creates a pose from euler angles and position
  * 
  * @param x 
