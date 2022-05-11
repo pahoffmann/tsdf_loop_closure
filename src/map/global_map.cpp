@@ -204,12 +204,6 @@ std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
     auto object_names = g.listObjectNames();
     std::vector<Vector3i> poses;
 
-    // local map size (in chunks), already halved.
-    Vector3i chunked_lmap_size = floor_divide(l_map_size, CHUNK_SIZE * 2);
-
-    std::cout << "Localmap size: " << std::endl << l_map_size << std::endl;
-    std::cout << "Chunked map size: " << std::endl << chunked_lmap_size << std::endl;
-
     for (auto name : object_names)
     {
         if (!g.exist(name))
@@ -222,30 +216,8 @@ std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
         if (l_map_size != Vector3i(0, 0, 0))
         {
             Vector3i tmp = chunk_pos_from_tag(name);
-
-            // 8 chunks need to be checked here ( 8 corners in 3d)
-            std::vector<Vector3i> corners;
-            corners.push_back(tmp + chunked_lmap_size);
-            corners.push_back(tmp + Vector3i(chunked_lmap_size.x(), chunked_lmap_size.y(), -chunked_lmap_size.z()));
-            corners.push_back(tmp + Vector3i(chunked_lmap_size.x(), -chunked_lmap_size.y(), chunked_lmap_size.z()));
-            corners.push_back(tmp + Vector3i(chunked_lmap_size.x(), -chunked_lmap_size.y(), -chunked_lmap_size.z()));
-            corners.push_back(tmp + Vector3i(-chunked_lmap_size.x(), chunked_lmap_size.y(), chunked_lmap_size.z()));
-            corners.push_back(tmp + Vector3i(-chunked_lmap_size.x(), chunked_lmap_size.y(), -chunked_lmap_size.z()));
-            corners.push_back(tmp + Vector3i(-chunked_lmap_size.x(), -chunked_lmap_size.y(), chunked_lmap_size.z()));
-            corners.push_back(tmp - chunked_lmap_size);
-
-            bool check = true;
-
-            // check for every corner, if it exists.
-            for (auto corner : corners)
-            {
-                if (!chunk_exists(corner))
-                {
-                    //std::cout << "There is a non existing chunk here..." << std::endl;
-                    check = false;
-                    //break;
-                }
-            }
+            Vector3i global_tmp = tmp * 64;
+            bool check = is_fully_occupied(global_tmp, l_map_size);
 
             // if still every chunk around the current chunk is registered, it is a possible valid path pos
             if (check)
@@ -292,4 +264,36 @@ int GlobalMap::num_chunks()
     auto object_names = g.listObjectNames();
 
     return object_names.size();
+}
+
+bool GlobalMap::is_fully_occupied(Eigen::Vector3i &pos, Eigen::Vector3i &localmap_size)
+{
+    const Vector3i &bottom_corner = pos - localmap_size / 2;
+    const Vector3i &top_corner = pos + localmap_size / 2;
+
+    Vector3i start = bottom_corner.cwiseMin(top_corner);
+    Vector3i end = bottom_corner.cwiseMax(top_corner);
+
+    // calculate the chunk index
+    constexpr int CHUNK_SIZE = GlobalMap::CHUNK_SIZE;
+    Vector3i chunk_start = floor_divide(start, CHUNK_SIZE);
+    Vector3i chunk_end = floor_divide(end, CHUNK_SIZE);
+
+    // check all chunks in the local-map sized bounding box around "pos"
+    for (int chunk_x = chunk_start.x(); chunk_x <= chunk_end.x(); ++chunk_x)
+    {
+        for (int chunk_y = chunk_start.y(); chunk_y <= chunk_end.y(); ++chunk_y)
+        {
+            for (int chunk_z = chunk_start.z(); chunk_z <= chunk_end.z(); ++chunk_z)
+            {
+                if (!chunk_exists(Eigen::Vector3i(chunk_x, chunk_y, chunk_z)))
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    // when all chunks are already generated, the local map would be fully occupied and no further chunk would need to be generated.
+    return true;
 }

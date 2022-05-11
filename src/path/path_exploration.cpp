@@ -25,27 +25,6 @@ std::string path_exploration::hash_from_point(Eigen::Vector3i pos)
     return "(" + std::to_string(pos.x()) + ")-(" + std::to_string(pos.y()) + ")-(" + std::to_string(pos.z()) + ")";
 }
 
-void path_exploration::fill_pq()
-{
-
-    // initial
-    dijkstra_vertex start;
-    start.chunk_pos = Vector3i(0, 0, 0);
-    start.distance = 0;
-    start.previous = NULL;
-
-    bool more_inserted = true;
-
-    auto chunks = global_map_ptr->all_chunk_poses();
-
-    for (auto chunk : chunks)
-    {
-        dijkstra_vertex *vertex = new dijkstra_vertex();
-        vertex->chunk_pos = chunk;
-        pq.push(vertex);
-    }
-}
-
 /**
  * @brief
  * TODO: a path needs to be tracable here...
@@ -67,10 +46,8 @@ void path_exploration::dijsktra()
     Vector3i default_prev(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
 
     // fill distance map, no previous poses set
-    std::cout << "Chunks connectado: " << std::endl;
     for (auto chunk : chunks)
     {
-        std::cout << chunk << std::endl;
         distance_map[global_map_ptr->tag_from_chunk_pos(chunk)] = std::make_pair(default_prev, std::numeric_limits<int>::max());
     }
 

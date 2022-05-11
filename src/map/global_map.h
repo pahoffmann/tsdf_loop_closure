@@ -156,4 +156,6 @@ public:
      * @return Vector3i 
      */
     Vector3i chunk_pos_from_tag(std::string &tag);
+
+    bool is_fully_occupied(Vector3i &chunk_pos, Vector3i &localmap_size);
 };

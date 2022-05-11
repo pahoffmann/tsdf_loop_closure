@@ -236,7 +236,7 @@ public:
      * 
      * @param pos 
      */
-    bool is_full_occupied(Eigen::Vector3i &pos);
+    bool is_fully_occupied(Eigen::Vector3i &pos);
 
 private:
     /**

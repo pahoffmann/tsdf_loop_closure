@@ -42,12 +42,6 @@ private:
      */
     std::string hash_from_point(Eigen::Vector3i);
 
-    /**
-     * @brief fills the priority queue with all possible chunks.
-     * 
-     */
-    void fill_pq();
-
 public:
     path_exploration(std::shared_ptr<LocalMap> l_map_ptr, std::shared_ptr<GlobalMap> g_map_ptr, Path *path_ptr, RayTracer *tracer_ptr);
     ~path_exploration();
@@ -57,6 +51,7 @@ public:
      *        Used for debugging purposes, when there is no path, to ensure that the association strategies actually work
      *        Uses a very greedy method, which places random poses inside the boundaries of the global map and checks, if
      *
+     * @TODO: implement this maybe...
      * @param num_randoms
      * @param max_num_selects
      * @return int

@@ -418,21 +418,26 @@ namespace ROSViewhelper
         path_marker.scale.z = (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f));
         path_marker.color.a = 0.5; // Don't forget to set the alpha!
         path_marker.color.r = 255 / 255.0f;
-        path_marker.color.g =  15 / 255.0f;
-        path_marker.color.b =  15 / 255.0f;
+        path_marker.color.g = 15 / 255.0f;
+        path_marker.color.b = 15 / 255.0f;
 
         std_msgs::ColorRGBA color_non_filtered = Colors::color_from_name(Colors::ColorNames::aqua);
         color_non_filtered.a = 0.5;
 
         for (auto chunk : chunks)
         {
-            path_marker.points.push_back(eigen_point_to_ros_point(chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f))));
+            // for display: every chunk starts at the corner (e.g. 0,0,0 as chunk pose for chunk 0,0,0 -> 64,64,64)
+            // but: ros uses the center of a cube for the pose, thus half of the cube size needs to be added.
+
+            Vector3f result = chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f)) + Vector3f(1,1,1) * ((CHUNK_SIZE / 2) * (MAP_RESOLUTION / 1000.0f));
+            path_marker.points.push_back(eigen_point_to_ros_point(result));
             path_marker.colors.push_back(color_non_filtered);
         }
 
         for (auto chunk : chunks_1)
         {
-            path_marker.points.push_back(eigen_point_to_ros_point(chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f))));
+            Vector3f result = chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f)) + Vector3f(1,1,1) * ((CHUNK_SIZE / 2) * (MAP_RESOLUTION / 1000.0f));
+            path_marker.points.push_back(eigen_point_to_ros_point(result));
             path_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::red));
         }
 

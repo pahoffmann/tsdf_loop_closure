@@ -67,9 +67,23 @@ void LocalMap::shift(const Vector3i &new_pos)
 
     Vector3i diff = new_pos - pos_;
 
-    assert(std::abs(diff.x()) <= size_.x() &&
-           std::abs(diff.y()) <= size_.y() &&
-           std::abs(diff.z()) <= size_.z());
+    // if the shift is larger than the localmap, we simply write everything back and reload
+    if (std::abs(diff.x()) >= size_.x() ||
+          std::abs(diff.y()) >= size_.y() ||
+          std::abs(diff.z()) >= size_.z())
+    {
+        Vector3i start = pos_ - size_ / 2;
+        Vector3i end = pos_ + size_ / 2;
+        save_area(start, end);
+
+        pos_ = new_pos;
+
+        start = pos_ - size_ / 2;
+        end = pos_ + size_ / 2;
+        load_area(start, end);
+
+        return;
+    }
 
     // each axis is treated independently
     for (int axis = 0; axis < 3; axis++)
@@ -131,7 +145,10 @@ void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top
     // GlobalMap::get/set_value is called.
     // => iterate over all affected Chunks and handle all values within each Chunk
 
-    assert(in_bounds(bottom_corner) && in_bounds(top_corner));
+    if (!(in_bounds(bottom_corner) && in_bounds(top_corner)))
+    {
+        throw std::logic_error("not in bounds of the local map...");
+    }
 
     Vector3i start = bottom_corner.cwiseMin(top_corner);
     Vector3i end = bottom_corner.cwiseMax(top_corner);
@@ -218,37 +235,8 @@ void LocalMap::write_back()
     map_->write_back();
 }
 
-bool LocalMap::is_full_occupied(Eigen::Vector3i &pos)
+bool LocalMap::is_fully_occupied(Eigen::Vector3i &pos)
 {
-    const Vector3i &bottom_corner = pos - size_ / 2;
-    const Vector3i &top_corner = pos + size_ / 2;
-
-    Vector3i start = bottom_corner.cwiseMin(top_corner);
-    Vector3i end = bottom_corner.cwiseMax(top_corner);
-
-    // calculate the chunk index
-    constexpr int CHUNK_SIZE = GlobalMap::CHUNK_SIZE;
-    Vector3i chunk_start = floor_divide(start, CHUNK_SIZE);
-    Vector3i chunk_end = floor_divide(end, CHUNK_SIZE);
-
-    std::cout << "Start Positon: " << start << std::endl;
-    std::cout << "End Positon: " << end << std::endl;
-
-    // check all chunks in the local-map sized bounding box around "pos"
-    for (int chunk_x = chunk_start.x(); chunk_x <= chunk_end.x(); ++chunk_x)
-    {
-        for (int chunk_y = chunk_start.y(); chunk_y <= chunk_end.y(); ++chunk_y)
-        {
-            for (int chunk_z = chunk_start.z(); chunk_z <= chunk_end.z(); ++chunk_z)
-            {
-                if (!map_->chunk_exists(Eigen::Vector3i(chunk_x, chunk_y, chunk_z)))
-                {
-                    return false;
-                }
-            }
-        }
-    }
-
     // when all chunks are already generated, the local map would be fully occupied and no further chunk would need to be generated.
-    return true;
+    return map_->is_fully_occupied(pos, size_);
 }
