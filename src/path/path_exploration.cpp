@@ -121,7 +121,7 @@ void path_exploration::dijsktra()
     Vector3i current = max_chunk;
     Vector3i previous;
 
-    // backtrack the path from furhtest chunk to start chunk
+    // backtrack the path from furhtest chunk to start chunk (0, 0, 0)
     while (current != Vector3i(0, 0, 0))
     {
         previous = distance_map[global_map_ptr->tag_from_chunk_pos(current)].first;

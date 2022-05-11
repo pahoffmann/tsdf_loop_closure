@@ -32,6 +32,9 @@
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] or: find a different way to store the association information
 [ ] write a ros node, which converts a globalmap h5 to a more usable version including metadata and intersection status.
+[ ] PathExploration: weighting trough raytrace (specific percentage of hit vs non hit)
+[ ] PathExploration: No more Manhatten neighboring
+[ ] PathExploration: Use tsdf cells instead of chunks
 
 # Junkyard #
 
