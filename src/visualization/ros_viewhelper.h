@@ -33,8 +33,6 @@ namespace ROSViewhelper
      */
     visualization_msgs::Marker getBoundingBoxMarker(float side_length_xy, float side_length_z, Pose *box_pose)
     {
-        ROS_INFO("[BOUNDING-BOX]: side_length: %f, %f, %f", side_length_xy, side_length_xy, side_length_z);
-        ROS_INFO("[BOUNDING-BOX]: starting_pose: %f, %f, %f", box_pose->pos.x(), box_pose->pos.y(), box_pose->pos.z());
         visualization_msgs::Marker cube;
         cube.header.frame_id = "map";
         cube.header.stamp = ros::Time();
@@ -294,8 +292,6 @@ namespace ROSViewhelper
             // global cell index
             Vector3i tmp_pos = (path->at(i)->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
 
-            std::cout << "Gettings the tsdf marker for the whole path. Current pos: " << tmp_pos << std::endl;
-
             // shift local map to new path pos
             local_map->shift(tmp_pos);
 
@@ -429,14 +425,14 @@ namespace ROSViewhelper
             // for display: every chunk starts at the corner (e.g. 0,0,0 as chunk pose for chunk 0,0,0 -> 64,64,64)
             // but: ros uses the center of a cube for the pose, thus half of the cube size needs to be added.
 
-            Vector3f result = chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f)) + Vector3f(1,1,1) * ((CHUNK_SIZE / 2) * (MAP_RESOLUTION / 1000.0f));
+            Vector3f result = chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f)) + Vector3f(1, 1, 1) * ((CHUNK_SIZE / 2) * (MAP_RESOLUTION / 1000.0f));
             path_marker.points.push_back(eigen_point_to_ros_point(result));
             path_marker.colors.push_back(color_non_filtered);
         }
 
         for (auto chunk : chunks_1)
         {
-            Vector3f result = chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f)) + Vector3f(1,1,1) * ((CHUNK_SIZE / 2) * (MAP_RESOLUTION / 1000.0f));
+            Vector3f result = chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f)) + Vector3f(1, 1, 1) * ((CHUNK_SIZE / 2) * (MAP_RESOLUTION / 1000.0f));
             path_marker.points.push_back(eigen_point_to_ros_point(result));
             path_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::red));
         }

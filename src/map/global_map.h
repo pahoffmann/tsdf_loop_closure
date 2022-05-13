@@ -157,5 +157,21 @@ public:
      */
     Vector3i chunk_pos_from_tag(std::string &tag);
 
+    /**
+     * @brief Checks if the area around the delivered chunk_pos, considering the localmap-size is already fully loaded,
+     *        meaning every chunk in the area around the position is already present in the global map and does not need to be created
+     * 
+     * @param chunk_pos 
+     * @param localmap_size 
+     * @return true 
+     * @return false 
+     */
     bool is_fully_occupied(Vector3i &chunk_pos, Vector3i &localmap_size);
+
+    /**
+     * @brief returns the path from the global map, if present in the hdf5
+     * 
+     * @return std::vector<Pose> 
+     */
+    std::vector<Pose> get_path();
 };

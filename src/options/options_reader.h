@@ -35,6 +35,7 @@ private:
     std::string map_file_name;
     std::string poses_file_name;
     std::string base_file_name;
+    int path_method;
 
     void create_options();
 
@@ -129,5 +130,9 @@ public:
      */
     inline std::string get_base_file_name() {
         return base_file_name;
+    }
+
+    inline int get_path_method() {
+        return path_method;
     }
 };

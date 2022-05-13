@@ -173,7 +173,7 @@ bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
 
     auto tag = tag_from_chunk_pos(chunk_pos);
 
-    //std::cout << "Checking if chunk exists: " << tag << std::endl;
+    // std::cout << "Checking if chunk exists: " << tag << std::endl;
 
     if (g.exist(tag))
     {
@@ -296,4 +296,43 @@ bool GlobalMap::is_fully_occupied(Eigen::Vector3i &pos, Eigen::Vector3i &localma
 
     // when all chunks are already generated, the local map would be fully occupied and no further chunk would need to be generated.
     return true;
+}
+
+
+std::vector<Pose> GlobalMap::get_path()
+{
+    HighFive::Group g = file_.getGroup("/poses");
+    auto object_names = g.listObjectNames();
+
+    std::vector<Pose> path;
+
+    // if there is no path listed in the map, we simply return the empty vector
+    if(object_names.size() == 0) {
+        return path;
+    }
+
+    for (auto name : object_names)
+    {
+        if (!g.exist(name))
+        {
+            throw std::logic_error("Error when reading paths from h5");
+        }
+
+        std::vector<float> values;
+        auto dataset = g.getDataSet(name);
+        dataset.read(values);
+
+        // there need to be 6 values (x, y, z, roll, pitch, yaw) for every Pose.
+        if(values.size() != 6) {
+            continue;
+        }
+
+        // get pose
+        Pose pose = poseFromEuler(values[0], values[1], values[2], values[3], values[4], values[5]);
+
+        path.push_back(pose);
+
+    }
+    
+    return path;
 }

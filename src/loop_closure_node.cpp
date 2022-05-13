@@ -40,7 +40,7 @@ lc_options_reader *options;
 // ROS STUFF //
 visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
-visualization_msgs::Marker tsdf_map; // marker for the tsdf map (local)
+visualization_msgs::Marker tsdf_map;      // marker for the tsdf map (local)
 visualization_msgs::Marker tsdf_map_full; // marker for the full tsdf map (global)
 
 // both of these side lengths are in real world coordinates
@@ -107,15 +107,58 @@ int main(int argc, char **argv)
     return 0;
   }
 
+  // retrieve path method from options (0 = from globalmap, 1 = from path extraction, 2 = from json)
+  int path_method = options->get_path_method();
+
   // init local and global maps
   initMaps();
 
+  // define stuff for raytracer
+  ray_tracer = new RayTracer(options, local_map_ptr_);
+
+  /******************************************************
+   *  Get Path                                          *
+   ******************************************************/
+
   // init path and read from json
   path = new Path();
-  //path->fromJSON(options->get_poses_file_name());
 
-  path_exploration exploration(local_map_ptr_, global_map_ptr_, path, ray_tracer);
-  exploration.dijsktra();
+  // retrieve path from various locations
+  try
+  {
+    if (path_method == 0)
+    {
+      auto path_poses = global_map_ptr_->get_path();
+
+      for (auto pose : path_poses)
+      {
+        path->add_pose(pose);
+      }
+    }
+    else if (path_method == 1)
+    {
+      path_exploration exploration(local_map_ptr_, global_map_ptr_, path, ray_tracer);
+      exploration.dijsktra();
+    }
+    else
+    {
+      path->fromJSON(options->get_poses_file_name());
+    }
+
+    if (path->get_length() == 0)
+    {
+      throw std::invalid_argument("There are no poses in the path, hence the arguments listed seem to be wrong. Check them.");
+    }
+  }
+  catch (std::exception &ex)
+  {
+    std::cerr << "[LoopClosureNode] Error when defining the path: " << ex.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  /******************************************************
+   *  End Path Creation                                 *
+   ******************************************************/
 
   // generate publishers
   ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);
@@ -127,16 +170,6 @@ int main(int argc, char **argv)
 
   // specify ros loop rate
   ros::Rate loop_rate(10);
-
-  if(path->get_length() == 0) {
-    Pose tmp;
-    tmp.pos = Vector3f(0,0,0);
-    tmp.quat = Eigen::Quaternionf::Identity();
-    path->add_pose(tmp);
-  }
-
-  // define stuff for raytracer
-  ray_tracer = new RayTracer(options, local_map_ptr_, path->at(0));
 
   // create associationmanager
   manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_);
@@ -154,16 +187,16 @@ int main(int argc, char **argv)
   bb_marker = ROSViewhelper::getBoundingBoxMarker(side_length_xy, side_length_z, path->at(0));
 
   // init tsdf
-  tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
+  // tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
 
-  //FIXME: use this full map, once i have an accurate path.
+  // FIXME: use this full map, once i have an accurate path.
   tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
 
   // some stuff doesnt need to be published every iteration...
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
-  //cube_publisher.publish(tsdf_map);
+  // cube_publisher.publish(tsdf_map);
   cube_publisher.publish(tsdf_map_full);
   chunk_publisher.publish(chunk_marker);
 
@@ -182,5 +215,5 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
-  return 0;
+  return EXIT_SUCCESS;
 }

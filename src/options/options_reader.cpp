@@ -21,6 +21,11 @@ int lc_options_reader::read_options(int argc, char **argv)
             std::cout << *desc << std::endl;
             return 2;
         }
+        else if(path_method < 0 || path_method > 2) {
+            std::cerr << "Invalid path method! See program discription below" << std::endl;
+            std::cout << *desc << std::endl;
+            return 1;
+        }
 
         po::notify(*vm);
     }
@@ -54,8 +59,9 @@ void lc_options_reader::create_options() {
         ("step_size", po::value<double>(&step_size)->default_value(0.064), "Set step size")
         ("ray_size", po::value<double>(&ray_size)->default_value(0.01), "Set ray size")
         ("map_file_name", po::value<std::string>(&map_file_name)->required(), "Set global map filename (.h5)")
-        ("poses_file_name", po::value<std::string>(&poses_file_name)->required(), "Set poses filename (.json)")
+        ("poses_file_name", po::value<std::string>(&poses_file_name)->default_value(""), "Set poses filename (.json)")
         ("base_file_name", po::value<std::string>(&base_file_name)->required(), "Set base file name to store association data")
+        ("path_method", po::value<int>(&path_method)->default_value(0), "Set path method [0 (Default)] = GlobalMap Path, [1] = Path Extraction, [2] = Use json path")
     ;
 }
 
@@ -107,6 +113,9 @@ void lc_options_reader::print_options() {
 
     cur_param = (*vm)["base_file_name"].as<std::string>();
     std::cout << "* Base-File-Name:  " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
+
+    cur_param = std::to_string((*vm)["path_method"].as<int>());
+    std::cout << "* Path-Method:     " << cur_param << chars(max_length - cur_param.length()) << " *" << std::endl;
 
     std::cout << chars(max_length + 21, '*') << std::endl;
 

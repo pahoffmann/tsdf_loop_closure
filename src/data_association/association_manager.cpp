@@ -21,15 +21,11 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
     time = std::time(nullptr);
     std::string time_string(std::asctime(std::localtime(&time)));
 
-    std::cout << "[AssociationManager] The current time is: " << time_string << std::endl;
-
     time_string = std::regex_replace(time_string, std::regex(" "), "_");
     time_string = std::regex_replace(time_string, std::regex(":"), "_");
 
     // somehow there is a line break in this string :D
     time_string = std::regex_replace(time_string, std::regex("\n"), "");
-
-    std::cout << "[AssociationManager] Current time with replacements: " << time_string << std::endl;
 
     // check if the file path contains a trailing slash, if not: add it
     if (file_path.at(file_path.length() - 1) != '/')
@@ -66,22 +62,24 @@ void AssociationManager::greedy_associations()
 {
     // go backwards through the path and greedily add all the cells, that are visible.
 
-    std::cout << "[AssociationManager::greedy_associations] Num associations: " << associations.size() << std::endl; 
     for (int i = associations.size() - 1; i >= 0; i--)
     {
         // configure and start the ray tracer for every iteration, which will fill each association
         // ray_tracer->update_map_pointer(local_map_ptr);
 
         // update ray tracer data for the next trace
-        std::cout << "[AssociationManager] Updating Pose" << std::endl;
         ray_tracer->update_pose(associations[i].getPose());
-        std::cout << "[AssociationManager] Updating Association" << std::endl;
         ray_tracer->update_association(&associations[i]);
-        std::cout << "[AssociationManager] Start Tracing" << std::endl;
         ray_tracer->start(); // start tracing, given the current association.
 
-        std::cout << "[AssociationManager] Serialization" << std::endl;
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
         associations[i].serialize(); // serialize data
+
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+        std::cout << "[AssociationManager]: Time used for serialization: "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
     }
 }
 

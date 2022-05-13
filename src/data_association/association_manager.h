@@ -6,21 +6,23 @@
  * @brief Class used to manage (e.g. load and unload associations)
  * @version 0.1
  * @date 2022-03-14
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include <map>
 #include <iostream>
 #include <cassert>
+#include <ctime>
+#include <chrono>
+#include <regex>
+#include <filesystem>
+#include <highfive/H5File.hpp>
+
 #include "association.h"
 #include "../path/path.h"
 #include "../ray_tracer/ray_tracer.h"
-#include <ctime>
-#include <regex>
-#include <filesystem>
-
 
 class AssociationManager
 {
@@ -34,23 +36,27 @@ private:
 
     /**
      * @brief Create a serialization folder at the requested path using filesystem utils
-     * 
-     * @param path 
+     *
+     * @param path
      */
     void create_serialization_folder(std::string path);
 
 public:
-
     /**
      * @brief Construct a new Association Manager object from a path. For every pose in the path, an association is created which is supposed
      *        to connect the tsdf data to a pose and make is serializable. creeeeeeepy.
-     * 
-     * @param path 
-     * @param file_path 
+     *
+     * @param path
+     * @param file_path
      */
     AssociationManager(Path *path, std::string file_path, RayTracer *tracer, std::shared_ptr<LocalMap> local_map_ptr_);
+
+    /**
+     * @brief Destroy the Association Manager object
+     * @todo TODO: implement this, this should remove all association data to stop polluting the hard drive
+     */
     ~AssociationManager();
-    
+
     /**
      * @brief Creates greedy associations using a ray-tracer, the current local map and the path
      *        Beginning from the last pose, we ray-trace and every tsdf cell which is touched by the ray, gets unrewokeable associated with it
@@ -70,5 +76,3 @@ public:
      */
     void plane_limited_associations();
 };
-
-

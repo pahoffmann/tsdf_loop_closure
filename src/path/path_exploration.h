@@ -17,9 +17,17 @@ private:
     // struct used to store 
     struct dijkstra_vertex
     {
-        dijkstra_vertex *previous = NULL;
         Vector3i chunk_pos;
         float distance = std::numeric_limits<float>::infinity();
+
+        dijkstra_vertex() {
+            chunk_pos = Vector3i(0,0,0);
+        }
+
+        dijkstra_vertex(Vector3i chunk_pos_, float distance_) {
+            chunk_pos = chunk_pos_;
+            distance = distance_;
+        }
     };
 
     // used to compare two dijkstra vertices, for the min priority queue

@@ -116,7 +116,7 @@ public:
      * @param new_config 
      * @param local_map_in 
      */
-    RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in, Pose* start_pose);
+    RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in);
 
     /**
      * @brief function used to update the association the ray tracer is working with.

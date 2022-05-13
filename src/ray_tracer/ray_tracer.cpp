@@ -12,11 +12,11 @@ RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_pt
   current_pose = start_pose;
 }
 
-RayTracer::RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in, Pose *start_pose)
+RayTracer::RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in)
 {
   options = new_options;
   local_map_ptr_ = local_map_in;
-  current_pose = start_pose;
+  current_pose = NULL;
 }
 
 void RayTracer::start()
@@ -26,6 +26,10 @@ void RayTracer::start()
   if ((lc_config == NULL && options == NULL) || current_pose == NULL)
   {
     throw std::logic_error("[RayTracer] - Major Error, no configuration data delivered to ray-tracer");
+  }
+  else if (current_pose == NULL)
+  {
+    throw std::invalid_argument("[RayTracer] The RayTracer needs a pose to be able to start tracing.");
   }
 
   opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
@@ -47,13 +51,10 @@ void RayTracer::start()
   cleanup();
 
   // first initialize the rays with the current pose and config data
-  ROS_INFO("[RayTracer] Intitializing Rays...");
   initRays();
-  ROS_INFO("[RayTracer] Intitializing Rays done...");
 
   // now we initialized the "lines finished" - array and know exactly, when to stop updating the rays.
   // exactly when all rays are finished :D
-  ROS_INFO("[RayTracer] Updating Rays...");
 
   // and do some time measuring
   auto start_time = ros::Time::now();
@@ -75,8 +76,6 @@ void RayTracer::start()
 
   ROS_INFO("[RayTracer] Time Measurement updates only: %.2f ms", duration.toNSec() / 1000000.0f); // display time in ms, with two decimal points
 
-  ROS_INFO("[RayTracer] Updating Rays done...");
-
   ROS_INFO("[RayTracer] Done Tracing...");
 
   std::cout << std::endl;
@@ -89,8 +88,6 @@ void RayTracer::initRays()
   const float fin_degree = (float)opening_degree / 2.0f;
   const float x_res = 360.0f / (float)(hor_res);
   const float y_res = (float)opening_degree / (float)(vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
-
-  ROS_INFO("Hor-Resolution: %f, Vertical resolution: %f (in degree)", x_res, y_res);
 
   // double for loop iterating over the specified resolution of the scanner (360 degrees horizontally, predefines angle vertically)
   for (float i = -180.0f; i < 180.0f; i += x_res)
@@ -124,8 +121,6 @@ void RayTracer::initRays()
       rays.push_back(ray_point);
     }
   }
-
-  ROS_INFO("There are %d rays in the simulated scan", (int)(rays.size()));
 
   // update the lines finished vector, as we need to track, if a line is already finished
   // initially, all rays have a status of OK, meaning they neither passed a zero crossing, nor are already finished.
@@ -216,7 +211,7 @@ void RayTracer::updateRays()
           lines_finished[i] = RayStatus::FINISHED;
           finished_counter++;
         }
-        else if(tsdf.value() < 600 && tsdf.weight() > 0)
+        else if (tsdf.value() < 600 && tsdf.weight() > 0)
         {
           // now that the ray hit it's first positvely valued cell, we update it's status
           cur_association->addAssociation(p1, tsdf);
@@ -290,9 +285,10 @@ void RayTracer::update_pose(Pose *new_pose)
 {
   // calc the new localmap pose
   Eigen::Vector3i new_pose_map = (new_pose->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
-  std::cout << "New Pose: " << std::endl << new_pose_map << std::endl;
+
   // shift the local map
   local_map_ptr_->shift(new_pose_map);
+
   // update the pose
   current_pose = new_pose;
 }
@@ -341,8 +337,6 @@ visualization_msgs::Marker RayTracer::get_ros_marker()
 
     points.push_back(ros_point);
   }
-
-  std::cout << "[RayTracer] There are " << points.size() << " points in the rays line list" << std::endl;
 
   ray_marker_list.points = points;
 

@@ -14,11 +14,15 @@
  */
 
 #include <vector>
+#include <fstream>
+
+// imports for serialization
+#include <jsoncpp/json/json.h>
+#include <highfive/H5File.hpp>
+
 #include "../util/point.h"
 #include "../util/tsdf.h"
 #include "../map/local_map.h"
-#include <jsoncpp/json/json.h>
-#include <fstream>
 
 class Association
 {

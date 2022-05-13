@@ -38,29 +38,27 @@ void path_exploration::dijsktra()
     int num_chunks = global_map_ptr->num_chunks();
 
     // distance map storing the current distance and the previous Vector (shortest path)
-    std::map<std::string, std::pair<Vector3i, int>> distance_map;
+    std::map<std::string, std::pair<Vector3i, float>> distance_map;
 
     auto chunks = global_map_ptr->all_chunk_poses(local_map_ptr->get_size());
     // auto chunks = global_map_ptr->all_chunk_poses();
 
+    // default previous Vector used to backtrack path has just max ints as values.
     Vector3i default_prev(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
 
     // fill distance map, no previous poses set
     for (auto chunk : chunks)
     {
-        distance_map[global_map_ptr->tag_from_chunk_pos(chunk)] = std::make_pair(default_prev, std::numeric_limits<int>::max());
+        distance_map[global_map_ptr->tag_from_chunk_pos(chunk)] = std::make_pair(default_prev, std::numeric_limits<float>::max());
     }
 
     std::cout << "Chunks in the dm: " << distance_map.size() << std::endl;
 
-    // initial
+    // initial vertex
     dijkstra_vertex *start = new dijkstra_vertex();
-    start->chunk_pos = Vector3i(0, 0, 0);
-    start->distance = 0;
-    start->previous = NULL;
 
     pq.push(start);
-    distance_map[global_map_ptr->tag_from_chunk_pos(start->chunk_pos)] = std::make_pair(Vector3i(0, 0, 0), 0); // set start val to 0
+    distance_map[global_map_ptr->tag_from_chunk_pos(start->chunk_pos)] = std::make_pair(Vector3i(0, 0, 0), 0.0f); // set start val to 0
 
     while (!pq.empty())
     {
@@ -88,10 +86,7 @@ void path_exploration::dijsktra()
             {
                 distance_map[global_map_ptr->tag_from_chunk_pos(adj)].second = dist_cur + 1;
                 distance_map[global_map_ptr->tag_from_chunk_pos(adj)].first = u->chunk_pos;
-                dijkstra_vertex *new_vertex = new dijkstra_vertex();
-                new_vertex->chunk_pos = adj;
-                new_vertex->distance = dist_cur + 1;
-                new_vertex->previous = u;
+                dijkstra_vertex *new_vertex = new dijkstra_vertex(adj, dist_cur + 1);
 
                 pq.push(new_vertex);
             }
@@ -137,11 +132,8 @@ void path_exploration::dijsktra()
     // reverse the vector to make it a usable path
     std::reverse(path_arr.begin(), path_arr.end());
 
-    std::cout << "Path contains " << path_arr.size() << " poses!" << std::endl;
-
     for (auto pose : path_arr)
     {
-        std::cout << pose << std::endl;
         Pose temp;
         temp.pos = pose;
         temp.quat = Eigen::Quaternionf::Identity();
@@ -151,6 +143,4 @@ void path_exploration::dijsktra()
 
     std::cout << "Max dist: " << max << " | Max dist chunk: " << std::endl
               << max_chunk << std::endl;
-
-    // now perform the basic dijkstra algorithm.
 }
