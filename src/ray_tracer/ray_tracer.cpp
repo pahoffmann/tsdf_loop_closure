@@ -226,7 +226,7 @@ void RayTracer::updateRays(int mode)
 
           if (mode == 0)
           {
-            cur_association->addAssociation(p1, tsdf);
+            cur_association->addAssociation((p1 * (1000.0f / MAP_RESOLUTION)).cast<int>(), tsdf);
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
           }
         }
@@ -240,7 +240,7 @@ void RayTracer::updateRays(int mode)
 
           if (mode == 0)
           {
-            cur_association->addAssociation(p1, tsdf);
+            cur_association->addAssociation((p1 * (1000.0f / MAP_RESOLUTION)).cast<int>(), tsdf);
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
           }
         }
@@ -259,7 +259,7 @@ void RayTracer::updateRays(int mode)
         {
           if (mode == 0)
           {
-            cur_association->addAssociation(p1, tsdf);
+            cur_association->addAssociation((p1 * (1000.0f / MAP_RESOLUTION)).cast<int>(), tsdf);
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
           }
         }
@@ -282,7 +282,7 @@ void RayTracer::updateRays(int mode)
         {
           if (mode == 0)
           {
-            cur_association->addAssociation(p1, tsdf);
+            cur_association->addAssociation((p1 * (1000.0f / MAP_RESOLUTION)).cast<int>(), tsdf);
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_NEG);
           }
         }

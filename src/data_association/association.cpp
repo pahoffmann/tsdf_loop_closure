@@ -35,8 +35,15 @@ Association::Association(Pose start_pose, int num_pose, std::string base_path, S
     {
         base_path += "/";
     }
-    
-    file_path = base_path + std::to_string(num_pose) + "_association" + type;
+
+    if (ser_strat == SerializationStrategy::HDF5)
+    {
+        file_path = base_path + "hdf5_association" + type;
+    }
+    else
+    {
+        file_path = base_path + std::to_string(num_pose) + "_association" + type;
+    }
 }
 
 void Association::serialize()
@@ -44,11 +51,11 @@ void Association::serialize()
     switch (strat)
     {
     case SerializationStrategy::SQL:
-        serialize_HDF5();
+        serialize_SQL();
         return;
 
     case SerializationStrategy::HDF5:
-        serialize_SQL();
+        serialize_HDF5();
         return;
 
     default: // JSON
@@ -65,11 +72,11 @@ void Association::deserialze()
     switch (strat)
     {
     case SerializationStrategy::SQL:
-        deserialize_HDF5();
+        deserialize_SQL();
         return;
 
     case SerializationStrategy::HDF5:
-        deserialize_SQL();
+        deserialize_HDF5();
         return;
 
     default: // JSON
@@ -80,7 +87,7 @@ void Association::deserialze()
 
 Association::~Association()
 {
-    //TODO: eval, whether this destructor might be used to actually remove the file on the harddrive, should be called from association manager
+    // TODO: eval, whether this destructor might be used to actually remove the file on the harddrive, should be called from association manager
 }
 
 /**
@@ -91,12 +98,13 @@ void Association::serialize_JSON()
 {
     Json::Value root;
 
-    for(int i = 0; i < numAssociations(); i++)
+    int i = 0;
+    for (auto it : associations)
     {
-        auto& first = associations[i].first;
-        auto& second = associations[i].second;
+        auto first = vec_from_tag(it.first);
+        auto second = it.second;
 
-        std::string index = std::to_string(i); 
+        std::string index = std::to_string(i);
         root[index] = Json::arrayValue;
 
         Json::Value association_val;
@@ -109,8 +117,10 @@ void Association::serialize_JSON()
         association_val["raw"] = second.raw();
 
         root[index].append(association_val);
+
+        i++;
     }
-    
+
     // write json data to output file
     std::ofstream file;
 
@@ -124,6 +134,33 @@ void Association::deserialize_JSON()
 
 void Association::serialize_HDF5()
 {
+    // TODO: to make this usable, we should try to save the x,y,z value in one datatype. how?
+
+    HighFive::File file_(file_path, HighFive::File::OpenOrCreate);
+
+    if (!file_.exist("/associations"))
+    {
+        file_.createGroup("/associations");
+    }
+
+    HighFive::Group g = file_.getGroup("/associations");
+
+    std::vector<int> data;
+
+    for (auto it : associations)
+    {
+        Vector3i ass = vec_from_tag(it.first);
+        data.push_back(ass.x());
+        data.push_back(ass.y());
+        data.push_back(ass.z());
+        // data.push_back(ass.second.value());
+        // data.push_back(ass.second.weight());
+    }
+
+    Vector3i pos_discr = (pose.pos * (1000.0f / MAP_RESOLUTION)).cast<int>();
+    g.createDataSet(tag_from_vec(pos_discr), data);
+
+    file_.flush();
 }
 
 void Association::deserialize_HDF5()

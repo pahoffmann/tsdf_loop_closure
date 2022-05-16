@@ -188,12 +188,42 @@ bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
 std::vector<Vector3i> GlobalMap::get_adjacent_chunks(Vector3i chunk_pos)
 {
     std::vector<Vector3i> chunks;
+
+    // manhatten
     chunks.push_back(chunk_pos + Vector3i(0, 0, 1));
     chunks.push_back(chunk_pos + Vector3i(0, 0, -1));
     chunks.push_back(chunk_pos + Vector3i(0, 1, 0));
     chunks.push_back(chunk_pos + Vector3i(0, -1, 0));
     chunks.push_back(chunk_pos + Vector3i(1, 0, 0));
     chunks.push_back(chunk_pos + Vector3i(-1, 0, 0));
+
+    // different neighborhood vertices
+
+    // same level as chunk (z same)
+    chunks.push_back(chunk_pos + Vector3i(1, 1, 0));
+    chunks.push_back(chunk_pos + Vector3i(-1, -1, 0));
+    chunks.push_back(chunk_pos + Vector3i(1, -1, 0));
+    chunks.push_back(chunk_pos + Vector3i(-1, 1, 0));
+
+    // above
+    chunks.push_back(chunk_pos + Vector3i(0, 1, 1));
+    chunks.push_back(chunk_pos + Vector3i(0, -1, 1));
+    chunks.push_back(chunk_pos + Vector3i(1, 0, 1));
+    chunks.push_back(chunk_pos + Vector3i(-1, 0, 1));
+    chunks.push_back(chunk_pos + Vector3i(1, 1, 1));
+    chunks.push_back(chunk_pos + Vector3i(-1, -1, 1));
+    chunks.push_back(chunk_pos + Vector3i(1, -1, 1));
+    chunks.push_back(chunk_pos + Vector3i(-1, 1, 1));
+
+    // below
+    chunks.push_back(chunk_pos + Vector3i(0, 1, -1));
+    chunks.push_back(chunk_pos + Vector3i(0, -1, -1));
+    chunks.push_back(chunk_pos + Vector3i(1, 0, -1));
+    chunks.push_back(chunk_pos + Vector3i(-1, 0, -1));
+    chunks.push_back(chunk_pos + Vector3i(1, 1, -1));
+    chunks.push_back(chunk_pos + Vector3i(-1, -1, -1));
+    chunks.push_back(chunk_pos + Vector3i(1, -1, -1));
+    chunks.push_back(chunk_pos + Vector3i(-1, 1, -1));
 
     return chunks;
 }
@@ -234,7 +264,7 @@ std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
     return poses;
 }
 
-Vector3i GlobalMap::chunk_pos_from_tag(std::string &tag)
+Vector3i GlobalMap::chunk_pos_from_tag(std::string tag) const
 {
     std::stringstream tmp(tag);
     std::string segment;
@@ -298,7 +328,6 @@ bool GlobalMap::is_fully_occupied(Eigen::Vector3i &pos, Eigen::Vector3i &localma
     return true;
 }
 
-
 std::vector<Pose> GlobalMap::get_path()
 {
     HighFive::Group g = file_.getGroup("/poses");
@@ -307,7 +336,8 @@ std::vector<Pose> GlobalMap::get_path()
     std::vector<Pose> path;
 
     // if there is no path listed in the map, we simply return the empty vector
-    if(object_names.size() == 0) {
+    if (object_names.size() == 0)
+    {
         return path;
     }
 
@@ -323,7 +353,8 @@ std::vector<Pose> GlobalMap::get_path()
         dataset.read(values);
 
         // there need to be 6 values (x, y, z, roll, pitch, yaw) for every Pose.
-        if(values.size() != 6) {
+        if (values.size() != 6)
+        {
             continue;
         }
 
@@ -331,8 +362,7 @@ std::vector<Pose> GlobalMap::get_path()
         Pose pose = poseFromEuler(values[0], values[1], values[2], values[3], values[4], values[5]);
 
         path.push_back(pose);
-
     }
-    
+
     return path;
 }

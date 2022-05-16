@@ -71,4 +71,10 @@ public:
      * 
      */
     void dijsktra();
+
+    /**
+     * @brief estimates more poses and adds it to the path (linear approximation)
+     * 
+     */
+    void estimate_more_poses(std::vector<Vector3f> &path, int estimates = 5);
 };

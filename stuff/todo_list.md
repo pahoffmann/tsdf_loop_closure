@@ -14,12 +14,12 @@
 [x] Use boost program options for actual loop closure instead of dynamic reconfigure (maybe)
 [x] In Loop closure node, the indexing of the local map is not correct now, as the starting pose is no longer (0,0,0), fix this
 [x] Check association file and directory creation, as it does not work as intended.
+[x] Update localmap with a function, that converts a Vector3f in real word coordinates to map coordinates (Vector3i) and vice versa
 
 # TODO's #
 
 [ ] read paper on loop closure, write down most important points
 [ ] define the serialization of the path to json
-[ ] Update localmap with a function, that converts a Vector3f in real word coordinates to map coordinates (Vector3i) and vice versa
 [ ] Outsource raytracers function to detect raytrace status changes to a function for that
 [ ] Stop hardcoding tsdf values in code (600, 0, ...)
 
@@ -34,7 +34,8 @@
 [ ] write a ros node, which converts a globalmap h5 to a more usable version including metadata and intersection status.
 [ ] PathExploration: weighting trough raytrace (specific percentage of hit vs non hit)
 [ ] PathExploration: No more Manhatten neighboring
-[ ] PathExploration: Use tsdf cells instead of chunks
+[ ] PathExploration: Use tsdf cells instead of chunks (might be taking WAY to long, probably just another discretization level might be useful)
+[ ] Associations: Different strat: one file, group for every chunk, inside group for every pose, containing the associated Poses.
 
 # Junkyard #
 

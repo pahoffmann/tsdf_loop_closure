@@ -47,7 +47,8 @@ void path_exploration::dijsktra()
     int max_index = 0;
 
     // checkout hit miss percentages for weighting
-    for(auto chunk : chunks) {
+    for (auto chunk : chunks)
+    {
         Vector3f tmp = chunk.cast<float>() * CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f);
         Pose *pose = new Pose();
         pose->pos = tmp;
@@ -55,9 +56,10 @@ void path_exploration::dijsktra()
         ray_tracer->update_pose(pose);
         float ret = ray_tracer->start(1);
         hit_miss_percentages.push_back(ret);
-        
+
         // update max index
-        if(ret > hit_miss_percentages[max_index]) {
+        if (ret > hit_miss_percentages[max_index])
+        {
             max_index = hit_miss_percentages.size() - 1;
         }
 
@@ -66,11 +68,13 @@ void path_exploration::dijsktra()
 
     std::cout << "Max value: " << hit_miss_percentages[max_index] << std::endl;
 
-    for(float &val : hit_miss_percentages) {
+    for (float &val : hit_miss_percentages)
+    {
         val = hit_miss_percentages[max_index] / val;
     }
 
-    for(float &val : hit_miss_percentages) {
+    for (float &val : hit_miss_percentages)
+    {
         std::cout << "Value in hit miss: " << val << std::endl;
     }
 
@@ -165,6 +169,8 @@ void path_exploration::dijsktra()
     // reverse the vector to make it a usable path
     std::reverse(path_arr.begin(), path_arr.end());
 
+    estimate_more_poses(path_arr, 2);
+
     for (auto pose : path_arr)
     {
         Pose temp;
@@ -176,4 +182,21 @@ void path_exploration::dijsktra()
 
     std::cout << "Max dist: " << max << " | Max dist chunk: " << std::endl
               << max_chunk << std::endl;
+}
+
+void path_exploration::estimate_more_poses(std::vector<Vector3f> &path, int estimates)
+{
+    for (int i = 0; i < path.size() - 1; i += (estimates + 1))
+    {
+        auto current = path[i];
+        auto next = path[i + 1];
+        
+        Vector3f diff = (next - current) / (estimates + 1);
+
+        for (int j = 1; j <= estimates; j++)
+        {
+            Vector3f new_pose = current + j * diff;
+            path.insert(path.begin() + i + j, new_pose);
+        }
+    }
 }

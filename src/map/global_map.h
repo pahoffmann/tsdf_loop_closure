@@ -155,7 +155,7 @@ public:
      * @param tag 
      * @return Vector3i 
      */
-    Vector3i chunk_pos_from_tag(std::string &tag);
+    Vector3i chunk_pos_from_tag(std::string tag) const;
 
     /**
      * @brief Checks if the area around the delivered chunk_pos, considering the localmap-size is already fully loaded,
