@@ -59,6 +59,8 @@ private:
 
     // counter, which tracks, how many lines have been finished, works hand in hand with above array.
     int finished_counter = 0;
+    int num_good = 0;
+    int num_not_good = 0;
 
     // the actual rays, every ray starts at the current position of the tracer
     std::vector<Eigen::Vector3f> rays;
@@ -89,7 +91,7 @@ private:
      * @brief updates the rays, until every single one is finished
      * 
      */
-    void updateRays();
+    void updateRays(int mode = 0);
 
     /**
      * @brief does some cleanup work in between runs.
@@ -98,7 +100,12 @@ private:
     void cleanup();
 public:
 
-    RayTracer();
+    /**
+     * @brief Delete default constructor
+     * 
+     */
+    RayTracer() = delete;
+
     /**
      * @brief Construct a new Raytracer object, inserts the respective config, including a shared pointer to the current local map.
      * 
@@ -131,8 +138,11 @@ public:
     /**
      * @brief Starts the tracing process
      * 
+     * @param mode 0: normal, 1: no association data being written, just plain scan while keeping track of hit vs non hit
+     * 
+     * @return float stating num_ok / num_error  value
      */
-    void start();
+    float start(int mode = 0);
 
     /**
      * @brief Get the ros marker for the current ray trace

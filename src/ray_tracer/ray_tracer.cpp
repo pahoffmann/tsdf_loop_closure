@@ -1,10 +1,5 @@
 #include "ray_tracer.h"
 
-RayTracer::RayTracer()
-{
-  // default
-}
-
 RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_ptr<LocalMap> local_map_in, Pose *start_pose)
 {
   lc_config = new_config;
@@ -19,7 +14,7 @@ RayTracer::RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> l
   current_pose = NULL;
 }
 
-void RayTracer::start()
+float RayTracer::start(int mode)
 {
 
   // when either of these is NULL, we might as well just throw a logic error.
@@ -63,7 +58,7 @@ void RayTracer::start()
 
   while (finished_counter < rays.size())
   {
-    updateRays();
+    updateRays(mode);
     num_iterations++;
     // std::cout << "Num_Iterations: " << num_iterations << " | Finished Counter: " << finished_counter << " | num_rays: " << rays.size() << std::endl;
   }
@@ -79,6 +74,8 @@ void RayTracer::start()
   ROS_INFO("[RayTracer] Done Tracing...");
 
   std::cout << std::endl;
+
+  return (float)num_good / (float)num_not_good;
 }
 
 void RayTracer::initRays()
@@ -127,7 +124,7 @@ void RayTracer::initRays()
   lines_finished = std::vector<RayStatus>(rays.size(), RayStatus::INIT);
 }
 
-void RayTracer::updateRays()
+void RayTracer::updateRays(int mode)
 {
   // why would we update, when there are no rays? This is more of a fatal thing here.
   if (rays.size() == 0)
@@ -194,6 +191,11 @@ void RayTracer::updateRays()
         lines_finished[i] = RayStatus::FINISHED;
         finished_counter++;
 
+        if (mode == 1)
+        {
+          num_not_good++;
+        }
+
         // no need to proceed further
         continue;
       }
@@ -210,13 +212,23 @@ void RayTracer::updateRays()
         {
           lines_finished[i] = RayStatus::FINISHED;
           finished_counter++;
+
+          if (mode == 1)
+          {
+            num_not_good++;
+          }
         }
-        else if (tsdf.value() < 600 && tsdf.weight() > 0)
+        else if (tsdf.value() < 600 && tsdf.weight() > 0) // FIXME: how is the "600" calculated? maybe also an attribute for the local map req?
         {
           // now that the ray hit it's first positvely valued cell, we update it's status
-          cur_association->addAssociation(p1, tsdf);
+
           lines_finished[i] = RayStatus::HIT;
-          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
+
+          if (mode == 0)
+          {
+            cur_association->addAssociation(p1, tsdf);
+            tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
+          }
         }
       }
       else if (lines_finished[i] == RayStatus::HIT)
@@ -225,19 +237,31 @@ void RayTracer::updateRays()
         {
           // if we detect a negative valued cell with a weight in this mode, we switch the mode
           lines_finished[i] = RayStatus::ZERO_CROSSED;
-          cur_association->addAssociation(p1, tsdf);
-          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+
+          if (mode == 0)
+          {
+            cur_association->addAssociation(p1, tsdf);
+            tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+          }
         }
         else if (!(tsdf.value() < 600 && tsdf.weight() > 0))
         {
           // if we are currently in hit mode, but the ray suddenly hits a meaningless cell, the tracing is also finished.
           lines_finished[i] = RayStatus::FINISHED;
           finished_counter++;
+
+          if (mode == 1)
+          {
+            num_not_good++;
+          }
         }
         else
         {
-          cur_association->addAssociation(p1, tsdf);
-          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
+          if (mode == 0)
+          {
+            cur_association->addAssociation(p1, tsdf);
+            tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
+          }
         }
       }
       else if (lines_finished[i] == RayStatus::ZERO_CROSSED)
@@ -248,11 +272,19 @@ void RayTracer::updateRays()
         {
           lines_finished[i] = RayStatus::FINISHED;
           finished_counter++;
+
+          if (mode == 1)
+          {
+            num_good++;
+          }
         }
         else
         {
-          cur_association->addAssociation(p1, tsdf);
-          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_NEG);
+          if (mode == 0)
+          {
+            cur_association->addAssociation(p1, tsdf);
+            tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_NEG);
+          }
         }
       }
     }
@@ -276,6 +308,8 @@ void RayTracer::cleanup()
 
   // reset counter
   finished_counter = 0;
+  num_good = 0;
+  num_not_good = 0;
 
   // clear last runs rays
   rays.clear();

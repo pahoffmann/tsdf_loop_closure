@@ -43,6 +43,37 @@ void path_exploration::dijsktra()
     auto chunks = global_map_ptr->all_chunk_poses(local_map_ptr->get_size());
     // auto chunks = global_map_ptr->all_chunk_poses();
 
+    std::vector<float> hit_miss_percentages;
+    int max_index = 0;
+
+    // checkout hit miss percentages for weighting
+    for(auto chunk : chunks) {
+        Vector3f tmp = chunk.cast<float>() * CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f);
+        Pose *pose = new Pose();
+        pose->pos = tmp;
+        pose->quat = Quaternionf::Identity();
+        ray_tracer->update_pose(pose);
+        float ret = ray_tracer->start(1);
+        hit_miss_percentages.push_back(ret);
+        
+        // update max index
+        if(ret > hit_miss_percentages[max_index]) {
+            max_index = hit_miss_percentages.size() - 1;
+        }
+
+        std::cout << "Hit/Not Percentage in path exploration: " << ret << std::endl;
+    }
+
+    std::cout << "Max value: " << hit_miss_percentages[max_index] << std::endl;
+
+    for(float &val : hit_miss_percentages) {
+        val = hit_miss_percentages[max_index] / val;
+    }
+
+    for(float &val : hit_miss_percentages) {
+        std::cout << "Value in hit miss: " << val << std::endl;
+    }
+
     // default previous Vector used to backtrack path has just max ints as values.
     Vector3i default_prev(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
 
@@ -71,18 +102,22 @@ void path_exploration::dijsktra()
         for (auto adj : adj_vertices)
         {
             // only if cunk exists in dm
-            if (distance_map.find(global_map_ptr->tag_from_chunk_pos(adj)) == distance_map.end())
+
+            auto map_idx = distance_map.find(global_map_ptr->tag_from_chunk_pos(adj));
+
+            if (map_idx == distance_map.end())
             {
-                std::cout << "[PathExploration] Not found in distance map" << std::endl;
                 continue;
             }
+
+            std::ptrdiff_t index = std::distance(distance_map.begin(), map_idx);
 
             // get distance values of current and adjacent chunk
             auto tmp_dist = distance_map[global_map_ptr->tag_from_chunk_pos(adj)].second;
             auto dist_cur = distance_map[global_map_ptr->tag_from_chunk_pos(u->chunk_pos)].second;
 
             // if the updated dist is smaller than the underlying one, we update it. + 1 distance is default
-            if (tmp_dist > dist_cur + 1)
+            if (tmp_dist > dist_cur + hit_miss_percentages[index])
             {
                 distance_map[global_map_ptr->tag_from_chunk_pos(adj)].second = dist_cur + 1;
                 distance_map[global_map_ptr->tag_from_chunk_pos(adj)].first = u->chunk_pos;
@@ -90,8 +125,6 @@ void path_exploration::dijsktra()
 
                 pq.push(new_vertex);
             }
-
-            std::cout << "Current queue size: " << pq.size() << std::endl;
         }
     }
 
