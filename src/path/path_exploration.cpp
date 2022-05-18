@@ -169,7 +169,7 @@ void path_exploration::dijsktra()
     // reverse the vector to make it a usable path
     std::reverse(path_arr.begin(), path_arr.end());
 
-    estimate_more_poses(path_arr, 2);
+    estimate_more_poses(path_arr, 5);
 
     for (auto pose : path_arr)
     {

@@ -139,6 +139,20 @@ static std::string tag_from_vec(Vector3i vec)
 }
 
 /**
+ * @brief transforms a vector into a tag used for hashmaps
+ * 
+ * @param vec 
+ * @return std::string 
+ */
+static std::string tag_from_vec(Vector3f vec)
+{
+    std::stringstream ss;
+    ss << vec.x() << "_" << vec.y() << "_" << vec.z();
+    return ss.str();
+}
+
+
+/**
  * @brief transforms a hashmap tag back into a vector
  * 
  * @param tag 

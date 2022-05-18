@@ -128,11 +128,21 @@ int main(int argc, char **argv)
   {
     if (path_method == 0)
     {
-      auto path_poses = global_map_ptr_->get_path();
-
-      for (auto pose : path_poses)
+      // if the global map does not have a path, we do path exploration, just in case.
+      if (!global_map_ptr_->has_path())
       {
-        path->add_pose(pose);
+        path_exploration exploration(local_map_ptr_, global_map_ptr_, path, ray_tracer);
+        exploration.dijsktra();
+        global_map_ptr_->write_path(path->getPoses());
+      }
+      else
+      {
+        auto path_poses = global_map_ptr_->get_path();
+
+        for (auto pose : path_poses)
+        {
+          path->add_pose(pose);
+        }
       }
     }
     else if (path_method == 1)

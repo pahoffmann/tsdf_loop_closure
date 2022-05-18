@@ -174,4 +174,25 @@ public:
      * @return std::vector<Pose> 
      */
     std::vector<Pose> get_path();
+    
+    /**
+     * @brief Writes the delivered path in a /poses group to the global map
+     * 
+     * @param path 
+     */
+    void write_path(std::vector<Pose> &path);
+
+    /**
+     * @brief gets information about wether a globalmap hdf5 has a path or not
+     * 
+     * @return true 
+     * @return false 
+     */
+    inline bool has_path() {
+        if(file_.exist("/poses") && file_.getGroup("/poses").listObjectNames().size() > 0) {
+            return true;
+        }
+
+        return false;
+    }
 };

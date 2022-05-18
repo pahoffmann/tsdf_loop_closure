@@ -330,6 +330,11 @@ bool GlobalMap::is_fully_occupied(Eigen::Vector3i &pos, Eigen::Vector3i &localma
 
 std::vector<Pose> GlobalMap::get_path()
 {
+    if (!file_.exist("/poses"))
+    {
+        throw std::logic_error("There are no poses in the delivered global map... aborting...");
+    }
+
     HighFive::Group g = file_.getGroup("/poses");
     auto object_names = g.listObjectNames();
 
@@ -353,16 +358,56 @@ std::vector<Pose> GlobalMap::get_path()
         dataset.read(values);
 
         // there need to be 6 values (x, y, z, roll, pitch, yaw) for every Pose.
-        if (values.size() != 6)
+        if (values.size() != 7)
         {
             continue;
         }
 
         // get pose
-        Pose pose = poseFromEuler(values[0], values[1], values[2], values[3], values[4], values[5]);
+        Pose pose;
+        pose.pos = Vector3f(values[0], values[1], values[2]);
+        pose.quat.x() = values[3];
+        pose.quat.y() = values[4];
+        pose.quat.z() = values[5];
+        pose.quat.w() = values[6];
 
         path.push_back(pose);
     }
 
     return path;
+}
+
+void GlobalMap::write_path(std::vector<Pose> &poses)
+{
+    if (!file_.exist("/poses"))
+    {
+        file_.createGroup("/poses");
+    }
+
+    HighFive::Group g = file_.getGroup("/poses");
+
+    // if there are poses in the globalmap, we abort
+    if (g.listObjectNames().size() != 0)
+    {
+        std::cout << "[GlobalMap]: Path already exists in global-map, aborting writing path" << std::endl;
+        return;
+    }
+
+    for (auto pose : poses)
+    {
+        std::vector<float> values(7);
+
+        // round to three decimal places here.
+        values[0] = std::round(pose.pos.x() * 1000.0f) / 1000.0f;
+        values[1] = std::round(pose.pos.y() * 1000.0f) / 1000.0f;
+        values[2] = std::round(pose.pos.z() * 1000.0f) / 1000.0f;
+        values[3] = std::round(pose.quat.x() * 1000.0f) / 1000.0f;
+        values[4] = std::round(pose.quat.y() * 1000.0f) / 1000.0f;
+        values[5] = std::round(pose.quat.z() * 1000.0f) / 1000.0f;
+        values[6] = std::round(pose.quat.w() * 1000.0f) / 1000.0f;
+
+        g.createDataSet(tag_from_vec(Vector3f(values[0], values[1], values[2])), values);
+    }
+
+    file_.flush();
 }
