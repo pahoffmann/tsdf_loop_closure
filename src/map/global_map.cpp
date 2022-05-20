@@ -469,4 +469,6 @@ void GlobalMap::cleanup_artifacts()
 
         std::cout << "Chunk " << i << " of " << chunks.size() << " done. Currently found " << num_shitty << " cells" << std::endl;
     }
+
+    write_back();
 }
