@@ -195,4 +195,11 @@ public:
 
         return false;
     }
+
+    /**
+     * @brief cleans up artifacts in the global map, caused by refraction, reflection, windows etc. (basic cleanup)
+     *  -> walk through every chunk, load the dat
+     * 
+     */
+    void cleanup_artifacts();
 };

@@ -15,6 +15,7 @@
 [x] In Loop closure node, the indexing of the local map is not correct now, as the starting pose is no longer (0,0,0), fix this
 [x] Check association file and directory creation, as it does not work as intended.
 [x] Update localmap with a function, that converts a Vector3f in real word coordinates to map coordinates (Vector3i) and vice versa
+[x] Cleanup job for global map, removing artifacts, single floating tsdf cells etc.
 
 # TODO's #
 
@@ -22,11 +23,12 @@
 [ ] define the serialization of the path to json
 [ ] Outsource raytracers function to detect raytrace status changes to a function for that
 [ ] Stop hardcoding tsdf values in code (600, 0, ...)
+[ ] Hit percentage needs to be calculated differently (possibly), not complete local map, but just the visible chunks should be included. (of the sub path belonging to the loop closure)
+[ ] where is the intersection status saved???
 
 # Important TODO's for future me #
 
 [ ] get a better understanding on weights (using the original doc thesis)
-[ ] Cleanup job for global map, removing artifacts, single floating tsdf cells etc.
 
 # ASAP #
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it

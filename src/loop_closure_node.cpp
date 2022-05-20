@@ -113,6 +113,9 @@ int main(int argc, char **argv)
   // init local and global maps
   initMaps();
 
+  //cleans up global map a bit
+  global_map_ptr_->cleanup_artifacts();
+
   // define stuff for raytracer
   ray_tracer = new RayTracer(options, local_map_ptr_);
 

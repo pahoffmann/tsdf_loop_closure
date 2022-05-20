@@ -411,3 +411,62 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
 
     file_.flush();
 }
+
+void GlobalMap::cleanup_artifacts()
+{
+    auto chunks = all_chunk_poses();
+    int num_shitty = 0;
+
+    for (int i = 0; i < chunks.size(); i++)
+    {
+
+        Vector3i start = chunks[i] * CHUNK_SIZE;
+        Vector3i end = start + Vector3i(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+
+        for (int x = start.x(); x < end.x(); x++)
+        {
+            for (int y = start.y(); y < end.y(); y++)
+            {
+                for (int z = start.z(); z < end.z(); z++)
+                {
+                    auto current = get_value(Vector3i(x, y, z));
+
+                    // if the current value is not interesting at all
+                    if (current.value() == 600 || current.weight() == 0)
+                    {
+                        continue;
+                    }
+
+                    // seems counter-intuitive, but this method simply gets the 26-neighbordhood..
+                    auto adj_cells = get_adjacent_chunks(Vector3i(x, y, z));
+
+                    int num_interesting = 0;
+
+                    for (auto cell : adj_cells)
+                    {
+                        auto tsdf = get_value(cell);
+
+                        if (tsdf.value() < 600 && tsdf.weight() > 0)
+                        {
+                            num_interesting++;
+                        }
+                    }
+
+                    if (num_interesting < 3)
+                    {
+                        // std::cout << "Found a cell which is rather shitty." << std::endl;
+
+                        // mark as not so interesting in the tsdf...
+                        current.weight(0);
+                        current.value(600);
+
+                        set_value(Vector3i(x, y, z), current);
+                        num_shitty++;
+                    }
+                }
+            }
+        }
+
+        std::cout << "Chunk " << i << " of " << chunks.size() << " done. Currently found " << num_shitty << " cells" << std::endl;
+    }
+}
