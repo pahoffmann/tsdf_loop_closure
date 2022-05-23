@@ -10,6 +10,7 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 #include <iostream>
+#include "constants.h"
 
 using Eigen::Matrix4f;
 using Eigen::Matrix4i;
@@ -180,4 +181,25 @@ static Vector3i vec_from_tag(std::string tag)
     int z = std::stoi(seglist[2]);
 
     return Vector3i(x, y, z);
+}
+
+
+/**
+ * @brief Converts a real world values points (in metres) to a point in map coordinates
+ * 
+ * @param real 
+ * @return Vector3i 
+ */
+static Vector3i real_to_map(Vector3f real) {
+    return (real * 1000.0f / MAP_RESOLUTION).cast<int>();
+}
+
+/**
+ * @brief Converts a map coordinate point to a real world point (metres).
+ * 
+ * @param map 
+ * @return Vector3f 
+ */
+static Vector3f map_to_real(Vector3i map) {
+    return map.cast<float>() * (MAP_RESOLUTION / 1000.0f);
 }

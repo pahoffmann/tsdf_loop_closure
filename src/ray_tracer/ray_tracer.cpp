@@ -201,7 +201,7 @@ void RayTracer::updateRays(int mode)
       }
 
       // now we can obtain the current tsdf value, as we are sure the ray is inbounds the bounding box (local map)
-      auto &tsdf = local_map_ptr_.get()->value(p1.x() * 1000.0f / MAP_RESOLUTION, p1.y() * 1000.0f / MAP_RESOLUTION, p1.z() * 1000.0f / MAP_RESOLUTION);
+      auto &tsdf = local_map_ptr_.get()->value(real_to_map(p1));
 
       // now check if a status change is necessary.
       if (lines_finished[i] == RayStatus::INIT)
@@ -226,7 +226,7 @@ void RayTracer::updateRays(int mode)
 
           if (mode == 0)
           {
-            cur_association->addAssociation((p1 * (1000.0f / MAP_RESOLUTION)).cast<int>(), tsdf);
+            cur_association->addAssociation(real_to_map(p1), tsdf);
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
           }
         }
@@ -240,7 +240,7 @@ void RayTracer::updateRays(int mode)
 
           if (mode == 0)
           {
-            cur_association->addAssociation((p1 * (1000.0f / MAP_RESOLUTION)).cast<int>(), tsdf);
+            cur_association->addAssociation(real_to_map(p1), tsdf);
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
           }
         }
@@ -259,7 +259,7 @@ void RayTracer::updateRays(int mode)
         {
           if (mode == 0)
           {
-            cur_association->addAssociation((p1 * (1000.0f / MAP_RESOLUTION)).cast<int>(), tsdf);
+            cur_association->addAssociation(real_to_map(p1), tsdf);
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
           }
         }
@@ -282,7 +282,7 @@ void RayTracer::updateRays(int mode)
         {
           if (mode == 0)
           {
-            cur_association->addAssociation((p1 * (1000.0f / MAP_RESOLUTION)).cast<int>(), tsdf);
+            cur_association->addAssociation(real_to_map(p1), tsdf);
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_NEG);
           }
         }
@@ -318,7 +318,7 @@ void RayTracer::cleanup()
 void RayTracer::update_pose(Pose *new_pose)
 {
   // calc the new localmap pose
-  Eigen::Vector3i new_pose_map = (new_pose->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
+  Eigen::Vector3i new_pose_map = real_to_map(new_pose->pos);
   std::cout << "POS OUT: " << new_pose_map << std::endl;
 
   // shift the local map

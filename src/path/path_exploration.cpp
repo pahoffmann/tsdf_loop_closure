@@ -50,7 +50,7 @@ void path_exploration::dijsktra()
             throw std::logic_error("Attempted to create a new chunk?!");
         }
 
-        Vector3f tmp = chunk.cast<float>() * CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f);
+        Vector3f tmp = map_to_real(chunk * CHUNK_SIZE);
         Pose *pose = new Pose();
         pose->pos = tmp;
         pose->quat = Quaternionf::Identity();
@@ -166,13 +166,13 @@ void path_exploration::dijsktra()
     {
         previous = distance_map[global_map_ptr->tag_from_chunk_pos(current)].first;
 
-        path_arr.push_back(current.cast<float>() * CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f));
+        path_arr.push_back(map_to_real(current * CHUNK_SIZE));
 
         current = previous;
     }
 
     // finally: the start pos
-    path_arr.push_back(previous.cast<float>() * CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f));
+    path_arr.push_back(map_to_real(previous * CHUNK_SIZE));
 
     // reverse the vector to make it a usable path
     std::reverse(path_arr.begin(), path_arr.end());

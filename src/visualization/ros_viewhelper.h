@@ -160,7 +160,7 @@ namespace ROSViewhelper
         ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
 
         // global cell index
-        Vector3i tmp_pos = (pose->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
+        Vector3i tmp_pos = real_to_map(pose->pos);
 
         // get values, ignore offset
         for (int x = tmp_pos.x() + (-1 * (size.x() - 1) / 2); x < tmp_pos.x() + ((size.x() - 1) / 2); x++)
@@ -290,7 +290,7 @@ namespace ROSViewhelper
         for (int i = 0; i < path->get_length(); i++)
         {
             // global cell index
-            Vector3i tmp_pos = (path->at(i)->pos * 1000.0f / MAP_RESOLUTION).cast<int>();
+            Vector3i tmp_pos = real_to_map(path->at(i)->pos);
 
             // shift local map to new path pos
             local_map->shift(tmp_pos);

@@ -157,7 +157,7 @@ void Association::serialize_HDF5()
         // data.push_back(ass.second.weight());
     }
 
-    Vector3i pos_discr = (pose.pos * (1000.0f / MAP_RESOLUTION)).cast<int>();
+    Vector3i pos_discr = real_to_map(pose.pos);
     g.createDataSet(tag_from_vec(pos_discr), data);
 
     file_.flush();
