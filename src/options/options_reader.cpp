@@ -53,9 +53,9 @@ void lc_options_reader::create_options() {
 
     desc->add_options()
         ("help", "produce help message")
-        ("hor_res", po::value<int>(&hor_res)->default_value(16), "Set horizontal resolution")
-        ("vert_res", po::value<int>(&vert_res)->default_value(16), "Set vertical resolution")
-        ("opening_degree", po::value<int>(&opening_degree)->default_value(45), "Set raytracer opening degree")
+        ("hor_res", po::value<int>(&hor_res)->default_value(1024), "Set horizontal resolution")
+        ("vert_res", po::value<int>(&vert_res)->default_value(128), "Set vertical resolution")
+        ("opening_degree", po::value<int>(&opening_degree)->default_value(90), "Set raytracer opening degree")
         ("step_size", po::value<double>(&step_size)->default_value(0.064), "Set step size")
         ("ray_size", po::value<double>(&ray_size)->default_value(0.01), "Set ray size")
         ("map_file_name", po::value<std::string>(&map_file_name)->required(), "Set global map filename (.h5)")

@@ -82,6 +82,9 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         {
             // create new chunk
             newChunk.data = std::vector<TSDFEntry::RawType>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, initial_tsdf_value_.raw());
+            std::stringstream ss;
+            ss << "A new chunk was created, this should never happen. At least during path exploration " << std::endl << chunkPos << std::endl << "Tag: " << tag << std::endl;
+            throw std::logic_error(ss.str());
         }
         // put new chunk into active_chunks_
         if (n < NUM_CHUNKS)
@@ -185,7 +188,7 @@ bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
     }
 }
 
-std::vector<Vector3i> GlobalMap::get_adjacent_chunks(Vector3i chunk_pos)
+std::vector<Vector3i> GlobalMap::get_26_neighborhood(Vector3i chunk_pos)
 {
     std::vector<Vector3i> chunks;
 
@@ -246,13 +249,13 @@ std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
         if (l_map_size != Vector3i(0, 0, 0))
         {
             Vector3i tmp = chunk_pos_from_tag(name);
-            Vector3i global_tmp = tmp * 64;
+            Vector3i global_tmp = tmp * CHUNK_SIZE;
             bool check = is_fully_occupied(global_tmp, l_map_size);
 
             // if still every chunk around the current chunk is registered, it is a possible valid path pos
             if (check)
             {
-                poses.push_back(chunk_pos_from_tag(name));
+                poses.push_back(tmp);
             }
         }
         else
@@ -414,6 +417,15 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
 
 void GlobalMap::cleanup_artifacts()
 {
+    auto map = file_.getGroup("/map");
+
+    // check, if the map already is cleaned in terms of artifacts.
+    if (map.hasAttribute("cleaned"))
+    {
+        std::cout << "[GlobalMap]: Map already cleaned, no cleanup necessary" << std::endl;
+        return;
+    }
+
     auto chunks = all_chunk_poses();
     int num_shitty = 0;
 
@@ -437,13 +449,23 @@ void GlobalMap::cleanup_artifacts()
                         continue;
                     }
 
+                    auto current_chunk = floor_divide(Vector3i(x, y, z), CHUNK_SIZE);
+
                     // seems counter-intuitive, but this method simply gets the 26-neighbordhood..
-                    auto adj_cells = get_adjacent_chunks(Vector3i(x, y, z));
+                    auto adj_cells = get_26_neighborhood(Vector3i(x, y, z));
 
                     int num_interesting = 0;
 
                     for (auto cell : adj_cells)
                     {
+                        Vector3i chunkPos = floor_divide(cell, CHUNK_SIZE);
+                        
+                        //ignore edge cases, where the chunk doesnt exist.
+                        if (chunkPos != current_chunk && !chunk_exists(chunkPos))
+                        {
+                            continue;
+                        }
+
                         auto tsdf = get_value(cell);
 
                         if (tsdf.value() < 600 && tsdf.weight() > 0)
@@ -467,8 +489,10 @@ void GlobalMap::cleanup_artifacts()
             }
         }
 
-        std::cout << "Chunk " << i << " of " << chunks.size() << " done. Currently found " << num_shitty << " cells" << std::endl;
+        std::cout << "[GlobalMap]: Chunk " << i + 1 << " of " << chunks.size() << " done. Currently found " << num_shitty << " cells" << std::endl;
     }
 
     write_back();
+
+    map.createAttribute("cleaned", true);
 }

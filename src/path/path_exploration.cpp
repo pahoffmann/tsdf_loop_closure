@@ -32,16 +32,13 @@ std::string path_exploration::hash_from_point(Eigen::Vector3i pos)
  */
 void path_exploration::dijsktra()
 {
-    // before doing anything, we need to fill the prio queue :)
-    // std::cout << "Filling pq" << std::endl;
-    // fill_pq();
-    int num_chunks = global_map_ptr->num_chunks();
-
     // distance map storing the current distance and the previous Vector (shortest path)
     std::map<std::string, std::pair<Vector3i, float>> distance_map;
 
     auto chunks = global_map_ptr->all_chunk_poses(local_map_ptr->get_size());
-    // auto chunks = global_map_ptr->all_chunk_poses();
+    auto chunks1 = global_map_ptr->all_chunk_poses();
+
+    std::cout << "CHUNKS_______: " << chunks.size() << " | " << chunks1.size() << std::endl;
 
     std::vector<float> hit_miss_percentages;
     int max_index = 0;
@@ -49,11 +46,22 @@ void path_exploration::dijsktra()
     // checkout hit miss percentages for weighting
     for (auto chunk : chunks)
     {
+        if(!global_map_ptr->chunk_exists(chunk)) {
+            throw std::logic_error("Attempted to create a new chunk?!");
+        }
+
         Vector3f tmp = chunk.cast<float>() * CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f);
         Pose *pose = new Pose();
         pose->pos = tmp;
         pose->quat = Quaternionf::Identity();
-        ray_tracer->update_pose(pose);
+        try {
+            std::cout << "POS IN: " << chunk << std::endl;
+            ray_tracer->update_pose(pose);
+        }
+        catch (...) {
+            throw std::logic_error("Attempted to create a new chunk wtf?!");
+        }
+
         float ret = ray_tracer->start(1);
         hit_miss_percentages.push_back(ret);
 
@@ -101,7 +109,7 @@ void path_exploration::dijsktra()
         auto u = pq.top();
         pq.pop();
 
-        std::vector<Vector3i> adj_vertices = global_map_ptr->get_adjacent_chunks(u->chunk_pos);
+        std::vector<Vector3i> adj_vertices = global_map_ptr->get_26_neighborhood(u->chunk_pos);
 
         for (auto adj : adj_vertices)
         {

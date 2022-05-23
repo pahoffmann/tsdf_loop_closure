@@ -147,7 +147,7 @@ public:
      * @brief gets the adjacent chunk positions of chunk_pos
      * 
      */
-    std::vector<Vector3i> get_adjacent_chunks(Vector3i chunk_pos);
+    std::vector<Vector3i> get_26_neighborhood(Vector3i chunk_pos);
 
     /**
      * @brief gets the chunk pos from the tag

@@ -88,3 +88,9 @@ each special case in a vector and check how and where the localmap needs to be s
 Use existing methods (e.g. Slam6d with a defined dataset which includes a closed loop and do a slam approach.)
 Use fastsense method including loop closure approach with data association to evaluate different associations. 
 Todo: how to evaluate the resulting tsdf map AFTER loop closure, does it need a fix?
+
+
+
+### MA Ideas ##
+
+* Hashmap benchmark
