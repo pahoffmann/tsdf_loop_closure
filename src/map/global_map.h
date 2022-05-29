@@ -5,6 +5,7 @@
  * @author Steffen Hinderink
  * @author Juri Vana
  * @author Malte Hillmann
+ * @author Patrick Hoffmann
  */
 
 #include <highfive/H5File.hpp>

@@ -42,6 +42,12 @@ struct Pose
         // default
     }
 
+    // create a pose from a matrix 4f
+    Pose(const Matrix4f &mat) {
+        quat = mat.block<3, 3>(0, 0);
+        pos = mat.block<3, 1>(0, 3);
+    }
+
     // copy constructor
     Pose(const Pose &other)
     {

@@ -2,7 +2,7 @@
 
 /**
  * @file ros_viewhelper.h
- * @author Patrick Hoffmann pahoffmann@uni-osnabrueck.de)
+ * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
  * @brief Used to create ROS visualization Markers, which can later be displayed for evaluation
  * @version 0.1
  * @date 2022-04-11
