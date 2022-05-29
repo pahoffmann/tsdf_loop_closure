@@ -415,6 +415,30 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
     file_.flush();
 }
 
+void GlobalMap::write_path_node(Pose &pose) {
+    if (!file_.exist("/poses"))
+    {
+        file_.createGroup("/poses");
+    }
+
+    HighFive::Group g = file_.getGroup("/poses");
+
+    std::vector<float> values(7);
+
+    // round to three decimal places here.
+    values[0] = std::round(pose.pos.x() * 1000.0f) / 1000.0f;
+    values[1] = std::round(pose.pos.y() * 1000.0f) / 1000.0f;
+    values[2] = std::round(pose.pos.z() * 1000.0f) / 1000.0f;
+    values[3] = std::round(pose.quat.x() * 1000.0f) / 1000.0f;
+    values[4] = std::round(pose.quat.y() * 1000.0f) / 1000.0f;
+    values[5] = std::round(pose.quat.z() * 1000.0f) / 1000.0f;
+    values[6] = std::round(pose.quat.w() * 1000.0f) / 1000.0f;
+
+    g.createDataSet(tag_from_vec(Vector3f(values[0], values[1], values[2])), values);
+
+    file_.flush();
+}
+
 void GlobalMap::cleanup_artifacts()
 {
     auto map = file_.getGroup("/map");

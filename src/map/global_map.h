@@ -183,6 +183,13 @@ public:
     void write_path(std::vector<Pose> &path);
 
     /**
+     * @brief writes a single new pose to the hdf5 pose array
+     * 
+     * @param pose 
+     */
+    void write_path_node(Pose &pose);
+
+    /**
      * @brief gets information about wether a globalmap hdf5 has a path or not
      * 
      * @return true 
