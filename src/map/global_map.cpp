@@ -83,9 +83,10 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         {
             // create new chunk
             newChunk.data = std::vector<TSDFEntry::RawType>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, initial_tsdf_value_.raw());
-            std::stringstream ss;
+            /*std::stringstream ss;
             ss << "A new chunk was created, this should never happen. At least during path exploration " << std::endl << chunkPos << std::endl << "Tag: " << tag << std::endl;
-            throw std::logic_error(ss.str());
+            std::cout << ss.str() << std::endl;
+            throw std::logic_error(ss.str());*/
         }
         // put new chunk into active_chunks_
         if (n < NUM_CHUNKS)
@@ -176,8 +177,6 @@ bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
     HighFive::Group g = file_.getGroup("/map");
 
     auto tag = tag_from_chunk_pos(chunk_pos);
-
-    // std::cout << "Checking if chunk exists: " << tag << std::endl;
 
     if (g.exist(tag))
     {
@@ -309,9 +308,10 @@ bool GlobalMap::is_fully_occupied(Eigen::Vector3i &pos, Eigen::Vector3i &localma
     Vector3i end = bottom_corner.cwiseMax(top_corner);
 
     // calculate the chunk index
-    constexpr int CHUNK_SIZE = GlobalMap::CHUNK_SIZE;
     Vector3i chunk_start = floor_divide(start, CHUNK_SIZE);
     Vector3i chunk_end = floor_divide(end, CHUNK_SIZE);
+
+    // std::cout << "[GlobalMap] Chunk start: " << std::endl << chunk_start << std::endl << "[GlobalMap] Chunk end: " << std::endl << chunk_end << std::endl;
 
     // check all chunks in the local-map sized bounding box around "pos"
     for (int chunk_x = chunk_start.x(); chunk_x <= chunk_end.x(); ++chunk_x)
@@ -396,6 +396,8 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
         std::cout << "[GlobalMap]: Path already exists in global-map, aborting writing path" << std::endl;
         return;
     }
+    
+    int identifier = 0;
 
     for (auto pose : poses)
     {
@@ -410,7 +412,12 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
         values[5] = std::round(pose.quat.z() * 1000.0f) / 1000.0f;
         values[6] = std::round(pose.quat.w() * 1000.0f) / 1000.0f;
 
-        g.createDataSet(tag_from_vec(Vector3f(values[0], values[1], values[2])), values);
+        std::string dataset_str = std::to_string(identifier) + "_" + tag_from_vec(Vector3f(values[0], values[1], values[2]));
+
+        std::cout << "Creating dataset in Path: " << dataset_str << std::endl;
+
+        g.createDataSet(dataset_str, values);
+        identifier++;
     }
 
     file_.flush();

@@ -68,6 +68,12 @@ struct Pose
         tmp.pos = this->pos + other.pos;
         return tmp;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const Pose& pose) {
+        os << pose.pos.x() << " | " << pose.pos.y() << " | " << pose.pos.z() << std::endl;
+        return os;
+    }
+
 };
 
 /**
@@ -197,7 +203,7 @@ static Vector3i vec_from_tag(std::string tag)
  * @return Vector3i 
  */
 static Vector3i real_to_map(Vector3f real) {
-    return (real * 1000.0f / MAP_RESOLUTION).cast<int>();
+    return (real * (1000.0f / MAP_RESOLUTION)).cast<int>();
 }
 
 /**

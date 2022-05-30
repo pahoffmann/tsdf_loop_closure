@@ -157,6 +157,8 @@ void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top
     Vector3i chunk_start = floor_divide(start, CHUNK_SIZE);
     Vector3i chunk_end = floor_divide(end, CHUNK_SIZE);
 
+    //std::cout << "[LocalMap] Chunk start: " << std::endl << chunk_start << std::endl << "[LocalMap] Chunk end: " << std::endl << chunk_end << std::endl;
+
     // The start and end point within chunk_start and chunk_end
     Vector3i start_delta = start - chunk_start * CHUNK_SIZE;
     Vector3i end_delta = end - chunk_end * CHUNK_SIZE;
@@ -238,5 +240,7 @@ void LocalMap::write_back()
 bool LocalMap::is_fully_occupied(Eigen::Vector3i &pos)
 {
     // when all chunks are already generated, the local map would be fully occupied and no further chunk would need to be generated.
+    // this function works as a delegate to the global map, it checks wether a shift in the local map to pos 'pos' would result in additional chunks
+    // getting generated
     return map_->is_fully_occupied(pos, size_);
 }

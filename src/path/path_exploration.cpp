@@ -37,6 +37,7 @@ void path_exploration::dijsktra()
 
     auto chunks = global_map_ptr->all_chunk_poses(local_map_ptr->get_size());
     auto chunks1 = global_map_ptr->all_chunk_poses();
+    auto localmap_size = local_map_ptr->get_size();
 
     std::cout << "CHUNKS_______: " << chunks.size() << " | " << chunks1.size() << std::endl;
 
@@ -50,16 +51,23 @@ void path_exploration::dijsktra()
             throw std::logic_error("Attempted to create a new chunk?!");
         }
 
+        Vector3i chunk_as_cell = chunk * CHUNK_SIZE;
+
+        if(!global_map_ptr->is_fully_occupied(chunk_as_cell, localmap_size)) {
+            throw std::logic_error("This should never fire.");
+        }
+
         Vector3f tmp = map_to_real(chunk * CHUNK_SIZE);
         Pose *pose = new Pose();
         pose->pos = tmp;
         pose->quat = Quaternionf::Identity();
+
         try {
-            std::cout << "POS IN: " << chunk << std::endl;
             ray_tracer->update_pose(pose);
         }
-        catch (...) {
-            throw std::logic_error("Attempted to create a new chunk wtf?!");
+        catch (std::logic_error ex) {
+            std::cout << ex.what() << std::endl;
+            throw std::logic_error("[Exploration] Error fired when updating the pose in the ray tracer");
         }
 
         float ret = ray_tracer->start(1);

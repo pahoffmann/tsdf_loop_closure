@@ -25,6 +25,7 @@
 [ ] Stop hardcoding tsdf values in code (600, 0, ...)
 [ ] Hit percentage needs to be calculated differently (possibly), not complete local map, but just the visible chunks should be included. (of the sub path belonging to the loop closure)
 [ ] where is the intersection status saved???
+[ ] BUG: during the loop closure process, the map is enlarged by empty chunks, probably due to some indexing problem. If there is time, try to fix this.
 
 # Important TODO's for future me #
 

@@ -3,6 +3,7 @@
 /**
  * @file tsdf.h
  * @author Marcel Flottmann
+ * @author Patrick Hoffmann
  * @date 2021-01-13
  */
 
