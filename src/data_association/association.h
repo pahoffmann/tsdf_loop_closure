@@ -30,6 +30,8 @@ class Association
 public:
     /**
      * @brief There will be multiple strategys for serializing the associations, which might be needed by different association strategies
+     * 
+     * @details currently the only viable strategy is to use hdf5, sql is not implemented
      *
      */
     enum SerializationStrategy
@@ -39,7 +41,7 @@ public:
         JSON
     };
 
-    Association(Pose start_pose, int num_pose, std::string base_path, SerializationStrategy ser_strat = SerializationStrategy::JSON);
+    Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMap> global_map_ptr, std::string base_path, SerializationStrategy ser_strat = SerializationStrategy::HDF5);
     ~Association();
     // maybe use indexing here insead of actual global pose
     inline void addAssociation(Eigen::Vector3i pose, TSDFEntry entry)
@@ -78,6 +80,10 @@ private:
     SerializationStrategy strat;
     std::string file_path;
     std::shared_ptr<LocalMap> local_map_ptr;
+    std::shared_ptr<GlobalMap> global_map_ptr;
+
+    // number of the associated pose (for global map relation mapping)
+    int pose_number;
 
     // we might need a hashmap depending on the case to speedup the search for association on specific positions.
     // hashmap should uses indices rather than pure global positioning information

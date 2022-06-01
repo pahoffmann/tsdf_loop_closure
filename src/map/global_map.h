@@ -19,7 +19,7 @@
 struct ActiveChunk
 {
     std::vector<TSDFEntry::RawType> data;
-    // std::vector<TSDFEntry::IntersectStatus> intersects;
+    std::vector<int32_t> intersect_data;
     Vector3i pos;
     int age;
 };
@@ -47,6 +47,17 @@ private:
      * | |-0_1_0    chunk datasets named after their tag
      * | |-0_1_1  /
      * | |-1_0_0 /
+     * | |
+     * |-/poses
+     * | |
+     * | |-1 [Metadata: Pose pose (pos + quat values)]
+     * | |-2 [Metadata: Pose pose (pos + quat values)]
+     * | |-3 [Metadata: Pose pose (pos + quat values)]
+     * | |-4 [Metadata: Pose pose (pos + quat values)]
+     * | |
+     * | | -> Each of the pose datasets contains association data
+     * | |
+     * | |
      */
     HighFive::File file_;
 
@@ -60,6 +71,9 @@ private:
 
     /// Number of poses that are saved in the HDF5 file
     int num_poses_;
+
+    // number of values in a pose attribute
+    int POSE_ATTRIBUTE_SIZE = 7;
 
     /**
      * Returns the index of a global position in a chunk.
@@ -210,4 +224,26 @@ public:
      * 
      */
     void cleanup_artifacts();
+    
+    /**
+     * @brief Writes the passed association data to the pose dataset with number 'pose_number'
+     * 
+     * @param data 
+     * @param pose_number 
+     */
+    void write_association_data(std::vector<int> &data, int pose_number);
+
+    /**
+     * @brief reads the association data from the hdf5
+     * 
+     * @param pose_number 
+     * @return std::vector<int> 
+     */
+    std::vector<int> read_association_data(int pose_number);
+
+    /**
+     * @brief clear every single association data, this is done prior to every run, when a path exists.
+     * 
+     */
+    void clear_association_data();
 };

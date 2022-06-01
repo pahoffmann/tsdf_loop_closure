@@ -11,11 +11,13 @@
  *
  */
 
-AssociationManager::AssociationManager(Path *path, std::string file_path, RayTracer *tracer, std::shared_ptr<LocalMap> local_map_ptr_) : base_path(file_path)
+AssociationManager::AssociationManager(Path *path, std::string file_path, RayTracer *tracer, std::shared_ptr<LocalMap> local_map_ptr_,
+                                       std::shared_ptr<GlobalMap> global_map_ptr_) : base_path(file_path)
 {
     auto poses = path->getPoses();
     ray_tracer = tracer;
     local_map_ptr = local_map_ptr_;
+    global_map_ptr = global_map_ptr_;
 
     // create timestamp
     time = std::time(nullptr);
@@ -41,7 +43,7 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
     for (int i = 0; i < poses.size(); i++)
     {
         // create new association and add it to the array
-        Association association(poses[i], i, file_path, Association::SerializationStrategy::HDF5);
+        Association association(poses[i], i, global_map_ptr, file_path, Association::SerializationStrategy::HDF5);
         associations.push_back(association);
     }
 }

@@ -13,16 +13,17 @@
  *
  */
 
-Association::Association(Pose start_pose, int num_pose, std::string base_path, SerializationStrategy ser_strat) : pose(start_pose)
+Association::Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMap> global_map_ptr, std::string base_path, SerializationStrategy ser_strat) : pose(start_pose)
 {
     strat = ser_strat;
+    pose_number = num_pose;
 
     std::string type = "";
 
     switch (ser_strat)
     {
     case SerializationStrategy::HDF5:
-        type = ".h5";
+        // do nothing, as here the global map hdf5 is used
         break;
 
     default:
@@ -36,13 +37,13 @@ Association::Association(Pose start_pose, int num_pose, std::string base_path, S
         base_path += "/";
     }
 
-    if (ser_strat == SerializationStrategy::HDF5)
-    {
-        file_path = base_path + "hdf5_association" + type;
-    }
-    else
+    if (ser_strat == SerializationStrategy::JSON)
     {
         file_path = base_path + std::to_string(num_pose) + "_association" + type;
+    }
+    else 
+    {
+        // currently nothing, as for hdf file, the association data is written to the global map hdf5
     }
 }
 
@@ -134,37 +135,33 @@ void Association::deserialize_JSON()
 
 void Association::serialize_HDF5()
 {
-    // TODO: to make this usable, we should try to save the x,y,z value in one datatype. how?
-
-    HighFive::File file_(file_path, HighFive::File::OpenOrCreate);
-
-    if (!file_.exist("/associations"))
-    {
-        file_.createGroup("/associations");
-    }
-
-    HighFive::Group g = file_.getGroup("/associations");
-
     std::vector<int> data;
 
     for (auto it : associations)
     {
         Vector3i ass = vec_from_tag(it.first);
+        auto tsdf = it.second;
         data.push_back(ass.x());
         data.push_back(ass.y());
         data.push_back(ass.z());
-        // data.push_back(ass.second.value());
-        // data.push_back(ass.second.weight());
+        data.push_back(tsdf.value());
+        data.push_back(tsdf.weight());
     }
 
-    Vector3i pos_discr = real_to_map(pose.pos);
-    g.createDataSet(tag_from_vec(pos_discr), data);
-
-    file_.flush();
+    // write the data to the hdf5
+    global_map_ptr->write_association_data(data, pose_number);
+    associations.clear();
 }
 
 void Association::deserialize_HDF5()
 {
+    auto data = global_map_ptr->read_association_data(pose_number);
+
+    // transform data to map
+    for(int i = 0; i < data.size(); i += 5) 
+    {
+        associations[tag_from_vec(Vector3i(data[i], data[i + 1], data[i + 2]))] = TSDFEntry(data[i + 4], data[i + 5]);
+    }
 }
 
 void Association::serialize_SQL()

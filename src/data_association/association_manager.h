@@ -33,6 +33,7 @@ private:
     std::string base_path;
     RayTracer *ray_tracer;
     std::shared_ptr<LocalMap> local_map_ptr;
+    std::shared_ptr<GlobalMap> global_map_ptr;
 
     /**
      * @brief Create a serialization folder at the requested path using filesystem utils
@@ -49,7 +50,7 @@ public:
      * @param path
      * @param file_path
      */
-    AssociationManager(Path *path, std::string file_path, RayTracer *tracer, std::shared_ptr<LocalMap> local_map_ptr_);
+    AssociationManager(Path *path, std::string file_path, RayTracer *tracer, std::shared_ptr<LocalMap> local_map_ptr_, std::shared_ptr<GlobalMap> global_map_ptr_);
 
     /**
      * @brief Destroy the Association Manager object

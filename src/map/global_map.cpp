@@ -33,6 +33,12 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
     {
         ROS_INFO("[GLOBAL_MAP] Using existing HDF5 Parameter [/poses]");
     }
+
+    // prior to doing anything with the global map association data, we clear it completely
+    if (has_path())
+    {
+        clear_association_data();
+    }
 }
 
 std::string GlobalMap::tag_from_chunk_pos(const Vector3i &pos)
@@ -73,11 +79,24 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         HighFive::Group g = file_.getGroup("/map");
         auto tag = tag_from_chunk_pos(chunkPos);
 
+        auto intersect_tag = tag + "_int";
+
         if (g.exist(tag))
         {
             // read chunk from file
             HighFive::DataSet d = g.getDataSet(tag);
             d.read(newChunk.data);
+
+            if (g.exist(intersect_tag))
+            {
+                // read chunk from file
+                HighFive::DataSet d = g.getDataSet(tag);
+                d.read(newChunk.intersect_data);
+            }
+            else
+            {
+                newChunk.intersect_data = std::vector<int32_t>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, TSDFEntry::IntersectStatus::NO_INT);
+            }
         }
         else
         {
@@ -109,6 +128,7 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
                 }
             }
             auto tag = tag_from_chunk_pos(active_chunks_[index].pos);
+            auto intersect_tag = tag + "_int";
 
             if (g.exist(tag))
             {
@@ -119,6 +139,17 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             {
                 g.createDataSet(tag, active_chunks_[index].data);
             }
+
+            if (g.exist(intersect_tag))
+            {
+                auto d = g.getDataSet(intersect_tag);
+                d.write(active_chunks_[index].intersect_data);
+            }
+            else
+            {
+                g.createDataSet(intersect_tag, active_chunks_[index].intersect_data);
+            }
+
             // overwrite with new chunk
             active_chunks_[index] = newChunk;
         }
@@ -354,15 +385,15 @@ std::vector<Pose> GlobalMap::get_path()
     {
         if (!g.exist(name))
         {
-            throw std::logic_error("Error when reading paths from h5");
+            throw std::logic_error("Error when reading paths from hdf5");
         }
 
         std::vector<float> values;
         auto dataset = g.getDataSet(name);
-        dataset.read(values);
+        dataset.getAttribute("pose").read(values);
 
-        // there need to be 6 values (x, y, z, roll, pitch, yaw) for every Pose.
-        if (values.size() != 7)
+        // there need to be 7 values (x, y, z, x_quat, y_quat, z_quat, w_quat) for every Pose.
+        if (values.size() != POSE_ATTRIBUTE_SIZE)
         {
             continue;
         }
@@ -396,12 +427,12 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
         std::cout << "[GlobalMap]: Path already exists in global-map, aborting writing path" << std::endl;
         return;
     }
-    
+
     int identifier = 0;
 
     for (auto pose : poses)
     {
-        std::vector<float> values(7);
+        std::vector<float> values(POSE_ATTRIBUTE_SIZE);
 
         // round to three decimal places here.
         values[0] = std::round(pose.pos.x() * 1000.0f) / 1000.0f;
@@ -412,18 +443,21 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
         values[5] = std::round(pose.quat.z() * 1000.0f) / 1000.0f;
         values[6] = std::round(pose.quat.w() * 1000.0f) / 1000.0f;
 
-        std::string dataset_str = std::to_string(identifier) + "_" + tag_from_vec(Vector3f(values[0], values[1], values[2]));
+        std::string dataset_str = std::to_string(identifier);
 
         std::cout << "Creating dataset in Path: " << dataset_str << std::endl;
 
-        g.createDataSet(dataset_str, values);
+        auto ds = g.createDataSet(dataset_str, NULL);
+        
+        ds.createAttribute("pose", values);
         identifier++;
     }
 
     file_.flush();
 }
 
-void GlobalMap::write_path_node(Pose &pose) {
+void GlobalMap::write_path_node(Pose &pose)
+{
     if (!file_.exist("/poses"))
     {
         file_.createGroup("/poses");
@@ -431,7 +465,7 @@ void GlobalMap::write_path_node(Pose &pose) {
 
     HighFive::Group g = file_.getGroup("/poses");
 
-    std::vector<float> values(7);
+    std::vector<float> values(POSE_ATTRIBUTE_SIZE);
 
     // round to three decimal places here.
     values[0] = std::round(pose.pos.x() * 1000.0f) / 1000.0f;
@@ -491,8 +525,8 @@ void GlobalMap::cleanup_artifacts()
                     for (auto cell : adj_cells)
                     {
                         Vector3i chunkPos = floor_divide(cell, CHUNK_SIZE);
-                        
-                        //ignore edge cases, where the chunk doesnt exist.
+
+                        // ignore edge cases, where the chunk doesnt exist.
                         if (chunkPos != current_chunk && !chunk_exists(chunkPos))
                         {
                             continue;
@@ -527,4 +561,50 @@ void GlobalMap::cleanup_artifacts()
     write_back();
 
     map.createAttribute("cleaned", true);
+}
+
+void GlobalMap::write_association_data(std::vector<int> &association_data, int pose_number)
+{
+    // TODO: implement this
+}
+
+std::vector<int> GlobalMap::read_association_data(int pose_number)
+{
+    // TODO: implement this
+    return std::vector<int>();
+}
+
+void GlobalMap::clear_association_data()
+{
+    auto g = file_.getGroup("/poses");
+
+    auto object_names = g.listObjectNames();
+
+    for(auto name : object_names) {
+        auto ds = g.getDataSet(name);
+
+        std::string channel_name = std::string("/poses") + name;
+
+        std::cout << "Channel Name: " << channel_name << std::endl;
+
+        std::vector<float> attribute_data;
+
+        if(!ds.hasAttribute("pose")) {
+            throw std::logic_error("[GlobalMap - clear_association_data] Dataset has no pose attribute");
+        }
+
+        ds.getAttribute("pose").read(attribute_data);
+
+        if(attribute_data.size() != POSE_ATTRIBUTE_SIZE) 
+        {
+            throw std::logic_error("[GlobalMap - clear_association_data] Dataset attribute has wrong number of values");
+        }
+        
+        // delete the dataset
+        int status = H5Ldelete(file_.getId(), channel_name.data(), H5P_DEFAULT);
+
+        // recreate empty ds
+        auto new_ds = g.createDataSet(name, NULL);
+        new_ds.createAttribute("pose", attribute_data);
+    }
 }

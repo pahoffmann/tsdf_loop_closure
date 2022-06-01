@@ -185,7 +185,7 @@ int main(int argc, char **argv)
   ros::Rate loop_rate(10);
 
   // create associationmanager
-  manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_);
+  manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
   manager->greedy_associations();
 
   // obtain the ros marker for visualization
@@ -202,7 +202,7 @@ int main(int argc, char **argv)
   // init tsdf
   // tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
 
-  // FIXME: use this full map, once i have an accurate path.
+  // full tsdf map for display, very ressource intensive, especially for large maps..
   tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
 
   // some stuff doesnt need to be published every iteration...

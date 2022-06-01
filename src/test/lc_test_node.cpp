@@ -393,7 +393,7 @@ int main(int argc, char **argv)
   ray_tracer = new RayTracer(&lc_config, local_map_ptr_, &raytrace_starting_pose);
 
   // create associationmanager
-  AssociationManager manager(&path, file_base_path_, ray_tracer, local_map_ptr_);
+  AssociationManager manager(&path, file_base_path_, ray_tracer, local_map_ptr_, global_map_ptr_);
 
   // and lastly: reconfigure callbacks
   dynamic_reconfigure::Server<loop_closure::LoopClosureConfig> server;

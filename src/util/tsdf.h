@@ -31,7 +31,6 @@ public:
 
 private:
 
-    IntersectStatus intersect = IntersectStatus::NO_INT;
 
     /// Internally managed datatype
     union
@@ -40,6 +39,8 @@ private:
         TSDFEntryHW tsdf;
     } data;
     static_assert(sizeof(RawType) == sizeof(TSDFEntryHW));            // raw and TSDF types must be of the same size
+
+    IntersectStatus intersect_data;
 
 public:
 
@@ -50,7 +51,7 @@ public:
     {
         data.tsdf.value = value;
         data.tsdf.weight = weight;
-        intersect = IntersectStatus::NO_INT;
+        intersect_data = IntersectStatus::NO_INT;
     }
 
     /**
@@ -59,7 +60,7 @@ public:
     explicit TSDFEntry(RawType raw)
     {
         data.raw = raw;
-        intersect = IntersectStatus::NO_INT;
+        intersect_data = IntersectStatus::NO_INT;
     }
 
     // Default behaviour for copy and move
@@ -129,12 +130,12 @@ public:
 
     IntersectStatus getIntersect()
     {
-        return intersect;
+        return intersect_data;
     }
 
     void setIntersect(IntersectStatus val)
     {
-        intersect = val;
+        intersect_data = val;
     }
 };
 
