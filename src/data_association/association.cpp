@@ -135,6 +135,7 @@ void Association::deserialize_JSON()
 
 void Association::serialize_HDF5()
 {
+    std::cout << "[Association - serialize_HDF5] Start serialization" << std::endl;
     std::vector<int> data;
 
     for (auto it : associations)

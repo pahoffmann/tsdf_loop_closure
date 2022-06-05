@@ -448,7 +448,7 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
         std::cout << "Creating dataset in Path: " << dataset_str << std::endl;
 
         auto ds = g.createDataSet(dataset_str, NULL);
-        
+
         ds.createAttribute("pose", values);
         identifier++;
     }
@@ -456,6 +456,13 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
     file_.flush();
 }
 
+/**
+ * @brief 
+ * 
+ * @todo create pose as attribute, get last pose identifier + 1
+ * 
+ * @param pose 
+ */
 void GlobalMap::write_path_node(Pose &pose)
 {
     if (!file_.exist("/poses"))
@@ -565,13 +572,73 @@ void GlobalMap::cleanup_artifacts()
 
 void GlobalMap::write_association_data(std::vector<int> &association_data, int pose_number)
 {
-    // TODO: implement this
+    std::cout << "[GlobalMap] Start writing associaton data for " << association_data.size() << " objects." << std::endl;
+
+    std::cout << "WTFFF1" << std::endl;
+
+    // when there is no poses, we dont do nothing
+    if (!file_.exist("/poses"))
+    {
+        std::cout << "[GlobalMap] -2" << std::endl;
+
+        return;
+    }
+    
+    std::cout << "WTFFF" << std::endl;
+    
+    if (file_.getGroup("/poses").listObjectNames().size() == 0)
+    {
+        std::cout << "[GlobalMap] -1" << std::endl;
+
+        return;
+    }
+
+    auto g = file_.getGroup("/poses");
+
+    // when the passed number (pose) does not exist, we also return
+    if (!g.exist(std::to_string(pose_number)))
+    {
+        return;
+    }
+    std::cout << "[GlobalMap] 1" << std::endl;
+
+    // get the dataset and write the data.
+    auto d = g.getDataSet(std::to_string(pose_number));
+
+    std::cout << "[GlobalMap] 2" << std::endl;
+
+    d.write(association_data);
+
+    std::cout << "[GlobalMap] 3" << std::endl;
+
+    file_.flush();
+
+    std::cout << "[GlobalMap] Done writing association data" << std::endl;
 }
 
 std::vector<int> GlobalMap::read_association_data(int pose_number)
 {
-    // TODO: implement this
-    return std::vector<int>();
+    // when there is no poses, we dont do nothing
+    if (!file_.exist("/poses") || file_.getGroup("/poses").listObjectNames().size() == 0)
+    {
+        std::vector<int>();
+    }
+
+    auto g = file_.getGroup("/poses");
+
+    // when the passed number (pose) does not exist, we also return
+    if (!g.exist(std::to_string(pose_number)))
+    {
+        std::vector<int>();
+    }
+
+    // get the dataset and read the data.
+    auto d = g.getDataSet(std::to_string(pose_number));
+
+    std::vector<int> data;
+    d.read(data);
+
+    return data;
 }
 
 void GlobalMap::clear_association_data()
@@ -580,26 +647,28 @@ void GlobalMap::clear_association_data()
 
     auto object_names = g.listObjectNames();
 
-    for(auto name : object_names) {
+    for (auto name : object_names)
+    {
         auto ds = g.getDataSet(name);
 
-        std::string channel_name = std::string("/poses") + name;
+        std::string channel_name = std::string("/poses/") + name;
 
         std::cout << "Channel Name: " << channel_name << std::endl;
 
         std::vector<float> attribute_data;
 
-        if(!ds.hasAttribute("pose")) {
+        if (!ds.hasAttribute("pose"))
+        {
             throw std::logic_error("[GlobalMap - clear_association_data] Dataset has no pose attribute");
         }
 
         ds.getAttribute("pose").read(attribute_data);
 
-        if(attribute_data.size() != POSE_ATTRIBUTE_SIZE) 
+        if (attribute_data.size() != POSE_ATTRIBUTE_SIZE)
         {
             throw std::logic_error("[GlobalMap - clear_association_data] Dataset attribute has wrong number of values");
         }
-        
+
         // delete the dataset
         int status = H5Ldelete(file_.getId(), channel_name.data(), H5P_DEFAULT);
 
