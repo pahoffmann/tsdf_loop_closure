@@ -32,6 +32,7 @@
 [ ] Outsource raytracers function to detect raytrace status changes to a function for that
 [ ] Create a model for the metadata of the global map ( which not yet exists)
 [ ] write a ros node, which converts a globalmap h5 to a more usable version including metadata and intersection status.
+[ ] Re-evaluate cleanup artifacts method from global map
 
 ## Important TODO's for future me ##
 

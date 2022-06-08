@@ -510,6 +510,11 @@ void GlobalMap::write_path_node(Pose &pose)
     file_.flush();
 }
 
+/**
+ * @brief 
+ * 
+ * @todo this method still needs some work
+ */
 void GlobalMap::cleanup_artifacts()
 {
     auto map = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
