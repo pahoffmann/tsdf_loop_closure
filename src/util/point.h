@@ -11,6 +11,7 @@
 #include <vector>
 #include <iostream>
 #include "constants.h"
+#include "algorithm.h"
 
 using Eigen::Matrix4f;
 using Eigen::Matrix4i;

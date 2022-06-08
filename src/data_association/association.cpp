@@ -13,10 +13,12 @@
  *
  */
 
-Association::Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMap> global_map_ptr, std::string base_path, SerializationStrategy ser_strat) : pose(start_pose)
+Association::Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMap> global_map_ptr_, std::string base_path, SerializationStrategy ser_strat) : pose(start_pose)
 {
     strat = ser_strat;
     pose_number = num_pose;
+
+    global_map_ptr = global_map_ptr_;
 
     std::string type = "";
 
@@ -148,6 +150,8 @@ void Association::serialize_HDF5()
         data.push_back(tsdf.value());
         data.push_back(tsdf.weight());
     }
+
+    std::cout << "[Association: serialize_HDF5] Writing " << data.size() << " associations to hdf5" << std::endl;
 
     // write the data to the hdf5
     global_map_ptr->write_association_data(data, pose_number);

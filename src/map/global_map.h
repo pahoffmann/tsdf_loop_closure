@@ -50,12 +50,15 @@ private:
      * | |
      * |-/poses
      * | |
-     * | |-1 [Metadata: Pose pose (pos + quat values)]
-     * | |-2 [Metadata: Pose pose (pos + quat values)]
-     * | |-3 [Metadata: Pose pose (pos + quat values)]
-     * | |-4 [Metadata: Pose pose (pos + quat values)]
-     * | |
-     * | | -> Each of the pose datasets contains association data
+     * | |-/1
+     * | | | -pose (7 values)
+     * | | | -association_data
+     * | |-/2
+     * | | | -pose (7 values)
+     * | | | -association_data
+     * | |-/3
+     * | | | -pose (7 values)
+     * | | | -association_data
      * | |
      * | |
      */
@@ -71,9 +74,6 @@ private:
 
     /// Number of poses that are saved in the HDF5 file
     int num_poses_;
-
-    // number of values in a pose attribute
-    int POSE_ATTRIBUTE_SIZE = 7;
 
     /**
      * Returns the index of a global position in a chunk.
@@ -211,7 +211,7 @@ public:
      * @return false 
      */
     inline bool has_path() {
-        if(file_.exist("/poses") && file_.getGroup("/poses").listObjectNames().size() > 0) {
+        if(file_.exist(hdf5_constants::POSES_GROUP_NAME) && file_.getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() > 0) {
             return true;
         }
 

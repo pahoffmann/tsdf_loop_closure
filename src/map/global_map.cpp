@@ -16,22 +16,22 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
       active_chunks_{},
       num_poses_{0}
 {
-    if (!file_.exist("/map"))
+    if (!file_.exist(hdf5_constants::MAP_GROUP_NAME))
     {
-        file_.createGroup("/map");
+        file_.createGroup(hdf5_constants::MAP_GROUP_NAME);
     }
     else
     {
-        ROS_INFO("[GLOBAL_MAP] Using existing HDF5 Parameter [/map]");
+        std::cout << "[GLOBAL_MAP] Using existing HDF5 Parameter [/map]" << std::endl;
     }
 
-    if (!file_.exist("/poses"))
+    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
     {
-        file_.createGroup("/poses");
+        file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
     }
     else
     {
-        ROS_INFO("[GLOBAL_MAP] Using existing HDF5 Parameter [/poses]");
+        std::cout << "[GLOBAL_MAP] Using existing HDF5 Parameter [/poses]" << std::endl;
     }
 
     // prior to doing anything with the global map association data, we clear it completely
@@ -76,7 +76,7 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         newChunk.pos = chunkPos;
         newChunk.age = 0;
 
-        HighFive::Group g = file_.getGroup("/map");
+        HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
         auto tag = tag_from_chunk_pos(chunkPos);
 
         auto intersect_tag = tag + "_int";
@@ -185,7 +185,7 @@ void GlobalMap::set_value(const Vector3i &pos, const TSDFEntry &value)
 
 void GlobalMap::write_back()
 {
-    HighFive::Group g = file_.getGroup("/map");
+    HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
     for (auto &chunk : active_chunks_)
     {
         auto tag = tag_from_chunk_pos(chunk.pos);
@@ -205,7 +205,7 @@ void GlobalMap::write_back()
 
 bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
 {
-    HighFive::Group g = file_.getGroup("/map");
+    HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
 
     auto tag = tag_from_chunk_pos(chunk_pos);
 
@@ -264,12 +264,18 @@ std::vector<Vector3i> GlobalMap::get_26_neighborhood(Vector3i chunk_pos)
 
 std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
 {
-    HighFive::Group g = file_.getGroup("/map");
+    HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
     auto object_names = g.listObjectNames();
     std::vector<Vector3i> poses;
 
     for (auto name : object_names)
     {
+        // skip intersection data
+        if (name.find(std::string("int")) != std::string::npos)
+        {
+            continue;
+        }
+
         if (!g.exist(name))
         {
             throw std::logic_error("Error when reading chunks from h5");
@@ -324,7 +330,7 @@ Vector3i GlobalMap::chunk_pos_from_tag(std::string tag) const
 
 int GlobalMap::num_chunks()
 {
-    HighFive::Group g = file_.getGroup("/map");
+    HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
     auto object_names = g.listObjectNames();
 
     return object_names.size();
@@ -365,13 +371,16 @@ bool GlobalMap::is_fully_occupied(Eigen::Vector3i &pos, Eigen::Vector3i &localma
 
 std::vector<Pose> GlobalMap::get_path()
 {
-    if (!file_.exist("/poses"))
+    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
     {
         throw std::logic_error("There are no poses in the delivered global map... aborting...");
     }
 
-    HighFive::Group g = file_.getGroup("/poses");
+    HighFive::Group g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
     auto object_names = g.listObjectNames();
+
+    // as the identifier sorting in hdf5 is a string sorting, we need to sort the array based on the integer values behind the string
+    sort_vector(object_names, true);
 
     std::vector<Pose> path;
 
@@ -381,6 +390,8 @@ std::vector<Pose> GlobalMap::get_path()
         return path;
     }
 
+    std::cout << "[GobalMap - getPath] Obtaining path" << std::endl;
+
     for (auto name : object_names)
     {
         if (!g.exist(name))
@@ -388,12 +399,22 @@ std::vector<Pose> GlobalMap::get_path()
             throw std::logic_error("Error when reading paths from hdf5");
         }
 
+        std::cout << "Current identifier: " << name << std::endl;
+
+        // every pose is a group of two datasets
+        auto sub_g = g.getGroup(name);
+
+        if(!sub_g.exist(hdf5_constants::POSE_DATASET_NAME)) {
+            continue;
+        }
+
+        auto pose_ds = sub_g.getDataSet(hdf5_constants::POSE_DATASET_NAME);
+
         std::vector<float> values;
-        auto dataset = g.getDataSet(name);
-        dataset.getAttribute("pose").read(values);
+        pose_ds.read(values);
 
         // there need to be 7 values (x, y, z, x_quat, y_quat, z_quat, w_quat) for every Pose.
-        if (values.size() != POSE_ATTRIBUTE_SIZE)
+        if (values.size() != hdf5_constants::POSE_DATASET_SIZE)
         {
             continue;
         }
@@ -406,20 +427,24 @@ std::vector<Pose> GlobalMap::get_path()
         pose.quat.z() = values[5];
         pose.quat.w() = values[6];
 
+        std::cout << pose << std::endl;
+
         path.push_back(pose);
     }
+
+    std::cout << "[GlobalMap - getPath] Obtained " << path.size() << " Poses from HDF5!" << std::endl;
 
     return path;
 }
 
 void GlobalMap::write_path(std::vector<Pose> &poses)
 {
-    if (!file_.exist("/poses"))
+    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
     {
-        file_.createGroup("/poses");
+        file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
     }
 
-    HighFive::Group g = file_.getGroup("/poses");
+    HighFive::Group g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     // if there are poses in the globalmap, we abort
     if (g.listObjectNames().size() != 0)
@@ -432,7 +457,7 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
 
     for (auto pose : poses)
     {
-        std::vector<float> values(POSE_ATTRIBUTE_SIZE);
+        std::vector<float> values(hdf5_constants::POSE_DATASET_SIZE);
 
         // round to three decimal places here.
         values[0] = std::round(pose.pos.x() * 1000.0f) / 1000.0f;
@@ -443,13 +468,12 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
         values[5] = std::round(pose.quat.z() * 1000.0f) / 1000.0f;
         values[6] = std::round(pose.quat.w() * 1000.0f) / 1000.0f;
 
-        std::string dataset_str = std::to_string(identifier);
+        std::string subgroup_str = std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(identifier);
 
-        std::cout << "Creating dataset in Path: " << dataset_str << std::endl;
+        std::cout << "Creating group in Path: " << subgroup_str << std::endl;
+        auto sub_g = g.createGroup(subgroup_str);
+        sub_g.createDataSet(hdf5_constants::POSE_DATASET_NAME, values);
 
-        auto ds = g.createDataSet(dataset_str, NULL);
-
-        ds.createAttribute("pose", values);
         identifier++;
     }
 
@@ -457,22 +481,27 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
 }
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  * @todo create pose as attribute, get last pose identifier + 1
- * 
- * @param pose 
+ *
+ * @param pose
  */
 void GlobalMap::write_path_node(Pose &pose)
 {
-    if (!file_.exist("/poses"))
+    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
     {
-        file_.createGroup("/poses");
+        file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
     }
 
-    HighFive::Group g = file_.getGroup("/poses");
+    HighFive::Group g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
 
-    std::vector<float> values(POSE_ATTRIBUTE_SIZE);
+    size_t identfier = g.listObjectNames().size();
+
+    // create a new sub group for the new pose
+    auto sub_g = g.createGroup(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(identfier));
+
+    std::vector<float> values(hdf5_constants::POSE_DATASET_SIZE);
 
     // round to three decimal places here.
     values[0] = std::round(pose.pos.x() * 1000.0f) / 1000.0f;
@@ -483,14 +512,14 @@ void GlobalMap::write_path_node(Pose &pose)
     values[5] = std::round(pose.quat.z() * 1000.0f) / 1000.0f;
     values[6] = std::round(pose.quat.w() * 1000.0f) / 1000.0f;
 
-    g.createDataSet(tag_from_vec(Vector3f(values[0], values[1], values[2])), values);
+    sub_g.createDataSet(hdf5_constants::POSE_DATASET_NAME, values);
 
     file_.flush();
 }
 
 void GlobalMap::cleanup_artifacts()
 {
-    auto map = file_.getGroup("/map");
+    auto map = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
 
     // check, if the map already is cleaned in terms of artifacts.
     if (map.hasAttribute("cleaned"))
@@ -567,6 +596,7 @@ void GlobalMap::cleanup_artifacts()
 
     write_back();
 
+    // create an attribute for the global map, to ensure it doesnt get cleaned multiple times
     map.createAttribute("cleaned", true);
 }
 
@@ -574,42 +604,29 @@ void GlobalMap::write_association_data(std::vector<int> &association_data, int p
 {
     std::cout << "[GlobalMap] Start writing associaton data for " << association_data.size() << " objects." << std::endl;
 
-    std::cout << "WTFFF1" << std::endl;
-
     // when there is no poses, we dont do nothing
-    if (!file_.exist("/poses"))
-    {
-        std::cout << "[GlobalMap] -2" << std::endl;
-
-        return;
-    }
-    
-    std::cout << "WTFFF" << std::endl;
-    
-    if (file_.getGroup("/poses").listObjectNames().size() == 0)
-    {
-        std::cout << "[GlobalMap] -1" << std::endl;
-
-        return;
-    }
-
-    auto g = file_.getGroup("/poses");
-
-    // when the passed number (pose) does not exist, we also return
-    if (!g.exist(std::to_string(pose_number)))
+    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
     {
         return;
     }
-    std::cout << "[GlobalMap] 1" << std::endl;
+
+    auto g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
+
+    // if there aren't any poses or the one specified by the function call doesn't exist
+    if (g.listObjectNames().size() == 0 || !g.exist(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(pose_number)))
+    {
+        return;
+    }
+
+    auto sub_g = g.getGroup(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(pose_number));
 
     // get the dataset and write the data.
-    auto d = g.getDataSet(std::to_string(pose_number));
 
-    std::cout << "[GlobalMap] 2" << std::endl;
+    if(sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME)) {
+        throw std::logic_error("Called the write_association_data method, without clearing the association data first");
+    }
 
-    d.write(association_data);
-
-    std::cout << "[GlobalMap] 3" << std::endl;
+    sub_g.createDataSet(hdf5_constants::ASSOCIATION_DATASET_NAME, association_data);
 
     file_.flush();
 
@@ -619,22 +636,29 @@ void GlobalMap::write_association_data(std::vector<int> &association_data, int p
 std::vector<int> GlobalMap::read_association_data(int pose_number)
 {
     // when there is no poses, we dont do nothing
-    if (!file_.exist("/poses") || file_.getGroup("/poses").listObjectNames().size() == 0)
+    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME) || file_.getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() == 0)
     {
         std::vector<int>();
     }
 
-    auto g = file_.getGroup("/poses");
+    auto g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     // when the passed number (pose) does not exist, we also return
-    if (!g.exist(std::to_string(pose_number)))
+    if (!g.exist(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(pose_number)))
     {
         std::vector<int>();
     }
 
-    // get the dataset and read the data.
-    auto d = g.getDataSet(std::to_string(pose_number));
+    // get the pose group
+    auto sub_g = g.getGroup(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(pose_number));
 
+    // when the current pose has no association dataset present in the hdf5
+    if(!sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME)) {
+        return std::vector<int>();
+    }
+
+    // else get the association dataset and read the data
+    auto d = sub_g.getDataSet(hdf5_constants::ASSOCIATION_DATASET_NAME);
     std::vector<int> data;
     d.read(data);
 
@@ -643,37 +667,28 @@ std::vector<int> GlobalMap::read_association_data(int pose_number)
 
 void GlobalMap::clear_association_data()
 {
-    auto g = file_.getGroup("/poses");
+    auto g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     auto object_names = g.listObjectNames();
 
     for (auto name : object_names)
     {
-        auto ds = g.getDataSet(name);
+        auto sub_g = g.getGroup(name);
 
-        std::string channel_name = std::string("/poses/") + name;
+        // skip, if no assocication dataset exists in the first place
+        if(!sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME)) {
+            continue;
+        }
+
+        std::string channel_name = std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + name + "/" + hdf5_constants::ASSOCIATION_DATASET_NAME;
 
         std::cout << "Channel Name: " << channel_name << std::endl;
-
-        std::vector<float> attribute_data;
-
-        if (!ds.hasAttribute("pose"))
-        {
-            throw std::logic_error("[GlobalMap - clear_association_data] Dataset has no pose attribute");
-        }
-
-        ds.getAttribute("pose").read(attribute_data);
-
-        if (attribute_data.size() != POSE_ATTRIBUTE_SIZE)
-        {
-            throw std::logic_error("[GlobalMap - clear_association_data] Dataset attribute has wrong number of values");
-        }
 
         // delete the dataset
         int status = H5Ldelete(file_.getId(), channel_name.data(), H5P_DEFAULT);
 
-        // recreate empty ds
-        auto new_ds = g.createDataSet(name, NULL);
-        new_ds.createAttribute("pose", attribute_data);
+        std::cout << "[GlobalMap] Delete Status: " << status << std::endl;
     }
+
+    file_.flush();
 }

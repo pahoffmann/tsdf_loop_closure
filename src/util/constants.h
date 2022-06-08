@@ -5,6 +5,8 @@
  * @author Malte Hillmann
  */
 
+#include "hdf5_constants.h"
+
 /// Resolution of the Map in Millimeter per Cell.
 constexpr int MAP_RESOLUTION = 64;
 
@@ -31,3 +33,10 @@ constexpr int CHUNK_SHIFT = 6;
 
 /// Side length of the cube-shaped chunks (2^CHUNK_SHIFT).
 constexpr int CHUNK_SIZE = 1 << CHUNK_SHIFT;
+
+// TODO: the following constants need to be evaluated based on whether they are correct
+//       might be better saved in the global map hdf5
+
+constexpr int TSDF_BASE_VALUE = 600;
+
+constexpr int TSDF_BASE_WEIGHT = 0;

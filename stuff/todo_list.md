@@ -1,6 +1,6 @@
 ## TODO's and DONE's ##
 
-# DONE's #
+## DONE's ##
 
 [x] Extract Ray_Trace testing functionality to a seperate node, in test folder, actual loop closure needs to be clean of any testing code
 [x] use globalmap and localmap from fastsense, adapt everything needed  !!DONE!!
@@ -20,19 +20,20 @@
 [x] PathExploration: weighting trough raytrace (specific percentage of hit vs non hit)
 [x] where is the intersection status saved??? Well well, it is not written back, so thats why it's never "saved"
 
-# TODO's #
+## TODO's ##
 
 [ ] read paper on loop closure, write down most important points
 [ ] Stop hardcoding tsdf values in code (600, 0, ...)
 [ ] Hit percentage needs to be calculated differently (possibly), not complete local map, but just the visible chunks should be included. (of the sub path belonging to the loop closure)
 [ ] BUG: during the loop closure process, the map is enlarged by empty chunks, probably due to some indexing problem. If there is time, try to fix this.
 [ ] Outsource raytracers function to detect raytrace status changes to a function for that
+[ ] Create a model for the metadata of the global map ( which not yet exists)
 
-# Important TODO's for future me #
+## Important TODO's for future me ##
 
 [ ] get a better understanding on weights (using the original doc thesis)
 
-# ASAP #
+## ASAP ##
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] or: find a different way to store the association information
 [ ] write a ros node, which converts a globalmap h5 to a more usable version including metadata and intersection status.
@@ -42,7 +43,7 @@
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
 [ ] Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
 
-# TODAY #
+## TODAY ##
 
 # Main target #
 [ ] Keep on working on writing the intersectionstatus to the hdf5
@@ -53,9 +54,11 @@
 [ ] Write and read IntersectionStatus to / from HDF5
 [ ] Outsource HDF Constants (datset names etc.) to a constants file for hdf5
 
-[ ] Evaluate: should the association data be written to hdf5? would make sense right?
+[ ] Evaluate: should the association data be written to hdf5? would make sense right? Yes.
+[ ] The HDF Structure needs some rework... don't create empty datasets etc.
+[ ] The intersection data should be written to a seperate group containing datsets inscribed by the chunk name
 
-# Junkyard #
+## Junkyard ##
 
 [-] define the serialization of the path to json
 [-] Update local map with a feature, which returns global index coordinates for a 3d point

@@ -40,7 +40,7 @@ float RayTracer::start(int mode)
   // just for better readablity
   std::cout << std::endl;
 
-  ROS_INFO("[RayTracer] Started Tracing...");
+  std::cout << "[RayTracer] Started Tracing..." << std::endl;
 
   // before doing anything, we need to cleanup the data from the last run
   cleanup();
@@ -69,9 +69,11 @@ float RayTracer::start(int mode)
   // calc duration
   auto duration = end_time - start_time;
 
-  ROS_INFO("[RayTracer] Time Measurement updates only: %.2f ms", duration.toNSec() / 1000000.0f); // display time in ms, with two decimal points
+  std::cout << std::fixed;
+  std::cout << std::setprecision(2);
+  std::cout << "[RayTracer] Time Measurement updates only: " << duration.toNSec() / 1000000.0f << " ms" << std::endl; // display time in ms, with two decimal points
 
-  ROS_INFO("[RayTracer] Done Tracing...");
+  std::cout << "[RayTracer] Done Tracing..." << std::endl;
 
   std::cout << std::endl;
 
@@ -145,7 +147,6 @@ void RayTracer::updateRays(int mode)
     auto &p1 = rays[i];
     auto &p2 = current_pose->pos;
     float length = (p1 - p2).norm();
-    // ROS_INFO("Cur Vector length: %f", length);
     float factor = (length + step_size) / length; // vector enlargement
 
     // enlarge "vector"

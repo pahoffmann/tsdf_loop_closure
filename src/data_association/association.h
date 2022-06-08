@@ -41,7 +41,7 @@ public:
         JSON
     };
 
-    Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMap> global_map_ptr, std::string base_path, SerializationStrategy ser_strat = SerializationStrategy::HDF5);
+    Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMap> global_map_ptr_, std::string base_path, SerializationStrategy ser_strat = SerializationStrategy::HDF5);
     ~Association();
     // maybe use indexing here insead of actual global pose
     inline void addAssociation(Eigen::Vector3i pose, TSDFEntry entry)
