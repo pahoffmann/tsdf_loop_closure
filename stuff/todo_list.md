@@ -19,27 +19,31 @@
 [x] PathExploration: No more Manhatten neighboring
 [x] PathExploration: weighting trough raytrace (specific percentage of hit vs non hit)
 [x] where is the intersection status saved??? Well well, it is not written back, so thats why it's never "saved"
+[x] HDF5 structure overthinking.
+[x] Outsource HDF Constants (datset names etc.) to a constants file for hdf5
+[x] Evaluate: should the association data be written to hdf5? would make sense right? Yes.
+[x] The HDF Structure needs some rework... don't create empty datasets etc.
+[x] The methods "write_path" and several calls to "write_path_node" should lead to the same results
 
 ## TODO's ##
 
 [ ] read paper on loop closure, write down most important points
-[ ] Stop hardcoding tsdf values in code (600, 0, ...)
 [ ] Hit percentage needs to be calculated differently (possibly), not complete local map, but just the visible chunks should be included. (of the sub path belonging to the loop closure)
-[ ] BUG: during the loop closure process, the map is enlarged by empty chunks, probably due to some indexing problem. If there is time, try to fix this.
 [ ] Outsource raytracers function to detect raytrace status changes to a function for that
 [ ] Create a model for the metadata of the global map ( which not yet exists)
+[ ] write a ros node, which converts a globalmap h5 to a more usable version including metadata and intersection status.
 
 ## Important TODO's for future me ##
 
+[ ] Stop hardcoding tsdf values in code (600, 0, ...)
+[ ] BUG: during the loop closure process, the map is enlarged by empty chunks, probably due to some indexing problem. If there is time, try to fix this.
 [ ] get a better understanding on weights (using the original doc thesis)
 
 ## ASAP ##
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] or: find a different way to store the association information
-[ ] write a ros node, which converts a globalmap h5 to a more usable version including metadata and intersection status.
 [ ] PathExploration: Use tsdf cells instead of chunks (might be taking WAY to long, probably just another discretization level might be useful)
 [ ] Associations: Different strat: one file, group for every chunk, inside group for every pose, containing the associated Poses.
-[ ] The methods "write_path" and several calls to "write_path_node" should lead to the same results
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
 [ ] Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
 
@@ -50,12 +54,8 @@
 
 # What needs to be done? #
 
-[ ] HDF5 structure overthinking.
 [ ] Write and read IntersectionStatus to / from HDF5
-[ ] Outsource HDF Constants (datset names etc.) to a constants file for hdf5
 
-[ ] Evaluate: should the association data be written to hdf5? would make sense right? Yes.
-[ ] The HDF Structure needs some rework... don't create empty datasets etc.
 [ ] The intersection data should be written to a seperate group containing datsets inscribed by the chunk name
 
 ## Junkyard ##
