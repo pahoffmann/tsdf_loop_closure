@@ -480,13 +480,6 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
     file_.flush();
 }
 
-/**
- * @brief
- *
- * @todo create pose as attribute, get last pose identifier + 1
- *
- * @param pose
- */
 void GlobalMap::write_path_node(Pose &pose)
 {
     if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
