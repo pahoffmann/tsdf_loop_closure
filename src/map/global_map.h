@@ -246,4 +246,10 @@ public:
      * 
      */
     void clear_association_data();
+
+    /**
+     * @brief Clears the map from the intersection data which might have been written to it in a previous run
+     * 
+     */
+    void clear_intersection_data();
 };

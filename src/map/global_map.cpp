@@ -38,6 +38,7 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
     if (has_path())
     {
         clear_association_data();
+        clear_intersection_data();
     }
 }
 
@@ -54,6 +55,13 @@ int GlobalMap::index_from_pos(Vector3i pos, const Vector3i &chunkPos)
     return (pos.x() * CHUNK_SIZE * CHUNK_SIZE + pos.y() * CHUNK_SIZE + pos.z());
 }
 
+/**
+ * @todo this is the problem, why no intersection data is written to the global map:
+ * when activating a chunk, we simply return a vector of rawtypes, which does not include the intersection status, therefore
+ * we can neihter write, nor read any intersection data
+ * 
+ * -> should this method return a pair, or should there be a different workaround?
+ */
 std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunkPos)
 {
     int index = -1;
@@ -77,9 +85,16 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         newChunk.age = 0;
 
         HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
-        auto tag = tag_from_chunk_pos(chunkPos);
 
-        auto intersect_tag = tag + "_int";
+        // create group if not exists
+        if (!file_.exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
+        {
+            file_.createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+        }
+
+        HighFive::Group g_int = file_.getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+
+        auto tag = tag_from_chunk_pos(chunkPos);
 
         if (g.exist(tag))
         {
@@ -87,10 +102,10 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             HighFive::DataSet d = g.getDataSet(tag);
             d.read(newChunk.data);
 
-            if (g.exist(intersect_tag))
+            if (g_int.exist(tag))
             {
                 // read chunk from file
-                HighFive::DataSet d = g.getDataSet(tag);
+                HighFive::DataSet d = g_int.getDataSet(tag);
                 d.read(newChunk.intersect_data);
             }
             else
@@ -107,6 +122,7 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             std::cout << ss.str() << std::endl;
             throw std::logic_error(ss.str());*/
         }
+
         // put new chunk into active_chunks_
         if (n < NUM_CHUNKS)
         {
@@ -128,7 +144,6 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
                 }
             }
             auto tag = tag_from_chunk_pos(active_chunks_[index].pos);
-            auto intersect_tag = tag + "_int";
 
             if (g.exist(tag))
             {
@@ -140,20 +155,22 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
                 g.createDataSet(tag, active_chunks_[index].data);
             }
 
-            if (g.exist(intersect_tag))
+            // now write the intersection data accordingly
+            if (g_int.exist(tag))
             {
-                auto d = g.getDataSet(intersect_tag);
+                auto d = g_int.getDataSet(tag);
                 d.write(active_chunks_[index].intersect_data);
             }
             else
             {
-                g.createDataSet(intersect_tag, active_chunks_[index].intersect_data);
+                g_int.createDataSet(tag, active_chunks_[index].intersect_data);
             }
 
             // overwrite with new chunk
             active_chunks_[index] = newChunk;
         }
     }
+
     // update ages
     int age = active_chunks_[index].age;
     for (auto &chunk : active_chunks_)
@@ -186,6 +203,15 @@ void GlobalMap::set_value(const Vector3i &pos, const TSDFEntry &value)
 void GlobalMap::write_back()
 {
     HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    // create intersections group, if not exists.
+    if (!file_.exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
+    {
+        file_.createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+    }
+
+    HighFive::Group g_int = file_.getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+
     for (auto &chunk : active_chunks_)
     {
         auto tag = tag_from_chunk_pos(chunk.pos);
@@ -198,6 +224,17 @@ void GlobalMap::write_back()
         else
         {
             g.createDataSet(tag, chunk.data);
+        }
+
+        // if intersection data is already written, get the dataset and override, else just create a new ds
+        if (g_int.exist(tag))
+        {
+            auto d = g_int.getDataSet(tag);
+            d.write(chunk.intersect_data);
+        }
+        else
+        {
+            g_int.createDataSet(tag, chunk.intersect_data);
         }
     }
     file_.flush();
@@ -404,7 +441,8 @@ std::vector<Pose> GlobalMap::get_path()
         // every pose is a group of two datasets
         auto sub_g = g.getGroup(name);
 
-        if(!sub_g.exist(hdf5_constants::POSE_DATASET_NAME)) {
+        if (!sub_g.exist(hdf5_constants::POSE_DATASET_NAME))
+        {
             continue;
         }
 
@@ -468,7 +506,7 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
         values[5] = std::round(pose.quat.z() * 1000.0f) / 1000.0f;
         values[6] = std::round(pose.quat.w() * 1000.0f) / 1000.0f;
 
-        std::string subgroup_str = std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(identifier);
+        std::string subgroup_str = std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + std::to_string(identifier);
 
         std::cout << "Creating group in Path: " << subgroup_str << std::endl;
         auto sub_g = g.createGroup(subgroup_str);
@@ -492,7 +530,7 @@ void GlobalMap::write_path_node(Pose &pose)
     size_t identfier = g.listObjectNames().size();
 
     // create a new sub group for the new pose
-    auto sub_g = g.createGroup(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(identfier));
+    auto sub_g = g.createGroup(std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + std::to_string(identfier));
 
     std::vector<float> values(hdf5_constants::POSE_DATASET_SIZE);
 
@@ -511,8 +549,8 @@ void GlobalMap::write_path_node(Pose &pose)
 }
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  * @todo this method still needs some work
  */
 void GlobalMap::cleanup_artifacts()
@@ -611,16 +649,17 @@ void GlobalMap::write_association_data(std::vector<int> &association_data, int p
     auto g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     // if there aren't any poses or the one specified by the function call doesn't exist
-    if (g.listObjectNames().size() == 0 || !g.exist(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(pose_number)))
+    if (g.listObjectNames().size() == 0 || !g.exist(std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + std::to_string(pose_number)))
     {
         return;
     }
 
-    auto sub_g = g.getGroup(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(pose_number));
+    auto sub_g = g.getGroup(std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + std::to_string(pose_number));
 
     // get the dataset and write the data.
 
-    if(sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME)) {
+    if (sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME))
+    {
         throw std::logic_error("Called the write_association_data method, without clearing the association data first");
     }
 
@@ -642,16 +681,17 @@ std::vector<int> GlobalMap::read_association_data(int pose_number)
     auto g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     // when the passed number (pose) does not exist, we also return
-    if (!g.exist(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(pose_number)))
+    if (!g.exist(std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + std::to_string(pose_number)))
     {
         std::vector<int>();
     }
 
     // get the pose group
-    auto sub_g = g.getGroup(std::string(hdf5_constants::POSES_GROUP_NAME) +  "/" + std::to_string(pose_number));
+    auto sub_g = g.getGroup(std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + std::to_string(pose_number));
 
     // when the current pose has no association dataset present in the hdf5
-    if(!sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME)) {
+    if (!sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME))
+    {
         return std::vector<int>();
     }
 
@@ -674,7 +714,8 @@ void GlobalMap::clear_association_data()
         auto sub_g = g.getGroup(name);
 
         // skip, if no assocication dataset exists in the first place
-        if(!sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME)) {
+        if (!sub_g.exist(hdf5_constants::ASSOCIATION_DATASET_NAME))
+        {
             continue;
         }
 
@@ -689,4 +730,9 @@ void GlobalMap::clear_association_data()
     }
 
     file_.flush();
+}
+
+void GlobalMap::clear_intersection_data()
+{
+    // TODO: implement this
 }
