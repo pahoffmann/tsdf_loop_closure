@@ -125,7 +125,7 @@ public:
      * @param chunk position of the chunk that gets activated
      * @return reference to the activated chunk
      */
-    std::vector<TSDFEntry::RawType> &activate_chunk(const Vector3i &chunk);
+    std::vector<TSDFEntry::RawType> &activate_chunk(const Vector3i &chunk, std::vector<int> *&intersections);
 
     /**
      * Writes all active chunks into the HDF5 file.
@@ -205,7 +205,7 @@ public:
     void write_path_node(Pose &pose);
 
     /**
-     * @brief gets information about wether a globalmap hdf5 has a path or not
+     * @brief gets information about whether a globalmap hdf5 has a path or not
      * 
      * @return true 
      * @return false 
@@ -214,7 +214,6 @@ public:
         if(file_.exist(hdf5_constants::POSES_GROUP_NAME) && file_.getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() > 0) {
             return true;
         }
-
         return false;
     }
 

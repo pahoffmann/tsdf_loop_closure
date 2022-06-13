@@ -75,6 +75,8 @@ void initMaps()
   auto &size = local_map_ptr_.get()->get_size();
   side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
   side_length_z = size.z() * MAP_RESOLUTION / 1000.0f;
+
+  std::cout << "Finished init the maps" << std::endl;
 }
 
 /**

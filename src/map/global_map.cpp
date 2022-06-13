@@ -62,7 +62,7 @@ int GlobalMap::index_from_pos(Vector3i pos, const Vector3i &chunkPos)
  * 
  * -> should this method return a pair, or should there be a different workaround?
  */
-std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunkPos)
+std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunkPos, std::vector<int> *&intersections)
 {
     int index = -1;
     int n = active_chunks_.size();
@@ -110,7 +110,7 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             }
             else
             {
-                newChunk.intersect_data = std::vector<int32_t>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, TSDFEntry::IntersectStatus::NO_INT);
+                newChunk.intersect_data = std::vector<int>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, TSDFEntry::IntersectStatus::NO_INT);
             }
         }
         else
@@ -180,24 +180,34 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             chunk.age++;
         }
     }
+
     active_chunks_[index].age = 0;
+    intersections = &(active_chunks_[index].intersect_data);
+    // TSDFEntry::IntersectStatus i = static_cast<TSDFEntry::IntersectStatus>(active_chunks_[index].intersect_data[0]);
     return active_chunks_[index].data;
 }
 
 TSDFEntry GlobalMap::get_value(const Vector3i &pos)
 {
     Vector3i chunkPos = floor_divide(pos, CHUNK_SIZE);
-    const auto &chunk = activate_chunk(chunkPos);
+    std::vector<int> *int_status;
+    const auto &chunk = activate_chunk(chunkPos, int_status);
+    
     int index = index_from_pos(pos, chunkPos);
-    return TSDFEntry(chunk[index]);
+
+    auto entry = TSDFEntry(chunk[index]);
+    entry.setIntersect(static_cast<TSDFEntry::IntersectStatus>(int_status->operator[](index)));
+    return entry;
 }
 
 void GlobalMap::set_value(const Vector3i &pos, const TSDFEntry &value)
 {
     Vector3i chunkPos = floor_divide(pos, CHUNK_SIZE);
-    auto &chunk = activate_chunk(chunkPos);
+    std::vector<int> *int_status;
+    auto &chunk = activate_chunk(chunkPos, int_status);
     int index = index_from_pos(pos, chunkPos);
     chunk[index] = value.raw();
+    int_status->operator[](index) = value.getIntersect();
 }
 
 void GlobalMap::write_back()
@@ -614,8 +624,6 @@ void GlobalMap::cleanup_artifacts()
 
                     if (num_interesting < 3)
                     {
-                        // std::cout << "Found a cell which is rather shitty." << std::endl;
-
                         // mark as not so interesting in the tsdf...
                         current.weight(0);
                         current.value(600);

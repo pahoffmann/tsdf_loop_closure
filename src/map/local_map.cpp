@@ -69,8 +69,8 @@ void LocalMap::shift(const Vector3i &new_pos)
 
     // if the shift is larger than the localmap, we simply write everything back and reload
     if (std::abs(diff.x()) >= size_.x() ||
-          std::abs(diff.y()) >= size_.y() ||
-          std::abs(diff.z()) >= size_.z())
+        std::abs(diff.y()) >= size_.y() ||
+        std::abs(diff.z()) >= size_.z())
     {
         Vector3i start = pos_ - size_ / 2;
         Vector3i end = pos_ + size_ / 2;
@@ -157,7 +157,7 @@ void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top
     Vector3i chunk_start = floor_divide(start, CHUNK_SIZE);
     Vector3i chunk_end = floor_divide(end, CHUNK_SIZE);
 
-    //std::cout << "[LocalMap] Chunk start: " << std::endl << chunk_start << std::endl << "[LocalMap] Chunk end: " << std::endl << chunk_end << std::endl;
+    // std::cout << "[LocalMap] Chunk start: " << std::endl << chunk_start << std::endl << "[LocalMap] Chunk end: " << std::endl << chunk_end << std::endl;
 
     // The start and end point within chunk_start and chunk_end
     Vector3i start_delta = start - chunk_start * CHUNK_SIZE;
@@ -170,7 +170,8 @@ void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top
         {
             for (int chunk_z = chunk_start.z(); chunk_z <= chunk_end.z(); ++chunk_z)
             {
-                auto &chunk = map_->activate_chunk(Vector3i(chunk_x, chunk_y, chunk_z));
+                std::vector<int> *int_data;
+                auto &chunk = map_->activate_chunk(Vector3i(chunk_x, chunk_y, chunk_z), int_data);
 
                 // The usual scenario is to iterate over [0, CHUNK_SIZE) in x,y,z, unless the
                 // current chunk is on the boundary of the area.
@@ -210,10 +211,12 @@ void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top
                             {
                                 // We did a bounds check at the start of the function => unchecked is fine
                                 chunk[index] = value_unchecked(global_pos).raw();
+                                int_data->operator[](index) = value_unchecked(global_pos).getIntersect();
                             }
                             else
                             {
                                 value_unchecked(global_pos).raw(chunk[index]);
+                                value_unchecked(global_pos).setIntersect(static_cast<TSDFEntry::IntersectStatus>(int_data->operator[](index)));
                             }
                         }
                     }

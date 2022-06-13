@@ -128,7 +128,7 @@ public:
         data.tsdf.weight = val;
     }
 
-    IntersectStatus getIntersect()
+    IntersectStatus getIntersect() const
     {
         return intersect_data;
     }
