@@ -71,6 +71,7 @@ public:
 
     /**
      * @brief The real magic: looks for a closed loop, greedy: uses distance only (and a visibility criteria)
+     *        CAUTION: CURRENTLY, THIS PICKS THE FIRST FOUND LOOP, NO MATTER IF THERE ARE ONES MORE SUITABLE, THIS SHOULD BE ADDRESSED.
      * 
      * @param start_idx 
      * @param max_dist max distance between poses to have a valid closed loop

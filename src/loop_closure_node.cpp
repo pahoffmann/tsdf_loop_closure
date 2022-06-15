@@ -186,7 +186,7 @@ int main(int argc, char **argv)
   // specify ros loop rate
   ros::Rate loop_rate(10);
 
-  // check for loops:
+  // check for loops: THE PARAMETERS HERE ARE SOMEWHAT RANDOM... :D
   auto indices = path->find_loop_greedy(0, 5.0f, 1.0f);
 
   if (indices.first != -1 && indices.second != -1)
