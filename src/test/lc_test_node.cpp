@@ -371,7 +371,7 @@ int main(int argc, char **argv)
   }
 
   // init path and read from json
-  Path path;
+  Path path(ray_tracer);
   path.fromJSON(poses_file_name_);
 
 
@@ -390,7 +390,7 @@ int main(int argc, char **argv)
   set_starting_position(0, 0, 0);
 
   // define stuff for raytracer
-  ray_tracer = new RayTracer(&lc_config, local_map_ptr_, &raytrace_starting_pose);
+  ray_tracer = new RayTracer(&lc_config, local_map_ptr_, global_map_ptr_, &raytrace_starting_pose);
 
   // create associationmanager
   AssociationManager manager(&path, file_base_path_, ray_tracer, local_map_ptr_, global_map_ptr_);

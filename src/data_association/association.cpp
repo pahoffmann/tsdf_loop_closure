@@ -43,7 +43,7 @@ Association::Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMa
     {
         file_path = base_path + std::to_string(num_pose) + "_association" + type;
     }
-    else 
+    else
     {
         // currently nothing, as for hdf file, the association data is written to the global map hdf5
     }
@@ -163,7 +163,7 @@ void Association::deserialize_HDF5()
     auto data = global_map_ptr->read_association_data(pose_number);
 
     // transform data to map
-    for(int i = 0; i < data.size(); i += 5) 
+    for (int i = 0; i < data.size(); i += 5)
     {
         associations[tag_from_vec(Vector3i(data[i], data[i + 1], data[i + 2]))] = TSDFEntry(data[i + 4], data[i + 5]);
     }

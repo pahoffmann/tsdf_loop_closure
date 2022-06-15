@@ -59,8 +59,10 @@ int GlobalMap::index_from_pos(Vector3i pos, const Vector3i &chunkPos)
  * @todo this is the problem, why no intersection data is written to the global map:
  * when activating a chunk, we simply return a vector of rawtypes, which does not include the intersection status, therefore
  * we can neihter write, nor read any intersection data
- * 
- * -> should this method return a pair, or should there be a different workaround?
+ *
+ * The current approach here is to also write/read the intersection data for visualiuation by overriding a pointer to intersection data.
+ * A pointer pointing to no memory is readjusted to point at the specific intersection data in the active chunks, or it is gathered from the hdf5.
+ * when a chunk is supposed to be removed from the active chunks, the intersection data is also written to hdf5
  */
 std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunkPos, std::vector<int> *&intersections)
 {
@@ -117,6 +119,7 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         {
             // create new chunk
             newChunk.data = std::vector<TSDFEntry::RawType>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, initial_tsdf_value_.raw());
+            newChunk.intersect_data = std::vector<int>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, TSDFEntry::IntersectStatus::NO_INT);
             /*std::stringstream ss;
             ss << "A new chunk was created, this should never happen. At least during path exploration " << std::endl << chunkPos << std::endl << "Tag: " << tag << std::endl;
             std::cout << ss.str() << std::endl;
@@ -145,6 +148,7 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             }
             auto tag = tag_from_chunk_pos(active_chunks_[index].pos);
 
+            // already exists in file
             if (g.exist(tag))
             {
                 auto d = g.getDataSet(tag);
@@ -152,17 +156,20 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             }
             else
             {
+                // if it doesnt yet exist, we create a completely new one
                 g.createDataSet(tag, active_chunks_[index].data);
             }
 
             // now write the intersection data accordingly
             if (g_int.exist(tag))
             {
+                std::cout << "[GlobalMap::::::::::: activate_chunk] - WRITE" << std::endl;
                 auto d = g_int.getDataSet(tag);
                 d.write(active_chunks_[index].intersect_data);
             }
             else
             {
+                std::cout << "[GlobalMap::::::::::: activate_chunk] - CREATE" << std::endl;
                 g_int.createDataSet(tag, active_chunks_[index].intersect_data);
             }
 
@@ -181,9 +188,16 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         }
     }
 
+    // age of the newly added chunk is zero
     active_chunks_[index].age = 0;
+
+    // point intersect pointer ref to intersection data of new chunk
     intersections = &(active_chunks_[index].intersect_data);
-    // TSDFEntry::IntersectStatus i = static_cast<TSDFEntry::IntersectStatus>(active_chunks_[index].intersect_data[0]);
+
+    if(intersections == NULL) {
+        throw std::logic_error("Intersections NULL");
+    }
+
     return active_chunks_[index].data;
 }
 
@@ -192,7 +206,7 @@ TSDFEntry GlobalMap::get_value(const Vector3i &pos)
     Vector3i chunkPos = floor_divide(pos, CHUNK_SIZE);
     std::vector<int> *int_status;
     const auto &chunk = activate_chunk(chunkPos, int_status);
-    
+
     int index = index_from_pos(pos, chunkPos);
 
     auto entry = TSDFEntry(chunk[index]);
@@ -742,5 +756,29 @@ void GlobalMap::clear_association_data()
 
 void GlobalMap::clear_intersection_data()
 {
-    // TODO: implement this
+    // delete any intersection data associated with the current hdf5
+
+    if (!file_.exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
+    {
+        return;
+    }
+
+    auto g = file_.getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+
+    auto object_names = g.listObjectNames();
+
+    for (auto name : object_names)
+    {
+        std::string channel_name = std::string(hdf5_constants::INTERSECTIONS_GROUP_NAME) + "/" + name;
+        std::cout << "Channel Name Intersections: " << channel_name << std::endl;
+
+        // delete the dataset
+        int status = H5Ldelete(file_.getId(), channel_name.data(), H5P_DEFAULT);
+
+        std::cout << "[GlobalMap] Intersection Delete Status: " << status << std::endl;
+    }
+
+    std::cout << "[GlobalMap - clear_intersection_data] Cleared" << std::endl;
+
+    file_.flush();
 }

@@ -1,16 +1,18 @@
 #include "ray_tracer.h"
 
-RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_ptr<LocalMap> local_map_in, Pose *start_pose)
+RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in, Pose *start_pose)
 {
   lc_config = new_config;
   local_map_ptr_ = local_map_in;
+  global_map_ptr_ = global_map_in;
   current_pose = start_pose;
 }
 
-RayTracer::RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in)
+RayTracer::RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in)
 {
   options = new_options;
   local_map_ptr_ = local_map_in;
+  global_map_ptr_ = global_map_in;
   current_pose = NULL;
 }
 
@@ -376,4 +378,68 @@ visualization_msgs::Marker RayTracer::get_ros_marker()
   ray_marker_list.points = points;
 
   return ray_marker_list;
+}
+
+/**
+ * @todo TODO: test this code piece
+ */
+bool RayTracer::is_visible(Pose &a, Pose &b)
+{
+
+  // easiest case: the tsdf cell values for Pose a and b have different signs. -> the result of a multiplication of both values should not be negative
+  if (global_map_ptr_->get_value(real_to_map(a.pos)).value() * global_map_ptr_->get_value(real_to_map(b.pos)).value() < 0)
+  {
+    std::cout << "[RayTracer - is_visible]: Different signs of the tsdf values in both poses" << std::endl;
+    return false;
+  }
+
+  // else, we actually need to cast a ray and check if there has been a zero crossing, which basically means that the poses are not visible, because there is a wall
+  // in the way.
+
+  float distance = (b.pos - a.pos).norm();
+
+  // calculate the number of steps aka, how many steps of size "step_size" need to be taken in order to get from point a to point b
+  int num_steps = std::floor(distance / step_size);
+
+  // check if the value from a is positive or negative to check visibility later
+  bool is_neg;
+
+  if (global_map_ptr_->get_value(real_to_map(a.pos)).value() < 0)
+  {
+    is_neg = true;
+  }
+  else
+  {
+    is_neg = false;
+  }
+
+  Vector3f cur = a.pos;
+
+  for (int i = 0; i < num_steps; i++)
+  {
+    float length = (cur - a.pos).norm(); // get length
+
+    std::cout << "current length: " << length << std::endl;
+
+    float factor = step_size / length; // vector enlargement
+
+    // enlarge "vector" by translating to (0,0,0), enlarging it from there and translating it back
+    cur = (cur - a.pos) * factor + a.pos;
+
+    auto value = global_map_ptr_->get_value(real_to_map(cur)).value();
+
+    if (is_neg && value > 0)
+    {
+      std::cout << "[RayTracer: is_visible] - There has been a sign switch from negative to positive.." << std::endl;
+      return false;
+    }
+    else if (!is_neg && value < 0)
+    {
+      std::cout << "[RayTracer: is_visible] - There has been a sign switch from positive to negative.." << std::endl;
+      return false;
+    }
+  }
+
+  // if the casted ray from a hits position b without encountering a sign switch, pose b is visible from pose a and vice versa
+  return true;
 }

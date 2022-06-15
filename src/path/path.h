@@ -16,6 +16,7 @@
 #include "../util/point.h"
 #include <string>
 #include "../serialization/read_path_json.h"
+#include "../ray_tracer/ray_tracer.h"
 
 class Path
 {
@@ -28,8 +29,11 @@ private:
     // index of the end pose of the current closed loop
     size_t lc_end_idx = -1;
 
+    // ray tracer used for loop closure detection (visibility)
+    RayTracer *ray_tracer;
+
 public:
-    Path();
+    Path(RayTracer *tracer);
 
     /**
      * @brief Reads a path from a json
@@ -66,12 +70,15 @@ public:
     }
 
     /**
-     * @brief The real magic: looks for a closed loop
+     * @brief The real magic: looks for a closed loop, greedy: uses distance only (and a visibility criteria)
      * 
      * @param start_idx 
-     * @return int 
+     * @param max_dist max distance between poses to have a valid closed loop
+     * @param min_traveled min distance traveled from start_idx to the pose belonging to a possible closed loop
+     * 
+     * @return std::pair<int, int> start and end index of the closed loop, will return (-1, -1) if no loop found
      */
-    int find_next_loop(int start_idx);
+    std::pair<int, int> find_loop_greedy(int start_idx, float max_dist, float min_traveled);
 
     /**
      * @brief returns a pose of the path for a given idx

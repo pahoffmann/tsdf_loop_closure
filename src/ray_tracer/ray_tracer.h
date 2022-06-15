@@ -49,6 +49,9 @@ private:
     // pointer to the current local map
     std::shared_ptr<LocalMap> local_map_ptr_;
 
+    //pointer to global map
+    std::shared_ptr<GlobalMap> global_map_ptr_;
+
     // used to store the rays, which have been finished, will be cleared after each tracing
     // a ray is finished when
     // 1. it crossed the boundaries of the local map
@@ -115,7 +118,7 @@ public:
      * @param new_config 
      * @param local_map_in 
      */
-    RayTracer(loop_closure::LoopClosureConfig* new_config, std::shared_ptr<LocalMap> local_map_in, Pose* start_pose);
+    RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in, Pose *start_pose);
 
     /*
      * @brief Construct a new Raytracer object, inserts the respective config, including a shared pointer to the current local map.
@@ -123,7 +126,7 @@ public:
      * @param new_config 
      * @param local_map_in 
      */
-    RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in);
+    RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in);
 
     /**
      * @brief function used to update the association the ray tracer is working with.
@@ -168,4 +171,11 @@ public:
      */
     void update_pose(Pose *new_pose);
 
+    /**
+     * @brief checks, wether pose a is visble from Pose b and vice versa, this means, there cannot be a sign change in tsdf, when casting a ray between a and b
+     * 
+     * @param a 
+     * @param b 
+     */
+    bool is_visible(Pose &a, Pose &b) ;
 };

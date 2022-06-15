@@ -115,18 +115,18 @@ int main(int argc, char **argv)
   // init local and global maps
   initMaps();
 
-  //cleans up global map a bit
+  // cleans up global map a bit
   global_map_ptr_->cleanup_artifacts();
 
   // define stuff for raytracer
-  ray_tracer = new RayTracer(options, local_map_ptr_);
+  ray_tracer = new RayTracer(options, local_map_ptr_, global_map_ptr_);
 
   /******************************************************
    *  Get Path                                          *
    ******************************************************/
 
   // init path and read from json
-  path = new Path();
+  path = new Path(ray_tracer);
 
   // retrieve path from various locations
   try
@@ -185,6 +185,18 @@ int main(int argc, char **argv)
 
   // specify ros loop rate
   ros::Rate loop_rate(10);
+
+  // check for loops:
+  auto indices = path->find_loop_greedy(0, 5.0f, 1.0f);
+
+  if (indices.first != -1 && indices.second != -1)
+  {
+    throw std::logic_error("LOOP FOUND BRAA: " + std::to_string(indices.first) + " | " + std::to_string(indices.second));
+  }
+  else
+  {
+    throw std::logic_error("NO LOOOOPP :(((");
+  }
 
   // create associationmanager
   manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);

@@ -46,7 +46,8 @@
 [ ] PathExploration: Use tsdf cells instead of chunks (might be taking WAY to long, probably just another discretization level might be useful)
 [ ] Associations: Different strat: one file, group for every chunk, inside group for every pose, containing the associated Poses.
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
-[ ] Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
+[ ] {WIP:} Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
+[ ] {WIP:} Test the loop closure detection and is_visible method
 
 ## TODAY ##
 
