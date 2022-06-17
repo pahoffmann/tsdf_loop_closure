@@ -38,6 +38,10 @@ int side_length_xy;
 int side_length_z;
 lc_options_reader *options;
 
+
+// ros
+ros::Subscriber pose_sub;
+
 void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
     ROS_INFO("Retrieved a path!");
@@ -105,7 +109,7 @@ int main(int argc, char **argv)
     // specify ros loop rate
     ros::Rate loop_rate(10);
 
-    ros::Subscriber path_sub = n.subscribe("/pose", 1, pose_callback);
+    pose_sub = n.subscribe("/pose", 1, pose_callback);
 
     // ros loop
     while (ros::ok())
