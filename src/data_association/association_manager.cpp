@@ -57,7 +57,7 @@ void AssociationManager::create_serialization_folder(std::string path)
     // create a folder inside the given filepath, for the current timestamp
     std::cout << "[AssociationManager] Creating new association directiory: " << path << std::endl;
 
-    std::filesystem::create_directories(path);
+    //std::filesystem::create_directories(path);
 }
 
 void AssociationManager::greedy_associations()

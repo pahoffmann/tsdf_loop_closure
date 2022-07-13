@@ -23,6 +23,9 @@
 
 namespace ROSViewhelper
 {
+
+    int TSDF_LIFETIME = 100;
+
     /**
      * @brief visualizes a bounding box for a given pose and sidelengths
      *
@@ -252,7 +255,7 @@ namespace ROSViewhelper
         tsdf_markers.header.stamp = ros::Time();
         tsdf_markers.ns = "tsdf";
         tsdf_markers.id = 0;
-        tsdf_markers.lifetime.fromSec(100);
+        tsdf_markers.lifetime.fromSec(TSDF_LIFETIME);
         tsdf_markers.type = visualization_msgs::Marker::POINTS;
         tsdf_markers.action = visualization_msgs::Marker::ADD;
         tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
@@ -438,5 +441,32 @@ namespace ROSViewhelper
         }
 
         return path_marker;
+    }
+
+    /**
+     * @brief Constructs a ros marker which displays a line between the two positions passed to the function
+     * 
+     * @param first 
+     * @param second 
+     * @return visualization_msgs::Marker 
+     */
+    visualization_msgs::Marker init_loop_detected_marker(Eigen::Vector3f first, Eigen::Vector3f second)
+    {
+
+        //todo: check, wether the line marker needs two points or one point and scaljgnk
+        visualization_msgs::Marker line_marker;
+        line_marker.ns = "lc_detect";
+        line_marker.action = visualization_msgs::Marker::ADD;
+        line_marker.color.r = 255 / 255.0f;
+        line_marker.color.g = 0 / 255.0f;
+        line_marker.color.b = 150 / 255.0f;
+        line_marker.type = visualization_msgs::Marker::ARROW;
+        line_marker.header.frame_id = "map";
+        line_marker.header.stamp = ros::Time();
+        line_marker.id = 0;
+        line_marker.points.push_back(eigen_point_to_ros_point(first));
+        line_marker.points.push_back(eigen_point_to_ros_point(second));
+
+        return line_marker;
     }
 }

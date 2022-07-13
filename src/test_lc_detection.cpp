@@ -29,6 +29,10 @@
 #include "ray_tracer/ray_tracer.h"
 #include "path/path.h"
 #include "options/options_reader.h"
+#include "visualization/ros_viewhelper.h"
+#include "util/point.h"
+#include <tf2/convert.h>
+#include <tf2_eigen/tf2_eigen.h>
 
 RayTracer *tracer;
 std::shared_ptr<LocalMap> local_map_ptr;
@@ -38,6 +42,8 @@ int side_length_xy;
 int side_length_z;
 lc_options_reader *options;
 
+// distance between poses (min) in path
+int PATH_DIST = 0.2;
 
 // ros
 ros::Subscriber pose_sub;
@@ -48,7 +54,44 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
 
     auto pose = msg->pose.pose;
 
+    // convert pose to own pose struct
+    Eigen::Vector3f vec(pose.position.x, pose.position.y, pose.position.z);
+    Eigen::Quaternionf quat;
+    quat.x() = pose.orientation.x;
+    quat.y() = pose.orientation.y;
+    quat.z() = pose.orientation.z;
+    quat.w() = pose.orientation.w;
+
     std::cout << "Got odometry message. Pose:" << pose.position.x << " | " << pose.position.y << " | " << pose.position.z << std::endl;
+
+    auto last_pose = path->at(path->get_length());
+
+    // guard clause
+    if (!((vec - last_pose->pos).norm() > PATH_DIST))
+    {
+        return;
+    }
+
+    // if the distance to the last saved pose is big enough, we add a pose to the path
+
+    // create pose
+    Pose pose;
+    pose.orientation = quat;
+    pose.position = vec;
+
+    // add to path
+    path->add_pose(pose);
+
+    // after every new pose, we search for loops
+    auto res = path->find_loop_greedy();
+
+    // if no loop found, ignore this iteration
+    if(res.first == -1 && res.second == -1) {
+        return;
+    }
+
+    // else: loop found, display it.
+    auto  marker = ROSViewhelper::init_loop_detected_marker(path.at(res.first), path.at(res.second));
 }
 
 /**
@@ -56,7 +99,7 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
  * @todo don't harcode this
  *
  */
-void initMaps()
+void init_maps()
 {
     global_map_ptr = std::make_shared<GlobalMap>(options->get_map_file_name(), 0.0, 0.0);
     // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
@@ -91,6 +134,22 @@ void initOptions(int argc, char **argv)
 }
 
 /**
+ * @brief method used to initiate all the objects associated with this test case
+ * 
+ */
+void init_obj()
+{
+    // initialize the map based ob the passed arguments first
+    init_maps();
+
+    // init ray tracer
+    tracer = new RayTracer(options, local_map_ptr, global_map_ptr);
+
+    // init path
+    path = new Path(tracer);
+}
+
+/**
  * @brief Main method
  *
  * @param argc
@@ -98,9 +157,9 @@ void initOptions(int argc, char **argv)
  * @return int
  */
 int main(int argc, char **argv)
-{   
+{
     initOptions(argc, argv);
-    initMaps();
+    init_obj();
 
     ros::init(argc, argv, "test_lc_detection_node");
     ros::NodeHandle n;
@@ -109,7 +168,7 @@ int main(int argc, char **argv)
     // specify ros loop rate
     ros::Rate loop_rate(10);
 
-    pose_sub = n.subscribe("/pose", 1, pose_callback);
+    pose_sub = n.subscribe("/base_footprint_pose_ground_truth", 1, pose_callback);
 
     // ros loop
     while (ros::ok())
