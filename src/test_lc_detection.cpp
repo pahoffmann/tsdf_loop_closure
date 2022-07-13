@@ -47,11 +47,56 @@ int PATH_DIST = 0.2;
 
 // ros
 ros::Subscriber pose_sub;
+ros::Publisher path_pub;
+ros::Publisher loop_pub;
 
+nav_msgs::Path ros_path;
+
+/**
+ * @brief method, which converts a eigen vector to a ros point stamped. if no stamp is passed, it defaults to the current time
+ *
+ * @param vec
+ * @param stamp
+ * @return geometry_msgs::PointStamped
+ */
+geometry_msgs::PointStamped eigen_vec_to_pose_stamped(Eigen::Vector3f vec, ros::Time stamp = ros::Time::now())
+{
+    geometry_msgs::PointStamped point;
+
+    point.header.stamp = stamp;
+    point.header.frame_id = "map";
+    point.point.x = vec.x();
+    point.point.y = vec.y();
+    point.point.z = vec.z();
+
+    return point;
+}
+
+geometry_msgs::PoseStamped lc_pose_to_pose_stamped(Pose lc_pose, ros::Time stamp = ros::Time::now())
+{
+    geometry_msgs::PoseStamped pose;
+
+    pose.header.stamp = stamp;
+    pose.header.frame_id = "map";
+    pose.pose.position.x = lc_pose.pos.x();
+    pose.pose.position.y = lc_pose.pos.y();
+    pose.pose.position.z = lc_pose.pos.z();
+
+    pose.pose.orientation.x = lc_pose.quat.x();
+    pose.pose.orientation.y = lc_pose.quat.y();
+    pose.pose.orientation.z = lc_pose.quat.z();
+    pose.pose.orientation.w = lc_pose.quat.w();
+
+    return pose;
+}
+
+/**
+ * @brief method, which reacts to new odometry messages
+ *
+ * @param msg
+ */
 void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
-    ROS_INFO("Retrieved a path!");
-
     auto pose = msg->pose.pose;
 
     // convert pose to own pose struct
@@ -62,9 +107,12 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
     quat.z() = pose.orientation.z;
     quat.w() = pose.orientation.w;
 
-    std::cout << "Got odometry message. Pose:" << pose.position.x << " | " << pose.position.y << " | " << pose.position.z << std::endl;
+    // when the path length is 0, there is no need to proceed here
+    if(path->get_length() == 0) {
+        return;
+    }
 
-    auto last_pose = path->at(path->get_length());
+    auto last_pose = path->at(path->get_length() - 1);
 
     // guard clause
     if (!((vec - last_pose->pos).norm() > PATH_DIST))
@@ -75,23 +123,34 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
     // if the distance to the last saved pose is big enough, we add a pose to the path
 
     // create pose
-    Pose pose;
-    pose.orientation = quat;
-    pose.position = vec;
+    Pose lc_pose;
+    lc_pose.quat = quat;
+    lc_pose.pos = vec;
 
     // add to path
-    path->add_pose(pose);
+    path->add_pose(lc_pose);
 
     // after every new pose, we search for loops
-    auto res = path->find_loop_greedy();
+    // beginning at first pose
+    // with max distance of one meter
+    // with at least 10 meters traveled
+    auto res = path->find_loop_greedy(0, 1, 10);
 
     // if no loop found, ignore this iteration
-    if(res.first == -1 && res.second == -1) {
+    if (res.first == -1 && res.second == -1)
+    {
         return;
     }
 
     // else: loop found, display it.
-    auto  marker = ROSViewhelper::init_loop_detected_marker(path.at(res.first), path.at(res.second));
+    auto marker = ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos);
+
+    std::cout << "Loop found" << std::endl;
+
+    ros_path.poses.push_back(lc_pose_to_pose_stamped(lc_pose, msg->header.stamp));
+
+    path_pub.publish(ros_path);
+    loop_pub.publish(marker);
 }
 
 /**
@@ -135,7 +194,7 @@ void initOptions(int argc, char **argv)
 
 /**
  * @brief method used to initiate all the objects associated with this test case
- * 
+ *
  */
 void init_obj()
 {
@@ -147,6 +206,9 @@ void init_obj()
 
     // init path
     path = new Path(tracer);
+
+    ros_path.header.frame_id = "map";
+    ros_path.header.stamp = ros::Time::now();
 }
 
 /**
@@ -159,16 +221,20 @@ void init_obj()
 int main(int argc, char **argv)
 {
     initOptions(argc, argv);
-    init_obj();
 
     ros::init(argc, argv, "test_lc_detection_node");
     ros::NodeHandle n;
     ros::NodeHandle nh("~");
 
+    init_obj();
+
     // specify ros loop rate
     ros::Rate loop_rate(10);
 
     pose_sub = n.subscribe("/base_footprint_pose_ground_truth", 1, pose_callback);
+
+    path_pub = n.advertise<nav_msgs::Path>("/test_path", 1);
+    loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
 
     // ros loop
     while (ros::ok())

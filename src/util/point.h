@@ -32,6 +32,9 @@ struct Pose
     Eigen::Quaternionf quat;
     Eigen::Vector3f pos;
 
+    // TODO: use covariance
+    Eigen::MatrixXf covariance;
+
     // gets the rotation matrix from the quat
     Eigen::Matrix3f rotationMatrixFromQuaternion()
     {
