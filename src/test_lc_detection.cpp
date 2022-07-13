@@ -43,7 +43,12 @@ int side_length_z;
 lc_options_reader *options;
 
 // distance between poses (min) in path
-int PATH_DIST = 0.2;
+float PATH_DIST = 0.2f;
+float MAX_DIST_LC = 1.0f;
+float MIN_TRAVELED_LC = 10.0f;
+
+float cur_length = 0.0f;
+Eigen::Vector3f last_vec = Vector3f::Zero();
 
 // ros
 ros::Subscriber pose_sub;
@@ -107,14 +112,33 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
     quat.z() = pose.orientation.z;
     quat.w() = pose.orientation.w;
 
+    // create pose
+    Pose lc_pose;
+    lc_pose.quat = quat;
+    lc_pose.pos = vec;
+
     // when the path length is 0, there is no need to proceed here
-    if(path->get_length() == 0) {
+    if (path->get_length() == 0)
+    {
+        // add first pose to path
+        path->add_pose(lc_pose);
+        ros_path.poses.push_back(lc_pose_to_pose_stamped(lc_pose, msg->header.stamp));
+
+        // save the current pose vec as last vec to ensure, that the path length calc works fine
+        last_vec = vec;
+
         return;
     }
 
+    // save the current length of the "path", the length of the actual path is just an approximation, as it only uses the x poses
+    cur_length += (vec - last_vec).norm();
+    last_vec = vec;
+
+    std::cout << "Current length: " << cur_length << std::endl;
+
     auto last_pose = path->at(path->get_length() - 1);
 
-    // guard clause
+    // guard clause, checking if the distance between the current pose of the robot and the last position is big enough in order to add it to the path.
     if (!((vec - last_pose->pos).norm() > PATH_DIST))
     {
         return;
@@ -122,19 +146,17 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
 
     // if the distance to the last saved pose is big enough, we add a pose to the path
 
-    // create pose
-    Pose lc_pose;
-    lc_pose.quat = quat;
-    lc_pose.pos = vec;
-
     // add to path
     path->add_pose(lc_pose);
+    ros_path.poses.push_back(lc_pose_to_pose_stamped(lc_pose, msg->header.stamp));
+
+    path_pub.publish(ros_path);
 
     // after every new pose, we search for loops
     // beginning at first pose
     // with max distance of one meter
     // with at least 10 meters traveled
-    auto res = path->find_loop_greedy(0, 1, 10);
+    auto res = path->find_loop_greedy(0, MAX_DIST_LC, MIN_TRAVELED_LC);
 
     // if no loop found, ignore this iteration
     if (res.first == -1 && res.second == -1)
@@ -147,9 +169,6 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
 
     std::cout << "Loop found" << std::endl;
 
-    ros_path.poses.push_back(lc_pose_to_pose_stamped(lc_pose, msg->header.stamp));
-
-    path_pub.publish(ros_path);
     loop_pub.publish(marker);
 }
 

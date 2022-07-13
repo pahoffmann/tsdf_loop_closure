@@ -459,7 +459,8 @@ namespace ROSViewhelper
         line_marker.action = visualization_msgs::Marker::ADD;
         line_marker.color.r = 255 / 255.0f;
         line_marker.color.g = 0 / 255.0f;
-        line_marker.color.b = 150 / 255.0f;
+        line_marker.color.b = 0 / 255.0f;
+        line_marker.color.a = 1;
         line_marker.type = visualization_msgs::Marker::ARROW;
         line_marker.header.frame_id = "map";
         line_marker.header.stamp = ros::Time();
