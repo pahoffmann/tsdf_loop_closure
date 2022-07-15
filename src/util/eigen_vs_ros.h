@@ -94,7 +94,7 @@ namespace type_transform
   {
     Eigen::Isometry3d iso = Eigen::Isometry3d::Identity();
     iso.rotate(Eigen::Quaterniond(msg.pose.pose.orientation.w, msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z));
-    iso.translate(Eigen::Vector3d(msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z));
+    iso.pretranslate(Eigen::Vector3d(msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z));
 
     return iso;
   }

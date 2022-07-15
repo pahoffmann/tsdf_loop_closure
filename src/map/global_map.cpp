@@ -163,13 +163,13 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             // now write the intersection data accordingly
             if (g_int.exist(tag))
             {
-                std::cout << "[GlobalMap::::::::::: activate_chunk] - WRITE" << std::endl;
+                //std::cout << "[GlobalMap::::::::::: activate_chunk] - WRITE" << std::endl;
                 auto d = g_int.getDataSet(tag);
                 d.write(active_chunks_[index].intersect_data);
             }
             else
             {
-                std::cout << "[GlobalMap::::::::::: activate_chunk] - CREATE" << std::endl;
+                //std::cout << "[GlobalMap::::::::::: activate_chunk] - CREATE" << std::endl;
                 g_int.createDataSet(tag, active_chunks_[index].intersect_data);
             }
 

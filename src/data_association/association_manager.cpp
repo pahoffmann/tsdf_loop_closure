@@ -66,6 +66,9 @@ void AssociationManager::greedy_associations()
 
     for (int i = associations.size() - 1; i >= 0; i--)
     {
+        std::cout << std::endl <<  "[AssociationManager]: Starting association estimation for pose: " 
+                  << i + 1 << " of " << associations.size() << std::endl << std::endl;
+
         // configure and start the ray tracer for every iteration, which will fill each association
         // ray_tracer->update_map_pointer(local_map_ptr);
 

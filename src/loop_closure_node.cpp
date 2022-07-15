@@ -70,7 +70,7 @@ void initMaps()
   global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name(), 0.0, 0.0);
   // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
   // FIXME: there is currently no way to read metadata from the map, we should introduce this in the map implementation
-  local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
+  local_map_ptr_ = std::make_shared<LocalMap>(312.5, 312.5, 312.5, global_map_ptr_, true); // still hardcoded af
 
   auto &size = local_map_ptr_.get()->get_size();
   side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
   initMaps();
 
   // cleans up global map a bit
-  global_map_ptr_->cleanup_artifacts();
+  //global_map_ptr_->cleanup_artifacts();
 
   // define stuff for raytracer
   ray_tracer = new RayTracer(options, local_map_ptr_, global_map_ptr_);
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
   ros::Rate loop_rate(10);
 
   // check for loops: THE PARAMETERS HERE ARE SOMEWHAT RANDOM... :D
-  auto indices = path->find_loop_greedy(0, 5.0f, 1.0f);
+  /*auto indices = path->find_loop_greedy(0, 5.0f, 1.0f);
 
   if (indices.first != -1 && indices.second != -1)
   {
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
   else
   {
     throw std::logic_error("NO LOOOOPP :(((");
-  }
+  }*/
 
   // create associationmanager
   manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
