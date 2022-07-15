@@ -67,7 +67,7 @@ AssociationManager *manager;
  */
 void initMaps()
 {
-  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name(), 0.0, 0.0);
+  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name(), 0.6, 0.0); // 0.6 * 1000 = 600 !!!!!!!
   // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
   // FIXME: there is currently no way to read metadata from the map, we should introduce this in the map implementation
   local_map_ptr_ = std::make_shared<LocalMap>(312.5, 312.5, 312.5, global_map_ptr_, true); // still hardcoded af
