@@ -33,6 +33,7 @@
 [ ] Create a model for the metadata of the global map ( which not yet exists)
 [ ] write a ros node, which converts a globalmap h5 to a more usable version including metadata and intersection status.
 [ ] Re-evaluate cleanup artifacts method from global map
+[ ] PathExploration: Use tsdf cells instead of chunks (might be taking WAY to long, probably just another discretization level might be useful)
 
 ## Important TODO's for future me ##
 
@@ -43,7 +44,6 @@
 ## ASAP ##
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] or: find a different way to store the association information
-[ ] PathExploration: Use tsdf cells instead of chunks (might be taking WAY to long, probably just another discretization level might be useful)
 [ ] Associations: Different strat: one file, group for every chunk, inside group for every pose, containing the associated Poses.
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
 [ ] {WIP:} Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.

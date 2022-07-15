@@ -1,4 +1,16 @@
+/**
+ * @file hdf5_constants.h
+ * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
+ * @brief 
+ * @version 0.1
+ * @date 2022-07-15
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #pragma once
+
 
 namespace hdf5_constants {
 

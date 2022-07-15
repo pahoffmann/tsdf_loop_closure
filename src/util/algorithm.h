@@ -12,7 +12,7 @@
 #include <iostream>
 
 /**
- * @brief compare function used by the sort_vector method
+ * @brief compare function used by the sort_vector method, currently only supposed to be used for hdf5 tag comparison
  * 
  * @param s1 
  * @param s2 
@@ -36,6 +36,14 @@ static bool compare_int_strings(std::string s1, std::string s2) {
     return std::stoi(s1) < std::stoi(s2);
 }
 
+/**
+ * @brief sorts a vector of string values, if is_integer_values is set to true, it assumes, that there are integer strings
+ *        method is used to sort vectors of hdf5 tags, which usally also contain a leading "/", therefore this method should only be used
+ *        for this use case at the moment, though - should be working for other use cases as well
+ * 
+ * @param data 
+ * @param is_integer_values 
+ */
 static void sort_vector(std::vector<std::string> &data, bool is_integer_values = true)
 {
     if(is_integer_values) {

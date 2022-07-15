@@ -31,6 +31,7 @@
 #include "options/options_reader.h"
 #include "visualization/ros_viewhelper.h"
 #include "util/point.h"
+#include "util/eigen_vs_ros.h"
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 
@@ -49,6 +50,7 @@ float MIN_TRAVELED_LC = 10.0f;
 
 float cur_length = 0.0f;
 Eigen::Vector3f last_vec = Vector3f::Zero();
+float last_path_idx = 0;
 
 // ros
 ros::Subscriber pose_sub;
@@ -57,43 +59,6 @@ ros::Publisher loop_pub;
 
 nav_msgs::Path ros_path;
 
-/**
- * @brief method, which converts a eigen vector to a ros point stamped. if no stamp is passed, it defaults to the current time
- *
- * @param vec
- * @param stamp
- * @return geometry_msgs::PointStamped
- */
-geometry_msgs::PointStamped eigen_vec_to_pose_stamped(Eigen::Vector3f vec, ros::Time stamp = ros::Time::now())
-{
-    geometry_msgs::PointStamped point;
-
-    point.header.stamp = stamp;
-    point.header.frame_id = "map";
-    point.point.x = vec.x();
-    point.point.y = vec.y();
-    point.point.z = vec.z();
-
-    return point;
-}
-
-geometry_msgs::PoseStamped lc_pose_to_pose_stamped(Pose lc_pose, ros::Time stamp = ros::Time::now())
-{
-    geometry_msgs::PoseStamped pose;
-
-    pose.header.stamp = stamp;
-    pose.header.frame_id = "map";
-    pose.pose.position.x = lc_pose.pos.x();
-    pose.pose.position.y = lc_pose.pos.y();
-    pose.pose.position.z = lc_pose.pos.z();
-
-    pose.pose.orientation.x = lc_pose.quat.x();
-    pose.pose.orientation.y = lc_pose.quat.y();
-    pose.pose.orientation.z = lc_pose.quat.z();
-    pose.pose.orientation.w = lc_pose.quat.w();
-
-    return pose;
-}
 
 /**
  * @brief method, which reacts to new odometry messages
@@ -122,7 +87,7 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
     {
         // add first pose to path
         path->add_pose(lc_pose);
-        ros_path.poses.push_back(lc_pose_to_pose_stamped(lc_pose, msg->header.stamp));
+        ros_path.poses.push_back(type_transform::lc_pose_to_pose_stamped(lc_pose, msg->header.stamp));
 
         // save the current pose vec as last vec to ensure, that the path length calc works fine
         last_vec = vec;
@@ -148,7 +113,7 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
 
     // add to path
     path->add_pose(lc_pose);
-    ros_path.poses.push_back(lc_pose_to_pose_stamped(lc_pose, msg->header.stamp));
+    ros_path.poses.push_back(type_transform::lc_pose_to_pose_stamped(lc_pose, msg->header.stamp));
 
     path_pub.publish(ros_path);
 
@@ -156,13 +121,16 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
     // beginning at first pose
     // with max distance of one meter
     // with at least 10 meters traveled
-    auto res = path->find_loop_greedy(0, MAX_DIST_LC, MIN_TRAVELED_LC);
+    auto res = path->find_loop_greedy(last_path_idx, MAX_DIST_LC, MIN_TRAVELED_LC);
 
     // if no loop found, ignore this iteration
     if (res.first == -1 && res.second == -1)
     {
         return;
     }
+
+    last_path_idx = res.second;
+    cur_length = 0;
 
     // else: loop found, display it.
     auto marker = ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos);

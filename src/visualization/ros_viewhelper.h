@@ -19,7 +19,7 @@
 #include "../util/point.h"
 #include "../util/constants.h"
 #include "../util/colors.h"
-#include "../util/eigen_to_ros.h"
+#include "../util/eigen_vs_ros.h"
 
 namespace ROSViewhelper
 {
@@ -115,7 +115,7 @@ namespace ROSViewhelper
 
         for (Pose pose : path->getPoses())
         {
-            path_marker.points.push_back(eigen_point_to_ros_point(pose.pos));
+            path_marker.points.push_back(type_transform::eigen_point_to_ros_point(pose.pos));
         }
 
         return path_marker;
@@ -429,14 +429,14 @@ namespace ROSViewhelper
             // but: ros uses the center of a cube for the pose, thus half of the cube size needs to be added.
 
             Vector3f result = chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f)) + Vector3f(1, 1, 1) * ((CHUNK_SIZE / 2) * (MAP_RESOLUTION / 1000.0f));
-            path_marker.points.push_back(eigen_point_to_ros_point(result));
+            path_marker.points.push_back(type_transform::eigen_point_to_ros_point(result));
             path_marker.colors.push_back(color_non_filtered);
         }
 
         for (auto chunk : chunks_1)
         {
             Vector3f result = chunk.cast<float>() * (CHUNK_SIZE * (MAP_RESOLUTION / 1000.0f)) + Vector3f(1, 1, 1) * ((CHUNK_SIZE / 2) * (MAP_RESOLUTION / 1000.0f));
-            path_marker.points.push_back(eigen_point_to_ros_point(result));
+            path_marker.points.push_back(type_transform::eigen_point_to_ros_point(result));
             path_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::red));
         }
 
@@ -465,8 +465,8 @@ namespace ROSViewhelper
         line_marker.header.frame_id = "map";
         line_marker.header.stamp = ros::Time();
         line_marker.id = 0;
-        line_marker.points.push_back(eigen_point_to_ros_point(first));
-        line_marker.points.push_back(eigen_point_to_ros_point(second));
+        line_marker.points.push_back(type_transform::eigen_point_to_ros_point(first));
+        line_marker.points.push_back(type_transform::eigen_point_to_ros_point(second));
 
         return line_marker;
     }

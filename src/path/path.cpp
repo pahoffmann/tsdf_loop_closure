@@ -17,7 +17,7 @@ void Path::fromJSON(std::string filename)
 /**
  * @todo TODO: test this code piece
  */
-std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float min_traveled)
+std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float min_traveled, bool check_visibility)
 {
     // error identification
     if (start_idx > get_length())
@@ -90,8 +90,8 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
 
             // if we reach this point we have (as it seems) a candidate. now we need to check the visibility criteria (e.g. : is pos i visible from pos j ?)
             // this should usually be the case.
-
-            if (!ray_tracer->is_visible(*(at(i)), *(at(j))))
+            // only do this check if specified by the method 
+            if (check_visibility && !ray_tracer->is_visible(*(at(i)), *(at(j))))
             {
                 continue;
             }

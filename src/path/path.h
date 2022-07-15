@@ -79,7 +79,7 @@ public:
      * 
      * @return std::pair<int, int> start and end index of the closed loop, will return (-1, -1) if no loop found
      */
-    std::pair<int, int> find_loop_greedy(int start_idx, float max_dist, float min_traveled);
+    std::pair<int, int> find_loop_greedy(int start_idx, float max_dist, float min_traveled, bool check_visibility = false);
 
     /**
      * @brief returns a pose of the path for a given idx
