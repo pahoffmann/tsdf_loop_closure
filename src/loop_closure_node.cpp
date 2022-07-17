@@ -219,12 +219,15 @@ int main(int argc, char **argv)
   // full tsdf map for display, very ressource intensive, especially for large maps..
   tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
 
+  //auto single_marker = ROSViewhelper::initPoseAssociationVisualization(global_map_ptr_, path->at(0), 0);
+
   // some stuff doesnt need to be published every iteration...
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
   // cube_publisher.publish(tsdf_map);
   cube_publisher.publish(tsdf_map_full);
+  //cube_publisher.publish(single_marker);
   chunk_publisher.publish(chunk_marker);
 
   ros::spinOnce();

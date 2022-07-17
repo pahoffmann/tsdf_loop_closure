@@ -460,8 +460,6 @@ std::vector<Pose> GlobalMap::get_path()
             throw std::logic_error("Error when reading paths from hdf5");
         }
 
-        std::cout << "Current identifier: " << name << std::endl;
-
         // every pose is a group of two datasets
         auto sub_g = g.getGroup(name);
 
@@ -488,8 +486,6 @@ std::vector<Pose> GlobalMap::get_path()
         pose.quat.y() = values[4];
         pose.quat.z() = values[5];
         pose.quat.w() = values[6];
-
-        std::cout << pose << std::endl;
 
         path.push_back(pose);
     }

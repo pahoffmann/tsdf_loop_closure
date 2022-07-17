@@ -397,6 +397,136 @@ namespace ROSViewhelper
         return tsdf_markers;
     }
 
+    /**
+     * @brief function may be used to display the intersection data for one pose and one pose only, returning a marker
+     *        which may display tsdf values inside a local map sized container around the pose
+     *
+     * @param local_map_ptr_
+     * @param pose
+     * @return visualization_msgs::Marker
+     */
+    visualization_msgs::Marker initSinglePoseMarker(std::shared_ptr<LocalMap> local_map_ptr_, Pose *pose)
+    {
+        // create marker.
+        visualization_msgs::Marker tsdf_markers;
+        tsdf_markers.header.frame_id = "map";
+        tsdf_markers.header.stamp = ros::Time();
+        tsdf_markers.ns = "tsdf";
+        tsdf_markers.id = 0;
+        tsdf_markers.lifetime.fromSec(TSDF_LIFETIME);
+        tsdf_markers.type = visualization_msgs::Marker::POINTS;
+        tsdf_markers.action = visualization_msgs::Marker::ADD;
+        tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
+        std::vector<geometry_msgs::Point> points;                                   // 3 x 3 markers
+
+        // define colors for the tsdf and intersections
+        // intersection color might need to vary
+        auto intersectColor = Colors::color_from_name(Colors::ColorNames::fuchsia);
+        auto intersectNegColor = Colors::color_from_name(Colors::ColorNames::yellow);
+        auto intersectZeroColor = Colors::color_from_name(Colors::ColorNames::aqua);
+        auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
+        auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
+
+        local_map_ptr_->shift(real_to_map(pose->pos));
+
+        // get values, ignore offset
+        for (int x = pose->pos.x() + (-1 * (local_map_ptr_->get_size().x() - 1) / 2); x < pose->pos.x() + ((local_map_ptr_->get_size().x() - 1) / 2); x++)
+        {
+            for (int y = pose->pos.y() + (-1 * (local_map_ptr_->get_size().y() - 1) / 2); y < pose->pos.y() + ((local_map_ptr_->get_size().y() - 1) / 2); y++)
+            {
+                for (int z = pose->pos.z() + (-1 * (local_map_ptr_->get_size().z() - 1) / 2); z < pose->pos.z() + ((local_map_ptr_->get_size().z() - 1) / 2); z++)
+                {
+                    auto tsdf = local_map_ptr_->value(x, y, z);
+                    auto value = tsdf.value();
+                    auto weight = tsdf.weight();
+                    auto intersect = tsdf.getIntersect();
+
+                    // just the cells, which actually have a weight and a value other than (and including) the default one
+                    if (weight > 0 && value < 600)
+                    {
+                        geometry_msgs::Point point;
+                        point.x = x * 0.001 * MAP_RESOLUTION;
+                        point.y = y * 0.001 * MAP_RESOLUTION;
+                        point.z = z * 0.001 * MAP_RESOLUTION;
+
+                        std_msgs::ColorRGBA color;
+
+                        if (intersect == TSDFEntry::IntersectStatus::INT)
+                        {
+                            color = intersectColor;
+                        }
+                        else if (intersect == TSDFEntry::IntersectStatus::INT_NEG)
+                        {
+                            color = intersectNegColor;
+                        }
+                        else if (intersect == TSDFEntry::IntersectStatus::INT_ZERO)
+                        {
+                            color = intersectZeroColor;
+                        }
+                        else if (value < 0)
+                        {
+                            color = redTSDFColor;
+                        }
+                        else
+                        {
+                            color = greenTSDFColor;
+                        }
+
+                        tsdf_markers.points.push_back(point);
+                        tsdf_markers.colors.push_back(color);
+                    }
+                }
+            }
+        }
+
+        return tsdf_markers;
+    }
+
+    visualization_msgs::Marker initPoseAssociationVisualization(std::shared_ptr<GlobalMap> global_map_ptr, Pose *pose, int pose_number = 0)
+    {
+        // create marker.
+        visualization_msgs::Marker tsdf_markers;
+        tsdf_markers.header.frame_id = "map";
+        tsdf_markers.header.stamp = ros::Time();
+        tsdf_markers.ns = "tsdf_one";
+        tsdf_markers.id = 0;
+        tsdf_markers.lifetime.fromSec(TSDF_LIFETIME);
+        tsdf_markers.type = visualization_msgs::Marker::POINTS;
+        tsdf_markers.action = visualization_msgs::Marker::ADD;
+        tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
+
+        // point and color array for the marker
+        std::vector<geometry_msgs::Point> points; // 3 x 3 markers
+        std::vector<std_msgs::ColorRGBA> colors;
+
+        // define colors for the tsdf and intersections
+        // intersection color might need to vary
+        auto intersectColor = Colors::color_from_name(Colors::ColorNames::fuchsia);
+        auto intersectNegColor = Colors::color_from_name(Colors::ColorNames::yellow);
+
+        // obtain the associations of the pose from the map
+        auto associations = global_map_ptr->read_association_data(pose_number);
+
+        // add them to the marker and colorize
+        for (int i = 0; i < associations.size(); i += 5)
+        {
+            Vector3i point(associations[i], associations[i + 1], associations[i + 2]);
+            tsdf_markers.points.push_back(type_transform::eigen_point_to_ros_point(map_to_real(point)));
+
+            // colorize
+            if (associations[i + 3] < 0)
+            {
+                tsdf_markers.colors.push_back(intersectNegColor);
+            }
+            else
+            {
+                tsdf_markers.colors.push_back(intersectColor);
+            }
+        }
+
+        return tsdf_markers;
+    }
+
     visualization_msgs::Marker initPathExtractionVisualizion(std::shared_ptr<GlobalMap> global_map_ptr_, std::shared_ptr<LocalMap> local_map_ptr_)
     {
         auto chunks = global_map_ptr_->all_chunk_poses();
@@ -445,15 +575,15 @@ namespace ROSViewhelper
 
     /**
      * @brief Constructs a ros marker which displays a line between the two positions passed to the function
-     * 
-     * @param first 
-     * @param second 
-     * @return visualization_msgs::Marker 
+     *
+     * @param first
+     * @param second
+     * @return visualization_msgs::Marker
      */
     visualization_msgs::Marker init_loop_detected_marker(Eigen::Vector3f first, Eigen::Vector3f second)
     {
 
-        //todo: check, wether the line marker needs two points or one point and scaljgnk
+        // todo: check, wether the line marker needs two points or one point and scaljgnk
         visualization_msgs::Marker line_marker;
         line_marker.ns = "lc_detect";
         line_marker.action = visualization_msgs::Marker::ADD;
