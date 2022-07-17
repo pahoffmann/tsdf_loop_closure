@@ -57,6 +57,12 @@
 [ ] Might also be an idea (as per Julian) to pre-calculate all the steps you need to take for a tracer in bounds of the local map. this might be pretty 
     memory intensive though and should probably be calculated before trying out. (roughly 3GB)
 
+[ ] Implement the ray tracer as a singleton, so the rays don't need initialization every time. (insert this into masters thesis)
+    -> There needs to be an additional array (e.g. init_rays)
+    -> function to destroy current instance and make available for reinstanceiation
+[ ] Implement tests to ensure writing to the globalmap works, write meta data (e.g. hit percentage, number hit vs total occupied cells)
+    to hdf (/associations)
+
 ## TODAY ##
 
 # Main target #

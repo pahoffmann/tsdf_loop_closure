@@ -68,8 +68,10 @@ private:
     // the actual rays, every ray starts at the current position of the tracer
     std::vector<Eigen::Vector3f> rays;
 
-    // a 3D array representing colors from individual scans
+    // a 3D array representing colors from individual scans, currently unused
     std::vector<std::vector<std::vector<std_msgs::ColorRGBA>>> colors;
+
+    std::vector<std::vector<Vector3i>> current_ray_associations;
 
     // the current data association we are working with
     Association *cur_association;
@@ -95,6 +97,21 @@ private:
      * 
      */
     void updateRays(int mode = 0);
+
+    /**
+     * @brief new method to update rays. new logic for checking, if a ray is done, new logic for adding associations
+     * 
+     * @param mode 
+     */
+    void updateRaysNew(int mode = 0);
+
+    /**
+     * @brief do whatever necessary to initialize the 3D Bresenham structure to ensure a higher hit percentage.
+     * 
+     */
+    void init3DBresenham();
+
+    void start3DBresenham();
 
     /**
      * @brief does some cleanup work in between runs.
