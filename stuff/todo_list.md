@@ -39,6 +39,11 @@
 [ ] Create a model for the metadata of the global map ( which not yet exists)
 [ ] Re-evaluate cleanup artifacts method from global map
 [ ] PathExploration: Use tsdf cells instead of chunks (might be taking WAY to long, probably just another discretization level might be useful)
+[ ] -o3 gcc flag for cmake? optimization
+[ ] work on code todos, especially for bresenham
+[ ] RayTracer: data should not be reinitialized every time there is a tracing, there should be one default relative instanciation
+[ ] Use global Map parameters
+[ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
 
 ## Important TODO's for future me ##
 

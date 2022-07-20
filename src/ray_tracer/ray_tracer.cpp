@@ -547,7 +547,6 @@ void RayTracer::init3DBresenham()
 
   auto size = local_map_ptr_->get_size();
 
-  
   Vector3f normal_bottom(0, 0, 1);
   Vector3f normal_top(0, 0, -1);
 
@@ -571,8 +570,10 @@ void RayTracer::init3DBresenham()
 
   // double for loop iterating over the specified resolution of the scanner (360 degrees horizontally, predefines angle vertically)
   // TODO: PARRALELIZE
+  //#pragma omp parallel for private()
   for (float i = -180.0f; i < 180.0f; i += x_res)
   {
+
     for (float j = start_degree; j <= fin_degree; j += y_res)
     {
       // no we need to calc the respective points for each of the rays. scary.
@@ -662,13 +663,8 @@ void RayTracer::init3DBresenham()
     }
   }
 
-  std::cout << "Vectors: " << std::endl << s_back << std::endl;
-
-
   std::cout << "Global Match count avg: " << (float)global_match_count / bresenham_cells.size() << std::endl;
-  std::cout << "got " << zero_counter << " cells with zero vector" << std::endl;
 
-  std::cout << "Found " << bresenham_cells.size() << " cells" << std::endl;
   // update the lines finished vector, as we need to track, if a line is already finished
   // initially, all rays have a status of OK, meaning they neither passed a zero crossing, nor are already finished.
   lines_finished = std::vector<RayStatus>(bresenham_cells.size(), RayStatus::INIT);
@@ -683,8 +679,6 @@ bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vecto
   // get d value
   float d = plane_normal.dot(plane_coord);
 
-  std::cout << "D: " << d << std::endl;
-
   // check if the plane is parallel to the the ray, if so return false
   if (plane_normal.dot(ray_vector) == 0)
   {
@@ -693,11 +687,6 @@ bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vecto
 
   // Compute the X value for the directed line ray intersecting the plane
   float t = (d - plane_normal.dot(ray_origin)) / plane_normal.dot(ray_vector);
-
-  if (t == 0)
-  {
-    std::cout << "T is NULL" << std::endl;
-  }
 
   // this is special: we only want to look in the direction of the vector, a negative t suggests,
   // that the intersection is indeed the opposite way, which is an unwanted scenario handled similar to a parallel ray
