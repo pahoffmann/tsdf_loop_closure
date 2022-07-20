@@ -44,6 +44,7 @@
 [ ] RayTracer: data should not be reinitialized every time there is a tracing, there should be one default relative instanciation
 [ ] Use global Map parameters
 [ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
+[ ] adjust runtime using OPENMP
 
 ## Important TODO's for future me ##
 
