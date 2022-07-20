@@ -542,6 +542,33 @@ void RayTracer::init3DBresenham()
   const float x_res = 360.0f / (float)(hor_res);
   const float y_res = (float)opening_degree / (float)(vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
 
+  int zero_counter = 0;
+  int global_match_count = 0;
+
+  auto size = local_map_ptr_->get_size();
+
+  
+  Vector3f normal_bottom(0, 0, 1);
+  Vector3f normal_top(0, 0, -1);
+
+  Vector3f normal_left(0, 1, 0);
+  Vector3f normal_right(0, -1, 0);
+
+  Vector3f normal_front(-1, 0, 0);
+  Vector3f normal_back(1, 0, 0);
+
+  // -1 as the size of the local map is odd
+  Vector3f s_bottom = current_pose->pos + map_to_real(Vector3i(0, 0, (size.z() - 1) / 2));
+  Vector3f s_top = current_pose->pos + map_to_real(Vector3i(0, 0, -1 * (size.z() - 1) / 2));
+
+  Vector3f s_left = current_pose->pos + map_to_real(Vector3i(0, (size.y() - 1) / 2, 0));
+  Vector3f s_right = current_pose->pos + map_to_real(Vector3i(0, -1 * (size.y() - 1) / 2, 0));
+
+  Vector3f s_front = current_pose->pos + map_to_real(Vector3i((size.x() - 1) / 2, 0, 0));
+  Vector3f s_back = current_pose->pos + map_to_real(Vector3i(-1 * (size.x() - 1) / 2, 0, 0));
+
+  Eigen::Vector3f bottom_int, top_int, left_int, right_int, front_int, back_int;
+
   // double for loop iterating over the specified resolution of the scanner (360 degrees horizontally, predefines angle vertically)
   // TODO: PARRALELIZE
   for (float i = -180.0f; i < 180.0f; i += x_res)
@@ -563,32 +590,14 @@ void RayTracer::init3DBresenham()
       // calc the vector between the ray base and ray point
       Vector3f ray_vector = ray_point - current_pose->pos;
 
+      // std::cout << "Ray Vector: " << ray_vector.x() << " | " << ray_vector.y() << " | " << ray_vector.z() << std::endl;
+
       // normalize the vector
       ray_vector.normalize();
 
-      auto size = local_map_ptr_->get_size();
-
+      // std::cout << "Ray Vector Normalized: " << ray_vector.x() << " | " << ray_vector.y() << " | " << ray_vector.z() << std::endl;
+      
       // now calculate the belonging cell at the outer most part of the localmap to start bresenham
-      Vector3f normal_bottom(0, 0, 1);
-      Vector3f normal_top(0, 0, -1);
-
-      Vector3f normal_left(0, 1, 0);
-      Vector3f normal_right(0, -1, 0);
-
-      Vector3f normal_front(-1, 0, 0);
-      Vector3f normal_back(1, 0, 0);
-
-      // -1 as the size of the local map is odd
-      Vector3f s_bottom = current_pose->pos + map_to_real(Vector3i(0, 0, (size.z() - 1) / 2));
-      Vector3f s_top = current_pose->pos + map_to_real(Vector3i(0, 0, -1 * (size.z() - 1) / 2));
-
-      Vector3f s_left = current_pose->pos + map_to_real(Vector3i(0, (size.z() - 1) / 2, 0));
-      Vector3f s_right = current_pose->pos + map_to_real(Vector3i(0, -1 * (size.z() - 1) / 2));
-
-      Vector3f s_front = current_pose->pos + map_to_real(Vector3i((size.z() - 1) / 2, 0, 0));
-      Vector3f s_back = current_pose->pos + map_to_real(Vector3i(-1 * (size.z() - 1) / 2, 0, 0));
-
-      Eigen::Vector3f bottom_int, top_int, left_int, right_int, front_int, back_int;
 
       // bottom layer:
       bool bottom_intersected = linePlaneIntersection(bottom_int, ray_vector, current_pose->pos, normal_bottom, s_bottom);
@@ -632,6 +641,8 @@ void RayTracer::init3DBresenham()
           continue;
         }
 
+        global_match_count++;
+
         // the length is the length of the vector between the found intersection and the position of the artifical ray tracer
         float length = (intersection.first - current_pose->pos).norm();
 
@@ -643,15 +654,27 @@ void RayTracer::init3DBresenham()
       }
 
       bresenham_cells.push_back(real_to_map(bresenham_vertex));
+
+      if (real_to_map(bresenham_vertex) == Vector3i(0, 0, 0))
+      {
+        zero_counter++;
+      }
     }
   }
 
+  std::cout << "Vectors: " << std::endl << s_back << std::endl;
+
+
+  std::cout << "Global Match count avg: " << (float)global_match_count / bresenham_cells.size() << std::endl;
+  std::cout << "got " << zero_counter << " cells with zero vector" << std::endl;
+
+  std::cout << "Found " << bresenham_cells.size() << " cells" << std::endl;
   // update the lines finished vector, as we need to track, if a line is already finished
   // initially, all rays have a status of OK, meaning they neither passed a zero crossing, nor are already finished.
-  lines_finished = std::vector<RayStatus>(rays.size(), RayStatus::INIT);
+  lines_finished = std::vector<RayStatus>(bresenham_cells.size(), RayStatus::INIT);
 
   // create a array for the current ray associations, with the size of the current rays
-  current_ray_associations = std::vector<std::vector<Vector3i>>(rays.size());
+  current_ray_associations = std::vector<std::vector<Vector3i>>(bresenham_cells.size());
 }
 
 bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vector,
@@ -659,6 +682,8 @@ bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vecto
 {
   // get d value
   float d = plane_normal.dot(plane_coord);
+
+  std::cout << "D: " << d << std::endl;
 
   // check if the plane is parallel to the the ray, if so return false
   if (plane_normal.dot(ray_vector) == 0)
@@ -669,9 +694,14 @@ bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vecto
   // Compute the X value for the directed line ray intersecting the plane
   float t = (d - plane_normal.dot(ray_origin)) / plane_normal.dot(ray_vector);
 
+  if (t == 0)
+  {
+    std::cout << "T is NULL" << std::endl;
+  }
+
   // this is special: we only want to look in the direction of the vector, a negative t suggests,
   // that the intersection is indeed the opposite way, which is an unwanted scenario handled similar to a parallel ray
-  if (t < 0)
+  if (t <= 0)
   {
     return false;
   }
