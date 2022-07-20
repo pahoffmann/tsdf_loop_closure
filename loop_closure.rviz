@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /Marker1/Namespaces1
         - /Marker5
+        - /Marker7
       Splitter Ratio: 0.5
     Tree Height: 746
   - Class: rviz/Selection
@@ -60,7 +61,7 @@ Visualization Manager:
       Marker Topic: /cubes
       Name: Marker
       Namespaces:
-        tsdf: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -103,6 +104,14 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /bresenham_intersections
+      Name: Marker
+      Namespaces:
+        bresenham_intersections: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -131,7 +140,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 44.217281341552734
+      Distance: 60.182621002197266
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -147,9 +156,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9097960591316223
+      Pitch: 0.7347971200942993
       Target Frame: <Fixed Frame>
-      Yaw: 0.7506555914878845
+      Yaw: 5.363821983337402
     Saved: ~
 Window Geometry:
   Displays:

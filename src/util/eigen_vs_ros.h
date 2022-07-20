@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @file eigen_vs_ros.h
  * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
@@ -8,8 +10,6 @@
  * @copyright Copyright (c) 2022
  *
  */
-
-#pragma once
 
 #include "point.h"
 #include <ros/ros.h>
@@ -23,13 +23,14 @@
 
 namespace type_transform
 {
+
   /**
    * @brief converts eigen pos to ros point
    *
    * @param pos
    * @return geometry_msgs::Point
    */
-  geometry_msgs::Point eigen_point_to_ros_point(Eigen::Vector3f pos)
+  static geometry_msgs::Point eigen_point_to_ros_point(Eigen::Vector3f pos)
   {
     geometry_msgs::Point point;
     point.x = pos.x();
@@ -46,7 +47,7 @@ namespace type_transform
    * @param stamp
    * @return geometry_msgs::PointStamped
    */
-  geometry_msgs::PointStamped eigen_vec_to_pose_stamped(Eigen::Vector3f vec, ros::Time stamp = ros::Time::now(), std::string frame_id = "map")
+  static geometry_msgs::PointStamped eigen_vec_to_pose_stamped(Eigen::Vector3f vec, ros::Time stamp = ros::Time::now(), std::string frame_id = "map")
   {
     geometry_msgs::PointStamped point;
 
@@ -66,7 +67,7 @@ namespace type_transform
    * @param stamp
    * @return geometry_msgs::PoseStamped
    */
-  geometry_msgs::PoseStamped lc_pose_to_pose_stamped(Pose lc_pose, ros::Time stamp = ros::Time::now(), std::string frame_id = "map")
+  static geometry_msgs::PoseStamped lc_pose_to_pose_stamped(Pose lc_pose, ros::Time stamp = ros::Time::now(), std::string frame_id = "map")
   {
     geometry_msgs::PoseStamped pose;
 
@@ -90,7 +91,7 @@ namespace type_transform
    * @param msg
    * @return Eigen::Isometry3d
    */
-  Eigen::Isometry3d ros_odometry_to_eigen_iso(nav_msgs::Odometry &msg)
+  static Eigen::Isometry3d ros_odometry_to_eigen_iso(nav_msgs::Odometry &msg)
   {
     Eigen::Isometry3d iso = Eigen::Isometry3d::Identity();
     iso.rotate(Eigen::Quaterniond(msg.pose.pose.orientation.w, msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z));

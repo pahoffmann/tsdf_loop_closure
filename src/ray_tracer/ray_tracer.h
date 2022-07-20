@@ -1,6 +1,5 @@
 #pragma once
 
-
 /**
  * @file ray_tracer.h
  * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
@@ -17,6 +16,7 @@
 #include "../map/local_map.h"
 #include "../data_association/association.h"
 #include "../options/options_reader.h"
+#include "../util/eigen_vs_ros.h"
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sstream>
@@ -86,6 +86,12 @@ private:
 
     double ray_size;
 
+    // bresemham stuff
+
+    // each pair contains the start and end vertex of bresenham
+    std::vector<Vector3i> bresenham_cells;
+
+
     /**
      * @brief initializes the rays for the current position
      * 
@@ -111,7 +117,37 @@ private:
      */
     void init3DBresenham();
 
+    /**
+     * @brief start 3D bresenham
+     * 
+     */
     void start3DBresenham();
+
+    /**
+     * @brief calculates the intersection between a ray and and a plane, returns true if successful, false if the plane is parallel to the ray
+     * 
+     * calc the intersection between the surfaces and the ray
+     * math behind here:
+     * All points X of a plane follow the equation
+     * Dot(N, X) = d
+     * where d can be calculated by putting an arbitrary point X into the equation
+     * wheres the ray is described by
+     * s = p + t*D
+     * with s being all the points the ray might generate by the location vec p and direction vec D
+     * this gives us:
+     * t = (d - Dot(N, p)) / Dot(N, D)
+     * by inserting the resulting t in the line equation, we get the intersection.
+     * see: https://stackoverflow.com/questions/7168484/3d-line-segment-and-plane-intersection
+     * 
+     * @param intersection 
+     * @param ray_vector 
+     * @param ray_origin 
+     * @param plane_normal 
+     * @param plane_coord 
+     * @return true 
+     * @return false 
+     */
+    bool linePlaneIntersection(Vector3f& intersection, Vector3f ray_vector, Vector3f ray_origin, Vector3f plane_normal, Vector3f plane_coord);
 
     /**
      * @brief does some cleanup work in between runs.
@@ -165,11 +201,24 @@ public:
     float start(int mode = 0);
 
     /**
+     * @brief starts the bresenham tracing
+     * 
+     */
+    void start_bresenham();
+
+    /**
      * @brief Get the ros marker for the current ray trace
      * 
      * @return visualization_msgs::Marker 
      */
     visualization_msgs::Marker get_ros_marker();
+
+    /**
+     * @brief Get the bresenham intersections as a ros marker
+     * 
+     * @return visualization_msgs::Marker 
+     */
+    visualization_msgs::Marker get_bresenham_intersection_marker();
 
     /**
      * @brief updates the local map pointer, due to a dynamic reconfigure

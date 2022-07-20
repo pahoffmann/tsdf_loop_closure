@@ -307,7 +307,8 @@ void RayTracer::updateRays(int mode)
   }
 }
 
-void RayTracer::updateRaysNew(int mode) {
+void RayTracer::updateRaysNew(int mode)
+{
   // why would we update, when there are no rays? This is more of a fatal thing here.
   if (rays.size() == 0)
   {
@@ -419,7 +420,8 @@ void RayTracer::updateRaysNew(int mode) {
           if (mode == 0)
           {
             // add association and visualization for every saved cell of the current ray.
-            for(Vector3i saved_cell : current_ray_associations[i]) {
+            for (Vector3i saved_cell : current_ray_associations[i])
+            {
               auto &tsdf_tmp = local_map_ptr_->value(saved_cell);
 
               // set intersection
@@ -496,6 +498,189 @@ void RayTracer::updateRaysNew(int mode) {
   }
 }
 
+void RayTracer::start_bresenham()
+{
+  // when either of these is NULL, we might as well just throw a logic error.
+  if ((lc_config == NULL && options == NULL) || current_pose == NULL)
+  {
+    throw std::logic_error("[RayTracer] - Major Error, no configuration data delivered to ray-tracer");
+  }
+  else if (current_pose == NULL)
+  {
+    throw std::invalid_argument("[RayTracer] The RayTracer needs a pose to be able to start tracing.");
+  }
+
+  opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
+  hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
+  vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
+  step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
+
+  side_length_xy = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
+  side_length_z = (local_map_ptr_->get_size().z() - 1) * MAP_RESOLUTION / 1000.0f;
+
+  ray_size = options != NULL ? options->get_ray_size() : lc_config->ray_size;
+
+  // just for better readablity
+  std::cout << std::endl;
+
+  std::cout << "[RayTracer] Started Tracing..." << std::endl;
+
+  // before doing anything, we need to cleanup the data from the last run
+  cleanup();
+
+  // init bresenham
+  init3DBresenham();
+}
+
+void RayTracer::init3DBresenham()
+{
+  // init localmap surfaces
+
+  // simulate sensor
+  const float start_degree = -(float)opening_degree / 2.0f;
+  const float fin_degree = (float)opening_degree / 2.0f;
+  const float x_res = 360.0f / (float)(hor_res);
+  const float y_res = (float)opening_degree / (float)(vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
+
+  // double for loop iterating over the specified resolution of the scanner (360 degrees horizontally, predefines angle vertically)
+  // TODO: PARRALELIZE
+  for (float i = -180.0f; i < 180.0f; i += x_res)
+  {
+    for (float j = start_degree; j <= fin_degree; j += y_res)
+    {
+      // no we need to calc the respective points for each of the rays. scary.
+      // done with two angles in sphere coordinates
+      // formulas from http://wiki.ros.org/ainstein_radar/Tutorials/Tracking%20object%20Cartesian%20pose
+      // and https://math.libretexts.org/Bookshelves/Calculus/Book%3A_Calculus_(OpenStax)/12%3A_Vectors_in_Space/12.7%3A_Cylindrical_and_Spherical_Coordinates
+      Eigen::Vector3f ray_point(
+          current_pose->pos.x() + cos(i * M_PI / 180) * cos(j * M_PI / 180),
+          current_pose->pos.y() + sin(i * M_PI / 180) * cos(j * M_PI / 180), // oppsite angle
+          current_pose->pos.z() + sin(j * M_PI / 180));
+
+      // now rotate using the 3d rotation matrix, translate to origin first and afterwards translate back.
+      ray_point = current_pose->rotationMatrixFromQuaternion() * (ray_point - current_pose->pos) + current_pose->pos;
+
+      // calc the vector between the ray base and ray point
+      Vector3f ray_vector = ray_point - current_pose->pos;
+
+      // normalize the vector
+      ray_vector.normalize();
+
+      auto size = local_map_ptr_->get_size();
+
+      // now calculate the belonging cell at the outer most part of the localmap to start bresenham
+      Vector3f normal_bottom(0, 0, 1);
+      Vector3f normal_top(0, 0, -1);
+
+      Vector3f normal_left(0, 1, 0);
+      Vector3f normal_right(0, -1, 0);
+
+      Vector3f normal_front(-1, 0, 0);
+      Vector3f normal_back(1, 0, 0);
+
+      // -1 as the size of the local map is odd
+      Vector3f s_bottom = current_pose->pos + map_to_real(Vector3i(0, 0, (size.z() - 1) / 2));
+      Vector3f s_top = current_pose->pos + map_to_real(Vector3i(0, 0, -1 * (size.z() - 1) / 2));
+
+      Vector3f s_left = current_pose->pos + map_to_real(Vector3i(0, (size.z() - 1) / 2, 0));
+      Vector3f s_right = current_pose->pos + map_to_real(Vector3i(0, -1 * (size.z() - 1) / 2));
+
+      Vector3f s_front = current_pose->pos + map_to_real(Vector3i((size.z() - 1) / 2, 0, 0));
+      Vector3f s_back = current_pose->pos + map_to_real(Vector3i(-1 * (size.z() - 1) / 2, 0, 0));
+
+      Eigen::Vector3f bottom_int, top_int, left_int, right_int, front_int, back_int;
+
+      // bottom layer:
+      bool bottom_intersected = linePlaneIntersection(bottom_int, ray_vector, current_pose->pos, normal_bottom, s_bottom);
+
+      // top layer:
+      bool top_intersected = linePlaneIntersection(top_int, ray_vector, current_pose->pos, normal_top, s_top);
+
+      // left layer:
+      bool left_intersected = linePlaneIntersection(left_int, ray_vector, current_pose->pos, normal_left, s_left);
+
+      // right layer:
+      bool right_intersected = linePlaneIntersection(right_int, ray_vector, current_pose->pos, normal_right, s_right);
+
+      // front layer:
+      bool front_intersected = linePlaneIntersection(front_int, ray_vector, current_pose->pos, normal_front, s_front);
+
+      // back layer:
+      bool back_intersected = linePlaneIntersection(back_int, ray_vector, current_pose->pos, normal_back, s_back);
+
+      // that we have all the intersections, we need to find the closest postive one
+      // TODO: instead of the following code, just use the inbounds method of the localmap
+      std::vector<std::pair<Vector3f, bool>> intersections =
+          {std::make_pair(bottom_int, bottom_intersected),
+           std::make_pair(top_int, top_intersected),
+           std::make_pair(left_int, left_intersected),
+           std::make_pair(right_int, right_intersected),
+           std::make_pair(front_int, front_intersected),
+           std::make_pair(back_int, back_intersected)};
+
+      Vector3f bresenham_vertex;
+
+      // min length of the array is what we are looking for
+      // set this to infinity at first
+      float min_length = std::numeric_limits<float>::max();
+
+      for (auto intersection : intersections)
+      {
+        // if the ray was parallel continue with the next one or: t was negative
+        if (!intersection.second)
+        {
+          continue;
+        }
+
+        // the length is the length of the vector between the found intersection and the position of the artifical ray tracer
+        float length = (intersection.first - current_pose->pos).norm();
+
+        if (length < min_length)
+        {
+          min_length = length;
+          bresenham_vertex = intersection.first;
+        }
+      }
+
+      bresenham_cells.push_back(real_to_map(bresenham_vertex));
+    }
+  }
+
+  // update the lines finished vector, as we need to track, if a line is already finished
+  // initially, all rays have a status of OK, meaning they neither passed a zero crossing, nor are already finished.
+  lines_finished = std::vector<RayStatus>(rays.size(), RayStatus::INIT);
+
+  // create a array for the current ray associations, with the size of the current rays
+  current_ray_associations = std::vector<std::vector<Vector3i>>(rays.size());
+}
+
+bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vector,
+                                      Vector3f ray_origin, Vector3f plane_normal, Vector3f plane_coord)
+{
+  // get d value
+  float d = plane_normal.dot(plane_coord);
+
+  // check if the plane is parallel to the the ray, if so return false
+  if (plane_normal.dot(ray_vector) == 0)
+  {
+    return false;
+  }
+
+  // Compute the X value for the directed line ray intersecting the plane
+  float t = (d - plane_normal.dot(ray_origin)) / plane_normal.dot(ray_vector);
+
+  // this is special: we only want to look in the direction of the vector, a negative t suggests,
+  // that the intersection is indeed the opposite way, which is an unwanted scenario handled similar to a parallel ray
+  if (t < 0)
+  {
+    return false;
+  }
+
+  intersection = ray_origin + ray_vector * t; // Make sure your ray vector is normalized
+
+  return true;
+}
+
 void RayTracer::cleanup()
 {
   // clear the finished lines array
@@ -508,6 +693,9 @@ void RayTracer::cleanup()
 
   // clear last runs rays
   rays.clear();
+
+  // clear bresenham data
+  bresenham_cells.clear();
 }
 
 void RayTracer::update_pose(Pose *new_pose)
@@ -570,6 +758,33 @@ visualization_msgs::Marker RayTracer::get_ros_marker()
   ray_marker_list.points = points;
 
   return ray_marker_list;
+}
+
+visualization_msgs::Marker RayTracer::get_bresenham_intersection_marker()
+{
+  // bresenham marker
+  visualization_msgs::Marker bresenham_intersections;
+  bresenham_intersections.header.frame_id = "map";
+  bresenham_intersections.header.stamp = ros::Time();
+  bresenham_intersections.ns = "bresenham_intersections";
+  bresenham_intersections.id = 0;
+  bresenham_intersections.type = visualization_msgs::Marker::POINTS;
+  bresenham_intersections.action = visualization_msgs::Marker::ADD;
+  bresenham_intersections.scale.x = MAP_RESOLUTION * 1.0 * 0.001;
+  bresenham_intersections.scale.y = MAP_RESOLUTION * 1.0 * 0.001;
+  bresenham_intersections.scale.z = MAP_RESOLUTION * 1.0 * 0.001;
+  bresenham_intersections.color.a = 0.6; // Don't forget to set the alpha!
+  bresenham_intersections.color.r = 0.0;
+  bresenham_intersections.color.g = 0.0;
+  bresenham_intersections.color.b = 1.0;
+
+  for (Vector3i bresenham_cell : bresenham_cells)
+  {
+    // get the exact position of the cell (in localmap coordinates -> rounding)
+    bresenham_intersections.points.push_back(type_transform::eigen_point_to_ros_point(map_to_real(bresenham_cell)));
+  }
+
+  return bresenham_intersections;
 }
 
 /**

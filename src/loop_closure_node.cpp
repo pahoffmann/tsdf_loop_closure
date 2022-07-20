@@ -182,6 +182,7 @@ int main(int argc, char **argv)
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
   ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
   ros::Publisher chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
+  ros::Publisher bresenham_int_publisher = n.advertise<visualization_msgs::Marker>("bresenham_intersections", 1, true);
 
   // specify ros loop rate
   ros::Rate loop_rate(10);
@@ -200,10 +201,15 @@ int main(int argc, char **argv)
 
   // create associationmanager
   manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
-  manager->greedy_associations();
+  //manager->greedy_associations();
+
 
   // obtain the ros marker for visualization
-  ray_markers = ray_tracer->get_ros_marker();
+  //ray_markers = ray_tracer->get_ros_marker();
+
+  ray_tracer->update_pose(path->at(0));
+  ray_tracer->start_bresenham();
+  auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 
   // get markers
   auto pose_marker = ROSViewhelper::initPoseMarker(path->at(0));
@@ -217,7 +223,7 @@ int main(int argc, char **argv)
   // tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
 
   // full tsdf map for display, very ressource intensive, especially for large maps..
-  tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
+  //tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
 
   //auto single_marker = ROSViewhelper::initPoseAssociationVisualization(global_map_ptr_, path->at(0), 0);
 
@@ -229,6 +235,7 @@ int main(int argc, char **argv)
   cube_publisher.publish(tsdf_map_full);
   //cube_publisher.publish(single_marker);
   chunk_publisher.publish(chunk_marker);
+  bresenham_int_publisher.publish(bresenham_marker);
 
   ros::spinOnce();
 
