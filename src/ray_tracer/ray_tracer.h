@@ -118,6 +118,12 @@ private:
     void init3DBresenham();
 
     /**
+     * @brief uses the data initialized by above function and performs a bresenham approximation being considerate of the TSDF data structure
+     * 
+     */
+    void perform3DBresenham();
+
+    /**
      * @brief start 3D bresenham
      * 
      */

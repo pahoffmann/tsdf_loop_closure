@@ -530,6 +530,9 @@ void RayTracer::start_bresenham()
 
   // init bresenham
   init3DBresenham();
+
+  // now perform the bresenham algorithm based on the initialization
+  perform3DBresenham();
 }
 
 void RayTracer::init3DBresenham()
@@ -597,7 +600,7 @@ void RayTracer::init3DBresenham()
       ray_vector.normalize();
 
       // std::cout << "Ray Vector Normalized: " << ray_vector.x() << " | " << ray_vector.y() << " | " << ray_vector.z() << std::endl;
-      
+
       // now calculate the belonging cell at the outer most part of the localmap to start bresenham
 
       // bottom layer:
@@ -663,6 +666,8 @@ void RayTracer::init3DBresenham()
     }
   }
 
+  // this may vary for the same localmap and parametrization, because of the pose of the laserscanner.
+  // if it is slightly rotated, this may actually be 3, meaning there were no lines parallel to any of the planes
   std::cout << "Global Match count avg: " << (float)global_match_count / bresenham_cells.size() << std::endl;
 
   // update the lines finished vector, as we need to track, if a line is already finished
@@ -671,6 +676,173 @@ void RayTracer::init3DBresenham()
 
   // create a array for the current ray associations, with the size of the current rays
   current_ray_associations = std::vector<std::vector<Vector3i>>(bresenham_cells.size());
+}
+
+void RayTracer::perform3DBresenham()
+{
+  //std::cout << "Begin performing bresenham" << std::endl;
+
+  // if trying to use openmp, this should be marked as private. as well as more properties below
+  std::vector<Vector3i> tmp_cells;
+
+  int dx, dy, dz;
+
+  // do bresenham for every ray
+  for (int i = 0; i < bresenham_cells.size(); i++)
+  {
+    //std::cout << "Bresenham for cell " << i << " out of " << bresenham_cells.size() - 1 << std::endl;
+    auto &cell = bresenham_cells[i];
+    Vector3i bresenham_start = real_to_map(current_pose->pos);
+
+    //std::cout << "Start Point: " << type_transform::inline_string(bresenham_start.cast<float>()) << std::endl;
+    //std::cout << "End Point  : " << type_transform::inline_string(cell.cast<float>()) << std::endl;
+    // from here each ray is updated independently
+
+    // calculate differences between each axis, calc direction
+    int dx = std::abs(cell.x() - bresenham_start.x()), sx = bresenham_start.x() < cell.x() ? 1 : -1;
+    int dy = std::abs(cell.y() - bresenham_start.y()), sy = bresenham_start.y() < cell.y() ? 1 : -1;
+    int dz = std::abs(cell.z() - bresenham_start.z()), sz = bresenham_start.z() < cell.z() ? 1 : -1;
+
+    //std::cout << "Dx: " << dx << " Dy: " << dy << "Dz: " << dz << std::endl;
+    //std::cout << "sx: " << sx << " sy: " << sy << "sz: " << sz << std::endl;
+
+    // calculate maximum difference
+    int max_diff = std::max(dx, std::max(dy, dz));
+    int index = max_diff;
+
+    //std::cout << "Max-diff:" << max_diff << std::endl;
+
+    Vector3i cell_tmp(max_diff / 2, max_diff / 2, max_diff / 2);
+
+    // while the line is not finished
+    while (lines_finished[i] != RayStatus::FINISHED)
+    {
+      auto &tsdf = local_map_ptr_->value(bresenham_start);
+
+      //std::cout << "Current cell:" << type_transform::inline_string(bresenham_start.cast<float>()) << std::endl;
+      //std::cout << "Value: " << tsdf.value() << std::endl;
+
+      // std::cout << "TSDF: " << tsdf.value();
+
+      // now do switch case
+
+      // now check if a status change is necessary.
+      // this logic is kindof complicated, as many factors are involved. it is necassary to save (positive valued) tsdf cells
+      // which might be associated to the current pose (with the current ray)
+      // this logic should be able to let the ray tracer see through tight passages
+      if (lines_finished[i] == RayStatus::INIT)
+      {
+        // interesting case: if the ray directly hits a negative valued tsdf cell, the ray is finished, as
+        // this cell cannot have been seen from the current position.
+        if (tsdf.value() < 0 && tsdf.weight() > 0)
+        {
+          // we just skip here, cause this case is not interesting to us
+          lines_finished[i] = RayStatus::FINISHED;
+          continue;
+        }
+        else if (tsdf.value() < 600 && tsdf.weight() > 0) // 600 : tau * 1000 -> is TAU
+        {
+          // now that the ray hit it's first positvely valued cell, we update it's status
+          lines_finished[i] = RayStatus::HIT;
+
+          // save the tsdf cell, as we are not sure, if the cell is to be associated with the current pose
+          tmp_cells.push_back(bresenham_start);
+        }
+      }
+      else if (lines_finished[i] == RayStatus::HIT)
+      {
+        if (tsdf.value() < 0 && tsdf.weight() > 0)
+        {
+          // if we detect a negative valued cell with a weight in this mode, we switch the mode
+          lines_finished[i] = RayStatus::ZERO_CROSSED;
+
+          // associations and visualization
+
+          // add association and visualization for every saved cell of the current ray.
+          for (Vector3i saved_cell : tmp_cells)
+          {
+            auto &tsdf_tmp = local_map_ptr_->value(saved_cell);
+
+            // set intersection
+            tsdf_tmp.setIntersect(TSDFEntry::IntersectStatus::INT);
+
+            // set association
+            //cur_association->addAssociation(saved_cell, tsdf_tmp);
+          }
+
+          // now clear
+          tmp_cells.clear();
+
+          // add zero crossing visualization and association
+          //cur_association->addAssociation(bresenham_start, tsdf);
+          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+        }
+        else if (!(tsdf.value() < 600 && tsdf.weight() > 0))
+        {
+          // if we are currently in hit mode, but the ray suddenly hits a meaningless cell, the status is
+          // set back to the init state, as we just passed through empty space, but not hit any kind of zero crossing doing it
+          // meaning: the data should ne be associated with the current pose
+          lines_finished[i] = RayStatus::INIT;
+
+          // clear the stored tsdf cells, as we now know those aren't supposed to be referenced to this scan (at least for now)
+          tmp_cells.clear();
+        }
+        else
+        {
+          //cur_association->addAssociation(bresenham_start, tsdf);
+          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
+        }
+      }
+      else if (lines_finished[i] == RayStatus::ZERO_CROSSED)
+      {
+        // if we have already had a sign change in tsdf and the value gets positive again, we are done.
+        // else, we are still in the negative value range and therefore, we add the association and mark the intersection in the local map
+        if (!(tsdf.value() < 0 && tsdf.weight() > 0))
+        {
+          lines_finished[i] = RayStatus::FINISHED;
+          finished_counter++;
+
+          continue;
+        }
+        else
+        {
+          //cur_association->addAssociation(bresenham_start, tsdf);
+          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_NEG);
+        }
+      }
+
+      // end switch case
+
+      // anchor
+      if (index-- == 0)
+      {
+        break;
+      }
+
+      cell_tmp -= Vector3i(dx, dy, dz);
+
+      // update vectors
+      if (cell_tmp.x() < 0)
+      {
+        cell_tmp.x() += max_diff;
+        bresenham_start.x() += sx;
+      }
+      if (cell_tmp.y() < 0)
+      {
+        cell_tmp.y() += max_diff;
+        bresenham_start.y() += sy;
+      }
+      if (cell_tmp.z() < 0)
+      {
+        cell_tmp.z() += max_diff;
+        bresenham_start.z() += sz;
+      }
+    }
+
+    tmp_cells.clear();
+  }
+
+  //std::cout << "Done Bresenham" << std::endl;
 }
 
 bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vector,

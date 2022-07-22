@@ -70,8 +70,8 @@ void initMaps()
   global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name(), 0.6, 0.0); // 0.6 * 1000 = 600 !!!!!!!
   // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
   // FIXME: there is currently no way to read metadata from the map, we should introduce this in the map implementation
-  //local_map_ptr_ = std::make_shared<LocalMap>(312.5, 312.5, 312.5, global_map_ptr_, true); // still hardcoded af
-  local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
+  local_map_ptr_ = std::make_shared<LocalMap>(312.5, 312.5, 312.5, global_map_ptr_, true); // still hardcoded af
+  //local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
 
   auto &size = local_map_ptr_.get()->get_size();
   side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
@@ -202,14 +202,12 @@ int main(int argc, char **argv)
 
   // create associationmanager
   manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
-  //manager->greedy_associations();
+  manager->greedy_associations();
 
 
   // obtain the ros marker for visualization
   //ray_markers = ray_tracer->get_ros_marker();
 
-  ray_tracer->update_pose(path->at(0));
-  ray_tracer->start_bresenham();
   auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 
   // get markers
@@ -224,7 +222,7 @@ int main(int argc, char **argv)
   // tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
 
   // full tsdf map for display, very ressource intensive, especially for large maps..
-  //tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
+  tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
 
   //auto single_marker = ROSViewhelper::initPoseAssociationVisualization(global_map_ptr_, path->at(0), 0);
 

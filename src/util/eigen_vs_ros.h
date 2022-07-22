@@ -99,4 +99,19 @@ namespace type_transform
 
     return iso;
   }
+
+  /**
+   * @brief Different way to print a eigen vector: inline
+   * 
+   * @param vec 
+   * @return std::string 
+   */
+  static std::string inline_string(Eigen::Vector3f vec)
+  {
+    std::stringstream ss;
+    ss << vec.x() << " | " << vec.y() << " | " << vec.z();
+    std::string ret = ss.str();
+
+    return ret;
+  }
 }
