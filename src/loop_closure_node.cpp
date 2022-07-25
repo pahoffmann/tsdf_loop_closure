@@ -62,7 +62,6 @@ AssociationManager *manager;
 
 /**
  * @brief initializes the local and global map
- * @todo don't harcode this
  *
  */
 void initMaps()

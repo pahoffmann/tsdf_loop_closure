@@ -211,6 +211,35 @@ static Vector3i real_to_map(Vector3f real) {
 }
 
 /**
+ * @brief because in c++ a round operation always rounds to zero we will encounter problems here,
+ *        because it is supposed to round towards the center of the local map
+ * 
+ * @param real 
+ * @param center 
+ * @return Vector3i 
+ */
+static Vector3i real_to_map_relative(Vector3f real, Vector3f center)
+{
+    Vector3f tmp = real - center;
+    Vector3i real_tmp = real_to_map(tmp);
+    Vector3i center_tmp = real_to_map(center);
+
+    return real_tmp + center_tmp;
+}
+
+
+/**
+ * @brief function used as a test case to ensure, rounding is appropriate
+ * 
+ * @param real 
+ * @return Vector3f 
+ */
+static Vector3f real_to_map_float(Vector3f real)
+{
+    return real * (1000.0f / MAP_RESOLUTION);
+}
+
+/**
  * @brief Converts a map coordinate point to a real world point (metres).
  * 
  * @param map 
