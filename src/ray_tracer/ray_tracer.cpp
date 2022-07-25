@@ -841,8 +841,6 @@ void RayTracer::perform3DBresenham()
 
     tmp_cells.clear();
   }
-
-  //std::cout << "Done Bresenham" << std::endl;
 }
 
 bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vector,

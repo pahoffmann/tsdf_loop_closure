@@ -23,4 +23,5 @@ namespace hdf5_constants {
     
     // number of values in a pose attribute
     constexpr int POSE_DATASET_SIZE = 7;
+    constexpr int NUM_GM_ATTRIBUTES = 7;
 }

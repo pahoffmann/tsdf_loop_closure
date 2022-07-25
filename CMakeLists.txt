@@ -71,7 +71,8 @@ add_executable(lc_test_node src/test/lc_test_node.cpp
                         src/ray_tracer/ray_tracer.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
-                        src/data_association/association_manager.cpp) #src/ray_tracer/tracer.cu)
+                        src/data_association/association_manager.cpp
+                        src/map/attribute_data_model.cpp) #src/ray_tracer/tracer.cu)
 
 add_executable(loop_closure src/loop_closure_node.cpp 
                         src/map/global_map.cpp 
@@ -81,11 +82,13 @@ add_executable(loop_closure src/loop_closure_node.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
                         src/options/options_reader.cpp
-                        src/path/path_exploration.cpp)
+                        src/path/path_exploration.cpp
+                        src/map/attribute_data_model.cpp)
 
 add_executable(path_listener src/path_listener.cpp 
                         src/map/global_map.cpp 
-                        src/map/local_map.cpp)
+                        src/map/local_map.cpp
+                        src/map/attribute_data_model.cpp)
 
 
 add_executable(test_lc_detection src/test_lc_detection.cpp 
@@ -93,7 +96,8 @@ add_executable(test_lc_detection src/test_lc_detection.cpp
                         src/ray_tracer/ray_tracer.cpp
                         src/options/options_reader.cpp
                         src/map/global_map.cpp 
-                        src/map/local_map.cpp)
+                        src/map/local_map.cpp
+                        src/map/attribute_data_model.cpp)
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
