@@ -41,7 +41,7 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
 
         float dist_cur_next = (next->pos - current->pos).norm();
 
-        //std::cout << "distance between " << *current << " and " << *next << ": " << dist_cur_next << std::endl;
+        // std::cout << "distance between " << *current << " and " << *next << ": " << dist_cur_next << std::endl;
 
         if (i > 0)
         {
@@ -54,7 +54,7 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
 
         current = next;
 
-        //std::cout << "Distance [" << i << "] :" << distance_vec[i - start_idx] << std::endl;
+        // std::cout << "Distance [" << i << "] :" << distance_vec[i - start_idx] << std::endl;
     }
 
     // now that we have calculated the distances, lezgo
@@ -69,18 +69,18 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
         {
             float distance = distance_vec[j] - distance_vec[i];
 
-            //std::cout << "Current distance in loop closure detection" << distance << std::endl;
+            // std::cout << "Current distance in loop closure detection" << distance << std::endl;
 
             // not enough distance traveled
             if (distance < min_traveled)
             {
-                //std::cout << "[Path - Find loop (greedy)] skipping, because distance travled is not enough" << std::endl;
+                // std::cout << "[Path - Find loop (greedy)] skipping, because distance travled is not enough" << std::endl;
                 continue;
             }
             // calc the direct "air distance" between the two candidates
             float direct_distance = (at(j)->pos - at(i)->pos).norm();
 
-           // std::cout << "Direct dist: " << direct_distance << std::endl;
+            // std::cout << "Direct dist: " << direct_distance << std::endl;
 
             // if this distance is bigger than the one specified, we also continue with the next candidates
             if (direct_distance > max_dist)
@@ -88,17 +88,23 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
                 continue;
             }
 
+            std::cout << "Found LC Candidate!" << std::endl;
+
             // if we reach this point we have (as it seems) a candidate. now we need to check the visibility criteria (e.g. : is pos i visible from pos j ?)
             // this should usually be the case.
-            // only do this check if specified by the method 
+            // only do this check if specified by the method
             if (check_visibility && !ray_tracer->is_visible(*(at(i)), *(at(j))))
             {
+                std::cout << "Candidate did not pass visibility check" << std::endl;
                 continue;
             }
             else
             {
+                std::cout << "Candidade passed visibility check: " << i << " | " << j << std::endl;
                 index_i = i;
                 index_j = j;
+
+                return std::make_pair(index_i, index_j);
             }
         }
     }

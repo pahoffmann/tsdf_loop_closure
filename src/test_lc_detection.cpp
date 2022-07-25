@@ -55,10 +55,10 @@ float last_path_idx = 0;
 // ros
 ros::Subscriber pose_sub;
 ros::Publisher path_pub;
+ros::Publisher path_marker_pub;
 ros::Publisher loop_pub;
 
 nav_msgs::Path ros_path;
-
 
 /**
  * @brief method, which reacts to new odometry messages
@@ -147,10 +147,16 @@ void pose_callback(const nav_msgs::Odometry::ConstPtr &msg)
  */
 void init_maps()
 {
-    global_map_ptr = std::make_shared<GlobalMap>(options->get_map_file_name(), 0.0, 0.0);
-    // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
-    // FIXME: there is currently no way to read metadata from the map, we should introduce this in the map implementation
-    local_map_ptr = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr, true); // still hardcoded af
+    global_map_ptr = std::make_shared<GlobalMap>(options->get_map_file_name());
+
+    // extract attribute data from global map
+    auto attribute_data = global_map_ptr->get_attribute_data();
+
+    // init local map using attribute data
+    local_map_ptr = std::make_shared<LocalMap>(attribute_data.get_map_size_x(),
+                                               attribute_data.get_map_size_y(),
+                                               attribute_data.get_map_size_z(),
+                                               global_map_ptr, true); // still hardcoded af
 
     auto &size = local_map_ptr.get()->get_size();
     side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
@@ -218,14 +224,62 @@ int main(int argc, char **argv)
     // specify ros loop rate
     ros::Rate loop_rate(10);
 
-    pose_sub = n.subscribe("/base_footprint_pose_ground_truth", 1, pose_callback);
+    // pose_sub = n.subscribe("/base_footprint_pose_ground_truth", 1, pose_callback);
 
     path_pub = n.advertise<nav_msgs::Path>("/test_path", 1);
+    path_marker_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
+
+    // extract poses from global map and add to path
+    auto poses = global_map_ptr->get_path();
+
+    for (auto pose : poses)
+    {
+        path->add_pose(pose);
+    }
+
+    // crate path marker 
+    auto path_marker = ROSViewhelper::initPathMarker(path);
+
+    int start_idx = 0;
+    int end_idx = path->get_length() - 1;
+    bool is_ok = true;
+    std::vector<visualization_msgs::Marker> loop_visualizations;
+
+    while (is_ok)
+    {
+        // find path, including visibility check
+        auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+
+        // found
+        if (res.first != -1 && res.second != -1)
+        {
+            // update start index for possible second closure
+            start_idx = res.second;
+
+            std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
+
+            loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos));
+        }
+        else
+        {
+            is_ok = false;
+        }
+    }
+
+    std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
 
     // ros loop
     while (ros::ok())
     {
+        // publish path and loop detects
+        path_marker_pub.publish(path_marker);
+
+        for (auto marker : loop_visualizations)
+        {
+            loop_pub.publish(marker);
+        }
+
         // more ros related stuff
         ros::spinOnce();
 
