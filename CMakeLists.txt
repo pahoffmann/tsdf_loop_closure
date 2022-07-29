@@ -4,6 +4,15 @@ project(loop_closure LANGUAGES)# CXX CUDA)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17) # use -std=c++11 for cuda, check how to fix the warnings
 
+# add a few cmake additions to run things more smoothly
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+#set(CMAKE_CXX_FLAGS_DEBUG "-g")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -54,6 +63,10 @@ link_libraries(${JSONCPP_LIBRARIES})
 #boost
 FIND_PACKAGE(Boost COMPONENTS program_options REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+
+# openmp
+find_package(OpenMP)
+
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -113,6 +126,7 @@ target_link_libraries(lc_test_node
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
 
 target_link_libraries(loop_closure
@@ -122,6 +136,7 @@ target_link_libraries(loop_closure
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
   ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
 
 target_link_libraries(path_listener
@@ -131,6 +146,7 @@ target_link_libraries(path_listener
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
   ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
 
 target_link_libraries(test_lc_detection
@@ -140,5 +156,6 @@ target_link_libraries(test_lc_detection
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
   ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
 

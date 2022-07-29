@@ -265,8 +265,10 @@ namespace ROSViewhelper
         // the string (hash) being the point in the following way:
         // (x)-(y)-(z)
         // std::map<std::string, TSDFEntry::IntersectStatus> map;
-        boost::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
+        //boost::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
         // std::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
+        boost::unordered_map<size_t, TSDFEntry::IntersectStatus> map;
+
 
         // display the current local map...
 
@@ -317,7 +319,8 @@ namespace ROSViewhelper
                             auto start_time = ros::Time::now();
 
                             std::string point_hash = "(" + std::to_string(x) + ")-(" + std::to_string(y) + ")-(" + std::to_string(z) + ")";
-                            bool is_duplicate = !(map.find(point_hash) == map.end());
+                            size_t seed = hash_from_vec(Vector3i(x, y, z));
+                            bool is_duplicate = !(map.find(seed) == map.end());
 
                             if (is_duplicate)
                             {
@@ -328,7 +331,7 @@ namespace ROSViewhelper
                             else
                             {
                                 // insert into hashmap and proceed
-                                map[point_hash] = intersect;
+                                map[seed] = intersect;
                             }
 
                             // more time measuring
@@ -378,7 +381,7 @@ namespace ROSViewhelper
                                 color = greenTSDFColor;
                             }
 
-                            map[point_hash] = intersect;
+                            //map[seed] = intersect;
                             tsdf_markers.points.push_back(point);
                             tsdf_markers.colors.push_back(color);
                         }

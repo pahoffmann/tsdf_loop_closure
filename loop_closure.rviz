@@ -69,7 +69,7 @@ Visualization Manager:
       Marker Topic: /ray_trace_pose
       Name: Marker
       Namespaces:
-        ray_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -85,7 +85,7 @@ Visualization Manager:
       Marker Topic: /bounding_box
       Name: Marker
       Namespaces:
-        bounding_box: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -109,7 +109,15 @@ Visualization Manager:
       Marker Topic: /bresenham_intersections
       Name: Marker
       Namespaces:
-        bresenham_intersections: true
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /loop
+      Name: Marker
+      Namespaces:
+        lc_detect: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -140,7 +148,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 60.182621002197266
+      Distance: 36.09123992919922
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -148,17 +156,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 10.756643295288086
-        Y: 4.56895637512207
-        Z: -8.745979309082031
+        X: -0.5241529941558838
+        Y: 3.9999148845672607
+        Z: -1.6771682500839233
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7347971200942993
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 5.363821983337402
+      Yaw: 4.823815822601318
     Saved: ~
 Window Geometry:
   Displays:

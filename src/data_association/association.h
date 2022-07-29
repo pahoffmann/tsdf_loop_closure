@@ -19,6 +19,8 @@
 // imports for serialization
 #include <jsoncpp/json/json.h>
 #include <highfive/H5File.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 #include "../util/point.h"
 #include "../util/tsdf.h"
@@ -44,13 +46,20 @@ public:
     Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMap> global_map_ptr_, std::string base_path, SerializationStrategy ser_strat = SerializationStrategy::HDF5);
     ~Association();
     // maybe use indexing here insead of actual global pose
-    inline void addAssociation(Eigen::Vector3i pose, TSDFEntry entry)
+    inline void addAssociation(Eigen::Vector3i cell, TSDFEntry entry)
     {
-        auto tag = tag_from_vec(pose);
-        if (associations.find(tag) == associations.end())
+        //auto tag = tag_from_vec(pose);
+        size_t seed = hash_from_vec(cell);
+
+        if (associations.find(seed) == associations.end())
         {
-            associations[tag] = entry;
+            associations[seed] = std::make_pair(cell, entry);
+            num_accesses_to_hm_w++;
         }
+        else{
+            num_accesses_to_hm_r++;
+        }
+
     }
 
     // serialize data if no longer needed
@@ -82,13 +91,17 @@ private:
     std::shared_ptr<LocalMap> local_map_ptr;
     std::shared_ptr<GlobalMap> global_map_ptr;
 
+    int num_accesses_to_hm_r = 0;
+    int num_accesses_to_hm_w = 0;
+
     // number of the associated pose (for global map relation mapping)
     int pose_number;
 
     // we might need a hashmap depending on the case to speedup the search for association on specific positions.
     // hashmap should uses indices rather than pure global positioning information
     // this datatype is enough vor MVP (minimal viable product) which uses the greedy strat
-    std::map<std::string, TSDFEntry> associations; // associations between space and Value
+    //boost::unordered_map<std::string, TSDFEntry> associations; // associations between space and Value
+    boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>> associations; // associations between space and Value
 
     // serializes the association in hdf5
     void serialize_HDF5();

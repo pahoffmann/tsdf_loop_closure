@@ -39,7 +39,9 @@
 Intersection Data:
 
 [x] The intersection data should be written to a seperate group containing datsets inscribed by the chunk name
-
+[x] {WIP:} Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
+[x] {WIP:} Test the loop closure detection and is_visible method
+[x] -o3 gcc flag for cmake? optimization -> TODO: eval optimization
 ## Interesting but not necessary atm ##
 
 [ ] Outsource raytracers function to detect raytrace status changes to a function for that
@@ -50,12 +52,14 @@ Intersection Data:
 [ ] include timetracker from fastsense
 [x] get a better understanding on weights (using the original doc thesis)
 [ ] See, if there might be a quick fix for the path finder, which fixes issues with out of bounds vertices, same as bresenham! (relative real to world)
+[ ] BUG: during the loop closure process, the map is enlarged by empty chunks, probably due to some indexing problem. If there is time, try to fix this.
+[ ] Keep on working on writing the intersectionstatus to the hdf5
+[ ] Write and read IntersectionStatus to / from HDF5
 
 ## TODO's ##
 
 [ ] read paper on loop closure, write down most important points
 [ ] Re-evaluate cleanup artifacts method from global map
-[ ] -o3 gcc flag for cmake? optimization
 [ ] work on code todos, especially for bresenham
 [ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
 
@@ -65,13 +69,10 @@ Intersection Data:
 
 ## Important TODO's for future me ##
 
-[ ] BUG: during the loop closure process, the map is enlarged by empty chunks, probably due to some indexing problem. If there is time, try to fix this.
 
 ## ASAP ##
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
-[ ] {WIP:} Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
-[ ] {WIP:} Test the loop closure detection and is_visible method
 
 [ ] The ray tracer will always miss some cells, as the growth factor needs to be infinetly small the closer the ray gets to corners of tsdf cells
     This cannot be adressed the way the tracer is currently build, quite probably, this will lead to a lot of problems. Might be useful to change to Bresenham here
@@ -88,11 +89,9 @@ Intersection Data:
 ## TODAY ##
 
 # Main target #
-[ ] Keep on working on writing the intersectionstatus to the hdf5
 
 # What needs to be done? #
 
-[ ] Write and read IntersectionStatus to / from HDF5
 
 
 ## Junkyard ##

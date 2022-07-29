@@ -19,6 +19,9 @@ RayTracer::RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> l
 float RayTracer::start(int mode)
 {
 
+  // and do some time measuring
+  auto start_time = ros::Time::now();
+
   // when either of these is NULL, we might as well just throw a logic error.
   if ((lc_config == NULL && options == NULL) || current_pose == NULL)
   {
@@ -52,9 +55,6 @@ float RayTracer::start(int mode)
 
   // now we initialized the "lines finished" - array and know exactly, when to stop updating the rays.
   // exactly when all rays are finished :D
-
-  // and do some time measuring
-  auto start_time = ros::Time::now();
 
   int num_iterations = 0;
 
@@ -222,7 +222,7 @@ void RayTracer::updateRaysNew(int mode)
           // we just skip here, cause this case is not interesting to us
           continue;
         }
-        else if (tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0) 
+        else if (tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0)
         {
           // now that the ray hit it's first positvely valued cell, we update it's status
           lines_finished[i] = RayStatus::HIT;
@@ -324,6 +324,8 @@ void RayTracer::updateRaysNew(int mode)
 
 void RayTracer::start_bresenham()
 {
+  auto start = ros::Time::now();
+
   // when either of these is NULL, we might as well just throw a logic error.
   if ((lc_config == NULL && options == NULL) || current_pose == NULL)
   {
@@ -357,6 +359,14 @@ void RayTracer::start_bresenham()
 
   // now perform the bresenham algorithm based on the initialization
   perform3DBresenham();
+
+  auto end = ros::Time::now();
+
+  auto duration = (end - start);
+
+  std::cout << std::fixed;
+  std::cout << std::setprecision(2);
+  std::cout << "[RayTracer] Time Measurement Bresenham: " << duration.toNSec() / 1000000.0f << " ms" << std::endl; // display time in ms, with two decimal points
 }
 
 void RayTracer::init3DBresenham()
@@ -479,7 +489,7 @@ void RayTracer::init3DBresenham()
       }
 
       // now we push the vertex to array, here we need to transform the real world vertex to a vertex
-      // in local map coordinates - this needs to be done with the real_to_map_relative function, which 
+      // in local map coordinates - this needs to be done with the real_to_map_relative function, which
       // makes sure, that the point is rounded towards the center of the local map
       // by transforming into the origin
       // hereby, no indexing errors occur - without this, due to c++ nature, the values are rounded towards zero, which can
@@ -553,7 +563,7 @@ void RayTracer::perform3DBresenham()
           lines_finished[i] = RayStatus::FINISHED;
           continue;
         }
-        else if (tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0) 
+        else if (tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0)
         {
           // now that the ray hit it's first positvely valued cell, we update it's status
           lines_finished[i] = RayStatus::HIT;

@@ -10,6 +10,8 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 #include <iostream>
+#include <boost/unordered_map.hpp>
+
 #include "constants.h"
 #include "algorithm.h"
 
@@ -247,4 +249,14 @@ static Vector3f real_to_map_float(Vector3f real)
  */
 static Vector3f map_to_real(Vector3i map) {
     return map.cast<float>() * (MAP_RESOLUTION / 1000.0f);
+}
+
+static size_t hash_from_vec(Vector3i vec)
+{
+    size_t seed = 0;
+    boost::hash_combine(seed, vec.x());
+    boost::hash_combine(seed, vec.y());
+    boost::hash_combine(seed, vec.z());
+
+    return seed;
 }
