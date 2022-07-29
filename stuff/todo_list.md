@@ -65,6 +65,7 @@ Intersection Data:
 
 [ ] The association data should only be determined, when an actual loop is present in the map
 [ ] Write the update process of the global map, when a loop was found
+[ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing
 
 
 ## Important TODO's for future me ##
