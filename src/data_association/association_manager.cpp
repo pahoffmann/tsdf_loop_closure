@@ -66,8 +66,10 @@ void AssociationManager::greedy_associations()
 
     for (int i = associations.size() - 1; i >= 0; i--)
     {
-        std::cout << std::endl <<  "[AssociationManager]: Starting association estimation for pose: " 
-                  << i + 1 << " of " << associations.size() << std::endl << std::endl;
+        std::cout << std::endl
+                  << "[AssociationManager]: Starting association estimation for pose: "
+                  << i + 1 << " of " << associations.size() << std::endl
+                  << std::endl;
 
         // configure and start the ray tracer for every iteration, which will fill each association
         // ray_tracer->update_map_pointer(local_map_ptr);
@@ -91,4 +93,26 @@ void AssociationManager::greedy_associations()
 
 void AssociationManager::plane_limited_associations()
 {
+}
+
+void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method)
+{
+    // 1.) Calc a vector of pose differences between old and new pose
+
+    std::vector<Matrix4f> pose_differences;
+
+    for (int i = start_idx; i <= end_idx; i++)
+    {
+        Matrix4f previous_pose = associations[i].getPose()->getTransformationMatrix();
+        Matrix4f current_pose = path->at(i)->getTransformationMatrix();
+
+        // push pose diff as transformation matrix to vector
+        pose_differences.push_back(previous_pose.inverse() * current_pose);
+    }
+
+    // 2.) now, that we got the relative transformations, we need to calc the new cell positions considering 
+    //     the update method
+    
+
+    return;
 }
