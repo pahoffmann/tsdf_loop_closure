@@ -97,4 +97,12 @@ public:
             throw std::out_of_range("[Path] There is no Pose at the requested Path-Index.");
         }
     }
+
+    /**
+     * @brief method, which blurs parts of the path, used for testing purposes
+     * 
+     * @param start_idx 
+     * @param end_idx 
+     */
+    void blur(int start_idx, int end_idx);
 };

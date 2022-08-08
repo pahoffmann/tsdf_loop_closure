@@ -57,7 +57,7 @@ void AssociationManager::create_serialization_folder(std::string path)
     // create a folder inside the given filepath, for the current timestamp
     std::cout << "[AssociationManager] Creating new association directiory: " << path << std::endl;
 
-    //std::filesystem::create_directories(path);
+    // std::filesystem::create_directories(path);
 }
 
 void AssociationManager::greedy_associations()
@@ -78,7 +78,7 @@ void AssociationManager::greedy_associations()
         ray_tracer->update_pose(associations[i].getPose());
         ray_tracer->update_association(&associations[i]);
         ray_tracer->start_bresenham(); // start tracing using bresenham, given the current association.
-        //ray_tracer->start(); // start tracing, given the current association.
+        // ray_tracer->start(); // start tracing, given the current association.
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
@@ -110,9 +110,17 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         pose_differences.push_back(previous_pose.inverse() * current_pose);
     }
 
-    // 2.) now, that we got the relative transformations, we need to calc the new cell positions considering 
+    // 2.) now, that we got the relative transformations, we need to calc the new cell positions considering
     //     the update method
-    
+    std::vector<std::pair<Vector3i, Vector3i>> previous_new_cells;
+    boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, int>> previous_new_map;
+
+    for (auto a : associations)
+    {
+        // read data from file
+        a.deserialze();
+        
+    }
 
     return;
 }
