@@ -4,6 +4,15 @@ project(loop_closure LANGUAGES)# CXX CUDA)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17) # use -std=c++11 for cuda, check how to fix the warnings
 
+# add a few cmake additions to run things more smoothly
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+#set(CMAKE_CXX_FLAGS_DEBUG "-g")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -55,6 +64,10 @@ link_libraries(${JSONCPP_LIBRARIES})
 FIND_PACKAGE(Boost COMPONENTS program_options REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
+# openmp
+find_package(OpenMP)
+
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -71,7 +84,8 @@ add_executable(lc_test_node src/test/lc_test_node.cpp
                         src/ray_tracer/ray_tracer.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
-                        src/data_association/association_manager.cpp) #src/ray_tracer/tracer.cu)
+                        src/data_association/association_manager.cpp
+                        src/map/attribute_data_model.cpp) #src/ray_tracer/tracer.cu)
 
 add_executable(loop_closure src/loop_closure_node.cpp 
                         src/map/global_map.cpp 
@@ -81,11 +95,22 @@ add_executable(loop_closure src/loop_closure_node.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
                         src/options/options_reader.cpp
-                        src/path/path_exploration.cpp)
+                        src/path/path_exploration.cpp
+                        src/map/attribute_data_model.cpp)
 
 add_executable(path_listener src/path_listener.cpp 
                         src/map/global_map.cpp 
-                        src/map/local_map.cpp)
+                        src/map/local_map.cpp
+                        src/map/attribute_data_model.cpp)
+
+
+add_executable(test_lc_detection src/test_lc_detection.cpp 
+                        src/path/path.cpp
+                        src/ray_tracer/ray_tracer.cpp
+                        src/options/options_reader.cpp
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp
+                        src/map/attribute_data_model.cpp)
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -101,6 +126,7 @@ target_link_libraries(lc_test_node
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
 
 target_link_libraries(loop_closure
@@ -110,6 +136,7 @@ target_link_libraries(loop_closure
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
   ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
 
 target_link_libraries(path_listener
@@ -119,5 +146,16 @@ target_link_libraries(path_listener
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
   ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
+)
+
+target_link_libraries(test_lc_detection
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${JSONCPP_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
 

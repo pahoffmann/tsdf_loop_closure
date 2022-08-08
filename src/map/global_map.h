@@ -15,6 +15,7 @@
 #include <sstream>
 #include "../util/point.h"
 #include "../util/tsdf.h"
+#include "attribute_data_model.h"
 
 struct ActiveChunk
 {
@@ -75,6 +76,9 @@ private:
     /// Number of poses that are saved in the HDF5 file
     int num_poses_;
 
+    // model for the attribute data
+    attribute_data_model attribute_data_;
+
     /**
      * Returns the index of a global position in a chunk.
      * The returned index is that of the tsdf value.
@@ -95,11 +99,14 @@ public:
      * Constructor of the global map.
      * It is initialized without chunks.
      * The chunks are instead created dynamically depending on which are used.
+     * By default, the global map will intialize itself with it's attributes and create a model for those attributes
+     * which can then later be used by the localmap constructor
+     * 
      * @param name name with path and extension (.h5) of the HDF5 file in which the map is stored
      * @param initial_tsdf_value default tsdf value
      * @param initial_weight initial default weight
      */
-    GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight);
+    GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value = 600, TSDFEntry::WeightType initial_weight = 0, bool use_attributes = true);
 
     /**
      * Returns a value pair consisting of a tsdf value and a weight from the map.
@@ -143,11 +150,11 @@ public:
 
     /**
      * @brief returns all chunk poses of the global map
-     * 
+     *
      * @param valid_for_path  boolean used to check, if all chunk poses are valid.
-     * @return std::vector<Vector3i> 
+     * @return std::vector<Vector3i>
      */
-    std::vector<Vector3i> all_chunk_poses(Vector3i l_map_size = Vector3i(0,0,0));
+    std::vector<Vector3i> all_chunk_poses(Vector3i l_map_size = Vector3i(0, 0, 0));
 
     int num_chunks();
 
@@ -160,58 +167,60 @@ public:
 
     /**
      * @brief gets the adjacent chunk positions of chunk_pos
-     * 
+     *
      */
     std::vector<Vector3i> get_26_neighborhood(Vector3i chunk_pos);
 
     /**
      * @brief gets the chunk pos from the tag
-     * 
-     * @param tag 
-     * @return Vector3i 
+     *
+     * @param tag
+     * @return Vector3i
      */
     Vector3i chunk_pos_from_tag(std::string tag) const;
 
     /**
      * @brief Checks if the area around the delivered chunk_pos, considering the localmap-size is already fully loaded,
      *        meaning every chunk in the area around the position is already present in the global map and does not need to be created
-     * 
-     * @param chunk_pos 
-     * @param localmap_size 
-     * @return true 
-     * @return false 
+     *
+     * @param chunk_pos
+     * @param localmap_size
+     * @return true
+     * @return false
      */
     bool is_fully_occupied(Vector3i &chunk_pos, Vector3i &localmap_size);
 
     /**
      * @brief returns the path from the global map, if present in the hdf5
-     * 
-     * @return std::vector<Pose> 
+     *
+     * @return std::vector<Pose>
      */
     std::vector<Pose> get_path();
-    
+
     /**
      * @brief Writes the delivered path in a /poses group to the global map
-     * 
-     * @param path 
+     *
+     * @param path
      */
     void write_path(std::vector<Pose> &path);
 
     /**
      * @brief writes a single new pose to the hdf5 pose array
-     * 
-     * @param pose 
+     *
+     * @param pose
      */
     void write_path_node(Pose &pose);
 
     /**
      * @brief gets information about whether a globalmap hdf5 has a path or not
-     * 
-     * @return true 
-     * @return false 
+     *
+     * @return true
+     * @return false
      */
-    inline bool has_path() {
-        if(file_.exist(hdf5_constants::POSES_GROUP_NAME) && file_.getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() > 0) {
+    inline bool has_path()
+    {
+        if (file_.exist(hdf5_constants::POSES_GROUP_NAME) && file_.getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() > 0)
+        {
             return true;
         }
         return false;
@@ -220,35 +229,45 @@ public:
     /**
      * @brief cleans up artifacts in the global map, caused by refraction, reflection, windows etc. (basic cleanup)
      *  -> walk through every chunk, load the dat
-     * 
+     *
      */
     void cleanup_artifacts();
-    
+
     /**
      * @brief Writes the passed association data to the pose dataset with number 'pose_number'
-     * 
-     * @param data 
-     * @param pose_number 
+     *
+     * @param data
+     * @param pose_number
      */
     void write_association_data(std::vector<int> &data, int pose_number);
 
     /**
      * @brief reads the association data from the hdf5
-     * 
-     * @param pose_number 
-     * @return std::vector<int> 
+     *
+     * @param pose_number
+     * @return std::vector<int>
      */
     std::vector<int> read_association_data(int pose_number);
 
     /**
      * @brief clear every single association data, this is done prior to every run, when a path exists.
-     * 
+     *
      */
     void clear_association_data();
 
     /**
      * @brief Clears the map from the intersection data which might have been written to it in a previous run
-     * 
+     *
      */
     void clear_intersection_data();
+
+    /**
+     * @brief gets the attribute data of the local map
+     *        ATTENTION: depending on which constructor was called, the attribute data might not be initialized.
+     * 
+     * @return attribute_data_model 
+     */
+    inline attribute_data_model get_attribute_data() {
+        return attribute_data_;
+    }
 };

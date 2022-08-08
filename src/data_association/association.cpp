@@ -49,25 +49,44 @@ Association::Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMa
     }
 }
 
+// void Association::addAssociation(Eigen::Vector3i cell, TSDFEntry entry)
+// {
+//     auto tag = tag_from_vec(cell);
+//     if (associations.find(tag) == associations.end())
+//     {
+//         associations[tag] = entry;
+//         num_accesses_to_hm_w++;
+//     }
+//     else
+//     {
+//         num_accesses_to_hm_r++;
+//     }
+// }
+
 void Association::serialize()
 {
     switch (strat)
     {
     case SerializationStrategy::SQL:
         serialize_SQL();
-        return;
+        break;
 
     case SerializationStrategy::HDF5:
         serialize_HDF5();
-        return;
+        break;
 
     default: // JSON
         serialize_JSON();
-        return;
+        break;
     }
+
+    std::cout << "Number of reads to hashmap: " << num_accesses_to_hm_r << std::endl;
+    std::cout << "Numer of writes to hashmap: " << num_accesses_to_hm_w << std::endl;
 
     // now delete data from array ( free data )
     associations.clear();
+    num_accesses_to_hm_r = 0;
+    num_accesses_to_hm_w = 0;
 }
 
 void Association::deserialze()
@@ -104,7 +123,7 @@ void Association::serialize_JSON()
     int i = 0;
     for (auto it : associations)
     {
-        auto first = vec_from_tag(it.first);
+        auto first = it.second.first;
         auto second = it.second;
 
         std::string index = std::to_string(i);
@@ -115,9 +134,9 @@ void Association::serialize_JSON()
         association_val["y"] = first.y();
         association_val["z"] = first.z();
 
-        association_val["value"] = second.value();
-        association_val["weight"] = second.weight();
-        association_val["raw"] = second.raw();
+        association_val["value"] = second.second.value();
+        association_val["weight"] = second.second.weight();
+        association_val["raw"] = second.second.raw();
 
         root[index].append(association_val);
 
@@ -142,8 +161,8 @@ void Association::serialize_HDF5()
 
     for (auto it : associations)
     {
-        Vector3i ass = vec_from_tag(it.first);
-        auto tsdf = it.second;
+        Vector3i ass = it.second.first;
+        auto tsdf = it.second.second;
         data.push_back(ass.x());
         data.push_back(ass.y());
         data.push_back(ass.z());
@@ -165,7 +184,11 @@ void Association::deserialize_HDF5()
     // transform data to map
     for (int i = 0; i < data.size(); i += 5)
     {
-        associations[tag_from_vec(Vector3i(data[i], data[i + 1], data[i + 2]))] = TSDFEntry(data[i + 4], data[i + 5]);
+        size_t seed = 0;
+        boost::hash_combine(seed, data[i]);
+        boost::hash_combine(seed, data[i + 1]);
+        boost::hash_combine(seed, data[i + 2]);
+        associations[seed] = std::make_pair(Vector3i(data[i], data[i + 1], data[i + 2]), TSDFEntry(data[i + 4], data[i + 5]));
     }
 }
 

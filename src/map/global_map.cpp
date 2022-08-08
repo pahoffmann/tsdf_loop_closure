@@ -10,7 +10,7 @@
 
 #include "global_map.h"
 
-GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight)
+GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight, bool use_attributes)
     : file_{name, HighFive::File::OpenOrCreate}, // Truncate clears already existing file
       initial_tsdf_value_{initial_tsdf_value, initial_weight},
       active_chunks_{},
@@ -32,6 +32,45 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
     else
     {
         std::cout << "[GLOBAL_MAP] Using existing HDF5 Parameter [/poses]" << std::endl;
+    }
+
+    auto map_group = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    // check if attribute data should be considered, if so: 
+    // 1. check if the number of attributes fit the definition
+    // 2. create a data model based on those attributes
+    if (use_attributes && map_group.listAttributeNames().size() != hdf5_constants::NUM_GM_ATTRIBUTES)
+    {
+        throw std::invalid_argument("[GLOBAL_MAP] The delivered map does not contain attribute data");
+    }
+    else
+    {
+        int map_resolution, max_weight, tau;
+        float map_size_x, map_size_y, map_size_z, max_distance;
+
+        try
+        {
+            map_group.getAttribute("map_resolution").read(map_resolution);
+            map_group.getAttribute("max_weight").read(max_weight);
+            map_group.getAttribute("tau").read(tau);
+            map_group.getAttribute("map_size_x").read(map_size_x);
+            map_group.getAttribute("map_size_y").read(map_size_y);
+            map_group.getAttribute("map_size_z").read(map_size_z);
+            map_group.getAttribute("max_distance").read(max_distance);
+        }
+        catch (HighFive::AttributeException e)
+        {
+            std::cout << "[GlobalMap] Exception, when trying to read the map attributes" << std::endl;
+            std::cout << e.what() << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        // create the attribute data model
+        attribute_data_ = attribute_data_model(map_resolution, map_size_x, map_size_y, map_size_z, max_distance, max_weight, tau);
+
+        // set data from attributes
+        initial_tsdf_value_.value(tau);
     }
 
     // prior to doing anything with the global map association data, we clear it completely
@@ -163,13 +202,13 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             // now write the intersection data accordingly
             if (g_int.exist(tag))
             {
-                std::cout << "[GlobalMap::::::::::: activate_chunk] - WRITE" << std::endl;
+                // std::cout << "[GlobalMap::::::::::: activate_chunk] - WRITE" << std::endl;
                 auto d = g_int.getDataSet(tag);
                 d.write(active_chunks_[index].intersect_data);
             }
             else
             {
-                std::cout << "[GlobalMap::::::::::: activate_chunk] - CREATE" << std::endl;
+                // std::cout << "[GlobalMap::::::::::: activate_chunk] - CREATE" << std::endl;
                 g_int.createDataSet(tag, active_chunks_[index].intersect_data);
             }
 
@@ -194,7 +233,8 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
     // point intersect pointer ref to intersection data of new chunk
     intersections = &(active_chunks_[index].intersect_data);
 
-    if(intersections == NULL) {
+    if (intersections == NULL)
+    {
         throw std::logic_error("Intersections NULL");
     }
 
@@ -323,6 +363,12 @@ std::vector<Vector3i> GlobalMap::get_26_neighborhood(Vector3i chunk_pos)
     return chunks;
 }
 
+/**
+ * @brief function, which finds all the chunks, which could have been part of the path
+ * 
+ * @param l_map_size 
+ * @return std::vector<Vector3i> 
+ */
 std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
 {
     HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
@@ -460,8 +506,6 @@ std::vector<Pose> GlobalMap::get_path()
             throw std::logic_error("Error when reading paths from hdf5");
         }
 
-        std::cout << "Current identifier: " << name << std::endl;
-
         // every pose is a group of two datasets
         auto sub_g = g.getGroup(name);
 
@@ -488,8 +532,6 @@ std::vector<Pose> GlobalMap::get_path()
         pose.quat.y() = values[4];
         pose.quat.z() = values[5];
         pose.quat.w() = values[6];
-
-        std::cout << pose << std::endl;
 
         path.push_back(pose);
     }
@@ -743,12 +785,8 @@ void GlobalMap::clear_association_data()
 
         std::string channel_name = std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + name + "/" + hdf5_constants::ASSOCIATION_DATASET_NAME;
 
-        std::cout << "Channel Name: " << channel_name << std::endl;
-
         // delete the dataset
         int status = H5Ldelete(file_.getId(), channel_name.data(), H5P_DEFAULT);
-
-        std::cout << "[GlobalMap] Delete Status: " << status << std::endl;
     }
 
     file_.flush();
@@ -770,12 +808,9 @@ void GlobalMap::clear_intersection_data()
     for (auto name : object_names)
     {
         std::string channel_name = std::string(hdf5_constants::INTERSECTIONS_GROUP_NAME) + "/" + name;
-        std::cout << "Channel Name Intersections: " << channel_name << std::endl;
 
         // delete the dataset
         int status = H5Ldelete(file_.getId(), channel_name.data(), H5P_DEFAULT);
-
-        std::cout << "[GlobalMap] Intersection Delete Status: " << status << std::endl;
     }
 
     std::cout << "[GlobalMap - clear_intersection_data] Cleared" << std::endl;

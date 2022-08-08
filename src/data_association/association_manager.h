@@ -17,7 +17,7 @@
 #include <ctime>
 #include <chrono>
 #include <regex>
-#include <filesystem>
+//#include <filesystem>
 #include <highfive/H5File.hpp>
 
 #include "association.h"
@@ -76,4 +76,37 @@ public:
      *        see: https://stackoverflow.com/questions/9227285/calculating-a-voronoi-diagram-for-planes-in-3d
      */
     void plane_limited_associations();
+
+    // enum which is used to determine which method is used to update the cells in the map
+    enum UpdateMethod {
+      MEAN,
+      SINUS
+    };
+
+    /**
+     * @brief This method ist supposed to update the localmap after finding a loop and getting the respective associations for each pose
+     *        This means, this method needs the following parameters:
+     *        1.) The new poses (only the updated ones) -> might just be the path
+     *        2.) the start and end index of the respective poses (because only part of the path was updated)
+     *        3.) A enum to define, which method should be used to update the cell positions
+     *        
+     *        The algorithm will do the following:
+     *        
+     *        1.) calc the pose differences for each of the respective poses (new - old)
+     *            -> rotation and translation need to be considered
+     *        2.) The algorithm will now rearrange the cells according to the pose differences, meaning:
+     *            For every cell, all the poses which are associated with this cell need to be looked at.
+     *            Each pose will shift the cell in a different way, according to its relocation.
+     *            Many different methods might be used to update the cell positions:
+     *            1.) Mean - weigh every pose the same, not taking into consideration the order of the poses, the distance between pose and cell and the
+     *                angle of the ray
+     *            2.) Sinus weighting: use a modified sinus/cosinus function to weigh according to order / distance / angle
+     *            3.) TBD
+     *       3.) The old cell positions will be removed (weight and value to default)
+     *       4.) Things needed to consider:
+     *           1.) Is there a need to fully copy parts of the local map to ensure there is no problem with overwriting stuff?
+     *           2.) When can cells be resetted?
+     *           3.) How can this be parallized in a useful way? 
+     */
+    void update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method);
 };

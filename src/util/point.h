@@ -10,6 +10,8 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 #include <iostream>
+#include <boost/unordered_map.hpp>
+
 #include "constants.h"
 #include "algorithm.h"
 
@@ -32,10 +34,28 @@ struct Pose
     Eigen::Quaternionf quat;
     Eigen::Vector3f pos;
 
+    // TODO: use covariance
+    Eigen::MatrixXf covariance;
+
     // gets the rotation matrix from the quat
     Eigen::Matrix3f rotationMatrixFromQuaternion()
     {
         return quat.matrix();
+    }
+
+    Eigen::Matrix4f getTransformationMatrix() {
+        
+        std::cout << "Rotation mat: " << std::endl << rotationMatrixFromQuaternion() << std::endl;
+        std::cout << "Translation mat: " << std::endl << pos << std::endl;
+        // identity so bottom left corner is filled
+        // TODO: access in eigen should be <row, column> check hits
+        Eigen::Matrix4f tmp = Eigen::Matrix4f::Identity();
+        tmp.block<3, 3>(0, 0) = rotationMatrixFromQuaternion();
+        tmp.block<3, 1>(0, 3) = pos;
+
+        std::cout << "Comined mat: " << std::endl << tmp << std::endl;
+
+        return tmp;
     }
 
     Pose()
@@ -208,6 +228,35 @@ static Vector3i real_to_map(Vector3f real) {
 }
 
 /**
+ * @brief because in c++ a round operation always rounds to zero we will encounter problems here,
+ *        because it is supposed to round towards the center of the local map
+ * 
+ * @param real 
+ * @param center 
+ * @return Vector3i 
+ */
+static Vector3i real_to_map_relative(Vector3f real, Vector3f center)
+{
+    Vector3f tmp = real - center;
+    Vector3i real_tmp = real_to_map(tmp);
+    Vector3i center_tmp = real_to_map(center);
+
+    return real_tmp + center_tmp;
+}
+
+
+/**
+ * @brief function used as a test case to ensure, rounding is appropriate
+ * 
+ * @param real 
+ * @return Vector3f 
+ */
+static Vector3f real_to_map_float(Vector3f real)
+{
+    return real * (1000.0f / MAP_RESOLUTION);
+}
+
+/**
  * @brief Converts a map coordinate point to a real world point (metres).
  * 
  * @param map 
@@ -215,4 +264,14 @@ static Vector3i real_to_map(Vector3f real) {
  */
 static Vector3f map_to_real(Vector3i map) {
     return map.cast<float>() * (MAP_RESOLUTION / 1000.0f);
+}
+
+static size_t hash_from_vec(Vector3i vec)
+{
+    size_t seed = 0;
+    boost::hash_combine(seed, vec.x());
+    boost::hash_combine(seed, vec.y());
+    boost::hash_combine(seed, vec.z());
+
+    return seed;
 }

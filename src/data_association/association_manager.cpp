@@ -57,7 +57,7 @@ void AssociationManager::create_serialization_folder(std::string path)
     // create a folder inside the given filepath, for the current timestamp
     std::cout << "[AssociationManager] Creating new association directiory: " << path << std::endl;
 
-    std::filesystem::create_directories(path);
+    // std::filesystem::create_directories(path);
 }
 
 void AssociationManager::greedy_associations()
@@ -66,13 +66,19 @@ void AssociationManager::greedy_associations()
 
     for (int i = associations.size() - 1; i >= 0; i--)
     {
+        std::cout << std::endl
+                  << "[AssociationManager]: Starting association estimation for pose: "
+                  << i + 1 << " of " << associations.size() << std::endl
+                  << std::endl;
+
         // configure and start the ray tracer for every iteration, which will fill each association
         // ray_tracer->update_map_pointer(local_map_ptr);
 
         // update ray tracer data for the next trace
         ray_tracer->update_pose(associations[i].getPose());
         ray_tracer->update_association(&associations[i]);
-        ray_tracer->start(); // start tracing, given the current association.
+        ray_tracer->start_bresenham(); // start tracing using bresenham, given the current association.
+        // ray_tracer->start(); // start tracing, given the current association.
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
@@ -87,4 +93,34 @@ void AssociationManager::greedy_associations()
 
 void AssociationManager::plane_limited_associations()
 {
+}
+
+void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method)
+{
+    // 1.) Calc a vector of pose differences between old and new pose
+
+    std::vector<Matrix4f> pose_differences;
+
+    for (int i = start_idx; i <= end_idx; i++)
+    {
+        Matrix4f previous_pose = associations[i].getPose()->getTransformationMatrix();
+        Matrix4f current_pose = path->at(i)->getTransformationMatrix();
+
+        // push pose diff as transformation matrix to vector
+        pose_differences.push_back(previous_pose.inverse() * current_pose);
+    }
+
+    // 2.) now, that we got the relative transformations, we need to calc the new cell positions considering
+    //     the update method
+    std::vector<std::pair<Vector3i, Vector3i>> previous_new_cells;
+    boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, int>> previous_new_map;
+
+    for (auto a : associations)
+    {
+        // read data from file
+        a.deserialze();
+        
+    }
+
+    return;
 }

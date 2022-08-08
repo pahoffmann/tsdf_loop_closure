@@ -62,15 +62,19 @@ AssociationManager *manager;
 
 /**
  * @brief initializes the local and global map
- * @todo don't harcode this
  *
  */
 void initMaps()
 {
-  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name(), 0.0, 0.0);
-  // todo: this is currently hardcoded. is there a way to retrieve the local map size from the hdf5?
-  // FIXME: there is currently no way to read metadata from the map, we should introduce this in the map implementation
-  local_map_ptr_ = std::make_shared<LocalMap>(201, 201, 95, global_map_ptr_, true); // still hardcoded af
+  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name()); // create a global map, use it's attributes
+  auto attribute_data = global_map_ptr_->get_attribute_data();
+
+  // local_map_ptr_ = std::make_shared<LocalMap>(312.5, 312.5, 312.5, global_map_ptr_, true); // not used anymore, though good 2 know
+
+  local_map_ptr_ = std::make_shared<LocalMap>(attribute_data.get_map_size_x(),
+                                              attribute_data.get_map_size_y(),
+                                              attribute_data.get_map_size_z(),
+                                              global_map_ptr_, true); // still hardcoded af
 
   auto &size = local_map_ptr_.get()->get_size();
   side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
@@ -116,7 +120,7 @@ int main(int argc, char **argv)
   initMaps();
 
   // cleans up global map a bit
-  global_map_ptr_->cleanup_artifacts();
+  // global_map_ptr_->cleanup_artifacts();
 
   // define stuff for raytracer
   ray_tracer = new RayTracer(options, local_map_ptr_, global_map_ptr_);
@@ -182,28 +186,50 @@ int main(int argc, char **argv)
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
   ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
   ros::Publisher chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
+  ros::Publisher bresenham_int_publisher = n.advertise<visualization_msgs::Marker>("bresenham_intersections", 1, true);
+  ros::Publisher loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
 
   // specify ros loop rate
   ros::Rate loop_rate(10);
 
   // check for loops: THE PARAMETERS HERE ARE SOMEWHAT RANDOM... :D
-  auto indices = path->find_loop_greedy(0, 5.0f, 1.0f);
+  int start_idx = 0;
+  int end_idx = path->get_length() - 1;
+  bool is_ok = true;
+  std::vector<visualization_msgs::Marker> loop_visualizations;
 
-  if (indices.first != -1 && indices.second != -1)
+  while (is_ok)
   {
-    throw std::logic_error("LOOP FOUND BRAA: " + std::to_string(indices.first) + " | " + std::to_string(indices.second));
+    // find path, including visibility check
+    auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+
+    // found
+    if (res.first != -1 && res.second != -1)
+    {
+      // update start index for possible second closure
+      start_idx = res.second;
+
+      std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
+
+      loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos));
+    }
+    else
+    {
+      std::cout << "No Loop found in the current hdf5. " << std::endl;
+      is_ok = false;
+    }
   }
-  else
-  {
-    throw std::logic_error("NO LOOOOPP :(((");
-  }
+
+  std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
 
   // create associationmanager
   manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
   manager->greedy_associations();
 
   // obtain the ros marker for visualization
-  ray_markers = ray_tracer->get_ros_marker();
+  // ray_markers = ray_tracer->get_ros_marker();
+
+  auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 
   // get markers
   auto pose_marker = ROSViewhelper::initPoseMarker(path->at(0));
@@ -219,13 +245,23 @@ int main(int argc, char **argv)
   // full tsdf map for display, very ressource intensive, especially for large maps..
   tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
 
+  // auto single_marker = ROSViewhelper::initPoseAssociationVisualization(global_map_ptr_, path->at(0), 0);
+
   // some stuff doesnt need to be published every iteration...
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
   // cube_publisher.publish(tsdf_map);
   cube_publisher.publish(tsdf_map_full);
+  // cube_publisher.publish(single_marker);
   chunk_publisher.publish(chunk_marker);
+  bresenham_int_publisher.publish(bresenham_marker);
+
+  // publish path and loop detects
+  for (auto marker : loop_visualizations)
+  {
+    loop_pub.publish(marker);
+  }
 
   ros::spinOnce();
 
