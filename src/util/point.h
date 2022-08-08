@@ -89,6 +89,16 @@ struct Pose
         tmp.pos = this->pos + other.pos;
         return tmp;
     }
+    
+    /**
+     * @brief function used to add a vector to the current 3d position
+     * 
+     * @param vec 
+     */
+    void add(Vector3f vec) 
+    {
+        this->pos += vec;
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const Pose& pose) {
         os << pose.pos.x() << " | " << pose.pos.y() << " | " << pose.pos.z() << std::endl;

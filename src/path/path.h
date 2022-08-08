@@ -17,6 +17,7 @@
 #include <string>
 #include "../serialization/read_path_json.h"
 #include "../ray_tracer/ray_tracer.h"
+#include "../util/random.h"
 
 class Path
 {
@@ -33,7 +34,19 @@ private:
     RayTracer *ray_tracer;
 
 public:
+    /**
+     * @brief Construct a new Path object, gets a pointer to a raytracer, which is used by the the loop detection visibility check
+     * 
+     * @param tracer 
+     */
     Path(RayTracer *tracer);
+
+    /**
+     * @brief Copy constructor of the path
+     * 
+     * @param other 
+     */
+    Path(Path &other);
 
     /**
      * @brief Reads a path from a json
@@ -65,7 +78,7 @@ public:
      * 
      * @return int 
      */
-    inline int get_length() {
+    inline int get_length() const {
         return poses.size();
     }
 
@@ -99,10 +112,20 @@ public:
     }
 
     /**
-     * @brief method, which blurs parts of the path, used for testing purposes
+     * @brief method, which blurs parts of the path, used for testing purposes, blurs the current path
      * 
      * @param start_idx 
-     * @param end_idx 
+     * @param end_idx
+     * @param radius
      */
-    void blur(int start_idx, int end_idx);
+    void blur(int start_idx, int end_idx, double radius);
+
+    /**
+     * @brief method, which blurs parts of the path, used for testing purposes, will return a new path
+     * 
+     * @param start_idx 
+     * @param end_idx
+     * @param radius
+     */
+    Path blur_ret(int start_idx, int end_idx, double radius);
 };

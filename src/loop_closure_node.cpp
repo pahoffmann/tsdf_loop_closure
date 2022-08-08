@@ -183,6 +183,7 @@ int main(int argc, char **argv)
   ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);
   ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
   ros::Publisher path_publisher = n.advertise<visualization_msgs::Marker>("path", 1, true);
+  ros::Publisher pathblur_publisher = n.advertise<visualization_msgs::Marker>("path_blur", 1, true);
   ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
   ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
   ros::Publisher chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
@@ -196,8 +197,11 @@ int main(int argc, char **argv)
   int start_idx = 0;
   int end_idx = path->get_length() - 1;
   bool is_ok = true;
+  bool first_loop = true;
   std::vector<visualization_msgs::Marker> loop_visualizations;
+  Path blurred_path(ray_tracer);
 
+  // TODO: this should probably be outsourced somehow
   while (is_ok)
   {
     // find path, including visibility check
@@ -212,15 +216,33 @@ int main(int argc, char **argv)
       std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
 
       loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos));
+
+      if(first_loop) 
+      {
+        blurred_path = path->blur_ret(res.first, res.second, 0.5);
+      }
     }
     else
     {
-      std::cout << "No Loop found in the current hdf5. " << std::endl;
+      std::cout << "No further Loop found in the current hdf5. " << std::endl;
       is_ok = false;
     }
   }
 
-  std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
+  // when no loop is found, we terminate early
+  if (loop_visualizations.size() == 0)
+  {
+    std::cout << "[Main]: No Loops found in the current HDF5, terminating..." << std::endl;
+    exit(EXIT_SUCCESS);
+  }
+  else
+  {
+    std::cout << "[Main]: Found " << loop_visualizations.size() << " loop(s)" << std::endl;
+  }
+
+  auto path_marker_blurred = ROSViewhelper::initPathMarker(&blurred_path);
+
+  std::cout << "[Main]: " << blurred_path.get_length() << " Poses in blurred path" << std::endl;
 
   // create associationmanager
   manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
@@ -251,6 +273,7 @@ int main(int argc, char **argv)
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
+  pathblur_publisher.publish(path_marker_blurred);
   // cube_publisher.publish(tsdf_map);
   cube_publisher.publish(tsdf_map_full);
   // cube_publisher.publish(single_marker);

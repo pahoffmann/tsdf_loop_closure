@@ -9,6 +9,20 @@ Path::Path(RayTracer *tracer)
     ray_tracer = tracer;
 }
 
+Path::Path(Path &other)
+{
+    this->ray_tracer = other.ray_tracer;
+
+    for(int i = 0; i < other.get_length(); i++)
+    {
+        // copy pose data
+        Pose *pose = other.at(i);
+        Pose tmp(*pose);
+
+        this->add_pose(tmp);
+    }
+}
+
 void Path::fromJSON(std::string filename)
 {
     PATH::json_to_path(filename, poses);
@@ -32,8 +46,8 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
 
     float dist = 0.0f;
 
-    Pose *current = at(start_idx);
-    Pose *next;
+    const Pose *current = at(start_idx);
+    const Pose *next;
 
     for (int i = start_idx; i < get_length(); i++)
     {
@@ -110,4 +124,51 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
     }
 
     return std::make_pair(index_i, index_j);
+}
+
+void Path::blur(int start_idx, int end_idx, double radius)
+{
+    if (start_idx < 0 || end_idx > get_length() - 1 || start_idx > end_idx)
+    {
+        throw std::logic_error("[Path] - blur(): indexing error");
+    }
+
+    // now blur every point in the path
+    for (int i = start_idx; i < end_idx; i++)
+    {
+        double x = generateRandomNumber(-1.0f * radius, radius);
+        double y = generateRandomNumber(-1.0f * radius, radius);
+        double z = generateRandomNumber(-1.0f * radius, radius);
+
+        // add the random vec defined by radius to the current pos
+        at(i)->add(Vector3f(x, y, z));
+    }
+
+    // now the current path has been blurred
+}
+
+Path Path::blur_ret(int start_idx, int end_idx, double radius)
+{
+    if (start_idx < 0 || end_idx > get_length() - 1 || start_idx > end_idx)
+    {
+        throw std::logic_error("[Path] - blur(): indexing error");
+    }
+    
+    // copy path
+    Path path(*this);
+
+    // now blur every point in the path between the indexes
+    for (int i = start_idx; i < end_idx; i++)
+    {
+        double x = generateRandomNumber(-1.0f * radius, radius);
+        double y = generateRandomNumber(-1.0f * radius, radius);
+        double z = generateRandomNumber(-1.0f * radius, radius);
+
+        // add the random vec defined by radius to the current pos
+        path.at(i)->add(Vector3f(x, y, z));
+    }
+
+    // now the current path has been blurred
+
+    return path;
 }

@@ -9,6 +9,7 @@ Panels:
         - /Marker1/Namespaces1
         - /Marker5
         - /Marker7
+        - /Marker9
       Splitter Ratio: 0.5
     Tree Height: 746
   - Class: rviz/Selection
@@ -57,19 +58,19 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /cubes
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /ray_trace_pose
       Name: Marker
       Namespaces:
-        {}
+        ray_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -85,7 +86,7 @@ Visualization Manager:
       Marker Topic: /bounding_box
       Name: Marker
       Namespaces:
-        {}
+        bounding_box: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -109,7 +110,7 @@ Visualization Manager:
       Marker Topic: /bresenham_intersections
       Name: Marker
       Namespaces:
-        {}
+        bresenham_intersections: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -118,6 +119,14 @@ Visualization Manager:
       Name: Marker
       Namespaces:
         lc_detect: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /path_blur
+      Name: Marker
+      Namespaces:
+        path: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -148,7 +157,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 36.09123992919922
+      Distance: 23.82729721069336
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -156,17 +165,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.5241529941558838
-        Y: 3.9999148845672607
-        Z: -1.6771682500839233
+        X: 0.40745264291763306
+        Y: 0.29731041193008423
+        Z: -1.7437578439712524
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.1747967004776
       Target Frame: <Fixed Frame>
-      Yaw: 4.823815822601318
+      Yaw: 5.11880350112915
     Saved: ~
 Window Geometry:
   Displays:
