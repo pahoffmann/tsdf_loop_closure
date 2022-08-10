@@ -78,7 +78,7 @@ void AssociationManager::greedy_associations()
         ray_tracer->update_pose(associations[i].getPose());
         ray_tracer->update_association(&associations[i]);
         ray_tracer->start_bresenham(); // start tracing using bresenham, given the current association.
-        //ray_tracer->start(); // start tracing, given the current association.
+        // ray_tracer->start(); // start tracing, given the current association.
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
@@ -112,16 +112,49 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
     // 2.) now, that we got the relative transformations, we need to calc the new cell positions considering
     //     the update method
-    std::vector<std::pair<Vector3i, Vector3i>> previous_new_cells;
     boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, int>> previous_new_map;
 
-    for (auto a : associations)
+    for (int i = start_idx; i < end_idx; i++)
     {
+        auto a = associations[i];
+
         // read data from file
         a.deserialze();
 
+        // get current association map
+        auto &cur_associations = a.getAssociations();
+
         // now iterate over the deserialzed association data
-        for(auto data : a.)
+        for (auto data : cur_associations)
+        {
+            size_t hash = data.first;
+            auto association_data = data.second;
+
+            // get cell position in real word data
+            auto vec_real = map_to_real(data.second.first);
+
+            // transform vector by difference between old pose and new pose
+            auto vec_transformed = pose_differences[a.get_index()] * (Eigen::Vector4f(vec_real, 1) - Eigen::Vector4f(path->at(i)->pos, 1)) +  Eigen::Vector4f(path->at(i)->pos, 1);
+            
+            // normalize
+            vec_transformed.normalize();
+
+            // back to 3d
+            Vector3f transformed_3d = Vector3f(vec_transformed.x(), vec_transformed.y(), vec_transformed.z());
+            
+            // check if exists
+            if (previous_new_map.find(hash) != previous_new_map.end())
+            {
+                previous_new_map[hash] = std::make_tuple(vec_real, transformed_3d, 1);
+            }
+            else
+            {
+                auto &tuple = previous_new_map[hash];
+                //auto tmp_tuple = std::make_tuple(std::get<0>(tuple), std::get<1>(tuple) + transformed_3d, std::get<2>(tuple) + 1);
+                //tuple.swap(tmp_tuple);
+
+            }
+        }
     }
 
     return;
