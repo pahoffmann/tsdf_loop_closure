@@ -78,7 +78,7 @@ void AssociationManager::greedy_associations()
         ray_tracer->update_pose(associations[i].getPose());
         ray_tracer->update_association(&associations[i]);
         ray_tracer->start_bresenham(); // start tracing using bresenham, given the current association.
-        // ray_tracer->start(); // start tracing, given the current association.
+        //ray_tracer->start(); // start tracing, given the current association.
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
@@ -119,7 +119,9 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
     {
         // read data from file
         a.deserialze();
-        
+
+        // now iterate over the deserialzed association data
+        for(auto data : a.)
     }
 
     return;

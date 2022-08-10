@@ -318,7 +318,6 @@ namespace ROSViewhelper
                             // calculate the hash for the current pos
                             auto start_time = ros::Time::now();
 
-                            std::string point_hash = "(" + std::to_string(x) + ")-(" + std::to_string(y) + ")-(" + std::to_string(z) + ")";
                             size_t seed = hash_from_vec(Vector3i(x, y, z));
                             bool is_duplicate = !(map.find(seed) == map.end());
 

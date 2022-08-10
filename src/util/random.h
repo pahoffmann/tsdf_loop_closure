@@ -6,7 +6,7 @@
 #include <utility>
 
 /**
- * @brief method used to generate normal distrubuted numbers defined by mu and sigma
+ * @brief method used to generate normal distrubuted numbers defined by mu and sigma (box mueller transform)
  * 
  * @param mu 
  * @param sigma 
