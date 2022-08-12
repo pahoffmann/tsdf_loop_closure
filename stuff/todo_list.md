@@ -46,6 +46,7 @@ Intersection Data:
 [x] {WIP:} Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
 [x] {WIP:} Test the loop closure detection and is_visible method
 [x] -o3 gcc flag for cmake? optimization -> TODO: eval optimization
+
 ## Interesting but not necessary atm ##
 
 [ ] Outsource raytracers function to detect raytrace status changes to a function for that
@@ -89,6 +90,7 @@ Intersection Data:
 [ ] Bresenham: precalc of thee finish vertices not necessary, just use the direction vector and do an inbounds() check with the localmap
 [ ] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
     This needs to be addressed and updated.
+[ ] Fix out of bounds in map update
 
 ## TODAY ##
 
