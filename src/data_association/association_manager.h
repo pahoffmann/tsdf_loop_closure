@@ -108,5 +108,5 @@ public:
      *           2.) When can cells be resetted?
      *           3.) How can this be parallized in a useful way? 
      */
-    void update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method);
+    void update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method = UpdateMethod::MEAN);
 };

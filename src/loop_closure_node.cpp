@@ -197,9 +197,12 @@ int main(int argc, char **argv)
   int start_idx = 0;
   int end_idx = path->get_length() - 1;
   bool is_ok = true;
-  bool first_loop = true;
   std::vector<visualization_msgs::Marker> loop_visualizations;
-  Path blurred_path(ray_tracer);
+
+  // create a path for blurring
+  Path blurred_path(*path);
+
+  std::vector<std::pair<int, int>> lc_pairs;
 
   // TODO: this should probably be outsourced somehow
   while (is_ok)
@@ -215,18 +218,22 @@ int main(int argc, char **argv)
 
       std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
 
+      // create a visualization marker
       loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos));
 
-      if(first_loop) 
-      {
-        blurred_path = path->blur_ret(res.first, res.second, 0.5);
-      }
+      // save the loop closure index pair
+      lc_pairs.push_back(res);
     }
     else
     {
       std::cout << "No further Loop found in the current hdf5. " << std::endl;
       is_ok = false;
     }
+  }
+
+  for(auto pair : lc_pairs) {
+    // blur with radius of 0.5m (todo: param)
+    blurred_path = blurred_path.blur_ret(pair.first, pair.second, 0.5f);
   }
 
   // when no loop is found, we terminate early
@@ -250,6 +257,12 @@ int main(int argc, char **argv)
 
   // obtain the ros marker for visualization
   // ray_markers = ray_tracer->get_ros_marker();
+
+  // now do the update process
+  for(auto pair : lc_pairs)
+  {
+    manager->update_localmap(&blurred_path, pair.first, pair.second, AssociationManager::UpdateMethod::MEAN);
+  }
 
   auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 

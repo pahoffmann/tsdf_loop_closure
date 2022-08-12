@@ -174,12 +174,17 @@ void Association::serialize_HDF5()
 
     // write the data to the hdf5
     global_map_ptr->write_association_data(data, pose_number);
+
+    // clear all data
     associations.clear();
 }
 
 void Association::deserialize_HDF5()
 {
+    std::cout << "[Deserialization]: Reading association data from hdf5..." << std::endl;
     auto data = global_map_ptr->read_association_data(pose_number);
+    std::cout << "[Deserialization]: Done Reading association data from hdf5!" << std::endl;
+
 
     // transform data to map
     for (int i = 0; i < data.size(); i += 5)

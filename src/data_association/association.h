@@ -75,6 +75,15 @@ public:
     }
 
     /**
+     * @brief a reference to the association of the current pose
+     * 
+     * @return boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>>& 
+     */
+    inline boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>>& getAssociations() {
+        return associations;
+    }
+
+    /**
      * @brief Get the pose associated with this association
      *
      * @return Pose
@@ -84,22 +93,7 @@ public:
         return &pose;
     }
 
-    /**
-     * @brief returns the associations stored in the hdf5 (for the current one)
-     * 
-     * @return boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>>& 
-     */
-    inline boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>>& getAssociations() {
-        return associations;
-    }
-
-    /**
-     * @brief returns the index of the association, aka. the index of the belonging pose
-     * 
-     * @return int 
-     */
-    inline int get_index()
-    {
+    inline int get_index() {
         return pose_number;
     }
 

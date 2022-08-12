@@ -99,15 +99,26 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 {
     // 1.) Calc a vector of pose differences between old and new pose
 
+    std::cout << "[AssociationManager - update_localmap] : Map Update requested between Pose " << start_idx << " and " << end_idx << " !!" << std::endl;
+
     std::vector<Matrix4f> pose_differences;
 
     for (int i = start_idx; i <= end_idx; i++)
     {
         Matrix4f previous_pose = associations[i].getPose()->getTransformationMatrix();
-        Matrix4f current_pose = path->at(i)->getTransformationMatrix();
+        Matrix4f current_pose = new_path->at(i)->getTransformationMatrix();
+
+        std::cout << "test" << std::endl;
 
         // push pose diff as transformation matrix to vector
         pose_differences.push_back(previous_pose.inverse() * current_pose);
+
+        std::cout << "Prev: " << std::endl
+                  << previous_pose << std::endl
+                  << "Current: " << std::endl
+                  << current_pose << std::endl
+                  << "Diff: " << std::endl
+                  << pose_differences[i] << std::endl;
     }
 
     // 2.) now, that we got the relative transformations, we need to calc the new cell positions considering
@@ -118,11 +129,18 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
     {
         auto a = associations[i];
 
+        std::cout << "Getting data for pose " << i << std::endl;
+
+        std::cout << "Deserializing data..." << std::endl;
         // read data from file
         a.deserialze();
 
+        std::cout << "Deserialization done!" << std::endl;
+
         // get current association map
         auto &cur_associations = a.getAssociations();
+
+        std::cout << "Retrieved " << cur_associations.size() << " associations from hdf5" << std::endl;
 
         // now iterate over the deserialzed association data
         for (auto data : cur_associations)
@@ -134,26 +152,105 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
             auto vec_real = map_to_real(data.second.first);
 
             // transform vector by difference between old pose and new pose
-            auto vec_transformed = pose_differences[a.get_index()] * (Eigen::Vector4f(vec_real, 1) - Eigen::Vector4f(path->at(i)->pos, 1)) +  Eigen::Vector4f(path->at(i)->pos, 1);
-            
+            auto pos = path->at(i)->pos;
+            Eigen::Vector4f pose_vec = Eigen::Vector4f(pos.x(), pos.y(), pos.z(), 1.0f);
+            // transformation relative to old pose
+            Eigen::Vector4f vec_transformed = pose_differences[a.get_index()] * (Eigen::Vector4f(vec_real.x(), vec_real.y(), vec_real.z(), 1) - pose_vec) + pose_vec;
+
             // normalize
             vec_transformed.normalize();
 
-            // back to 3d
+            // back to 3d (possibly because of normalization)
             Vector3f transformed_3d = Vector3f(vec_transformed.x(), vec_transformed.y(), vec_transformed.z());
-            
+
             // check if exists
             if (previous_new_map.find(hash) != previous_new_map.end())
             {
+                // if none yet exists, we just do some stuff.
                 previous_new_map[hash] = std::make_tuple(vec_real, transformed_3d, 1);
             }
             else
             {
+                // update the values
                 auto &tuple = previous_new_map[hash];
-                //auto tmp_tuple = std::make_tuple(std::get<0>(tuple), std::get<1>(tuple) + transformed_3d, std::get<2>(tuple) + 1);
-                //tuple.swap(tmp_tuple);
-
+                std::get<1>(tuple) += transformed_3d;
+                std::get<2>(tuple) += 1;
             }
+        }
+
+        std::cout << "[AssociationManager - update_localmap] : Got " << previous_new_map.size() << " Association cells which will be updated." << std::endl;
+
+        int counter = 0;
+        size_t hashmap_size = previous_new_map.size();
+        size_t five_percent = hashmap_size / 20;
+        int percent_counter = 0;
+
+        // now iterate over the hashmap and update the map
+        for (auto &pair : previous_new_map)
+        {
+            counter++;
+            if(counter % five_percent == 0)
+            {
+                percent_counter += 5;
+                std::cout << "Updated " << percent_counter << " percent of the map" << std::endl;
+            }
+
+            // temp for the new cell
+            Vector3f new_cell;
+
+            // we also need the old cell for a partial update
+            Vector3i old_cell = real_to_map(std::get<0>(pair.second));
+
+            switch (method)
+            {
+            case UpdateMethod::MEAN:
+
+                // calc mean using counter
+                new_cell = std::get<1>(pair.second) / std::get<2>(pair.second);
+
+                break;
+
+            case UpdateMethod::SINUS:
+                // this needs to be implemented, when adding to the map, possibly same for the mean
+                break;
+
+            default:
+                break;
+            }
+
+            Vector3i new_cell_map = real_to_map(new_cell);
+
+            auto &old_tsdf = local_map_ptr->value(old_cell);
+            auto &new_tsdf = local_map_ptr->value(new_cell_map);
+
+            // TODO: use predefined factor here (parameter)
+
+            auto old_val = old_tsdf.value();
+            auto old_weight = old_tsdf.weight();
+            auto new_val = new_tsdf.value();
+            auto new_weight = new_tsdf.weight();
+
+            // dont do this, use paramter instead. defines how much the new value should be weighted.
+            float new_fac = 0.9f;
+
+            TSDFEntryHW::ValueType calced_value;
+            TSDFEntryHW::WeightType calced_weight;
+
+            if (old_val != global_map_ptr->get_attribute_data().get_tau() || old_weight != 0)
+            {
+                // if the target cell already contains data, we fuse the values, defined by a parameter
+                calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
+                calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
+            }
+            else
+            {
+                // if the cell contains default values, we overwrite them
+                calced_value = new_val;
+                calced_weight = new_weight;
+            }
+
+            old_tsdf.value(calced_value);
+            old_tsdf.weight(calced_weight);
         }
     }
 

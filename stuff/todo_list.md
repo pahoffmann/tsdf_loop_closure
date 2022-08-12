@@ -35,6 +35,10 @@
 [x] fixed enormous bug: when trying to find the bresenham vertices, we need to round towards the center of the localmap, not towards zero
 [x] Use global Map parameters
 [x] Create a model for the metadata of the global map ( which not yet exists)
+[x] The ray tracer will always miss some cells, as the growth factor needs to be infinetly small the closer the ray gets to corners of tsdf cells
+    This cannot be adressed the way the tracer is currently build, quite probably, this will lead to a lot of problems. Might be useful to change to Bresenham here
+    memory intensive though and should probably be calculated before trying out. (roughly 3GB)
+    DONE - this doesnt change a lot, since bresenham has similar issues.
 
 Intersection Data:
 
@@ -75,9 +79,6 @@ Intersection Data:
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
 
-[ ] The ray tracer will always miss some cells, as the growth factor needs to be infinetly small the closer the ray gets to corners of tsdf cells
-    This cannot be adressed the way the tracer is currently build, quite probably, this will lead to a lot of problems. Might be useful to change to Bresenham here
-    memory intensive though and should probably be calculated before trying out. (roughly 3GB)
 
 [ ] Implement the ray tracer as a singleton, so the rays don't need initialization every time. (insert this into masters thesis)
     -> There needs to be an additional array (e.g. init_rays)
@@ -86,6 +87,8 @@ Intersection Data:
     to hdf (/associations)
 
 [ ] Bresenham: precalc of thee finish vertices not necessary, just use the direction vector and do an inbounds() check with the localmap
+[ ] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
+    This needs to be addressed and updated.
 
 ## TODAY ##
 
