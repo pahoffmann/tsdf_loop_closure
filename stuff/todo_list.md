@@ -91,6 +91,7 @@ Intersection Data:
 [ ] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
     This needs to be addressed and updated.
 [ ] Fix out of bounds in map update
+    -> There needs to be some form of clustering for the new and old cells to ensure, that we dont shift very often
 
 ## TODAY ##
 
