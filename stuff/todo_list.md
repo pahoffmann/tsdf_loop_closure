@@ -73,9 +73,6 @@ Intersection Data:
 [ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing
 
 
-## Important TODO's for future me ##
-
-
 ## ASAP ##
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
@@ -92,6 +89,8 @@ Intersection Data:
     This needs to be addressed and updated.
 [ ] Fix out of bounds in map update
     -> There needs to be some form of clustering for the new and old cells to ensure, that we dont shift very often
+[ ] Map update: i need to create a copy of the localmap in order to ensure no cell values are overwritten by accident
+[ ] Map update: there is currently an error in the indexing, because of which the cell seperations may contain weirrd cells. why is there a cell (0,0,0) in there?
 
 ## TODAY ##
 

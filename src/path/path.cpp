@@ -134,7 +134,7 @@ void Path::blur(int start_idx, int end_idx, double radius)
     }
 
     // now blur every point in the path
-    for (int i = start_idx; i < end_idx; i++)
+    for (int i = start_idx; i <= end_idx; i++)
     {
         double x = generateRandomNumber(-1.0f * radius, radius);
         double y = generateRandomNumber(-1.0f * radius, radius);

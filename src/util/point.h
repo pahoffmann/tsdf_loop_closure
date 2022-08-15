@@ -285,3 +285,42 @@ static size_t hash_from_vec(Vector3i vec)
 
     return seed;
 }
+
+/**
+ * @brief Get the transformation difference between to 3D Positions, displayed as 2 4x4 matrices, do this component-wise
+ * 
+ * @param mat1 
+ * @param mat2 
+ * @return Eigen::Matrix4f 
+ */
+static Eigen::Matrix4f getTransformationMatrixDiffComp(Eigen::Matrix4f mat1, Eigen::Matrix4f mat2)
+{
+    // extract components
+    Eigen::Matrix3f rot_com1 = mat1.block<3, 3>(0, 0);
+    Eigen::Matrix3f rot_com2 = mat2.block<3, 3>(0, 0);
+    Vector3f transl_comp1 = mat1.block<3, 1>(0, 3);
+    Vector3f transl_comp2 = mat2.block<3, 1>(0, 3);
+
+    Matrix4f tmp = Eigen::Matrix4f::Identity();
+
+    Eigen::Matrix3f rot_diff = rot_com1.inverse() * rot_com2;
+    Eigen::Vector3f transl_diff = transl_comp2 - transl_comp1;
+
+    tmp.block<3,3>(0, 0) = rot_diff;
+    tmp.block<3,1>(0, 3) = transl_diff;
+
+    return tmp;
+}
+
+/**
+ * @brief Get the transformation difference between to 3D Positions, displayed as 2 4x4 matrices, do this component-wise
+ * 
+ * @param mat1 
+ * @param mat2 
+ * @return Eigen::Matrix4f 
+ */
+static Eigen::Matrix4f getTransformationMatrixDiff(Eigen::Matrix4f mat1, Eigen::Matrix4f mat2)
+{
+    // do the calc directly
+    return mat1.inverse() * mat2;
+}

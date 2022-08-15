@@ -112,20 +112,34 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         std::cout << "test" << std::endl;
 
         // push pose diff as transformation matrix to vector
-        pose_differences.push_back(previous_pose.inverse() * current_pose);
+        // TODO: why is there a problem with the accuracy in this?
+        //       OLD Way: JUST TRANSFORM WITH INVERSE, SEEMS BUGGY
+        // pose_differences.push_back(previous_pose.inverse() * current_pose);
 
-        std::cout << "Prev: " << std::endl
+        pose_differences.push_back(getTransformationMatrixDiffComp(previous_pose, current_pose));
+
+        std::cout << std::endl
+                  << "Prev: " << std::endl
                   << previous_pose << std::endl
                   << "Current: " << std::endl
                   << current_pose << std::endl
-                  << "Diff: " << std::endl
-                  << pose_differences[i] << std::endl;
+                  << "Diff Comp Wise: " << std::endl
+                  << pose_differences[i] << std::endl
+                  << std::endl;
     }
 
     // 2.) now, that we got the relative transformations, we need to calc the new cell positions considering
     //     the update method
     // RESEARCH (TODO:) should this be initialized with a size? (might be resized every single time an element is inserted)
-    boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, int>> previous_new_map;
+    boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> previous_new_map;
+
+    // the bounding box covered by the association data is split into multiple parts of localmap size with center C (first part of the pair)
+    // this ensures, that only a very limited number of shifts is necessary.
+    std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> map_seperations;
+
+    // LocalMap local_map_copy()
+    // LocalMap
+    // LocalMap localmap_copy(*local_map_ptr);
 
     for (int i = start_idx; i < end_idx; i++)
     {
@@ -155,35 +169,269 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
             // transform vector by difference between old pose and new pose
             auto pos = new_path->at(i)->pos;
-            Eigen::Vector4f pose_vec = Eigen::Vector4f(pos.x(), pos.y(), pos.z(), 1.0f);
-            // transformation relative to old pose
-            Eigen::Vector4f vec_transformed = pose_differences[a.get_index()] * (Eigen::Vector4f(vec_real.x(), vec_real.y(), vec_real.z(), 1) - pose_vec) + pose_vec;
+            // Eigen::Vector4f pose_vec = Eigen::Vector4f(pos.x(), pos.y(), pos.z(), 1.0f);
+            //  transformation relative to old pose
+            // Eigen::Vector4f vec_transformed = pose_differences[a.get_index()] * (Eigen::Vector4f(vec_real.x(), vec_real.y(), vec_real.z(), 1) - pose_vec) + pose_vec;
 
             // normalize
-            vec_transformed.normalize();
+            // vec_transformed.normalize();
+
+            Eigen::Matrix3f rot_mat = pose_differences[a.get_index() - start_idx].block<3, 3>(0, 0);
+            Vector3f transl_vec = pose_differences[a.get_index() - start_idx].block<3, 1>(0, 3);
+
+            Vector3f transformed_3d = rot_mat * (vec_real - pos) + pos + transl_vec;
+            // transformed_3d = vec_real + transl_vec;
 
             // back to 3d (possibly because of normalization)
-            Vector3f transformed_3d = Vector3f(vec_transformed.x(), vec_transformed.y(), vec_transformed.z());
+            // Vector3f transformed_3d = Vector3f(vec_transformed.x(), vec_transformed.y(), vec_transformed.z());
+
+            // tsdf entry for old cell
+            TSDFEntry old_tsdf_entry = data.second.second;
 
             // check if exists
             if (previous_new_map.find(hash) != previous_new_map.end())
             {
                 // if none yet exists, we just do some stuff.
-                previous_new_map[hash] = std::make_tuple(vec_real, transformed_3d, 1);
+                previous_new_map[hash] = std::make_tuple(vec_real, transformed_3d, old_tsdf_entry, 1);
             }
             else
             {
                 // update the values
+                // the index counter gets updated
                 auto &tuple = previous_new_map[hash];
                 std::get<1>(tuple) += transformed_3d;
-                std::get<2>(tuple) += 1;
+                std::get<3>(tuple) += 1;
             }
         }
     }
 
     std::cout << "[AssociationManager - update_localmap] : Got " << previous_new_map.size() << " Association cells which will be updated." << std::endl;
 
-    int counter = 0;
+    // get bounding box info
+    float numeric_max = std::numeric_limits<float>::max();
+    int bb_min_x = numeric_max;
+    int bb_min_y = numeric_max;
+    int bb_min_z = numeric_max;
+    int bb_max_x = -numeric_max;
+    int bb_max_y = -numeric_max;
+    int bb_max_z = -numeric_max;
+
+    // we need bounding box information to ensure minimum number of shifts when updating the localmap
+    // TODO: this can probably also be done in the upper loop, not sure about the offset because of the if checks though, as they have to be done
+    // a tone more often
+    for (auto &pair : previous_new_map)
+    {
+        auto tuple = pair.second;
+        Vector3f old_vec = std::get<0>(tuple);
+        Vector3f new_vec = std::get<1>(tuple) / std::get<3>(tuple);
+
+        Vector3i old_cell = real_to_map(old_vec);
+        Vector3i new_cell = real_to_map(new_vec);
+
+        if (old_cell.x() < bb_min_x)
+        {
+            bb_min_x = old_cell.x();
+        }
+        else if (old_cell.x() > bb_max_x)
+        {
+            bb_max_x = old_cell.x();
+        }
+
+        if (new_cell.x() < bb_min_x)
+        {
+            bb_min_x = new_cell.x();
+        }
+        else if (new_cell.x() > bb_max_x)
+        {
+            bb_max_x = new_cell.x();
+        }
+
+        if (old_cell.y() < bb_min_y)
+        {
+            bb_min_y = old_cell.y();
+        }
+        else if (old_cell.y() > bb_max_y)
+        {
+            bb_max_y = old_cell.y();
+        }
+
+        if (new_cell.y() < bb_min_y)
+        {
+            bb_min_y = new_cell.y();
+        }
+        else if (new_cell.y() > bb_max_y)
+        {
+            bb_max_y = new_cell.y();
+        }
+
+        if (old_cell.z() < bb_min_z)
+        {
+            bb_min_z = old_cell.z();
+        }
+        else if (old_cell.z() > bb_max_z)
+        {
+            bb_max_z = old_cell.z();
+        }
+
+        if (new_cell.z() < bb_min_z)
+        {
+            bb_min_z = new_cell.z();
+        }
+        else if (new_cell.z() > bb_max_z)
+        {
+            bb_max_z = new_cell.z();
+        }
+    }
+
+    Vector3i bb_min(bb_min_x, bb_min_y, bb_min_z);
+    Vector3i bb_max(bb_max_x, bb_max_y, bb_max_z);
+
+    std::cout << "[AssociationManager - update_localmap()] - Found OLD Bounding Box between: " << std::endl
+              << Vector3i(bb_min_x, bb_min_y, bb_min_z) << std::endl
+              << "and" << std::endl
+              << Vector3i(bb_max_x, bb_max_y, bb_max_z) << std::endl;
+
+    // now calculate the space seperation of the bounding box
+
+    Vector3i bb_diff = (bb_max - bb_min).cwiseAbs();
+    Vector3i l_map_size = local_map_ptr->get_size();
+
+    // if the bounding box of the space occupied by the associations is smaller than the localmap, we simply create one entry in
+    // the seperation vector
+    if (bb_diff.x() < l_map_size.x() && bb_diff.y() < l_map_size.y() && bb_diff.z() < l_map_size.z())
+    {
+        // center is exactly in the center of the bounding box
+        Vector3i center = bb_min + (bb_diff) / 2;
+
+        auto entry = std::make_pair(center, std::vector<std::pair<Vector3i, TSDFEntry>>());
+        map_seperations.push_back(entry);
+    }
+    else
+    {
+        // in this case, we actually need to seperate the space in order to get at least shifts as possible
+
+        // calc the number of lmaps in each direction for the bb
+        int x_iterations = std::ceil(bb_diff.x() / (float)l_map_size.x());
+        int y_iterations = std::ceil(bb_diff.y() / (float)l_map_size.y());
+        int z_iterations = std::ceil(bb_diff.z() / (float)l_map_size.z());
+
+        std::cout << "There are " << x_iterations * y_iterations * z_iterations << " Localmaps which need to be considered!" << std::endl;
+
+        // iterate over 3d
+        for (int x = 1; x <= x_iterations; x++)
+        {
+            for (int y = 1; y <= y_iterations; y++)
+            {
+                for (int z = 1; z <= z_iterations; z++)
+                {
+                    Vector3i sub_vec = Vector3i(x * l_map_size.x(), y * l_map_size.y(), z * l_map_size.z());
+                    Vector3i center = bb_max - sub_vec + l_map_size / 2;
+
+                    auto entry = std::make_pair(center, std::vector<std::pair<Vector3i, TSDFEntry>>());
+                    map_seperations.push_back(entry);
+                }
+            }
+        }
+    }
+
+    // now that the shift locations are calculated, we need to assign the cells to each "shift location"
+
+    for (auto pair : previous_new_map)
+    {
+        // we need 2 here: for the new cell and the current one, as both need an update.
+        int closest_idx1 = 0;
+        int closest_idx2 = 0;
+        float min_dist1 = numeric_max;
+        float min_dist2 = numeric_max;
+
+        for (int i = 0; i < map_seperations.size(); i++)
+        {
+            Vector3f new_cell_pos = std::get<1>(pair.second) / std::get<3>(pair.second);
+
+            float distance1 = (std::get<0>(pair.second) - map_to_real(map_seperations[i].first)).norm();
+            float distance2 = (new_cell_pos - map_to_real(map_seperations[i].first)).norm();
+
+            if (distance1 < min_dist1)
+            {
+                closest_idx1 = i;
+            }
+
+            if (distance2 < min_dist2)
+            {
+                closest_idx2 = i;
+            }
+        }
+
+        // new and old cell and tsdf entry
+        Vector3f new_cell;
+        Vector3i old_cell = real_to_map(std::get<0>(pair.second));
+        TSDFEntry new_tsdf = std::get<2>(pair.second);
+
+        switch (method)
+        {
+        case UpdateMethod::MEAN:
+
+            // calc mean using counter
+            new_cell = std::get<1>(pair.second) / std::get<3>(pair.second);
+
+            break;
+
+        case UpdateMethod::SINUS:
+            // this needs to be implemented, when adding to the map, possibly same for the mean
+            break;
+
+        default:
+            break;
+        }
+
+        Vector3i new_cell_map = real_to_map(new_cell);
+
+        // add cells to the seperations array
+        map_seperations[closest_idx1].second.push_back(std::make_pair(old_cell, TSDFEntry(global_map_ptr->get_attribute_data().get_tau(), 0)));
+        map_seperations[closest_idx2].second.push_back(std::make_pair(new_cell_map, new_tsdf));
+    }
+
+    // now: run through the seperations and update the individual localmaps
+    // whilst checking in the copy, if the value might have already been updated
+
+    for (auto seperation : map_seperations)
+    {
+        // completely skip empty seperations
+        if (seperation.second.size() == 0)
+        {
+            std::cout << "Empty seperation skipped " << std::endl;
+            continue;
+        }
+
+        Vector3i shift_location = seperation.first;
+        local_map_ptr->shift(shift_location);
+
+        std::cout << "SHIFT! TO: " << std::endl
+                  << local_map_ptr->get_pos() << std::endl;
+
+        LocalMap localmap_copy(*local_map_ptr);
+
+        for (auto &pair : seperation.second)
+        {
+            // update the cells
+
+            // if the cell is not inbounds the localmap, there has been an error in the math/indexing
+            if (!local_map_ptr->in_bounds(pair.first))
+            {
+                std::stringstream ss;
+
+                ss << "Every cell should be inbound now...." << std::endl
+                   << "Localmap - pos: " << std::endl
+                   << local_map_ptr->get_pos() << std::endl
+                   << "Cell: " << std::endl
+                   << pair.first << std::endl;
+
+                throw std::logic_error(ss.str());
+            }
+        }
+    }
+
+    /*int counter = 0;
     size_t hashmap_size = previous_new_map.size();
     size_t five_percent = hashmap_size / 20;
     int percent_counter = 0;
@@ -209,7 +457,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         case UpdateMethod::MEAN:
 
             // calc mean using counter
-            new_cell = std::get<1>(pair.second) / std::get<2>(pair.second);
+            new_cell = std::get<1>(pair.second) / std::get<3>(pair.second);
 
             break;
 
@@ -222,6 +470,11 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         }
 
         Vector3i new_cell_map = real_to_map(new_cell);
+
+        if (!local_map_ptr->in_bounds(new_cell_map) || !local_map_ptr->in_bounds(old_cell))
+        {
+            continue;
+        }
 
         // here is the problem: we try to get the value of a cell, which is out of bounds.
         // --> TODO: fix this! where and when to shift the local map? this needs to be done very cautious!
@@ -256,7 +509,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
         old_tsdf.value(calced_value);
         old_tsdf.weight(calced_weight);
-    }
+    }*/
 
     return;
 }
