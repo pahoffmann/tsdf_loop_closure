@@ -106,7 +106,9 @@ public:
      *       4.) Things needed to consider:
      *           1.) Is there a need to fully copy parts of the local map to ensure there is no problem with overwriting stuff?
      *           2.) When can cells be resetted?
-     *           3.) How can this be parallized in a useful way? 
+     *           3.) How can this be parallized in a useful way?
+     *           4.) A copy of the localmap is necessary to ensure this can work properly
+     *           5.) Old cells and new cells are updated in almost the same manner, ensuring we only need one run
      */
     void update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method = UpdateMethod::MEAN);
 };

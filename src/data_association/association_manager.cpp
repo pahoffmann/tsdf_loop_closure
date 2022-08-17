@@ -137,10 +137,6 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
     // this ensures, that only a very limited number of shifts is necessary.
     std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> map_seperations;
 
-    // LocalMap local_map_copy()
-    // LocalMap
-    // LocalMap localmap_copy(*local_map_ptr);
-
     for (int i = start_idx; i < end_idx; i++)
     {
         auto a = associations[i];
@@ -223,11 +219,12 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
     {
         auto tuple = pair.second;
         Vector3f old_vec = std::get<0>(tuple);
-        Vector3f new_vec = std::get<1>(tuple) / std::get<3>(tuple);
+        Vector3f new_vec = std::get<1>(tuple) / (float)std::get<3>(tuple);
 
         Vector3i old_cell = real_to_map(old_vec);
         Vector3i new_cell = real_to_map(new_vec);
 
+        // now using the coordinates of old and new cell, aim to finding the bounding box covering all the association cells
         if (old_cell.x() < bb_min_x)
         {
             bb_min_x = old_cell.x();
@@ -285,16 +282,21 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
     Vector3i bb_min(bb_min_x, bb_min_y, bb_min_z);
     Vector3i bb_max(bb_max_x, bb_max_y, bb_max_z);
+    Vector3i bb_diff = (bb_max - bb_min).cwiseAbs();
+    Vector3i l_map_size = local_map_ptr->get_size();
+
+    Vector3i l_map_size_half = l_map_size / 2;
 
     std::cout << "[AssociationManager - update_localmap()] - Found OLD Bounding Box between: " << std::endl
               << Vector3i(bb_min_x, bb_min_y, bb_min_z) << std::endl
               << "and" << std::endl
-              << Vector3i(bb_max_x, bb_max_y, bb_max_z) << std::endl;
+              << Vector3i(bb_max_x, bb_max_y, bb_max_z) << std::endl
+              << "With localmap size: " << std::endl
+              << l_map_size << std::endl
+              << "With localmaphalf size: " << std::endl
+              << l_map_size_half << std::endl;
 
     // now calculate the space seperation of the bounding box
-
-    Vector3i bb_diff = (bb_max - bb_min).cwiseAbs();
-    Vector3i l_map_size = local_map_ptr->get_size();
 
     // if the bounding box of the space occupied by the associations is smaller than the localmap, we simply create one entry in
     // the seperation vector
@@ -318,17 +320,20 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         std::cout << "There are " << x_iterations * y_iterations * z_iterations << " Localmaps which need to be considered!" << std::endl;
 
         // iterate over 3d
-        for (int x = 1; x <= x_iterations; x++)
+        for (int x = 0; x < x_iterations; x++)
         {
-            for (int y = 1; y <= y_iterations; y++)
+            for (int y = 0; y < y_iterations; y++)
             {
-                for (int z = 1; z <= z_iterations; z++)
+                for (int z = 0; z < z_iterations; z++)
                 {
-                    Vector3i sub_vec = Vector3i(x * l_map_size.x(), y * l_map_size.y(), z * l_map_size.z());
-                    Vector3i center = bb_max - sub_vec + l_map_size / 2;
+                    Vector3i sub_vec = Vector3i(x * l_map_size.x(), y * l_map_size.y(), z * l_map_size.z()) + l_map_size_half;
+                    Vector3i center = bb_max - sub_vec;
 
                     auto entry = std::make_pair(center, std::vector<std::pair<Vector3i, TSDFEntry>>());
                     map_seperations.push_back(entry);
+
+                    std::cout << "artificial localmap center for: [" << x << ", " << y << ", " << z << "] :" << std::endl
+                              << center << std::endl;
                 }
             }
         }
@@ -336,34 +341,15 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
     // now that the shift locations are calculated, we need to assign the cells to each "shift location"
 
+    TSDFEntry default_entry = TSDFEntry(global_map_ptr->get_attribute_data().get_tau(), 0);
+
     for (auto pair : previous_new_map)
     {
         // we need 2 here: for the new cell and the current one, as both need an update.
-        int closest_idx1 = 0;
-        int closest_idx2 = 0;
-        float min_dist1 = numeric_max;
-        float min_dist2 = numeric_max;
+        int closest_idx1 = -1;
+        int closest_idx2 = -1;
 
-        for (int i = 0; i < map_seperations.size(); i++)
-        {
-            Vector3f new_cell_pos = std::get<1>(pair.second) / std::get<3>(pair.second);
-
-            float distance1 = (std::get<0>(pair.second) - map_to_real(map_seperations[i].first)).norm();
-            float distance2 = (new_cell_pos - map_to_real(map_seperations[i].first)).norm();
-
-            if (distance1 < min_dist1)
-            {
-                closest_idx1 = i;
-            }
-
-            if (distance2 < min_dist2)
-            {
-                closest_idx2 = i;
-            }
-        }
-
-        // new and old cell and tsdf entry
-        Vector3f new_cell;
+        Vector3i new_cell_map;
         Vector3i old_cell = real_to_map(std::get<0>(pair.second));
         TSDFEntry new_tsdf = std::get<2>(pair.second);
 
@@ -372,7 +358,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         case UpdateMethod::MEAN:
 
             // calc mean using counter
-            new_cell = std::get<1>(pair.second) / std::get<3>(pair.second);
+            new_cell_map = real_to_map(std::get<1>(pair.second) / std::get<3>(pair.second));
 
             break;
 
@@ -384,10 +370,58 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
             break;
         }
 
-        Vector3i new_cell_map = real_to_map(new_cell);
+        // std::cout << "New cell: " << std::endl << new_cell_map << std::endl;
+        // std::cout << "Old cell: " << std::endl << old_cell << std::endl;
+
+        // now run over each of the map seperations and determine which pseudo localmap the new and old cell belong to
+        for (int i = 0; i < map_seperations.size(); i++)
+        {
+            // check out wether there is an error here
+            /*if (new_cell_map == Vector3i(0, 0, 0) || old_cell == Vector3i(0, 0, 0))
+            {
+                std::cout << "Vector is null vector " << std::endl
+                          << "Previous: (with counter: " << std::get<3>(pair.second) << ")" << std::endl
+                          << std::get<1>(pair.second) << std::endl;
+            }*/
+
+            Eigen::Vector3i tmp1 = (old_cell - map_seperations[i].first).cwiseAbs();
+            Eigen::Vector3i tmp2 = (new_cell_map - map_seperations[i].first).cwiseAbs();
+
+            // if the cell is inbounds, just skip all the other seperations
+            if (tmp1.x() <= l_map_size_half.x() && tmp1.y() <= l_map_size_half.y() && tmp1.z() <= l_map_size_half.z())
+            {
+                closest_idx1 = i;
+            }
+
+            // same for the new cell position
+            if (tmp2.x() <= l_map_size_half.x() && tmp2.y() <= l_map_size_half.y() && tmp2.z() <= l_map_size_half.z())
+            {
+                closest_idx2 = i;
+            }
+        }
+
+        // std::cout << "Closest index 1: " << closest_idx1 << std::endl;
+        // std::cout << "Closest index 2: " << closest_idx2 << std::endl;
 
         // add cells to the seperations array
-        map_seperations[closest_idx1].second.push_back(std::make_pair(old_cell, TSDFEntry(global_map_ptr->get_attribute_data().get_tau(), 0)));
+
+        // catch possible bugs, this is the location, where errors are most common
+        if (closest_idx1 == -1)
+        {
+            std::stringstream ss;
+            ss << "[AssociationManager] A cell coulld not be assigned to a seperation group, this is a bug: " << std::endl
+               << old_cell << std::endl;
+            throw std::logic_error(ss.str());
+        }
+        else if (closest_idx2 == -1)
+        {
+            std::stringstream ss;
+            ss << "[AssociationManager] A cell coulld not be assigned to a seperation group, this is a bug: " << std::endl
+               << new_cell_map << std::endl;
+            throw std::logic_error(ss.str());
+        }
+
+        map_seperations[closest_idx1].second.push_back(std::make_pair(old_cell, default_entry));
         map_seperations[closest_idx2].second.push_back(std::make_pair(new_cell_map, new_tsdf));
     }
 
