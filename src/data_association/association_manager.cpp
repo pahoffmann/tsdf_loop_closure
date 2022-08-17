@@ -428,6 +428,12 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
     // now: run through the seperations and update the individual localmaps
     // whilst checking in the copy, if the value might have already been updated
 
+    int counter = 0;
+    // * 2, as there are updates for new and old cells ;)
+    size_t hashmap_size = previous_new_map.size() * 2;
+    size_t five_percent = hashmap_size / 20;
+    int percent_counter = 0;
+
     for (auto seperation : map_seperations)
     {
         // completely skip empty seperations
@@ -443,10 +449,18 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         std::cout << "SHIFT! TO: " << std::endl
                   << local_map_ptr->get_pos() << std::endl;
 
+        // obtain a copy of the local map
         LocalMap localmap_copy(*local_map_ptr);
 
         for (auto &pair : seperation.second)
         {
+            // counter stuff
+            counter++;
+            if (counter % five_percent == 0)
+            {
+                percent_counter += 5;
+                std::cout << "Updated " << percent_counter << " percent of the map" << std::endl;
+            }
             // update the cells
 
             // if the cell is not inbounds the localmap, there has been an error in the math/indexing
@@ -462,88 +476,52 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
                 throw std::logic_error(ss.str());
             }
+
+            auto &tsdf = local_map_ptr->value(pair.first);
+            auto &tsdf_copy = localmap_copy.value(pair.first);
+
+            // TODO: use predefined factor here (parameter)
+
+            auto old_val = tsdf.value();
+            auto old_weight = tsdf.weight();
+            auto new_val = pair.second.value();
+            auto new_weight = pair.second.weight();
+
+            // dont do this, use paramter instead. defines how much the new value should be weighted.
+            float new_fac = 0.9f;
+
+            TSDFEntryHW::ValueType calced_value;
+            TSDFEntryHW::WeightType calced_weight;
+
+            if (old_val == global_map_ptr->get_attribute_data().get_tau() && old_weight == 0)
+            {
+                // if the cell contains default values, we overwrite them
+                calced_value = new_val;
+                calced_weight = new_weight;
+            }
+            else if (tsdf.value() != tsdf_copy.value() || tsdf.weight() != tsdf_copy.weight())
+            {
+                // two updates to the same cell, this is not yet covered...
+                // if the cell contains default values, we overwrite them
+                
+                // TODO: dont do this!
+                calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
+                calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
+            }
+            else
+            {
+                // else the cell is non zero, but also not yet updated...
+                // if the target cell is a default cell, we completely overwrite it
+                calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
+                calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
+            }
+
+            tsdf.value(calced_value);
+            tsdf.weight(calced_weight);
         }
     }
 
-    /*int counter = 0;
-    size_t hashmap_size = previous_new_map.size();
-    size_t five_percent = hashmap_size / 20;
-    int percent_counter = 0;
-
-    // now iterate over the hashmap and update the map
-    for (auto &pair : previous_new_map)
-    {
-        counter++;
-        if (counter % five_percent == 0)
-        {
-            percent_counter += 5;
-            std::cout << "Updated " << percent_counter << " percent of the map" << std::endl;
-        }
-
-        // temp for the new cell
-        Vector3f new_cell;
-
-        // we also need the old cell for a partial update
-        Vector3i old_cell = real_to_map(std::get<0>(pair.second));
-
-        switch (method)
-        {
-        case UpdateMethod::MEAN:
-
-            // calc mean using counter
-            new_cell = std::get<1>(pair.second) / std::get<3>(pair.second);
-
-            break;
-
-        case UpdateMethod::SINUS:
-            // this needs to be implemented, when adding to the map, possibly same for the mean
-            break;
-
-        default:
-            break;
-        }
-
-        Vector3i new_cell_map = real_to_map(new_cell);
-
-        if (!local_map_ptr->in_bounds(new_cell_map) || !local_map_ptr->in_bounds(old_cell))
-        {
-            continue;
-        }
-
-        // here is the problem: we try to get the value of a cell, which is out of bounds.
-        // --> TODO: fix this! where and when to shift the local map? this needs to be done very cautious!
-        auto &old_tsdf = local_map_ptr->value(old_cell);
-        auto &new_tsdf = local_map_ptr->value(new_cell_map);
-
-        // TODO: use predefined factor here (parameter)
-
-        auto old_val = old_tsdf.value();
-        auto old_weight = old_tsdf.weight();
-        auto new_val = new_tsdf.value();
-        auto new_weight = new_tsdf.weight();
-
-        // dont do this, use paramter instead. defines how much the new value should be weighted.
-        float new_fac = 0.9f;
-
-        TSDFEntryHW::ValueType calced_value;
-        TSDFEntryHW::WeightType calced_weight;
-
-        if (old_val != global_map_ptr->get_attribute_data().get_tau() || old_weight != 0)
-        {
-            // if the target cell already contains data, we fuse the values, defined by a parameter
-            calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
-            calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
-        }
-        else
-        {
-            // if the cell contains default values, we overwrite them
-            calced_value = new_val;
-            calced_weight = new_weight;
-        }
-
-        old_tsdf.value(calced_value);
-        old_tsdf.weight(calced_weight);
-    }*/
+    local_map_ptr->write_back();
 
     return;
 }

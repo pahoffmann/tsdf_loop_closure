@@ -39,6 +39,10 @@
     This cannot be adressed the way the tracer is currently build, quite probably, this will lead to a lot of problems. Might be useful to change to Bresenham here
     memory intensive though and should probably be calculated before trying out. (roughly 3GB)
     DONE - this doesnt change a lot, since bresenham has similar issues.
+[x] Map update: i need to create a copy of the localmap in order to ensure no cell values are overwritten by accident
+[x] Map update: there is currently an error in the indexing, because of which the cell seperations may contain weirrd cells. why is there a cell (0,0,0) in there?
+[x] Fix out of bounds in map update
+    -> There needs to be some form of clustering for the new and old cells to ensure, that we dont shift very often
 
 Intersection Data:
 
@@ -87,10 +91,8 @@ Intersection Data:
 [ ] Bresenham: precalc of thee finish vertices not necessary, just use the direction vector and do an inbounds() check with the localmap
 [ ] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
     This needs to be addressed and updated.
-[ ] Fix out of bounds in map update
-    -> There needs to be some form of clustering for the new and old cells to ensure, that we dont shift very often
-[ ] Map update: i need to create a copy of the localmap in order to ensure no cell values are overwritten by accident
-[ ] Map update: there is currently an error in the indexing, because of which the cell seperations may contain weirrd cells. why is there a cell (0,0,0) in there?
+[ ] Check diff between association number in map update vs. number of cells displayed in rviz (intersection markers) - they are off...
+[ ] Testing: rotate the path around its center and check, what happens to the map
 
 ## TODAY ##
 
