@@ -128,4 +128,15 @@ public:
      * @param radius
      */
     Path blur_ret(int start_idx, int end_idx, double radius);
+
+    /**
+     * @brief rotate the path around a given vertex, if identity vertex is passed, the path is rotated against its centroid
+     * 
+     * @param roll_deg 
+     * @param pitch_deg 
+     * @param yaw_deg 
+     * @return Path 
+     */
+    Path rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Vector3f center_vec = Vector3f::Identity());
+
 };

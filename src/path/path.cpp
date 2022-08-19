@@ -13,7 +13,7 @@ Path::Path(Path &other)
 {
     this->ray_tracer = other.ray_tracer;
 
-    for(int i = 0; i < other.get_length(); i++)
+    for (int i = 0; i < other.get_length(); i++)
     {
         // copy pose data
         Pose *pose = other.at(i);
@@ -153,7 +153,7 @@ Path Path::blur_ret(int start_idx, int end_idx, double radius)
     {
         throw std::logic_error("[Path] - blur(): indexing error");
     }
-    
+
     // copy path
     Path path(*this);
 
@@ -169,6 +169,54 @@ Path Path::blur_ret(int start_idx, int end_idx, double radius)
     }
 
     // now the current path has been blurred
+
+    return path;
+}
+
+Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Vector3f center_vec)
+{
+    Vector3f rotate_point = center_vec;
+
+    // calculate center vec if identity is passed to function
+    if (center_vec == Vector3f::Identity())
+    {
+        Vector3f tmp = Vector3f::Zero();
+
+        for (auto pose : poses)
+        {
+            tmp = tmp + pose.pos;
+        }
+
+        tmp = tmp / get_length();
+
+        rotate_point = tmp;
+    }
+
+    // vector to rotate around identified
+
+    // calc rotation matrix
+
+    // create eigen quaternion from euler
+    Eigen::Quaternionf q;
+    auto rollAngle = Eigen::AngleAxisf(roll_deg, Eigen::Vector3f::UnitX());
+    auto pitchAngle = Eigen::AngleAxisf(pitch_deg, Eigen::Vector3f::UnitY());
+    auto yawAngle = Eigen::AngleAxisf(yaw_deg, Eigen::Vector3f::UnitZ());
+
+    q = yawAngle * pitchAngle * rollAngle;
+    q.normalize();
+
+    auto rot_mat = q.toRotationMatrix();
+
+    Path path(*this);
+
+    // rotate every point
+    for (int i = 0; i < path.get_length(); i++)
+    {
+        auto pos = path.at(i);
+        Vector3f rotated = rot_mat * (pos->pos - rotate_point) + rotate_point;
+
+        pos->pos = rotated;
+    }
 
     return path;
 }

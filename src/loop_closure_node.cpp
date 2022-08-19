@@ -231,10 +231,14 @@ int main(int argc, char **argv)
     }
   }
 
-  for(auto pair : lc_pairs) {
+  for (auto pair : lc_pairs)
+  {
     // blur with radius of 0.5m (todo: param)
     blurred_path = blurred_path.blur_ret(pair.first, pair.second, 0.5f);
   }
+
+  // rotate the path for testing
+  Path rotated_path = path->rotate_ret(0, 90, 0);
 
   // when no loop is found, we terminate early
   if (loop_visualizations.size() == 0)
@@ -248,6 +252,7 @@ int main(int argc, char **argv)
   }
 
   auto path_marker_blurred = ROSViewhelper::initPathMarker(&blurred_path);
+  auto path_marker_rotated = ROSViewhelper::initPathMarker(&rotated_path);
 
   std::cout << "[Main]: " << blurred_path.get_length() << " Poses in blurred path" << std::endl;
 
@@ -259,10 +264,12 @@ int main(int argc, char **argv)
   // ray_markers = ray_tracer->get_ros_marker();
 
   // now do the update process
-  for(auto pair : lc_pairs)
-  {
-    manager->update_localmap(&blurred_path, pair.first, pair.second, AssociationManager::UpdateMethod::MEAN);
-  }
+  // for (auto pair : lc_pairs)
+  // {
+  //   manager->update_localmap(&blurred_path, pair.first, pair.second, AssociationManager::UpdateMethod::MEAN);
+  // }
+
+  manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
 
   auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 
@@ -286,7 +293,8 @@ int main(int argc, char **argv)
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
-  pathblur_publisher.publish(path_marker_blurred);
+  //pathblur_publisher.publish(path_marker_blurred);
+  pathblur_publisher.publish(path_marker_rotated);
   // cube_publisher.publish(tsdf_map);
   cube_publisher.publish(tsdf_map_full);
   // cube_publisher.publish(single_marker);
