@@ -23,6 +23,7 @@
 #include "association.h"
 #include "../path/path.h"
 #include "../ray_tracer/ray_tracer.h"
+#include "../visualization/ros_viewhelper.h"
 
 class AssociationManager
 {
@@ -109,6 +110,8 @@ public:
      *           3.) How can this be parallized in a useful way?
      *           4.) A copy of the localmap is necessary to ensure this can work properly
      *           5.) Old cells and new cells are updated in almost the same manner, ensuring we only need one run
+     * 
+     * @return a ros visualization marker, which can be used to debug and see, if the data is read perfectly
      */
-    void update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method = UpdateMethod::MEAN);
+    visualization_msgs::Marker update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method = UpdateMethod::MEAN);
 };

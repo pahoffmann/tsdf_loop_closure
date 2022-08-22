@@ -40,8 +40,9 @@ lc_options_reader *options;
 // ROS STUFF //
 visualization_msgs::Marker ray_markers;
 visualization_msgs::Marker bb_marker;
-visualization_msgs::Marker tsdf_map;      // marker for the tsdf map (local)
-visualization_msgs::Marker tsdf_map_full; // marker for the full tsdf map (global)
+visualization_msgs::Marker tsdf_map;             // marker for the tsdf map (local)
+visualization_msgs::Marker tsdf_map_full_before; // marker for the full tsdf map (global) (before map update)
+visualization_msgs::Marker tsdf_map_full_after;  // marker for the full tsdf map (global) (after map update)
 
 // both of these side lengths are in real world coordinates
 float side_length_xy = 0;
@@ -180,7 +181,9 @@ int main(int argc, char **argv)
    ******************************************************/
 
   // generate publishers
-  ros::Publisher cube_publisher = n.advertise<visualization_msgs::Marker>("cubes", 1, true);
+  ros::Publisher tsdf_before_publisher = n.advertise<visualization_msgs::Marker>("tsdf_before", 1, true);
+  ros::Publisher tsdf_after_publisher = n.advertise<visualization_msgs::Marker>("tsdf_after", 1, true);
+  ros::Publisher tsdf_read_publisher = n.advertise<visualization_msgs::Marker>("tsdf_read", 1, true);
   ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
   ros::Publisher path_publisher = n.advertise<visualization_msgs::Marker>("path", 1, true);
   ros::Publisher pathblur_publisher = n.advertise<visualization_msgs::Marker>("path_blur", 1, true);
@@ -269,7 +272,10 @@ int main(int argc, char **argv)
   //   manager->update_localmap(&blurred_path, pair.first, pair.second, AssociationManager::UpdateMethod::MEAN);
   // }
 
-  manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
+  tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
+  // tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
+
+  auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
 
   auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 
@@ -285,7 +291,13 @@ int main(int argc, char **argv)
   // tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
 
   // full tsdf map for display, very ressource intensive, especially for large maps..
-  tsdf_map_full = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path);
+  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
+  // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
+
+#ifdef DEBUG
+  std::cout << "Before update size: " << tsdf_map_full_before.points.size() << std::endl;
+  std::cout << "After update size: " << tsdf_map_full_after.points.size() << std::endl;
+#endif
 
   // auto single_marker = ROSViewhelper::initPoseAssociationVisualization(global_map_ptr_, path->at(0), 0);
 
@@ -293,11 +305,13 @@ int main(int argc, char **argv)
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
-  //pathblur_publisher.publish(path_marker_blurred);
+  // pathblur_publisher.publish(path_marker_blurred);
   pathblur_publisher.publish(path_marker_rotated);
-  // cube_publisher.publish(tsdf_map);
-  cube_publisher.publish(tsdf_map_full);
-  // cube_publisher.publish(single_marker);
+  // tsdf_publisher.publish(tsdf_map);
+  tsdf_before_publisher.publish(tsdf_map_full_before);
+  tsdf_after_publisher.publish(tsdf_map_full_after);
+  // tsdf_publisher.publish(single_marker);
+  tsdf_read_publisher.publish(tsdf_read_marker);
   chunk_publisher.publish(chunk_marker);
   bresenham_int_publisher.publish(bresenham_marker);
 

@@ -24,7 +24,7 @@
 namespace ROSViewhelper
 {
 
-    int TSDF_LIFETIME = 100;
+    static int TSDF_LIFETIME = 100;
 
     /**
      * @brief visualizes a bounding box for a given pose and sidelengths
@@ -34,7 +34,7 @@ namespace ROSViewhelper
      * @param box_pose
      * @return visualization_msgs::Marker
      */
-    visualization_msgs::Marker getBoundingBoxMarker(float side_length_xy, float side_length_z, Pose *box_pose)
+    static visualization_msgs::Marker getBoundingBoxMarker(float side_length_xy, float side_length_z, Pose *box_pose)
     {
         visualization_msgs::Marker cube;
         cube.header.frame_id = "map";
@@ -67,7 +67,7 @@ namespace ROSViewhelper
      *
      * @return visualization_msgs::Marker (Sphere)
      */
-    visualization_msgs::Marker initPoseMarker(Pose *pose)
+    static visualization_msgs::Marker initPoseMarker(Pose *pose)
     {
         // raytrace pose
         visualization_msgs::Marker raytrace_starting_pose_marker;
@@ -95,7 +95,7 @@ namespace ROSViewhelper
         return raytrace_starting_pose_marker;
     }
 
-    visualization_msgs::Marker initPathMarker(Path *path)
+    static visualization_msgs::Marker initPathMarker(Path *path)
     {
         // raytrace pose
         visualization_msgs::Marker path_marker;
@@ -129,7 +129,7 @@ namespace ROSViewhelper
      *
      * @return visualization_msgs::Marker
      */
-    visualization_msgs::Marker initTSDFmarkerPose(std::shared_ptr<LocalMap> local_map_ptr_, Pose *pose)
+    static visualization_msgs::Marker initTSDFmarkerPose(std::shared_ptr<LocalMap> local_map_ptr_, Pose *pose)
     {
         // create marker.
         visualization_msgs::Marker tsdf_markers;
@@ -243,11 +243,9 @@ namespace ROSViewhelper
      *          1.) Number of intersected tsdf cells (unique)
      *          2.) Number of cells, which have been missed by the ray tracer
      *
-     *  @todo make this work
-     *
      * @return visualization_msgs::Marker
      */
-    visualization_msgs::Marker initTSDFmarkerPath(std::shared_ptr<LocalMap> local_map_ptr_, Path *path)
+    static visualization_msgs::Marker initTSDFmarkerPath(std::shared_ptr<LocalMap> local_map_ptr_, Path *path, bool consider_none_associates = true)
     {
         // create marker.
         visualization_msgs::Marker tsdf_markers;
@@ -262,13 +260,13 @@ namespace ROSViewhelper
         std::vector<geometry_msgs::Point> points;                                   // 3 x 3 markers
 
         // hashmap to avoid adding duplicate points
-        // the string (hash) being the point in the following way:
-        // (x)-(y)-(z)
+        // the hash of the map is a combination of the int vector components, using boosts hash_combine function
+
+        // The following maps were also tested and considered too slow
         // std::map<std::string, TSDFEntry::IntersectStatus> map;
-        //boost::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
+        // boost::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
         // std::unordered_map<std::string, TSDFEntry::IntersectStatus> map;
         boost::unordered_map<size_t, TSDFEntry::IntersectStatus> map;
-
 
         // display the current local map...
 
@@ -371,16 +369,24 @@ namespace ROSViewhelper
                             {
                                 color = intersectZeroColor;
                             }
-                            else if (value < 0)
+                            else if (!consider_none_associates)
                             {
-                                color = redTSDFColor;
+                                // when not considering associates, we skip adding them to the marker
+                                continue;
                             }
                             else
                             {
-                                color = greenTSDFColor;
+                                if (value < 0)
+                                {
+                                    color = redTSDFColor;
+                                }
+                                else
+                                {
+                                    color = greenTSDFColor;
+                                }
                             }
 
-                            //map[seed] = intersect;
+                            // map[seed] = intersect;
                             tsdf_markers.points.push_back(point);
                             tsdf_markers.colors.push_back(color);
                         }
@@ -400,6 +406,68 @@ namespace ROSViewhelper
     }
 
     /**
+     * @brief Used to debug code and check, if the association information read from the hdf5 overlaps with the information obtained
+     *        using bresenham
+     *
+     *
+     * @return visualization_msgs::Marker
+     */
+    static visualization_msgs::Marker init_TSDF_marker_from_hashmap(boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> previous_new_map)
+    {
+        // create marker.
+        visualization_msgs::Marker tsdf_markers;
+        tsdf_markers.header.frame_id = "map";
+        tsdf_markers.header.stamp = ros::Time();
+        tsdf_markers.ns = "tsdf";
+        tsdf_markers.id = 0;
+        tsdf_markers.lifetime.fromSec(TSDF_LIFETIME);
+        tsdf_markers.type = visualization_msgs::Marker::POINTS;
+        tsdf_markers.action = visualization_msgs::Marker::ADD;
+        tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
+        std::vector<geometry_msgs::Point> points;                                   // 3 x 3 markers
+
+        // check for duplicates when creating the map marker.
+        int num_duplicates = 0;
+
+        // define colors for the tsdf and intersections
+        // intersection color might need to vary
+        auto intersectColor = Colors::color_from_name(Colors::ColorNames::fuchsia);
+        auto intersectNegColor = Colors::color_from_name(Colors::ColorNames::yellow);
+        auto intersectZeroColor = Colors::color_from_name(Colors::ColorNames::aqua);
+        auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
+        auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
+
+        for (auto pair : previous_new_map)
+        {
+            auto point_real = std::get<0>(pair.second);
+            auto tsdf = std::get<2>(pair.second);
+
+            geometry_msgs::Point point;
+            point.x = point_real.x();
+            point.y = point_real.y();
+            point.z = point_real.z();
+
+            std_msgs::ColorRGBA color;
+
+            // assign colors
+            if (tsdf.value() < 0)
+            {
+                color = redTSDFColor;
+            }
+            else
+            {
+                color = greenTSDFColor;
+            }
+
+            // map[seed] = intersect;
+            tsdf_markers.points.push_back(point);
+            tsdf_markers.colors.push_back(color);
+        }
+
+        return tsdf_markers;
+    }
+
+    /**
      * @brief function may be used to display the intersection data for one pose and one pose only, returning a marker
      *        which may display tsdf values inside a local map sized container around the pose
      *
@@ -407,7 +475,7 @@ namespace ROSViewhelper
      * @param pose
      * @return visualization_msgs::Marker
      */
-    visualization_msgs::Marker initSinglePoseMarker(std::shared_ptr<LocalMap> local_map_ptr_, Pose *pose)
+    static visualization_msgs::Marker initSinglePoseMarker(std::shared_ptr<LocalMap> local_map_ptr_, Pose *pose)
     {
         // create marker.
         visualization_msgs::Marker tsdf_markers;
@@ -484,7 +552,7 @@ namespace ROSViewhelper
         return tsdf_markers;
     }
 
-    visualization_msgs::Marker initPoseAssociationVisualization(std::shared_ptr<GlobalMap> global_map_ptr, Pose *pose, int pose_number = 0)
+    static visualization_msgs::Marker initPoseAssociationVisualization(std::shared_ptr<GlobalMap> global_map_ptr, Pose *pose, int pose_number = 0)
     {
         // create marker.
         visualization_msgs::Marker tsdf_markers;
@@ -529,7 +597,7 @@ namespace ROSViewhelper
         return tsdf_markers;
     }
 
-    visualization_msgs::Marker initPathExtractionVisualizion(std::shared_ptr<GlobalMap> global_map_ptr_, std::shared_ptr<LocalMap> local_map_ptr_)
+    static visualization_msgs::Marker initPathExtractionVisualizion(std::shared_ptr<GlobalMap> global_map_ptr_, std::shared_ptr<LocalMap> local_map_ptr_)
     {
         auto chunks = global_map_ptr_->all_chunk_poses();
         std::cout << "Number of chunks: " << chunks.size() << std::endl;
@@ -582,7 +650,7 @@ namespace ROSViewhelper
      * @param second
      * @return visualization_msgs::Marker
      */
-    visualization_msgs::Marker init_loop_detected_marker(Eigen::Vector3f first, Eigen::Vector3f second)
+    static visualization_msgs::Marker init_loop_detected_marker(Eigen::Vector3f first, Eigen::Vector3f second)
     {
 
         // todo: check, wether the line marker needs two points or one point and scaljgnk

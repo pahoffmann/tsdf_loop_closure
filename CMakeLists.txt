@@ -119,6 +119,8 @@ add_executable(test_lc_detection src/test_lc_detection.cpp
 add_dependencies(lc_test_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 add_dependencies(loop_closure loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 
+target_compile_definitions(loop_closure PRIVATE DEBUG)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(lc_test_node
   ${catkin_LIBRARIES}

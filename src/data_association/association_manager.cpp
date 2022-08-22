@@ -96,7 +96,7 @@ void AssociationManager::plane_limited_associations()
 {
 }
 
-void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method)
+visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method)
 {
     // 1.) Calc a vector of pose differences between old and new pose
 
@@ -109,8 +109,6 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         Matrix4f previous_pose = associations[i].getPose()->getTransformationMatrix();
         Matrix4f current_pose = new_path->at(i)->getTransformationMatrix();
 
-        std::cout << "test" << std::endl;
-
         // push pose diff as transformation matrix to vector
         // TODO: why is there a problem with the accuracy in this?
         //       OLD Way: JUST TRANSFORM WITH INVERSE, SEEMS BUGGY
@@ -118,6 +116,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
         pose_differences.push_back(getTransformationMatrixDiffComp(previous_pose, current_pose));
 
+#ifdef DEBUG
         std::cout << std::endl
                   << "Prev: " << std::endl
                   << previous_pose << std::endl
@@ -126,6 +125,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
                   << "Diff Comp Wise: " << std::endl
                   << pose_differences[i] << std::endl
                   << std::endl;
+#endif
     }
 
     // 2.) now, that we got the relative transformations, we need to calc the new cell positions considering
@@ -141,18 +141,25 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
     {
         auto a = associations[i];
 
+#ifdef DEBUG
         std::cout << "Getting data for pose " << i << std::endl;
 
         std::cout << "Deserializing data..." << std::endl;
+#endif
+
         // read data from file
         a.deserialze();
 
+#ifdef DEBUG
         std::cout << "Deserialization done!" << std::endl;
+#endif
 
         // get current association map
         auto &cur_associations = a.getAssociations();
 
+#ifdef DEBUG
         std::cout << "Retrieved " << cur_associations.size() << " associations from hdf5" << std::endl;
+#endif
 
         // now iterate over the deserialzed association data
         for (auto data : cur_associations)
@@ -202,6 +209,9 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
     }
 
     std::cout << "[AssociationManager - update_localmap] : Got " << previous_new_map.size() << " Association cells which will be updated." << std::endl;
+
+    // ros marker which will be returned, for debugging
+    auto marker = ROSViewhelper::init_TSDF_marker_from_hashmap(previous_new_map);
 
     // get bounding box info
     float numeric_max = std::numeric_limits<float>::max();
@@ -287,6 +297,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
     Vector3i l_map_size_half = l_map_size / 2;
 
+#ifdef DEBUG
     std::cout << "[AssociationManager - update_localmap()] - Found OLD Bounding Box between: " << std::endl
               << Vector3i(bb_min_x, bb_min_y, bb_min_z) << std::endl
               << "and" << std::endl
@@ -295,6 +306,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
               << l_map_size << std::endl
               << "With localmaphalf size: " << std::endl
               << l_map_size_half << std::endl;
+#endif
 
     // now calculate the space seperation of the bounding box
 
@@ -317,7 +329,9 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
         int y_iterations = std::ceil(bb_diff.y() / (float)l_map_size.y());
         int z_iterations = std::ceil(bb_diff.z() / (float)l_map_size.z());
 
+#ifdef DEBUG
         std::cout << "There are " << x_iterations * y_iterations * z_iterations << " Localmaps which need to be considered!" << std::endl;
+#endif
 
         // iterate over 3d
         for (int x = 0; x < x_iterations; x++)
@@ -332,8 +346,10 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
                     auto entry = std::make_pair(center, std::vector<std::pair<Vector3i, TSDFEntry>>());
                     map_seperations.push_back(entry);
 
+#ifdef DEBUG
                     std::cout << "artificial localmap center for: [" << x << ", " << y << ", " << z << "] :" << std::endl
                               << center << std::endl;
+#endif
                 }
             }
         }
@@ -370,19 +386,19 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
             break;
         }
 
-        // std::cout << "New cell: " << std::endl << new_cell_map << std::endl;
-        // std::cout << "Old cell: " << std::endl << old_cell << std::endl;
-
         // now run over each of the map seperations and determine which pseudo localmap the new and old cell belong to
         for (int i = 0; i < map_seperations.size(); i++)
         {
-            // check out wether there is an error here
+
+#ifdef DEBUG
+            // TODO: look into this
             /*if (new_cell_map == Vector3i(0, 0, 0) || old_cell == Vector3i(0, 0, 0))
             {
                 std::cout << "Vector is null vector " << std::endl
                           << "Previous: (with counter: " << std::get<3>(pair.second) << ")" << std::endl
                           << std::get<1>(pair.second) << std::endl;
             }*/
+#endif
 
             Eigen::Vector3i tmp1 = (old_cell - map_seperations[i].first).cwiseAbs();
             Eigen::Vector3i tmp2 = (new_cell_map - map_seperations[i].first).cwiseAbs();
@@ -400,10 +416,9 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
             }
         }
 
-        // std::cout << "Closest index 1: " << closest_idx1 << std::endl;
-        // std::cout << "Closest index 2: " << closest_idx2 << std::endl;
-
         // add cells to the seperations array
+
+#ifdef DEBUG
 
         // catch possible bugs, this is the location, where errors are most common
         if (closest_idx1 == -1)
@@ -421,6 +436,9 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
             throw std::logic_error(ss.str());
         }
 
+#endif
+
+        // add cells to the seperations
         map_seperations[closest_idx1].second.push_back(std::make_pair(old_cell, default_entry));
         map_seperations[closest_idx2].second.push_back(std::make_pair(new_cell_map, new_tsdf));
     }
@@ -428,32 +446,43 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
     // now: run through the seperations and update the individual localmaps
     // whilst checking in the copy, if the value might have already been updated
 
+#ifdef DEBUG
     int counter = 0;
     // * 2, as there are updates for new and old cells ;)
     size_t hashmap_size = previous_new_map.size() * 2;
     size_t five_percent = hashmap_size / 20;
     int percent_counter = 0;
+#endif
 
     for (auto seperation : map_seperations)
     {
         // completely skip empty seperations
         if (seperation.second.size() == 0)
         {
+
+#ifdef DEBUG
             std::cout << "Empty seperation skipped " << std::endl;
+#endif
+
             continue;
         }
 
+        // every seperation has a center vertex, the localmap needs to be shifted there
         Vector3i shift_location = seperation.first;
         local_map_ptr->shift(shift_location);
 
+#ifdef DEBUG
         std::cout << "SHIFT! TO: " << std::endl
                   << local_map_ptr->get_pos() << std::endl;
+#endif
 
-        // obtain a copy of the local map
+        // obtain a copy of the local map to check if a cell has already been updated before
         LocalMap localmap_copy(*local_map_ptr);
 
         for (auto &pair : seperation.second)
         {
+
+#ifdef DEBUG
             // counter stuff
             counter++;
             if (counter % five_percent == 0)
@@ -461,8 +490,10 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
                 percent_counter += 5;
                 std::cout << "Updated " << percent_counter << " percent of the map" << std::endl;
             }
+#endif
             // update the cells
 
+#ifdef DEBUG
             // if the cell is not inbounds the localmap, there has been an error in the math/indexing
             if (!local_map_ptr->in_bounds(pair.first))
             {
@@ -476,6 +507,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
                 throw std::logic_error(ss.str());
             }
+#endif
 
             auto &tsdf = local_map_ptr->value(pair.first);
             auto &tsdf_copy = localmap_copy.value(pair.first);
@@ -503,7 +535,7 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
             {
                 // two updates to the same cell, this is not yet covered...
                 // if the cell contains default values, we overwrite them
-                
+
                 // TODO: dont do this!
                 calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
                 calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
@@ -518,10 +550,11 @@ void AssociationManager::update_localmap(Path *new_path, int start_idx, int end_
 
             tsdf.value(calced_value);
             tsdf.weight(calced_weight);
+            tsdf.setIntersect(pair.second.getIntersect());
         }
     }
 
     local_map_ptr->write_back();
 
-    return;
+    return marker;
 }

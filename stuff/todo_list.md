@@ -50,6 +50,7 @@ Intersection Data:
 [x] {WIP:} Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
 [x] {WIP:} Test the loop closure detection and is_visible method
 [x] -o3 gcc flag for cmake? optimization -> TODO: eval optimization
+[x] Testing: rotate the path around its center and check, what happens to the map -> map update definetly not working atm
 
 ## Interesting but not necessary atm ##
 
@@ -74,7 +75,7 @@ Intersection Data:
 
 [ ] The association data should only be determined, when an actual loop is present in the map
 [ ] Write the update process of the global map, when a loop was found
-[ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing
+[ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing (might be too runtime excessive)
 
 
 ## ASAP ##
@@ -92,7 +93,6 @@ Intersection Data:
 [ ] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
     This needs to be addressed and updated.
 [ ] Check diff between association number in map update vs. number of cells displayed in rviz (intersection markers) - they are off...
-[ ] Testing: rotate the path around its center and check, what happens to the map
 
 ## TODAY ##
 
