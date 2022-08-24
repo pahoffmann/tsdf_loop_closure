@@ -111,6 +111,17 @@ add_executable(test_lc_detection src/test_lc_detection.cpp
                         src/map/global_map.cpp 
                         src/map/local_map.cpp
                         src/map/attribute_data_model.cpp)
+
+add_executable(test_node src/nodes/test_node.cpp 
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp 
+                        src/ray_tracer/ray_tracer.cpp
+                        src/path/path.cpp
+                        src/data_association/association.cpp
+                        src/data_association/association_manager.cpp
+                        src/options/options_reader.cpp
+                        src/path/path_exploration.cpp
+                        src/map/attribute_data_model.cpp)
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -120,8 +131,12 @@ include_directories(include)
 # dynamic reconfigure
 add_dependencies(lc_test_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 add_dependencies(loop_closure loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+add_dependencies(test_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 
+
+# enable / disable debug by commenting either line for the specific target
 target_compile_definitions(loop_closure PRIVATE DEBUG)
+target_compile_definitions(test_node PRIVATE DEBUG)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(lc_test_node
@@ -154,6 +169,17 @@ target_link_libraries(path_listener
 )
 
 target_link_libraries(test_lc_detection
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${JSONCPP_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
+)
+
+
+target_link_libraries(test_node
   ${catkin_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}

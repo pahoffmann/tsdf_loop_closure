@@ -214,8 +214,11 @@ Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Vector3f c
     {
         auto pos = path.at(i);
         Vector3f rotated = rot_mat * (pos->pos - rotate_point) + rotate_point;
+        Eigen::Matrix3f pose_rotation = rot_mat * pos->rotationMatrixFromQuaternion();
+        Eigen::Quaternionf quat(pose_rotation);
 
         pos->pos = rotated;
+        pos->quat = quat;
     }
 
     return path;

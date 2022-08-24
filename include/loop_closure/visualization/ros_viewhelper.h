@@ -680,4 +680,32 @@ namespace ROSViewhelper
 
         return line_marker;
     }
+
+    static visualization_msgs::Marker marker_from_map_points(std::vector<Eigen::Vector3i> points)
+    {
+        // raytrace pose
+        visualization_msgs::Marker points_marker;
+        points_marker.header.frame_id = "map";
+        points_marker.header.stamp = ros::Time();
+        points_marker.ns = "wall";
+        points_marker.id = 0;
+        points_marker.type = visualization_msgs::Marker::CUBE_LIST;
+        points_marker.action = visualization_msgs::Marker::ADD;
+        points_marker.scale.x = 0.1;
+        points_marker.scale.y = 0.1;
+        points_marker.scale.z = 0.1;
+        points_marker.color.a = 0.5; // Don't forget to set the alpha!
+        points_marker.color.r = 136 / 255.0f;
+        points_marker.color.g = 0 / 255.0f;
+        points_marker.color.b = 255 / 255.0f;
+
+        for (auto point : points)
+        {
+            auto real_point = map_to_real(point);
+
+            points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
+        }
+
+        return points_marker;
+    }
 }
