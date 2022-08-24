@@ -12,8 +12,8 @@
 #include <iostream>
 #include <boost/unordered_map.hpp>
 
-#include "constants.h"
-#include "algorithm.h"
+#include <loop_closure/util/constants.h>
+#include <loop_closure/util/algorithm.h>
 
 using Eigen::Matrix4f;
 using Eigen::Matrix4i;

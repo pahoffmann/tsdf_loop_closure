@@ -6,7 +6,7 @@
  * @author Juri Vana
  */
 
-#include "global_map.h"
+#include <loop_closure/map/global_map.h>
 #include <ros/ros.h>
 
 /**

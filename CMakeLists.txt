@@ -115,6 +115,8 @@ add_executable(test_lc_detection src/test_lc_detection.cpp
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+include_directories(include)
+
 # dynamic reconfigure
 add_dependencies(lc_test_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 add_dependencies(loop_closure loop_closure_gencfg ${catkin_EXPORTED_TARGETS})

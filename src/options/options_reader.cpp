@@ -1,4 +1,4 @@
-#include "options_reader.h"
+#include <loop_closure/options/options_reader.h>
 
 lc_options_reader::lc_options_reader()
 {

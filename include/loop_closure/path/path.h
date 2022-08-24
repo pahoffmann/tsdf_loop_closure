@@ -13,11 +13,11 @@
  */
 
 #include <vector>
-#include "../util/point.h"
+#include <loop_closure/util/point.h>
 #include <string>
-#include "../serialization/read_path_json.h"
-#include "../ray_tracer/ray_tracer.h"
-#include "../util/random.h"
+#include <loop_closure/serialization/read_path_json.h>
+#include <loop_closure/ray_tracer/ray_tracer.h>
+#include <loop_closure/util/random.h>
 
 class Path
 {

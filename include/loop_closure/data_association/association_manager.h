@@ -20,10 +20,10 @@
 //#include <filesystem>
 #include <highfive/H5File.hpp>
 
-#include "association.h"
-#include "../path/path.h"
-#include "../ray_tracer/ray_tracer.h"
-#include "../visualization/ros_viewhelper.h"
+#include <loop_closure/data_association/association.h>
+#include <loop_closure/path/path.h>
+#include <loop_closure/ray_tracer/ray_tracer.h>
+#include <loop_closure/visualization/ros_viewhelper.h>
 
 class AssociationManager
 {

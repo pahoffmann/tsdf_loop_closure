@@ -1,4 +1,4 @@
-#include "path.h"
+#include <loop_closure/path/path.h>
 
 /**
  * @brief constructor, currently empty

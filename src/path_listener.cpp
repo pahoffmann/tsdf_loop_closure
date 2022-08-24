@@ -23,8 +23,8 @@
 #include <highfive/H5File.hpp>
 
 // relative includes
-#include "map/global_map.h"
-#include "map/local_map.h"
+#include <loop_closure/map/global_map.h>
+#include <loop_closure/map/local_map.h>
 
 
 void path_callback(const nav_msgs::Path::ConstPtr &msg) {

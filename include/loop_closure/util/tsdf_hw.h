@@ -7,7 +7,7 @@
  */
 
 #include <cinttypes>
-#include "constants.h"
+#include <loop_closure/util/constants.h>
 
 /**
  * @brief Hardware representation of a TSDF entry in the map. Consists of a TSDF value and a current weight for the update procedure

@@ -24,14 +24,14 @@
 #include <highfive/H5File.hpp>
 
 // relative includes
-#include "map/global_map.h"
-#include "map/local_map.h"
-#include "ray_tracer/ray_tracer.h"
-#include "path/path.h"
-#include "options/options_reader.h"
-#include "visualization/ros_viewhelper.h"
-#include "util/point.h"
-#include "util/eigen_vs_ros.h"
+#include <loop_closure/map/global_map.h>
+#include <loop_closure/map/local_map.h>
+#include <loop_closure/ray_tracer/ray_tracer.h>
+#include <loop_closure/path/path.h>
+#include <loop_closure/options/options_reader.h>
+#include <loop_closure/visualization/ros_viewhelper.h>
+#include <loop_closure/util/point.h>
+#include <loop_closure/util/eigen_vs_ros.h>
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 

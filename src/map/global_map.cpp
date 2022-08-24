@@ -8,7 +8,7 @@
 #include <sstream>
 #include <ros/ros.h>
 
-#include "global_map.h"
+#include <loop_closure/map/global_map.h>
 
 GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight, bool use_attributes)
     : file_{name, HighFive::File::OpenOrCreate}, // Truncate clears already existing file

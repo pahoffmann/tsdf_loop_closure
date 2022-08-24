@@ -18,15 +18,15 @@
 #include <loop_closure/RayTracerConfig.h>
 #include <iostream>
 #include <highfive/H5File.hpp>
-#include "../map/global_map.h"
-#include "../map/local_map.h"
-#include "../util/colors.h"
-#include "../path/path.h"
-#include "../util/point.h"
-#include "../ray_tracer/ray_tracer.h"
-//#include "../ray_tracer/tracer.h"
-#include "../serialization/read_path_json.h"
-#include "../data_association/association_manager.h"
+#include <loop_closure/map/global_map.h>
+#include <loop_closure/map/local_map.h>
+#include <loop_closure/util/colors.h>
+#include <loop_closure/path/path.h>
+#include <loop_closure/util/point.h>
+#include <loop_closure/ray_tracer/ray_tracer.h>
+//#include <loop_closure/ray_tracer/tracer.h>
+#include <loop_closure/serialization/read_path_json.h>
+#include <loop_closure/data_association/association_manager.h>
 
 // ROS STUFF //
 

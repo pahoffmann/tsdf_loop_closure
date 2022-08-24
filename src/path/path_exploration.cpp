@@ -1,4 +1,4 @@
-#include "path_exploration.h"
+#include <loop_closure/path/path_exploration.h>
 
 path_exploration::path_exploration(std::shared_ptr<LocalMap> l_map_ptr, std::shared_ptr<GlobalMap> g_map_ptr, Path *path_ptr, RayTracer *tracer_ptr)
 {

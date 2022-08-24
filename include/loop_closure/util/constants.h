@@ -5,7 +5,7 @@
  * @author Malte Hillmann
  */
 
-#include "hdf5_constants.h"
+#include <loop_closure/util/hdf5_constants.h>
 
 /// Resolution of the Map in Millimeter per Cell.
 constexpr int MAP_RESOLUTION = 64;

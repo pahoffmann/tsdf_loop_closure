@@ -4,7 +4,7 @@
  * @author Juri Vana
  */
 
-#include "local_map.h"
+#include <loop_closure/map/local_map.h>
 
 #include <stdlib.h> // for abs
 #include <stdexcept>

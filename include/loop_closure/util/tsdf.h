@@ -7,7 +7,7 @@
  * @date 2021-01-13
  */
 
-#include "tsdf_hw.h"
+#include <loop_closure/util/tsdf_hw.h>
 
 /**
  * @brief Interface for a TSDF entry in hardware.

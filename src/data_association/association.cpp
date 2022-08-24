@@ -1,4 +1,4 @@
-#include "association.h"
+#include <loop_closure/data_association/association.h>
 
 /**
  * @file association.h

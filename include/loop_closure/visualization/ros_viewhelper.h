@@ -16,10 +16,10 @@
 #include <unordered_map>
 #include <map>
 #include <boost/unordered_map.hpp>
-#include "../util/point.h"
-#include "../util/constants.h"
-#include "../util/colors.h"
-#include "../util/eigen_vs_ros.h"
+#include <loop_closure/util/point.h>
+#include <loop_closure/util/constants.h>
+#include <loop_closure/util/colors.h>
+#include <loop_closure/util/eigen_vs_ros.h>
 
 namespace ROSViewhelper
 {

@@ -12,7 +12,7 @@
  */
 
 #include <jsoncpp/json/json.h>
-#include "../util/point.h"
+#include <loop_closure/util/point.h>
 #include <fstream>
 #include <string>
 

@@ -1,7 +1,7 @@
-#include "path.h"
-#include "../map/local_map.h"
-#include "../map/global_map.h"
-#include "../ray_tracer/ray_tracer.h"
+#include <loop_closure/path/path.h>
+#include <loop_closure/map/local_map.h>
+#include <loop_closure/map/global_map.h>
+#include <loop_closure/ray_tracer/ray_tracer.h>
 
 #include <queue>
 #include <algorithm>

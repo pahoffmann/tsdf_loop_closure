@@ -22,17 +22,18 @@
 #include <highfive/H5File.hpp>
 
 // relative includes
-#include "map/global_map.h"
-#include "map/local_map.h"
-#include "util/colors.h"
-#include "path/path.h"
-#include "util/point.h"
-#include "ray_tracer/ray_tracer.h"
-#include "serialization/read_path_json.h"
-#include "data_association/association_manager.h"
-#include "options/options_reader.h"
-#include "visualization/ros_viewhelper.h"
-#include "path/path_exploration.h"
+#include <loop_closure/map/global_map.h>
+#include <loop_closure/map/local_map.h>
+#include <loop_closure/util/colors.h>
+#include <loop_closure/path/path.h>
+#include <loop_closure/util/point.h>
+#include <loop_closure/ray_tracer/ray_tracer.h>
+#include <loop_closure/serialization/read_path_json.h>
+#include <loop_closure/data_association/association_manager.h>
+#include <loop_closure/options/options_reader.h>
+#include <loop_closure/visualization/ros_viewhelper.h>
+#include <loop_closure/path/path_exploration.h>
+#include <loop_closure/test/math_test.h>
 
 // Configuration stuff //
 lc_options_reader *options;
@@ -291,7 +292,7 @@ int main(int argc, char **argv)
   // tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
 
   // full tsdf map for display, very ressource intensive, especially for large maps..
-  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
+  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &rotated_path, true);
   // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
 
 #ifdef DEBUG

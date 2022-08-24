@@ -13,9 +13,9 @@
 #include <string>
 #include <utility>
 #include <sstream>
-#include "../util/point.h"
-#include "../util/tsdf.h"
-#include "attribute_data_model.h"
+#include <loop_closure/util/point.h>
+#include <loop_closure/util/tsdf.h>
+#include <loop_closure/map/attribute_data_model.h>
 
 struct ActiveChunk
 {

@@ -1,4 +1,4 @@
-#include "ray_tracer.h"
+#include <loop_closure/ray_tracer/ray_tracer.h>
 
 RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in, Pose *start_pose)
 {

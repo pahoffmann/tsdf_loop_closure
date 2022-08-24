@@ -22,9 +22,9 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
-#include "../util/point.h"
-#include "../util/tsdf.h"
-#include "../map/local_map.h"
+#include <loop_closure/util/point.h>
+#include <loop_closure/util/tsdf.h>
+#include <loop_closure/map/local_map.h>
 
 class Association
 {

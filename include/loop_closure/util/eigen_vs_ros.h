@@ -11,7 +11,7 @@
  *
  */
 
-#include "point.h"
+#include <loop_closure/util/point.h>
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
 #include <std_msgs/String.h>

@@ -1,4 +1,4 @@
-#include "association_manager.h"
+#include <loop_closure/data_association/association_manager.h>
 
 /**
  * @file association_manager.h
@@ -186,7 +186,8 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
             Eigen::Matrix3f rot_mat = pose_differences[a.get_index() - start_idx].block<3, 3>(0, 0);
             Vector3f transl_vec = pose_differences[a.get_index() - start_idx].block<3, 1>(0, 3);
 
-            Vector3f transformed_3d = rot_mat * (vec_real - pos) + pos + transl_vec;
+            Vector3f transformed_3d = rot_mat * (vec_real - associations[i].getPose()->pos) + associations[i].getPose()->pos + transl_vec;
+            // Vector3f transformed_3d = rot_mat * (vec_real - pos) + pos + transl_vec;
             // transformed_3d = vec_real + transl_vec;
 
             // back to 3d (possibly because of normalization)
@@ -196,7 +197,7 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
             TSDFEntry old_tsdf_entry = data.second.second;
 
             // check if exists
-            if (previous_new_map.find(hash) != previous_new_map.end())
+            if (previous_new_map.find(hash) == previous_new_map.end())
             {
                 // if none yet exists, we just do some stuff.
                 previous_new_map[hash] = std::make_tuple(vec_real, transformed_3d, old_tsdf_entry, 1);
@@ -208,6 +209,13 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
                 auto &tuple = previous_new_map[hash];
                 std::get<1>(tuple) += transformed_3d;
                 std::get<3>(tuple) += 1;
+
+                //std::cout << "Updated some values. New index: " << std::get<3>(tuple) << std::endl;
+
+                if(std::get<3>(tuple) > associations.size())
+                {
+                    std::cout << "Problem for vertex: " << std::endl << std::get<0>(tuple) << std::endl;
+                }
             }
         }
     }

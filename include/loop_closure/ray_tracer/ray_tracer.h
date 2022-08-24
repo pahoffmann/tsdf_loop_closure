@@ -11,12 +11,12 @@
  * 
  */
 
-#include "../util/point.h"
-#include "../util/colors.h"
-#include "../map/local_map.h"
-#include "../data_association/association.h"
-#include "../options/options_reader.h"
-#include "../util/eigen_vs_ros.h"
+#include <loop_closure/util/point.h>
+#include <loop_closure/util/colors.h>
+#include <loop_closure/map/local_map.h>
+#include <loop_closure/data_association/association.h>
+#include <loop_closure/options/options_reader.h>
+#include <loop_closure/util/eigen_vs_ros.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sstream>
