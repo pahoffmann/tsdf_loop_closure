@@ -78,7 +78,7 @@ namespace Testing
             Matrix4f accumulated_mat = Matrix4f::Identity();
 
             // update this taking into account the start and end index
-            for(int j = start_idx; j < end_idx; j++)
+            for(int j = start_idx; j <= end_idx; j++)
             {
                 // get beloning pose diff
                 Matrix4f diff_mat = pose_differences[j];
@@ -123,12 +123,12 @@ namespace Testing
      * @param dir_2 
      * @return std::vector<Vector3i> 
      */
-    static std::vector<Vector3i> generate_cell_wall(Eigen::Vector3i start_pos, Vector3i dir_1, Vector3i dir_2, int num_steps = 10)
+    static std::vector<Vector3i> generate_cell_wall(Eigen::Vector3i start_pos, Vector3i dir_1, Vector3i dir_2, int num_steps1 = 10, int num_steps2 = 20)
     {
         std::vector<Vector3i> wall;
-        for(int i = 0; i < num_steps; i++)
+        for(int i = 0; i < num_steps1; i++)
         {
-            for(int j = 0; j < num_steps; j++)
+            for(int j = 0; j < num_steps2; j++)
             {
                 // calc wall point
                 Vector3i tmp = start_pos + i * dir_1 + j * dir_2;
