@@ -691,9 +691,9 @@ namespace ROSViewhelper
         points_marker.id = 0;
         points_marker.type = visualization_msgs::Marker::CUBE_LIST;
         points_marker.action = visualization_msgs::Marker::ADD;
-        points_marker.scale.x = 0.1;
-        points_marker.scale.y = 0.1;
-        points_marker.scale.z = 0.1;
+        points_marker.scale.x = 0.2;
+        points_marker.scale.y = 0.2;
+        points_marker.scale.z = 0.2;
         points_marker.color.a = 0.5; // Don't forget to set the alpha!
         points_marker.color.r = 136 / 255.0f;
         points_marker.color.g = 0 / 255.0f;

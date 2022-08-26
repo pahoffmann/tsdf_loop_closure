@@ -192,7 +192,7 @@ int main(int argc, char **argv)
   ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
   ros::Publisher chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
   ros::Publisher bresenham_int_publisher = n.advertise<visualization_msgs::Marker>("bresenham_intersections", 1, true);
-  ros::Publisher loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
+  ros::Publisher loop_pub = n.advertise<visualization_msgs::Marker>("loop", 1);
 
   // specify ros loop rate
   ros::Rate loop_rate(10);

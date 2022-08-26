@@ -173,12 +173,12 @@ Path Path::blur_ret(int start_idx, int end_idx, double radius)
     return path;
 }
 
-Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Vector3f center_vec)
+Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Pose *rotation_pose)
 {
-    Vector3f rotate_point = center_vec;
-
-    // calculate center vec if identity is passed to function
-    if (center_vec == Vector3f::Identity())
+    Vector3f rotate_point = rotation_pose->pos;
+    
+    // calculate center vec if NULL is passed to function
+    if (rotation_pose == NULL)
     {
         Vector3f tmp = Vector3f::Zero();
 
@@ -198,9 +198,9 @@ Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Vector3f c
 
     // create eigen quaternion from euler
     Eigen::Quaternionf q;
-    auto rollAngle = Eigen::AngleAxisf(roll_deg, Eigen::Vector3f::UnitX());
-    auto pitchAngle = Eigen::AngleAxisf(pitch_deg, Eigen::Vector3f::UnitY());
-    auto yawAngle = Eigen::AngleAxisf(yaw_deg, Eigen::Vector3f::UnitZ());
+    auto rollAngle = Eigen::AngleAxisf(roll_deg * (M_PI / 180.0f), Eigen::Vector3f::UnitX());
+    auto pitchAngle = Eigen::AngleAxisf(pitch_deg * (M_PI / 180.0f), Eigen::Vector3f::UnitY());
+    auto yawAngle = Eigen::AngleAxisf(yaw_deg * (M_PI / 180.0f), Eigen::Vector3f::UnitZ());
 
     q = yawAngle * pitchAngle * rollAngle;
     q.normalize();

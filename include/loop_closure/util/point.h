@@ -45,15 +45,15 @@ struct Pose
 
     Eigen::Matrix4f getTransformationMatrix() {
         
-        std::cout << "Rotation mat: " << std::endl << rotationMatrixFromQuaternion() << std::endl;
-        std::cout << "Translation mat: " << std::endl << pos << std::endl;
+        //std::cout << "Rotation mat: " << std::endl << rotationMatrixFromQuaternion() << std::endl;
+        //std::cout << "Translation mat: " << std::endl << pos << std::endl;
         // identity so bottom left corner is filled
         // TODO: access in eigen should be <row, column> check hits
         Eigen::Matrix4f tmp = Eigen::Matrix4f::Identity();
         tmp.block<3, 3>(0, 0) = rotationMatrixFromQuaternion();
         tmp.block<3, 1>(0, 3) = pos;
 
-        std::cout << "Comined mat: " << std::endl << tmp << std::endl;
+        //std::cout << "Comined mat: " << std::endl << tmp << std::endl;
 
         return tmp;
     }
@@ -138,7 +138,7 @@ static inline Vector3i ceil_divide(const Vector3i &a, int b)
 }
 
 /**
- * @brief Creates a pose from euler angles and position
+ * @brief Creates a pose from euler angles and position ( the angles need to be in degree, not rediants)
  *
  * @param x
  * @param y
@@ -153,9 +153,9 @@ static Pose poseFromEuler(float x, float y, float z, float roll, float pitch, fl
     Pose pose;
     // create eigen quaternion from euler
     Eigen::Quaternionf q;
-    auto rollAngle = Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX());
-    auto pitchAngle = Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY());
-    auto yawAngle = Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ());
+    auto rollAngle = Eigen::AngleAxisf(roll * (M_PI / 180.0f), Eigen::Vector3f::UnitX());
+    auto pitchAngle = Eigen::AngleAxisf(pitch * (M_PI / 180.0f), Eigen::Vector3f::UnitY());
+    auto yawAngle = Eigen::AngleAxisf(yaw * (M_PI / 180.0f), Eigen::Vector3f::UnitZ());
 
     q = yawAngle * pitchAngle * rollAngle;
 

@@ -43,6 +43,8 @@
 [x] Map update: there is currently an error in the indexing, because of which the cell seperations may contain weirrd cells. why is there a cell (0,0,0) in there?
 [x] Fix out of bounds in map update
     -> There needs to be some form of clustering for the new and old cells to ensure, that we dont shift very often
+[x] Rotate path: needs to consider the rotation of the point the path is supposed to be rotated around (or maybe not?)
+    Does not, but we need to use radiants of course, not degrees
 
 Intersection Data:
 
@@ -93,6 +95,8 @@ Intersection Data:
 [ ] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
     This needs to be addressed and updated.
 [ ] Check diff between association number in map update vs. number of cells displayed in rviz (intersection markers) - they are off...
+[ ] check the rounding, when calculating the new cell poses. where do we need to round here? relative?
+[ ] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
 
 ## TODAY ##
 
