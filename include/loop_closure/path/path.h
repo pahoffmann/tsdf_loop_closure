@@ -139,4 +139,12 @@ public:
      */
     Path rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Pose *rotation_pose = NULL);
 
+    /**
+     * @brief returns a translated copy of the current path
+     * 
+     * @param tanslation_vec 
+     * @return Path 
+     */
+    Path translate_ret(Vector3f tanslation_vec);
+
 };

@@ -45,6 +45,7 @@
     -> There needs to be some form of clustering for the new and old cells to ensure, that we dont shift very often
 [x] Rotate path: needs to consider the rotation of the point the path is supposed to be rotated around (or maybe not?)
     Does not, but we need to use radiants of course, not degrees
+[x] add a test for the path translationm -> works
 
 Intersection Data:
 

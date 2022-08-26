@@ -156,16 +156,19 @@ int main(int argc, char **argv)
 
     // rotate the path for testing
     Path rotated_path = path->rotate_ret(0, 90, 0);
+    Path translated_path = path->translate_ret(Vector3f(2,2,2));
 
     before_path = ROSViewhelper::initPathMarker(path);
-    after_path = ROSViewhelper::initPathMarker(&rotated_path);
+    //after_path = ROSViewhelper::initPathMarker(&rotated_path);
+    after_path = ROSViewhelper::initPathMarker(&translated_path);
 
     Vector3i wall_base(-100, -50, -100);
     Vector3i dir_vec_1(3, 0, 0);
     Vector3i dir_vec_2(0, 0, 3);
     std::vector<Vector3i> cell_wall = Testing::generate_cell_wall(wall_base, dir_vec_1, dir_vec_2, 50, 100);
     //auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &rotated_path);
-    auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &rotated_path, 0, 0);
+    //auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &rotated_path, 0, 0);
+    auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &translated_path, 0, 0);
 
     // publish it all
     path_before_publisher.publish(before_path);

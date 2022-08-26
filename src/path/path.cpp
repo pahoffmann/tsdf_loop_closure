@@ -175,8 +175,8 @@ Path Path::blur_ret(int start_idx, int end_idx, double radius)
 
 Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Pose *rotation_pose)
 {
-    Vector3f rotate_point = rotation_pose->pos;
-    
+    Vector3f rotate_point;
+
     // calculate center vec if NULL is passed to function
     if (rotation_pose == NULL)
     {
@@ -190,6 +190,10 @@ Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Pose *rota
         tmp = tmp / get_length();
 
         rotate_point = tmp;
+    }
+    else
+    {
+        rotate_point = rotation_pose->pos;
     }
 
     // vector to rotate around identified
@@ -222,4 +226,16 @@ Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Pose *rota
     }
 
     return path;
+}
+
+Path Path::translate_ret(Vector3f translation_vector)
+{
+    Path tmp(*this);
+
+    for(int i = 0; i < tmp.get_length(); i++)
+    {
+        tmp.at(i)->add(translation_vector);
+    }
+
+    return tmp;
 }
