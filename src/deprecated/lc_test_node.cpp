@@ -7,6 +7,8 @@
  * 
  * @copyright Copyright (c) 2022
  * 
+ * @deprecated Deprecated, used really early to test some stuff. Not deleted as a reminder. Do not use.
+ * 
  */
 
 #include <ros/ros.h>

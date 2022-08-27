@@ -243,6 +243,7 @@ int main(int argc, char **argv)
 
   // rotate the path for testing
   Path rotated_path = path->rotate_ret(0, 90, 0);
+  Path translated_path = path->translate_ret(Vector3f(3.0f, 3.0f, 3.0f));
 
   // when no loop is found, we terminate early
   if (loop_visualizations.size() == 0)
@@ -257,8 +258,7 @@ int main(int argc, char **argv)
 
   auto path_marker_blurred = ROSViewhelper::initPathMarker(&blurred_path);
   auto path_marker_rotated = ROSViewhelper::initPathMarker(&rotated_path);
-
-  std::cout << "[Main]: " << blurred_path.get_length() << " Poses in blurred path" << std::endl;
+  auto path_marker_translated = ROSViewhelper::initPathMarker(&translated_path);
 
   // create associationmanager
   manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
@@ -276,7 +276,8 @@ int main(int argc, char **argv)
   tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
   // tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
 
-  auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
+  //auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
+  auto tsdf_read_marker = manager->update_localmap(&translated_path, 0, translated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
 
   auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 
@@ -292,7 +293,8 @@ int main(int argc, char **argv)
   // tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
 
   // full tsdf map for display, very ressource intensive, especially for large maps..
-  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &rotated_path, true);
+  //tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &rotated_path, true);
+  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &translated_path, true);
   // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
 
 #ifdef DEBUG
@@ -307,7 +309,8 @@ int main(int argc, char **argv)
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
   // pathblur_publisher.publish(path_marker_blurred);
-  pathblur_publisher.publish(path_marker_rotated);
+  //pathblur_publisher.publish(path_marker_rotated);
+  pathblur_publisher.publish(path_marker_translated);
   // tsdf_publisher.publish(tsdf_map);
   tsdf_before_publisher.publish(tsdf_map_full_before);
   tsdf_after_publisher.publish(tsdf_map_full_after);

@@ -1,7 +1,7 @@
 /**
- * @file loop_closure_node.cpp
+ * @file test_mode_update.cpp
  * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
- * @brief Loop Closure Node used to detect and apply loop closure to a tsdf based slam
+ * @brief Testing the map update for the loop closure
  * @version 0.1
  * @date 2022-03-14
  *

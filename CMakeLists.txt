@@ -78,16 +78,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(lc_test_node src/test/lc_test_node.cpp 
-                        src/map/global_map.cpp 
-                        src/map/local_map.cpp 
-                        src/ray_tracer/ray_tracer.cpp
-                        src/path/path.cpp
-                        src/data_association/association.cpp
-                        src/data_association/association_manager.cpp
-                        src/map/attribute_data_model.cpp) #src/ray_tracer/tracer.cu)
 
-add_executable(loop_closure src/loop_closure_node.cpp 
+add_executable(loop_closure src/nodes/loop_closure_node.cpp 
                         src/map/global_map.cpp 
                         src/map/local_map.cpp 
                         src/ray_tracer/ray_tracer.cpp
@@ -98,13 +90,13 @@ add_executable(loop_closure src/loop_closure_node.cpp
                         src/path/path_exploration.cpp
                         src/map/attribute_data_model.cpp)
 
-add_executable(path_listener src/path_listener.cpp 
+add_executable(path_listener src/nodes/path_listener.cpp 
                         src/map/global_map.cpp 
                         src/map/local_map.cpp
                         src/map/attribute_data_model.cpp)
 
 
-add_executable(test_lc_detection src/test_lc_detection.cpp 
+add_executable(test_lc_detection src/nodes/test_lc_detection.cpp 
                         src/path/path.cpp
                         src/ray_tracer/ray_tracer.cpp
                         src/options/options_reader.cpp
@@ -112,7 +104,7 @@ add_executable(test_lc_detection src/test_lc_detection.cpp
                         src/map/local_map.cpp
                         src/map/attribute_data_model.cpp)
 
-add_executable(test_node src/nodes/test_node.cpp 
+add_executable(test_map_update src/nodes/test_map_update.cpp 
                         src/map/global_map.cpp 
                         src/map/local_map.cpp 
                         src/ray_tracer/ray_tracer.cpp
@@ -129,24 +121,15 @@ add_executable(test_node src/nodes/test_node.cpp
 include_directories(include)
 
 # dynamic reconfigure
-add_dependencies(lc_test_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 add_dependencies(loop_closure loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
-add_dependencies(test_node loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+add_dependencies(test_map_update loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 
 
 # enable / disable debug by commenting either line for the specific target
 target_compile_definitions(loop_closure PRIVATE DEBUG)
-target_compile_definitions(test_node PRIVATE DEBUG)
+target_compile_definitions(test_map_update PRIVATE DEBUG)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(lc_test_node
-  ${catkin_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${HDF5_HL_LIBRARIES}
-  Eigen3::Eigen
-  ${JSONCPP_LIBRARIES}
-  OpenMP::OpenMP_CXX
-)
 
 target_link_libraries(loop_closure
   ${catkin_LIBRARIES}
@@ -179,7 +162,7 @@ target_link_libraries(test_lc_detection
 )
 
 
-target_link_libraries(test_node
+target_link_libraries(test_map_update
   ${catkin_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}
