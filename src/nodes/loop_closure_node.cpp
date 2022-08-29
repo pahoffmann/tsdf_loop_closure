@@ -277,7 +277,7 @@ int main(int argc, char **argv)
   // tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
 
   //auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
-  auto tsdf_read_marker = manager->update_localmap(&translated_path, 0, translated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
+  auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
 
   auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 
@@ -294,7 +294,7 @@ int main(int argc, char **argv)
 
   // full tsdf map for display, very ressource intensive, especially for large maps..
   //tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &rotated_path, true);
-  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &translated_path, true);
+  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &rotated_path, true);
   // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
 
 #ifdef DEBUG
