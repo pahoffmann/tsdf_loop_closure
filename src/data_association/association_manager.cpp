@@ -257,7 +257,7 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
         }
 
         size_t hash = hash_from_vec(new_cell);
-        size_t hash_old = hash_from_vec(new_cell);
+        size_t hash_old = hash_from_vec(old_cell);
 
         // check if exists. if exists and default value is in place, overwrite
         if (new_tsdf_map.find(hash) == new_tsdf_map.end() || (std::get<1>(new_tsdf_map[hash]).weight() == 0 && std::get<1>(new_tsdf_map[hash]).value() == 600))
