@@ -113,12 +113,7 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
         Matrix4f previous_pose = associations[i].getPose()->getTransformationMatrix();
         Matrix4f current_pose = new_path->at(i)->getTransformationMatrix();
 
-        // push pose diff as transformation matrix to vector
-        // TODO: why is there a problem with the accuracy in this?
-        //       OLD Way: JUST TRANSFORM WITH INVERSE, SEEMS BUGGY
-        // pose_differences.push_back(previous_pose.inverse() * current_pose);
-
-        pose_differences.push_back(getTransformationMatrixDiffComp(previous_pose, current_pose));
+        pose_differences.push_back(getTransformationMatrixDiff(previous_pose, current_pose));
 
 #ifdef DEBUG
         std::cout << std::endl

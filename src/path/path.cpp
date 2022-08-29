@@ -239,3 +239,17 @@ Path Path::translate_ret(Vector3f translation_vector)
 
     return tmp;
 }
+
+Vector3f Path::get_centroid()
+{
+    Vector3f accumulated = Vector3f::Zero();
+
+    for(auto pose : poses)
+    {
+        accumulated += pose.pos;
+    }
+
+    accumulated /= poses.size();
+
+    return accumulated;
+}

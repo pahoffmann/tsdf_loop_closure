@@ -147,4 +147,11 @@ public:
      */
     Path translate_ret(Vector3f tanslation_vec);
 
+    /**
+     * @brief Get the centroid of the path positions
+     * 
+     * @return Vector3f 
+     */
+    Vector3f get_centroid();
+
 };
