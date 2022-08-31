@@ -89,6 +89,7 @@ Intersection Data:
 [ ] Implement the ray tracer as a singleton, so the rays don't need initialization every time. (insert this into masters thesis)
     -> There needs to be an additional array (e.g. init_rays)
     -> function to destroy current instance and make available for reinstanceiation
+[ ] implement a function in the global map, which returns the whole tsdf data as a vector
 
 
 ## ASAP ##

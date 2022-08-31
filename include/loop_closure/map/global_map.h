@@ -270,4 +270,12 @@ public:
     inline attribute_data_model get_attribute_data() {
         return attribute_data_;
     }
+
+    /**
+     * @brief Get the full data from the current hdf5 as an array, use with caution concerning RAM
+     * @todo implement this
+     * 
+     * @return std::vector<Vector3i, TSDFEntry> 
+     */
+    std::vector<Vector3i, TSDFEntry>& get_full_data();
 };
