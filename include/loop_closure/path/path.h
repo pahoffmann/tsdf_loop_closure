@@ -28,12 +28,6 @@ private:
     RayTracer *ray_tracer;
 
 public:
-    /**
-     * @brief Construct a new Path object, gets a pointer to a raytracer, which is used by the the loop detection visibility check
-     *
-     * @param tracer
-     */
-    Path(RayTracer *tracer);
 
     /**
      * @brief Copy constructor of the path
@@ -47,6 +41,16 @@ public:
      * 
      */
     Path() = default;
+
+    /**
+     * @brief attaches a ray tracer to the path, needs to be called before any visibility checks take place
+     * 
+     * @param tracer 
+     */
+    void attach_raytracer(RayTracer *tracer)
+    {
+        ray_tracer = tracer;
+    }
 
     /**
      * @brief Reads a path from a json

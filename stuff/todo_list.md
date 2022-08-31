@@ -52,6 +52,8 @@
 [x] work on code todos, especially for bresenham
 [x] Write the update process of the global map, when a loop was found
     -> This has been done, though the process doesnt really work the way i thought it would. basically need to rethink the whole thing
+[x] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
+    This needs to be addressed and updated.
 
 Intersection Data:
 
@@ -97,11 +99,10 @@ Intersection Data:
 [ ] Implement tests to ensure writing to the globalmap works, write meta data (e.g. hit percentage, number hit vs total occupied cells)
     to hdf (/associations)
 
-[ ] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
-    This needs to be addressed and updated.
 [ ] Check diff between association number in map update vs. number of cells displayed in rviz (intersection markers) - they are off...
 [ ] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
 [ ] Write a test case, which checks the local map functionality... check if resetting all cells with value actually resets them.
+[ ] Only generate associations in bounds of the loop closure indices.
 
 ## TODAY ##
 

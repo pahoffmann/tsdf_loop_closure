@@ -198,7 +198,9 @@ void init_obj()
     tracer = new RayTracer(options, local_map_ptr, global_map_ptr);
 
     // init path
-    path = new Path(tracer);
+    path = new Path();
+    path->attach_raytracer(tracer);
+
 
     ros_path.header.frame_id = "map";
     ros_path.header.stamp = ros::Time::now();

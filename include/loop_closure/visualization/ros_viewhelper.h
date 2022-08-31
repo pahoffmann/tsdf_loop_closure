@@ -313,6 +313,7 @@ namespace ROSViewhelper
                         // just the cells, which actually have a weight and a value other than (and including) the default one
                         if (weight > 0 && value < 600)
                         {
+
                             // calculate the hash for the current pos
                             auto start_time = ros::Time::now();
 
@@ -402,6 +403,7 @@ namespace ROSViewhelper
         ROS_INFO("Number of duplicates: %d", num_duplicates);
 
         ROS_INFO("Hit Percentage: %.2f", (num_intersects * 1.0f / num_interesting) * 100.0f);
+
         return tsdf_markers;
     }
 

@@ -174,7 +174,8 @@ void initialize_path(int path_method = 0)
    ******************************************************/
 
   // init path and read from specified source (mostly hdf5)
-  path = new Path(ray_tracer);
+  path = new Path();
+  path->attach_raytracer(ray_tracer);
 
   // retrieve path from various locations
   try
@@ -262,25 +263,25 @@ Path update_path_test(Path *path, PathUpdateTestMethod method, int start_idx = -
     end_idx = path->get_length() - 1;
   }
 
-  // create a path for blurring
-  if (method == PathUpdateTestMethod::BLURRING)
+  switch (method)
   {
+  case PathUpdateTestMethod::BLURRING:
     // blur with radius of 0.5m
     return path->blur_ret(start_idx, end_idx, 0.5f);
-  }
-  else if (method == PathUpdateTestMethod::ROTATION)
-  {
+
+  case PathUpdateTestMethod::ROTATION:
     // rotate the whole
     return path->rotate_ret(0, 90, 0);
-  }
-  else if (method == PathUpdateTestMethod::TRANSLATION)
-  {
+
+  case PathUpdateTestMethod::TRANSLATION:
     return path->translate_ret(Vector3f(3.0f, 3.0f, 3.0f), start_idx, end_idx);
-  }
-  else if (method == PathUpdateTestMethod::TRANSLATION_AND_ROTATION)
-  {
-    Path translated = path->translate_ret(Vector3f(3.0f, 3.0f, 3.0f), start_idx, end_idx);
-    return translated.rotate_ret(0, 0, 90);
+
+  case PathUpdateTestMethod::TRANSLATION_AND_ROTATION:
+    return path->translate_ret(Vector3f(3.0f, 3.0f, 3.0f), start_idx, end_idx).rotate_ret(0, 0, 90);
+
+  default:
+    // return an empty path
+    return Path();
   }
 }
 
@@ -411,7 +412,7 @@ int main(int argc, char **argv)
   populate_markers();
 
 #ifdef DEBUG
-          std::cout
+  std::cout
       << "Before update size: " << tsdf_map_full_before.points.size() << std::endl;
   std::cout << "After update size: " << tsdf_map_full_after.points.size() << std::endl;
 #endif

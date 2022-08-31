@@ -121,7 +121,8 @@ int main(int argc, char **argv)
      ******************************************************/
 
     // init path and read from json
-    path = new Path(ray_tracer);
+    path = new Path();
+    path->attach_raytracer(ray_tracer);
 
     // retrieve path from global map
     try

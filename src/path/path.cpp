@@ -1,13 +1,5 @@
 #include <loop_closure/path/path.h>
 
-/**
- * @brief constructor, currently empty
- *
- */
-Path::Path(RayTracer *tracer)
-{
-    ray_tracer = tracer;
-}
 
 Path::Path(Path &other)
 {
@@ -37,6 +29,11 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
     if (start_idx > get_length())
     {
         return std::make_pair(-1, -1);
+    }
+
+    if(check_visibility && ray_tracer == NULL)
+    {
+        throw std::logic_error("[RayTracer] Must attach a ray tracer to the path, before trying visibility checks");
     }
 
     float dist_traveled = 0.0f;
