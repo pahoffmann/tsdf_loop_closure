@@ -12,34 +12,39 @@
  */
 
 AssociationManager::AssociationManager(Path *path, std::string file_path, RayTracer *tracer, std::shared_ptr<LocalMap> local_map_ptr_,
-                                       std::shared_ptr<GlobalMap> global_map_ptr_) : base_path(file_path)
+                                       std::shared_ptr<GlobalMap> global_map_ptr_, Association::SerializationStrategy strat) : base_path(file_path)
 {
     this->path = path;
     auto poses = path->getPoses();
     ray_tracer = tracer;
     local_map_ptr = local_map_ptr_;
     global_map_ptr = global_map_ptr_;
+    
 
-    // create timestamp
-    time = std::time(nullptr);
-    std::string time_string(std::asctime(std::localtime(&time)));
-
-    time_string = std::regex_replace(time_string, std::regex(" "), "_");
-    time_string = std::regex_replace(time_string, std::regex(":"), "_");
-
-    // somehow there is a line break in this string :D
-    time_string = std::regex_replace(time_string, std::regex("\n"), "");
-
-    // check if the file path contains a trailing slash, if not: add it
-    if (file_path.at(file_path.length() - 1) != '/')
+    // only create this, if we use json as a serialzation, which we dont
+    if (strat == Association::SerializationStrategy::JSON)
     {
-        file_path += "/";
+        // create timestamp
+        time = std::time(nullptr);
+        std::string time_string(std::asctime(std::localtime(&time)));
+
+        time_string = std::regex_replace(time_string, std::regex(" "), "_");
+        time_string = std::regex_replace(time_string, std::regex(":"), "_");
+
+        // somehow there is a line break in this string :D
+        time_string = std::regex_replace(time_string, std::regex("\n"), "");
+
+        // check if the file path contains a trailing slash, if not: add it
+        if (file_path.at(file_path.length() - 1) != '/')
+        {
+            file_path += "/";
+        }
+
+        file_path += time_string + "/";
+
+        // create serialization folder
+        create_serialization_folder(file_path);
     }
-
-    file_path += time_string + "/";
-
-    // create serialization folder
-    create_serialization_folder(file_path);
 
     for (int i = 0; i < poses.size(); i++)
     {
@@ -171,23 +176,12 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
 
             // transform vector by difference between old pose and new pose
             auto pos = new_path->at(i)->pos;
-            // Eigen::Vector4f pose_vec = Eigen::Vector4f(pos.x(), pos.y(), pos.z(), 1.0f);
-            //  transformation relative to old pose
-            // Eigen::Vector4f vec_transformed = pose_differences[a.get_index()] * (Eigen::Vector4f(vec_real.x(), vec_real.y(), vec_real.z(), 1) - pose_vec) + pose_vec;
-
-            // normalize
-            // vec_transformed.normalize();
 
             Eigen::Matrix3f rot_mat = pose_differences[a.get_index() - start_idx].block<3, 3>(0, 0);
             Vector3f transl_vec = pose_differences[a.get_index() - start_idx].block<3, 1>(0, 3);
 
             Vector3f transformed_3d = rot_mat * (vec_real - associations[i].getPose()->pos) + associations[i].getPose()->pos + transl_vec;
-            // Vector3f transformed_3d = rot_mat * (vec_real - pos) + pos + transl_vec;
-            // transformed_3d = vec_real + transl_vec;
-
-            // back to 3d (possibly because of normalization)
-            // Vector3f transformed_3d = Vector3f(vec_transformed.x(), vec_transformed.y(), vec_transformed.z());
-
+            
             // tsdf entry for old cell
             TSDFEntry old_tsdf_entry = data.second.second;
 
@@ -205,11 +199,12 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
                 std::get<1>(tuple) += transformed_3d;
                 std::get<3>(tuple) += 1;
 
-                //std::cout << "Updated some values. New index: " << std::get<3>(tuple) << std::endl;
+                // std::cout << "Updated some values. New index: " << std::get<3>(tuple) << std::endl;
 
-                if(std::get<3>(tuple) > associations.size())
+                if (std::get<3>(tuple) > associations.size())
                 {
-                    std::cout << "Problem for vertex: " << std::endl << std::get<0>(tuple) << std::endl;
+                    std::cout << "Problem for vertex: " << std::endl
+                              << std::get<0>(tuple) << std::endl;
                 }
             }
         }

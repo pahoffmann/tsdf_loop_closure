@@ -46,6 +46,12 @@
 [x] Rotate path: needs to consider the rotation of the point the path is supposed to be rotated around (or maybe not?)
     Does not, but we need to use radiants of course, not degrees
 [x] add a test for the path translationm -> works
+[x] check the rounding, when calculating the new cell poses. where do we need to round here? relative?
+    -> nope, basic rounding, wrong thought process
+[x] Testing: rotate the path around its center and check, what happens to the map -> map update definetly not working atm
+[x] work on code todos, especially for bresenham
+[x] Write the update process of the global map, when a loop was found
+    -> This has been done, though the process doesnt really work the way i thought it would. basically need to rethink the whole thing
 
 Intersection Data:
 
@@ -53,7 +59,6 @@ Intersection Data:
 [x] {WIP:} Write a loop closure detection using min distance traveled 'd', max distance between known pose "d_max" and a visibility criteria using the ray tracer.
 [x] {WIP:} Test the loop closure detection and is_visible method
 [x] -o3 gcc flag for cmake? optimization -> TODO: eval optimization
-[x] Testing: rotate the path around its center and check, what happens to the map -> map update definetly not working atm
 
 ## Interesting but not necessary atm ##
 
@@ -68,18 +73,20 @@ Intersection Data:
 [ ] BUG: during the loop closure process, the map is enlarged by empty chunks, probably due to some indexing problem. If there is time, try to fix this.
 [ ] Keep on working on writing the intersectionstatus to the hdf5
 [ ] Write and read IntersectionStatus to / from HDF5
+[ ] Bresenham: precalc of thee finish vertices not necessary, just use the direction vector and do an inbounds() check with the localmap
 
 ## TODO's ##
 
 [ ] read paper on loop closure, write down most important points
 [ ] Re-evaluate cleanup artifacts method from global map
-[ ] work on code todos, especially for bresenham
 [ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
 
 [ ] The association data should only be determined, when an actual loop is present in the map
-[ ] Write the update process of the global map, when a loop was found
 [ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing (might be too runtime excessive)
 [ ] Write updated path back to h5
+[ ] Implement the ray tracer as a singleton, so the rays don't need initialization every time. (insert this into masters thesis)
+    -> There needs to be an additional array (e.g. init_rays)
+    -> function to destroy current instance and make available for reinstanceiation
 
 
 ## ASAP ##
@@ -87,18 +94,14 @@ Intersection Data:
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
 
 
-[ ] Implement the ray tracer as a singleton, so the rays don't need initialization every time. (insert this into masters thesis)
-    -> There needs to be an additional array (e.g. init_rays)
-    -> function to destroy current instance and make available for reinstanceiation
 [ ] Implement tests to ensure writing to the globalmap works, write meta data (e.g. hit percentage, number hit vs total occupied cells)
     to hdf (/associations)
 
-[ ] Bresenham: precalc of thee finish vertices not necessary, just use the direction vector and do an inbounds() check with the localmap
 [ ] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
     This needs to be addressed and updated.
 [ ] Check diff between association number in map update vs. number of cells displayed in rviz (intersection markers) - they are off...
-[ ] check the rounding, when calculating the new cell poses. where do we need to round here? relative?
 [ ] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
+[ ] Write a test case, which checks the local map functionality... check if resetting all cells with value actually resets them.
 
 ## TODAY ##
 

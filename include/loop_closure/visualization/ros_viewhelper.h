@@ -34,7 +34,7 @@ namespace ROSViewhelper
      * @param box_pose
      * @return visualization_msgs::Marker
      */
-    static visualization_msgs::Marker getBoundingBoxMarker(float side_length_xy, float side_length_z, Pose *box_pose)
+    static visualization_msgs::Marker getBoundingBoxMarker(Eigen::Vector3f box, Pose *box_pose)
     {
         visualization_msgs::Marker cube;
         cube.header.frame_id = "map";
@@ -50,9 +50,9 @@ namespace ROSViewhelper
         cube.pose.orientation.y = 0.0;
         cube.pose.orientation.z = 0.0;
         cube.pose.orientation.w = 1.0;
-        cube.scale.x = side_length_xy;
-        cube.scale.y = side_length_xy;
-        cube.scale.z = side_length_z;
+        cube.scale.x = box.x();
+        cube.scale.y = box.y();
+        cube.scale.z = box.z();
         cube.color.a = 0.2; // Don't forget to set the alpha!
         cube.color.r = 1.0;
         cube.color.g = 1.0;

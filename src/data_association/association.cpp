@@ -33,14 +33,14 @@ Association::Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMa
         break;
     }
 
-    // check if the base path contains a trailing slash, if not: add it
-    if (base_path.at(base_path.length() - 1) != '/')
-    {
-        base_path += "/";
-    }
-
     if (ser_strat == SerializationStrategy::JSON)
     {
+        // check if the base path contains a trailing slash, if not: add it
+        if (base_path.at(base_path.length() - 1) != '/')
+        {
+            base_path += "/";
+        }
+
         file_path = base_path + std::to_string(num_pose) + "_association" + type;
     }
     else
@@ -48,20 +48,6 @@ Association::Association(Pose start_pose, int num_pose, std::shared_ptr<GlobalMa
         // currently nothing, as for hdf file, the association data is written to the global map hdf5
     }
 }
-
-// void Association::addAssociation(Eigen::Vector3i cell, TSDFEntry entry)
-// {
-//     auto tag = tag_from_vec(cell);
-//     if (associations.find(tag) == associations.end())
-//     {
-//         associations[tag] = entry;
-//         num_accesses_to_hm_w++;
-//     }
-//     else
-//     {
-//         num_accesses_to_hm_r++;
-//     }
-// }
 
 void Association::serialize()
 {
@@ -152,6 +138,7 @@ void Association::serialize_JSON()
 
 void Association::deserialize_JSON()
 {
+    // not implemented, because hdf5 ist just way faster.
 }
 
 void Association::serialize_HDF5()
@@ -161,11 +148,11 @@ void Association::serialize_HDF5()
 
     for (auto it : associations)
     {
-        Vector3i ass = it.second.first;
+        Vector3i cell = it.second.first;
         auto tsdf = it.second.second;
-        data.push_back(ass.x());
-        data.push_back(ass.y());
-        data.push_back(ass.z());
+        data.push_back(cell.x());
+        data.push_back(cell.y());
+        data.push_back(cell.z());
         data.push_back(tsdf.value());
         data.push_back(tsdf.weight());
     }
@@ -184,7 +171,6 @@ void Association::deserialize_HDF5()
     std::cout << "[Deserialization]: Reading association data from hdf5..." << std::endl;
     auto data = global_map_ptr->read_association_data(pose_number);
     std::cout << "[Deserialization]: Done Reading association data from hdf5!" << std::endl;
-
 
     // transform data to map
     for (int i = 0; i < data.size(); i += 5)

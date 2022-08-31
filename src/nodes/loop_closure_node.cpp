@@ -45,9 +45,29 @@ visualization_msgs::Marker tsdf_map;             // marker for the tsdf map (loc
 visualization_msgs::Marker tsdf_map_full_before; // marker for the full tsdf map (global) (before map update)
 visualization_msgs::Marker tsdf_map_full_after;  // marker for the full tsdf map (global) (after map update)
 
-// both of these side lengths are in real world coordinates
-float side_length_xy = 0;
-float side_length_z = 0;
+std::vector<visualization_msgs::Marker> loop_visualizations;
+visualization_msgs::Marker path_marker;
+visualization_msgs::Marker updated_path_marker;
+visualization_msgs::Marker pose_marker;
+visualization_msgs::Marker chunk_marker;
+visualization_msgs::Marker tsdf_read_marker;
+visualization_msgs::Marker bresenham_marker;
+
+// used to store sinuglar updates between the path and the path after all the updates
+std::vector<visualization_msgs::Marker> path_marker_updates;
+
+// ros publishers declaration
+ros::Publisher tsdf_before_publisher;
+ros::Publisher tsdf_after_publisher;
+ros::Publisher tsdf_read_publisher;
+ros::Publisher pose_publisher;
+ros::Publisher path_publisher;
+ros::Publisher updated_path_publisher;
+ros::Publisher ray_publisher;
+ros::Publisher bb_publisher;
+ros::Publisher chunk_publisher;
+ros::Publisher bresenham_int_publisher;
+ros::Publisher loop_pub;
 
 /// Map Stuff ///
 std::shared_ptr<GlobalMap> global_map_ptr_;
@@ -58,15 +78,25 @@ RayTracer *ray_tracer;
 
 /// Path ///
 Path *path;
+Path updated_path;
 
 /// Association Manager, used to manage and keep track of the associations ///
 AssociationManager *manager;
+
+// an enum used to update the path as a test, when no loop optimization is possible
+enum PathUpdateTestMethod
+{
+  ROTATION,
+  TRANSLATION,
+  BLURRING,
+  TRANSLATION_AND_ROTATION
+};
 
 /**
  * @brief initializes the local and global map
  *
  */
-void initMaps()
+void initMaps(bool cleanup)
 {
   global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name()); // create a global map, use it's attributes
   auto attribute_data = global_map_ptr_->get_attribute_data();
@@ -79,59 +109,71 @@ void initMaps()
                                               global_map_ptr_, true); // still hardcoded af
 
   auto &size = local_map_ptr_.get()->get_size();
-  side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
-  side_length_z = size.z() * MAP_RESOLUTION / 1000.0f;
 
   std::cout << "Finished init the maps" << std::endl;
+
+  // cleanup the maps, when specified
+  if (cleanup)
+  {
+    // cleans up global map a bit
+    global_map_ptr_->cleanup_artifacts();
+  }
 }
 
 /**
- * @brief Main method
+ * @brief functions, which finds the next loop, giving a path and a start index
+ * @todo find suitable parameters for the loop findings
  *
- * @param argc
- * @param argv
- * @return int
+ * @param path
+ * @return std::pair<int, int>
  */
-int main(int argc, char **argv)
+std::pair<int, int> find_next_loop(Path *path, int start_idx = 0)
 {
-  ros::init(argc, argv, "loop_closure_node");
-  ros::NodeHandle n;
-  ros::NodeHandle nh("~");
+  // dont hardcode these, or if - make sure they fit
+  float MAX_DISTANCE = 3.0f;
+  float MIN_TRAVELED = 10.0f;
 
-  // read options from cmdline
-  options = new lc_options_reader();
-  int status = options->read_options(argc, argv);
+  // find path, including visibility check
+  auto res = path->find_loop_greedy(start_idx, MAX_DISTANCE, MIN_TRAVELED, true);
 
+  std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
+
+  return res;
+}
+
+/**
+ * @brief checks the options status and terminates the program if necessary
+ *
+ * @param status
+ */
+void check_options_status(int status)
+{
   if (status == 1)
   {
     std::cout << "[CLI] Terminate node, because there were some errors while reading from cmd-line" << std::endl;
 
-    return 1;
+    return exit(EXIT_FAILURE);
   }
   else if (status == 2)
   {
     std::cout << "[CLI] Terminate node, because help was requested" << std::endl;
 
-    return 0;
+    return exit(EXIT_SUCCESS);
   }
+}
 
-  // retrieve path method from options (0 = from globalmap, 1 = from path extraction, 2 = from json)
-  int path_method = options->get_path_method();
-
-  // init local and global maps
-  initMaps();
-
-  // cleans up global map a bit
-  // global_map_ptr_->cleanup_artifacts();
-
-  // define stuff for raytracer
-  ray_tracer = new RayTracer(options, local_map_ptr_, global_map_ptr_);
-
+/**
+ * @brief initializes the path and tries to find path positions, if none was specified
+ *
+ * @param path_method
+ */
+void initialize_path(int path_method = 0)
+{
   /******************************************************
    *  Get Path                                          *
    ******************************************************/
 
-  // init path and read from json
+  // init path and read from specified source (mostly hdf5)
   path = new Path(ray_tracer);
 
   // retrieve path from various locations
@@ -174,143 +216,216 @@ int main(int argc, char **argv)
   catch (std::exception &ex)
   {
     std::cerr << "[LoopClosureNode] Error when defining the path: " << ex.what() << std::endl;
-    return EXIT_FAILURE;
+    exit(EXIT_FAILURE);
   }
 
   /******************************************************
    *  End Path Creation                                 *
    ******************************************************/
+}
 
-  // generate publishers
-  ros::Publisher tsdf_before_publisher = n.advertise<visualization_msgs::Marker>("tsdf_before", 1, true);
-  ros::Publisher tsdf_after_publisher = n.advertise<visualization_msgs::Marker>("tsdf_after", 1, true);
-  ros::Publisher tsdf_read_publisher = n.advertise<visualization_msgs::Marker>("tsdf_read", 1, true);
-  ros::Publisher pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
-  ros::Publisher path_publisher = n.advertise<visualization_msgs::Marker>("path", 1, true);
-  ros::Publisher pathblur_publisher = n.advertise<visualization_msgs::Marker>("path_blur", 1, true);
-  ros::Publisher ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
-  ros::Publisher bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
-  ros::Publisher chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
-  ros::Publisher bresenham_int_publisher = n.advertise<visualization_msgs::Marker>("bresenham_intersections", 1, true);
-  ros::Publisher loop_pub = n.advertise<visualization_msgs::Marker>("loop", 1);
+/**
+ * @brief Populate the ros publishers
+ *
+ */
+void populate_publishers(ros::NodeHandle &n)
+{
+  tsdf_before_publisher = n.advertise<visualization_msgs::Marker>("tsdf_before", 1, true);
+  tsdf_after_publisher = n.advertise<visualization_msgs::Marker>("tsdf_after", 1, true);
+  tsdf_read_publisher = n.advertise<visualization_msgs::Marker>("tsdf_read", 1, true);
+  pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
+  path_publisher = n.advertise<visualization_msgs::Marker>("path", 1, true);
+  updated_path_publisher = n.advertise<visualization_msgs::Marker>("path_blur", 1, true);
+  ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
+  bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
+  chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
+  bresenham_int_publisher = n.advertise<visualization_msgs::Marker>("bresenham_intersections", 1, true);
+  loop_pub = n.advertise<visualization_msgs::Marker>("loop", 1);
+}
 
-  // specify ros loop rate
-  ros::Rate loop_rate(10);
+/**
+ * @brief
+ *
+ * @param path
+ * @param method
+ * @return Path
+ */
+Path update_path_test(Path *path, PathUpdateTestMethod method, int start_idx = -1, int end_idx = -1)
+{
+  if (start_idx == -1)
+  {
+    start_idx = 0;
+  }
 
-  // check for loops: THE PARAMETERS HERE ARE SOMEWHAT RANDOM... :D
-  int start_idx = 0;
-  int end_idx = path->get_length() - 1;
-  bool is_ok = true;
-  std::vector<visualization_msgs::Marker> loop_visualizations;
+  if (end_idx == -1)
+  {
+    end_idx = path->get_length() - 1;
+  }
 
   // create a path for blurring
-  Path blurred_path(*path);
+  if (method == PathUpdateTestMethod::BLURRING)
+  {
+    // blur with radius of 0.5m
+    return path->blur_ret(start_idx, end_idx, 0.5f);
+  }
+  else if (method == PathUpdateTestMethod::ROTATION)
+  {
+    // rotate the whole
+    return path->rotate_ret(0, 90, 0);
+  }
+  else if (method == PathUpdateTestMethod::TRANSLATION)
+  {
+    return path->translate_ret(Vector3f(3.0f, 3.0f, 3.0f), start_idx, end_idx);
+  }
+  else if (method == PathUpdateTestMethod::TRANSLATION_AND_ROTATION)
+  {
+    Path translated = path->translate_ret(Vector3f(3.0f, 3.0f, 3.0f), start_idx, end_idx);
+    return translated.rotate_ret(0, 0, 90);
+  }
+}
 
-  std::vector<std::pair<int, int>> lc_pairs;
+/**
+ * @brief updates the path after finding a loop
+ * @todo IMPLEMENT THIS
+ *
+ * @return Path
+ */
+Path update_path()
+{
+  return Path();
+}
 
-  // TODO: this should probably be outsourced somehow
+void populate_markers()
+{
+  // create a marker for the updated map
+  updated_path_marker = ROSViewhelper::initPathMarker(&updated_path);
+
+  tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
+  // tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
+
+  // auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
+  tsdf_read_marker = manager->update_localmap(&updated_path, 0, updated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
+
+  bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
+
+  // get markers
+  pose_marker = ROSViewhelper::initPoseMarker(path->at(0));
+  chunk_marker = ROSViewhelper::initPathExtractionVisualizion(global_map_ptr_, local_map_ptr_);
+
+  // initialize the bounding box
+  bb_marker = ROSViewhelper::getBoundingBoxMarker(map_to_real(local_map_ptr_->get_size()), path->at(0));
+
+  // full tsdf map for display, very ressource intensive, especially for large maps..
+  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &updated_path, true);
+  // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
+}
+
+/**
+ * @brief Main method
+ *
+ * @param argc
+ * @param argv
+ * @return int
+ */
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "loop_closure_node");
+  ros::NodeHandle n;
+  ros::NodeHandle nh("~");
+
+  // read options from cmdline
+  options = new lc_options_reader();
+  int status = options->read_options(argc, argv);
+
+  // check the status returned from the options reading
+  check_options_status(status);
+
+  // init local and global maps
+  initMaps(false);
+
+  // define stuff for raytracer
+  ray_tracer = new RayTracer(options, local_map_ptr_, global_map_ptr_);
+
+  // retrieve path method from options (0 = from globalmap, 1 = from path extraction, 2 = from json)
+  initialize_path(options->get_path_method());
+  path_marker = ROSViewhelper::initPathMarker(path);
+
+  // generate publishers
+  populate_publishers(n);
+
+  // local variables used to handle the big while loop following:
+  bool is_ok = true;
+  int num_loops = 0;
+  int current_start_idx = 0;
+
   while (is_ok)
   {
-    // find path, including visibility check
-    auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+    std::pair<int, int> lc_pair = find_next_loop(path, current_start_idx);
 
-    // found
-    if (res.first != -1 && res.second != -1)
+    // break, if no loop is found, aka at least one of the returned indices is -1
+    if (lc_pair.first == -1 || lc_pair.second == -1)
     {
-      // update start index for possible second closure
-      start_idx = res.second;
-
-      std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
-
-      // create a visualization marker
-      loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos));
-
-      // save the loop closure index pair
-      lc_pairs.push_back(res);
-    }
-    else
-    {
-      std::cout << "No further Loop found in the current hdf5. " << std::endl;
       is_ok = false;
+
+      break;
     }
-  }
 
-  for (auto pair : lc_pairs)
-  {
-    // blur with radius of 0.5m (todo: param)
-    blurred_path = blurred_path.blur_ret(pair.first, pair.second, 0.5f);
-  }
+    current_start_idx = lc_pair.second;
 
-  // rotate the path for testing
-  Path rotated_path = path->rotate_ret(0, 90, 0);
-  Path translated_path = path->translate_ret(Vector3f(3.0f, 3.0f, 3.0f));
+    // we found a loop!
+    num_loops++;
+
+    // create associationmanager and find the associations for the current path
+    manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
+
+    // TODO: this function should only generate associations of poses which 'participate' in the loop closure
+    manager->greedy_associations();
+
+    // update the path after finding the loop!
+    // updated_path = update_path();
+    updated_path = update_path_test(path, PathUpdateTestMethod::TRANSLATION, lc_pair.first, lc_pair.second);
+
+    // create a visualization marker
+    loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(lc_pair.first)->pos, path->at(lc_pair.second)->pos));
+
+    // update the localmap with the updated path
+    manager->update_localmap(&updated_path, lc_pair.first, lc_pair.second, AssociationManager::UpdateMethod::MEAN);
+
+    // after every run, the data needs to be cleaned
+    global_map_ptr_->clear_association_data();
+    global_map_ptr_->clear_intersection_data();
+  }
 
   // when no loop is found, we terminate early
-  if (loop_visualizations.size() == 0)
+  if (num_loops == 0)
   {
     std::cout << "[Main]: No Loops found in the current HDF5, terminating..." << std::endl;
     exit(EXIT_SUCCESS);
   }
   else
   {
-    std::cout << "[Main]: Found " << loop_visualizations.size() << " loop(s)" << std::endl;
+    std::cout << "[Main]: Found " << num_loops << " loop(s)" << std::endl;
   }
 
-  auto path_marker_blurred = ROSViewhelper::initPathMarker(&blurred_path);
-  auto path_marker_rotated = ROSViewhelper::initPathMarker(&rotated_path);
-  auto path_marker_translated = ROSViewhelper::initPathMarker(&translated_path);
-
-  // create associationmanager
-  manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
-  manager->greedy_associations();
-
-  // obtain the ros marker for visualization
-  // ray_markers = ray_tracer->get_ros_marker();
-
-  // now do the update process
-  // for (auto pair : lc_pairs)
-  // {
-  //   manager->update_localmap(&blurred_path, pair.first, pair.second, AssociationManager::UpdateMethod::MEAN);
-  // }
-
-  tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
-  // tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
-
-  //auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
-  auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
-
-  auto bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
-
-  // get markers
-  auto pose_marker = ROSViewhelper::initPoseMarker(path->at(0));
-  auto path_marker = ROSViewhelper::initPathMarker(path);
-  auto chunk_marker = ROSViewhelper::initPathExtractionVisualizion(global_map_ptr_, local_map_ptr_);
-
-  // initialize the bounding box
-  bb_marker = ROSViewhelper::getBoundingBoxMarker(side_length_xy, side_length_z, path->at(0));
-
-  // init tsdf
-  // tsdf_map = ROSViewhelper::initTSDFmarkerPose(local_map_ptr_, path->at(0));
-
-  // full tsdf map for display, very ressource intensive, especially for large maps..
-  //tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &rotated_path, true);
-  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &rotated_path, true);
-  // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
+  // now populate the markers
+  populate_markers();
 
 #ifdef DEBUG
-  std::cout << "Before update size: " << tsdf_map_full_before.points.size() << std::endl;
+          std::cout
+      << "Before update size: " << tsdf_map_full_before.points.size() << std::endl;
   std::cout << "After update size: " << tsdf_map_full_after.points.size() << std::endl;
 #endif
 
   // auto single_marker = ROSViewhelper::initPoseAssociationVisualization(global_map_ptr_, path->at(0), 0);
 
+  // specify ros loop rate
+  ros::Rate loop_rate(10);
+
   // some stuff doesnt need to be published every iteration...
   bb_publisher.publish(bb_marker);
   pose_publisher.publish(pose_marker);
   path_publisher.publish(path_marker);
-  // pathblur_publisher.publish(path_marker_blurred);
-  //pathblur_publisher.publish(path_marker_rotated);
-  pathblur_publisher.publish(path_marker_translated);
+  updated_path_publisher.publish(updated_path_marker);
   // tsdf_publisher.publish(tsdf_map);
   tsdf_before_publisher.publish(tsdf_map_full_before);
   tsdf_after_publisher.publish(tsdf_map_full_after);

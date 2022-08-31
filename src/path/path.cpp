@@ -228,11 +228,16 @@ Path Path::rotate_ret(float roll_deg, float pitch_deg, float yaw_deg, Pose *rota
     return path;
 }
 
-Path Path::translate_ret(Vector3f translation_vector)
+Path Path::translate_ret(Vector3f translation_vector, int start_idx, int end_idx)
 {
+    if (start_idx < 0 || end_idx > get_length() - 1 || start_idx > end_idx)
+    {
+        throw std::logic_error("[Path] - blur(): indexing error");
+    }
+
     Path tmp(*this);
 
-    for(int i = 0; i < tmp.get_length(); i++)
+    for (int i = start_idx; i <= end_idx; i++)
     {
         tmp.at(i)->add(translation_vector);
     }
@@ -244,7 +249,7 @@ Vector3f Path::get_centroid()
 {
     Vector3f accumulated = Vector3f::Zero();
 
-    for(auto pose : poses)
+    for (auto pose : poses)
     {
         accumulated += pose.pos;
     }

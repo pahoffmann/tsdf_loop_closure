@@ -155,12 +155,12 @@ int main(int argc, char **argv)
     ros::Publisher wall_after_publisher = n.advertise<visualization_msgs::Marker>("wall_after", 1, true);
 
     // rotate the path for testing
-    //Path rotated_path = path->rotate_ret(90, 0, 0);
-    Path translated_path = path->translate_ret(Vector3f(2,2,2));
+    // Path rotated_path = path->rotate_ret(90, 0, 0);
+    Path translated_path = path->translate_ret(Vector3f(2, 2, 2), 0, path->get_length() - 1);
     translated_path = translated_path.rotate_ret(0, 45, 90);
 
     before_path = ROSViewhelper::initPathMarker(path);
-    //after_path = ROSViewhelper::initPathMarker(&rotated_path);
+    // after_path = ROSViewhelper::initPathMarker(&rotated_path);
     after_path = ROSViewhelper::initPathMarker(&translated_path);
 
     Vector3i wall_base(-100, -50, -100);
@@ -169,13 +169,13 @@ int main(int argc, char **argv)
     Vector3i dir_vec_3(0, 0, 3);
     std::vector<Vector3i> cell_wall = Testing::generate_cell_wall(wall_base, dir_vec_1, dir_vec_2, 50, 100);
     std::vector<Vector3i> cell_cube = Testing::generate_cell_cube(wall_base, dir_vec_1, dir_vec_2, dir_vec_3, 50, 100, 20);
-    //auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &rotated_path);
-    //auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &rotated_path, 0, 0);
-    //auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &translated_path, 0, 0);
+    // auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &rotated_path);
+    // auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &rotated_path, 0, 0);
+    // auto vis_pair = Testing::test_cell_transformation(cell_wall, path, &translated_path, 0, 0);
     auto vis_pair = Testing::test_cell_transformation(cell_cube, path, &translated_path);
-    //auto vis_pair = Testing::test_cell_transformation_rnd(cell_cube, path, &translated_path);
-    //auto vis_pair = Testing::test_cell_transformation_rnd(cell_cube, path, &rotated_path);
-    //auto vis_pair = Testing::test_cell_transformation_weighted(cell_cube, path, &rotated_path);
+    // auto vis_pair = Testing::test_cell_transformation_rnd(cell_cube, path, &translated_path);
+    // auto vis_pair = Testing::test_cell_transformation_rnd(cell_cube, path, &rotated_path);
+    // auto vis_pair = Testing::test_cell_transformation_weighted(cell_cube, path, &rotated_path);
 
     // publish it all
     path_before_publisher.publish(before_path);
