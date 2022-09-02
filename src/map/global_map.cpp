@@ -819,10 +819,10 @@ void GlobalMap::clear_intersection_data()
 }
 
 
-std::vector<Vector3i, TSDFEntry>& GlobalMap::get_full_data()
+/*std::vector<Vector3i, TSDFEntry>& GlobalMap::get_full_data()
 {
     //TODO: implement
     std::vector<Vector3i, TSDFEntry> tmp;
     return tmp;
-}
+}*/
 

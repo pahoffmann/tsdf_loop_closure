@@ -136,7 +136,14 @@ std::pair<int, int> find_next_loop(Path *path, int start_idx = 0)
   // find path, including visibility check
   auto res = path->find_loop_greedy(start_idx, MAX_DISTANCE, MIN_TRAVELED, true);
 
-  std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
+  if (res.first == -1 || res.second == -1)
+  {
+    std::cout << "No further loop found" << std::endl;
+  }
+  else
+  {
+    std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
+  }
 
   return res;
 }
@@ -305,7 +312,7 @@ void populate_markers()
   // tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
 
   // auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
-  tsdf_read_marker = manager->update_localmap(&updated_path, 0, updated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
+  // tsdf_read_marker = manager->update_localmap(&updated_path, 0, updated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
 
   bresenham_marker = ray_tracer->get_bresenham_intersection_marker();
 

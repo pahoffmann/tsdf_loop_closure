@@ -27,23 +27,14 @@
 
 class AssociationManager
 {
-private:
-  std::vector<Association> associations;
-  Path *path;
-  std::time_t time;
-  std::string base_path;
-  RayTracer *ray_tracer;
-  std::shared_ptr<LocalMap> local_map_ptr;
-  std::shared_ptr<GlobalMap> global_map_ptr;
-
-  /**
-   * @brief Create a serialization folder at the requested path using filesystem utils
-   *
-   * @param path
-   */
-  void create_serialization_folder(std::string path);
-
 public:
+  // enum which is used to determine which method is used to update the cells in the map
+  enum UpdateMethod
+  {
+    MEAN,
+    SINUS
+  };
+
   /**
    * @brief Construct a new Association Manager object from a path. For every pose in the path, an association is created which is supposed
    *        to connect the tsdf data to a pose and make is serializable. creeeeeeepy.
@@ -79,13 +70,6 @@ public:
    */
   void plane_limited_associations();
 
-  // enum which is used to determine which method is used to update the cells in the map
-  enum UpdateMethod
-  {
-    MEAN,
-    SINUS
-  };
-
   /**
    * @brief This method ist supposed to update the localmap after finding a loop and getting the respective associations for each pose
    *        This means, this method needs the following parameters:
@@ -116,4 +100,91 @@ public:
    * @return a ros visualization marker, which can be used to debug and see, if the data is read perfectly
    */
   visualization_msgs::Marker update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method = UpdateMethod::MEAN);
+
+  /**
+   * @brief a method, which reads all the association data and simply cleans the whole globalmap
+   * @attention this method is simply used to test the associations and basically check if they are good2go
+   *
+   */
+  void test_associations();
+
+private:
+  std::vector<Association> associations;
+  Path *path;
+  std::time_t time;
+  std::string base_path;
+  RayTracer *ray_tracer;
+  std::shared_ptr<LocalMap> local_map_ptr;
+  std::shared_ptr<GlobalMap> global_map_ptr;
+  TSDFEntry default_entry;
+
+  Vector3i l_map_size_half;
+  Vector3i l_map_size;
+
+  /**
+   * @brief Create a serialization folder at the requested path using filesystem utils
+   *
+   * @param path
+   */
+  void create_serialization_folder(std::string path);
+
+  /**
+   * @brief calculates the pose differences between two paths
+   *
+   * @param before
+   * @param after
+   * @return std::vector<Matrix4f>
+   */
+  std::vector<Matrix4f> calculate_pose_differences(Path *new_path, int start_idx, int end_idx);
+
+  /**
+   * @brief
+   *
+   * @param previous_new_map
+   * @param pose_differences
+   * @param start_idx
+   * @param end_idx
+   */
+  void fill_hashmap(
+      boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> &previous_new_map,
+      std::vector<Matrix4f> &pose_differences, int start_idx, int end_idx);
+
+  /**
+   * @brief this method will fill a new hashmap of <Vector3i, TSDFEntry> which basically contains information on
+   *        which
+   *
+   * @param previous_new_map
+   * @param new_tsdf_map
+   * @param method
+   *
+   */
+  void filter_duplicate_tagret_cells(boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> &previous_new_map,
+                                     boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map,
+                                     UpdateMethod &method);
+
+  /**
+   * @brief will calculate the bounding box of a number of given cells
+   *
+   * @param new_tsdf_map
+   * @return std::pair<Vector3i, Vector3i>
+   */
+  std::pair<Vector3i, Vector3i> calculate_bounding_box(
+      boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map);
+
+  /**
+   * @brief function, which will calculate the seperations to ensure a minimum number of shifts
+   *
+   * @return std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>>
+   */
+  void calc_map_seperations(Vector3i bb_min, Vector3i bb_max,
+                            std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> &map_seperations);
+
+  /**
+   * @brief fill the calculated map seperations with association data
+   *
+   * @param map_seperations
+   * @param new_tsdf_map
+   */
+  void fill_map_seperations(std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> &map_seperations,
+                            boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map);
 };
