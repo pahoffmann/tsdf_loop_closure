@@ -163,13 +163,29 @@ void AssociationManager::fill_hashmap(
 
                 // std::cout << "Updated some values. New index: " << std::get<3>(tuple) << std::endl;
 
+#ifdef DEBUG
                 if (std::get<3>(tuple) > associations.size())
                 {
                     std::cout << "Problem for vertex: " << std::endl
                               << std::get<0>(tuple) << std::endl;
                 }
+#endif
             }
         }
+
+#ifdef DEBUG
+        for (auto data : cur_associations)
+        {
+            if (previous_new_map.find(data.first) == previous_new_map.end())
+            {
+                std::cout << "KEEEEEEEEEEEEEEEEEEEEEK" << std::endl;
+            }
+        }
+#endif
+
+    // clear data after every association is loaded to ensure RAM is not polluted
+    a.clear_data();
+
     }
 }
 
@@ -182,7 +198,6 @@ void AssociationManager::filter_duplicate_tagret_cells(boost::unordered_map<size
     {
         auto tuple = pair.second;
         Vector3f old_vec = std::get<0>(tuple);
-        // Vector3f new_vec = std::get<1>(tuple) / (float)std::get<3>(tuple);
         TSDFEntry tsdf = std::get<2>(tuple);
 
         Vector3i old_cell = real_to_map(old_vec);
@@ -194,6 +209,13 @@ void AssociationManager::filter_duplicate_tagret_cells(boost::unordered_map<size
 
             // calc mean using counter
             new_cell = real_to_map(std::get<1>(tuple) / (float)std::get<3>(tuple));
+
+#ifdef DEBUG
+            if (old_cell == new_cell)
+            {
+                std::cout << "OLD AND NEW CELL HAVE THE SAME COORDINATES" << std::endl;
+            }
+#endif
 
             break;
 
@@ -209,7 +231,8 @@ void AssociationManager::filter_duplicate_tagret_cells(boost::unordered_map<size
         size_t hash_old = hash_from_vec(old_cell);
 
         // check if exists. if exists and default value is in place, overwrite
-        if (new_tsdf_map.find(hash) == new_tsdf_map.end() || (std::get<1>(new_tsdf_map[hash]).weight() == 0 && std::get<1>(new_tsdf_map[hash]).value() == 600))
+        /*if (new_tsdf_map.find(hash) == new_tsdf_map.end() ||
+            (std::get<1>(new_tsdf_map[hash]).weight() == 0 && std::get<1>(new_tsdf_map[hash]).value() == global_map_ptr->get_attribute_data().get_tau()))
         {
             new_tsdf_map[hash] = std::make_tuple(new_cell, tsdf, 1);
         }
@@ -223,7 +246,7 @@ void AssociationManager::filter_duplicate_tagret_cells(boost::unordered_map<size
             tsdf_hm.weight(tsdf_hm.weight() + tsdf.weight());
             tsdf_hm.setIntersect(tsdf.getIntersect());
             counter += 1;
-        }
+        }*/
 
         // now "reset" old poses with a default entry, still considering, that there may be some new cells also updating this
 
@@ -235,7 +258,7 @@ void AssociationManager::filter_duplicate_tagret_cells(boost::unordered_map<size
         else
         {
             // no update seen yet, so we place the default entry here, still considering, that it may be updated later on.
-            new_tsdf_map[hash_old] = std::make_tuple(new_cell, default_entry, 1);
+            new_tsdf_map[hash_old] = std::make_tuple(old_cell, default_entry, 1);
         }
     }
 }
@@ -647,7 +670,8 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
 
 void AssociationManager::test_associations()
 {
-    boost::unordered_map<size_t, Vector3i> cell_map;
+    boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> new_tsdf_map;
+    std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> map_seperations; // map holding the map seperations in localmap sized chunks
 
     // create a cell map
 
@@ -661,6 +685,8 @@ void AssociationManager::test_associations()
         // get current association map
         auto &cur_associations = a.getAssociations();
 
+        std::cout << "Deserialized " << cur_associations.size() << " associations" << std::endl;
+
         // now iterate over the deserialzed association data
         for (auto data : cur_associations)
         {
@@ -668,63 +694,49 @@ void AssociationManager::test_associations()
             auto association_data = data.second;
 
             // add association stuff.
-            if (cell_map.find(hash) != cell_map.end())
+            if (new_tsdf_map.find(hash) == new_tsdf_map.end())
             {
-                cell_map[hash] = association_data.first;
+                new_tsdf_map[hash] = std::make_tuple(association_data.first, default_entry, 1);
             }
         }
     }
 
-    // reorganize the map
+    std::cout << "When testing, there are " << new_tsdf_map.size() << " cells in the hm" << std::endl;
 
-    // find bounding box
+    auto bb_pair = calculate_bounding_box(new_tsdf_map);
 
-    // get bounding box info
-    float numeric_max = std::numeric_limits<float>::max();
-    int bb_min_x = numeric_max;
-    int bb_min_y = numeric_max;
-    int bb_min_z = numeric_max;
-    int bb_max_x = -numeric_max;
-    int bb_max_y = -numeric_max;
-    int bb_max_z = -numeric_max;
+    int max_value = std::numeric_limits<int>::max();
+    int min_value = std::numeric_limits<int>::min();
+    Vector3i default_max = Vector3i::Ones() * max_value;
+    Vector3i default_min = Vector3i::Ones() * -1 * min_value;
 
-    // we need bounding box information to ensure minimum number of shifts when updating the localmap
-    // TODO: this can probably also be done in the upper loop, not sure about the offset because of the if checks though, as they have to be done
-    // a tone more often
-    for (auto &pair : cell_map)
+#ifdef DEBUG
+    if (bb_pair.first == default_min || bb_pair.second == default_max)
     {
-        Vector3i cell = pair.second;
-
-        // now using the coordinates of old and new cell, aim to finding the bounding box covering all the association cells
-        if (cell.x() < bb_min_x)
-        {
-            bb_min_x = cell.x();
-        }
-        else if (cell.x() > bb_max_x)
-        {
-            bb_max_x = cell.x();
-        }
-
-        if (cell.y() < bb_min_y)
-        {
-            bb_min_y = cell.y();
-        }
-        else if (cell.y() > bb_max_y)
-        {
-            bb_max_y = cell.y();
-        }
-
-        if (cell.z() < bb_min_z)
-        {
-            bb_min_z = cell.z();
-        }
-        else if (cell.z() > bb_max_z)
-        {
-            bb_max_z = cell.z();
-        }
+        throw std::logic_error("[AssociationManager - test_associations() ]:The Bounding Box calculation returned default values");
     }
+#endif
 
-    Vector3i bb_min(bb_min_x, bb_min_y, bb_min_z);
-    Vector3i bb_max(bb_max_x, bb_max_y, bb_max_z);
-    Vector3i bb_diff = (bb_max - bb_min).cwiseAbs();
+    // calc the seperations
+    calc_map_seperations(bb_pair.first, bb_pair.second, map_seperations);
+
+    // fill the seperatoions
+    fill_map_seperations(map_seperations, new_tsdf_map);
+
+    // now run over the seperations, shift the map and update the cells (void them as a test)
+
+    for (auto seperation : map_seperations)
+    {
+        auto shift_location = seperation.first;
+
+        local_map_ptr->shift(shift_location);
+
+        for (auto new_cell : seperation.second)
+        {
+            auto cell = new_cell.first;
+            local_map_ptr->value(cell) = new_cell.second;
+        }
+
+        local_map_ptr->write_back();
+    }
 }

@@ -308,7 +308,6 @@ void populate_markers()
   // create a marker for the updated map
   updated_path_marker = ROSViewhelper::initPathMarker(&updated_path);
 
-  tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
   // tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
 
   // auto tsdf_read_marker = manager->update_localmap(&rotated_path, 0, rotated_path.get_length() - 1, AssociationManager::UpdateMethod::MEAN);
@@ -361,6 +360,9 @@ int main(int argc, char **argv)
   // generate publishers
   populate_publishers(n);
 
+  // generate marker for before map
+  tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
+
   // local variables used to handle the big while loop following:
   bool is_ok = true;
   int num_loops = 0;
@@ -398,6 +400,7 @@ int main(int argc, char **argv)
 
     // update the localmap with the updated path
     manager->update_localmap(&updated_path, lc_pair.first, lc_pair.second, AssociationManager::UpdateMethod::MEAN);
+    // manager->test_associations();
 
     // after every run, the data needs to be cleaned
     global_map_ptr_->clear_association_data();

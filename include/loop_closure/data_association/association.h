@@ -32,7 +32,7 @@ class Association
 public:
     /**
      * @brief There will be multiple strategys for serializing the associations, which might be needed by different association strategies
-     * 
+     *
      * @details currently the only viable strategy is to use hdf5, sql is not implemented
      *
      */
@@ -48,7 +48,7 @@ public:
     // maybe use indexing here insead of actual global pose
     inline void addAssociation(Eigen::Vector3i cell, TSDFEntry entry)
     {
-        //auto tag = tag_from_vec(pose);
+        // auto tag = tag_from_vec(pose);
         size_t seed = hash_from_vec(cell);
 
         if (associations.find(seed) == associations.end())
@@ -56,10 +56,10 @@ public:
             associations[seed] = std::make_pair(cell, entry);
             num_accesses_to_hm_w++;
         }
-        else{
+        else
+        {
             num_accesses_to_hm_r++;
         }
-
     }
 
     // serialize data if no longer needed
@@ -76,10 +76,11 @@ public:
 
     /**
      * @brief a reference to the association of the current pose
-     * 
-     * @return boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>>& 
+     *
+     * @return boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>>&
      */
-    inline boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>>& getAssociations() {
+    inline boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>> &getAssociations()
+    {
         return associations;
     }
 
@@ -93,8 +94,18 @@ public:
         return &pose;
     }
 
-    inline int get_index() {
+    inline int get_index()
+    {
         return pose_number;
+    }
+
+    /**
+     * @brief clears the data in the association
+     * 
+     */
+    void clear_data()
+    {
+        associations.clear();
     }
 
 private:
@@ -113,7 +124,7 @@ private:
     // we might need a hashmap depending on the case to speedup the search for association on specific positions.
     // hashmap should uses indices rather than pure global positioning information
     // this datatype is enough vor MVP (minimal viable product) which uses the greedy strat
-    //boost::unordered_map<std::string, TSDFEntry> associations; // associations between space and Value
+    // boost::unordered_map<std::string, TSDFEntry> associations; // associations between space and Value
     boost::unordered_map<size_t, std::pair<Eigen::Vector3i, TSDFEntry>> associations; // associations between space and Value
 
     // serializes the association in hdf5
