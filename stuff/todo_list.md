@@ -105,6 +105,10 @@ Intersection Data:
 [ ] Write a test case, which checks the local map functionality... check if resetting all cells with value actually resets them.
 [ ] Only generate associations in bounds of the loop closure indices.
 
+[ ] Problems with the map update: 
+[ ] A. After the update, there are only positive valued cells left...
+[ ] B. there is far less updates, than the code says... look into that
+
 ## TODAY ##
 
 # Main target #
