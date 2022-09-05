@@ -183,9 +183,8 @@ void AssociationManager::fill_hashmap(
         }
 #endif
 
-    // clear data after every association is loaded to ensure RAM is not polluted
-    a.clear_data();
-
+        // clear data after every association is loaded to ensure RAM is not polluted
+        a.clear_data();
     }
 }
 
@@ -231,7 +230,7 @@ void AssociationManager::filter_duplicate_tagret_cells(boost::unordered_map<size
         size_t hash_old = hash_from_vec(old_cell);
 
         // check if exists. if exists and default value is in place, overwrite
-        /*if (new_tsdf_map.find(hash) == new_tsdf_map.end() ||
+        if (new_tsdf_map.find(hash) == new_tsdf_map.end() ||
             (std::get<1>(new_tsdf_map[hash]).weight() == 0 && std::get<1>(new_tsdf_map[hash]).value() == global_map_ptr->get_attribute_data().get_tau()))
         {
             new_tsdf_map[hash] = std::make_tuple(new_cell, tsdf, 1);
@@ -246,7 +245,7 @@ void AssociationManager::filter_duplicate_tagret_cells(boost::unordered_map<size
             tsdf_hm.weight(tsdf_hm.weight() + tsdf.weight());
             tsdf_hm.setIntersect(tsdf.getIntersect());
             counter += 1;
-        }*/
+        }
 
         // now "reset" old poses with a default entry, still considering, that there may be some new cells also updating this
 
@@ -555,12 +554,26 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
     // this ensures a minimum number of localmap shifts, thus reducing the runtime significantly
     fill_map_seperations(map_seperations, new_tsdf_map);
 
+    int num_updates = 0;
+
+    for (auto seperation : map_seperations)
+    {
+        num_updates += seperation.second.size();
+    }
+
+#ifdef DEBUG
+    std::cout << "[Associationmanager: After calculating the map seperations and" << std::endl
+              << "filling them, the number of updates to the map, which are necessary, is:" << num_updates << std::endl;
+#endif
+
 #ifdef DEBUG
     int counter = 0;
     // * 2, as there are updates for new and old cells ;)
     size_t hashmap_size = new_tsdf_map.size();
     size_t five_percent = hashmap_size / 20;
     int percent_counter = 0;
+    int already_updated = 0;
+    int initial_update = 0;
 #endif
 
     for (auto seperation : map_seperations)
@@ -581,12 +594,19 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
         local_map_ptr->shift(shift_location);
 
 #ifdef DEBUG
-        std::cout << "SHIFT! TO: " << std::endl
-                  << local_map_ptr->get_pos() << std::endl;
+        // std::cout << "SHIFT! TO: " << std::endl
+        //           << local_map_ptr->get_pos() << std::endl;
 #endif
 
         // obtain a copy of the local map to check if a cell has already been updated before
         LocalMap localmap_copy(*local_map_ptr);
+
+#ifdef DEBUG
+        if (localmap_copy.getBuffer() != local_map_ptr->getBuffer())
+        {
+            throw std::logic_error("Error when copying the localmap");
+        }
+#endif
 
         for (auto &pair : seperation.second)
         {
@@ -596,6 +616,11 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
             counter++;
             if (counter % five_percent == 0)
             {
+                if (counter > five_percent)
+                {
+                    std::cout << "\033[A\33[2K\r";
+                }
+
                 percent_counter += 5;
                 std::cout << "Updated " << percent_counter << " percent of the map" << std::endl;
             }
@@ -639,6 +664,11 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
                 // if the cell contains default values, we overwrite them
                 calced_value = new_val;
                 calced_weight = new_weight;
+
+                // std::cout << "Cell is default" << std::endl;
+#ifdef DEBUG
+                initial_update++;
+#endif
             }
             else if (tsdf.value() != tsdf_copy.value() || tsdf.weight() != tsdf_copy.weight())
             {
@@ -648,6 +678,12 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
                 // TODO: dont do this!
                 calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
                 calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
+
+                // std::cout << "Cell is not default, but already updated" << std::endl;
+
+#ifdef DEBUG
+                already_updated++;
+#endif
             }
             else
             {
@@ -655,17 +691,37 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
                 // if the target cell is a default cell, we completely overwrite it
                 calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
                 calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
+
+                // std::cout << "Cell is not default, but not yet updated" << std::endl;
+
+#ifdef DEBUG
+                already_updated++;
+#endif
             }
 
-            tsdf.value(calced_value);
-            tsdf.weight(calced_weight);
-            tsdf.setIntersect(pair.second.getIntersect());
+            if (new_val < 0)
+            {
+                std::cout << "There actually is a val < 0" << std::endl;
+            }
+
+            TSDFEntry new_entry(calced_value, calced_weight);
+            new_entry.setIntersect(pair.second.getIntersect());
+
+            local_map_ptr->value(pair.first) = pair.second;
+            // local_map_ptr->value(pair.first) = new_entry;
         }
+
+        local_map_ptr->write_back();
     }
 
-    local_map_ptr->write_back();
+#ifdef DEBUG
+    std::cout << "INITIAL UPDATES: " << initial_update << std::endl
+              << "ALREADY UPDATED" << already_updated << std::endl;
+#endif
 
-    return marker;
+        // local_map_ptr->write_back();
+
+        return marker;
 }
 
 void AssociationManager::test_associations()
