@@ -4,6 +4,8 @@
  * @file association_manager.h
  * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
  * @brief Class used to manage (e.g. load and unload associations)
+ *        Furthermore, this class is used to update the localmap after a loop closure, based on
+ *        calculated association
  * @version 0.1
  * @date 2022-03-14
  *
@@ -22,6 +24,8 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
 
     l_map_size = local_map_ptr->get_size();
     l_map_size_half = l_map_size / 2;
+
+    default_entry = TSDFEntry(global_map_ptr->get_attribute_data().get_tau(), 0); // default tsdf entry used to "reset" old cell locations
 
     // only create this, if we use json as a serialzation, which we dont
     if (strat == Association::SerializationStrategy::JSON)
@@ -72,199 +76,119 @@ void AssociationManager::create_serialization_folder(std::string path)
     // std::filesystem::create_directories(path);
 }
 
-std::vector<Matrix4f> AssociationManager::calculate_pose_differences(Path *new_path, int start_idx, int end_idx)
+void AssociationManager::calculate_pose_differences(Path *new_path)
 {
-    // vector capturing the differences between poses
-    std::vector<Matrix4f> pose_differences;
-
-    for (int i = start_idx; i <= end_idx; i++)
+    // new path has the same size as the old one, currently an association is generated for each of the poses
+    for (int i = 0; i < new_path->get_length(); i++)
     {
         Matrix4f previous_pose = associations[i].getPose()->getTransformationMatrix();
         Matrix4f current_pose = new_path->at(i)->getTransformationMatrix();
 
+        // calculate the difference between the transformations via a transformation matrix
         pose_differences.push_back(getTransformationMatrixDiff(previous_pose, current_pose));
-
-#ifdef DEBUG
-        std::cout << std::endl
-                  << "Prev: " << std::endl
-                  << previous_pose << std::endl
-                  << "Current: " << std::endl
-                  << current_pose << std::endl
-                  << "Diff Comp Wise: " << std::endl
-                  << pose_differences[i] << std::endl
-                  << std::endl;
-#endif
     }
-
-    return pose_differences;
 }
 
-void AssociationManager::fill_hashmap(
-    boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> &previous_new_map,
-    std::vector<Matrix4f> &pose_differences, int start_idx, int end_idx)
+void AssociationManager::generate_level_one_data(int start_idx, int end_idx)
 {
     for (int i = start_idx; i < end_idx; i++)
     {
-        auto a = associations[i];
+        // get association for current index
+        auto &association = associations[i];
 
-#ifdef DEBUG
-        std::cout << "Getting data for pose " << i << std::endl;
+        // deserialize the data
+        association.deserialze();
 
-        std::cout << "Deserializing data..." << std::endl;
-#endif
+        // obtain the data
+        auto &association_data = association.getAssociations();
 
-        // read data from file
-        a.deserialze();
-
-#ifdef DEBUG
-        std::cout << "Deserialization done!" << std::endl;
-#endif
-
-        // get current association map
-        auto &cur_associations = a.getAssociations();
-
-#ifdef DEBUG
-        std::cout << "Retrieved " << cur_associations.size() << " associations from hdf5" << std::endl;
-#endif
-
-        // now iterate over the deserialzed association data
-        for (auto data : cur_associations)
+        // for every pose of the loop, transform the associated data
+        for (auto pair : association_data)
         {
-            size_t hash = data.first;
-            auto association_data = data.second;
+            auto hash = pair.first;
 
-            // get cell position in real word data
-            auto vec_real = map_to_real(data.second.first);
+            auto data = pair.second;
 
-            // extract rotation and translation matrix from the pose difference
-            // the start index needs to be substacted here, which is important, as we want the correct pose transform
-            Eigen::Matrix3f rot_mat = pose_differences[a.get_index() - start_idx].block<3, 3>(0, 0);
-            Vector3f transl_vec = pose_differences[a.get_index() - start_idx].block<3, 1>(0, 3);
+            // now transform the data according to the pose difference
+            auto old_cell = data.first;
+            auto tsdf = data.second;
+            auto new_cell = calculate_new_cell_position(old_cell, pose_differences[i], associations[i].getPose());
 
-            // transform vector by difference between old pose and new pose
-            Vector3f transformed_3d = rot_mat * (vec_real - associations[i].getPose()->pos) + associations[i].getPose()->pos + transl_vec;
-
-            // tsdf entry for old cell
-            TSDFEntry old_tsdf_entry = data.second.second;
-
-            // check if exists in hashmap
-            if (previous_new_map.find(hash) == previous_new_map.end())
+            if (level_one_data.find(hash) == level_one_data.end())
             {
-                // if none yet exists, we just add it
-                previous_new_map[hash] = std::make_tuple(vec_real, transformed_3d, old_tsdf_entry, 1);
+                // in this case, there has not been an entry for the old cell in the hashmap, so we generate it
+                // the counter is 1 here, as at this time only one association has been handled for the old cell
+                level_one_data[hash] = std::make_tuple(old_cell, new_cell, tsdf, 1);
             }
             else
             {
-                // update the values
-                // the index counter gets updated
-                auto &tuple = previous_new_map[hash];
-                std::get<1>(tuple) += transformed_3d;
-                std::get<3>(tuple) += 1;
-
-                // std::cout << "Updated some values. New index: " << std::get<3>(tuple) << std::endl;
-
-#ifdef DEBUG
-                if (std::get<3>(tuple) > associations.size())
-                {
-                    std::cout << "Problem for vertex: " << std::endl
-                              << std::get<0>(tuple) << std::endl;
-                }
-#endif
+                // in this case, there is already an entry for the old cell in the hashmap, so we need to update it.
+                // the new cells are added up, and the counter is increased to later calculate the mean cell
+                auto &entry = level_one_data[hash];
+                std::get<1>(entry) += new_cell;
+                std::get<3>(entry) += 1;
             }
         }
 
-#ifdef DEBUG
-        for (auto data : cur_associations)
-        {
-            if (previous_new_map.find(data.first) == previous_new_map.end())
-            {
-                std::cout << "KEEEEEEEEEEEEEEEEEEEEEK" << std::endl;
-            }
-        }
-#endif
-
-        // clear data after every association is loaded to ensure RAM is not polluted
-        a.clear_data();
+        // after finishing filling the hashmap with the association data of a pose, it is removed from the RAM
+        association.clear_data();
     }
 }
 
-void AssociationManager::filter_duplicate_tagret_cells(boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> &previous_new_map,
-                                                       boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map,
-                                                       UpdateMethod &method)
+void AssociationManager::generate_level_two_data(UpdateMethod method)
 {
-    // fill the map from above, considering, that after the update multiple different cells might "fall" on the same cell
-    for (auto pair : previous_new_map)
+    // THE METHOD IS CURRENTLY IGNORED
+
+    // transform level one data into level two data
+    for (auto pair : level_one_data)
     {
-        auto tuple = pair.second;
-        Vector3f old_vec = std::get<0>(tuple);
-        TSDFEntry tsdf = std::get<2>(tuple);
+        // calculate the mean new cell for every data tuple
+        auto data_tuple = pair.second;
+        Vector3i new_cell_avg = std::get<1>(data_tuple) / std::get<3>(data_tuple);
+        Vector3i old_cell = std::get<0>(data_tuple);
+        auto tsdf = std::get<2>(data_tuple);
 
-        Vector3i old_cell = real_to_map(old_vec);
-        Vector3i new_cell;
+        size_t old_hash = pair.first;
+        size_t new_hash = hash_from_vec(new_cell_avg);
 
-        switch (method)
+        // fill level two data
+
+        // old cell data needs to be resettet, this is done by setting it to the default entry
+        // in the localmap. This information is also filled into the level two data,
+        // but only if it is not overwritten by new cell tsdf data
+        if (level_two_data.find(old_hash) == level_two_data.end())
         {
-        case UpdateMethod::MEAN:
-
-            // calc mean using counter
-            new_cell = real_to_map(std::get<1>(tuple) / (float)std::get<3>(tuple));
-
-#ifdef DEBUG
-            if (old_cell == new_cell)
-            {
-                std::cout << "OLD AND NEW CELL HAVE THE SAME COORDINATES" << std::endl;
-            }
-#endif
-
-            break;
-
-        case UpdateMethod::SINUS:
-            // this needs to be implemented, when adding to the map, possibly same for the mean
-            break;
-
-        default:
-            break;
-        }
-
-        size_t hash = hash_from_vec(new_cell);
-        size_t hash_old = hash_from_vec(old_cell);
-
-        // check if exists. if exists and default value is in place, overwrite
-        if (new_tsdf_map.find(hash) == new_tsdf_map.end() ||
-            (std::get<1>(new_tsdf_map[hash]).weight() == 0 && std::get<1>(new_tsdf_map[hash]).value() == global_map_ptr->get_attribute_data().get_tau()))
-        {
-            new_tsdf_map[hash] = std::make_tuple(new_cell, tsdf, 1);
+            // in this case, there is no entry for the old cell in the level two data, so we create it with default entry
+            level_two_data[old_hash] = std::make_tuple(old_cell, default_entry, 1);
         }
         else
         {
-            // the cell already exists -> there are multiple updates to the same cell, mean them
-            auto &data = new_tsdf_map[hash];
-            auto &tsdf_hm = std::get<1>(data);
-            auto &counter = std::get<2>(data);
-            tsdf_hm.value(tsdf_hm.value() + tsdf.value());
-            tsdf_hm.weight(tsdf_hm.weight() + tsdf.weight());
-            tsdf_hm.setIntersect(tsdf.getIntersect());
-            counter += 1;
+            // in this case, there is already an entry, so in any case we dont to anything here
         }
 
-        // now "reset" old poses with a default entry, still considering, that there may be some new cells also updating this
-
-        // if there is already a value present in the hashmap, we skip the overwriting (as this would verfälschen the values)
-        if (new_tsdf_map.find(hash_old) != new_tsdf_map.end())
+        // do the same for the new cell, except in this case, we need to consider an update rule for the tsdf data
+        // for testing purposes and also because it was stated in some paper, we also sum up the tsdf and weights and calculate a mean
+        if (level_two_data.find(new_hash) == level_two_data.end())
         {
-            continue;
+            // in this case, there is no entry for the old cell in the level two data, so we create it with default entry
+            level_two_data[new_hash] = std::make_tuple(new_cell_avg, tsdf, 1);
         }
         else
         {
-            // no update seen yet, so we place the default entry here, still considering, that it may be updated later on.
-            new_tsdf_map[hash_old] = std::make_tuple(old_cell, default_entry, 1);
+            // in this case, there is already an entry, so we update it using the update rule stated above
+            auto cur_tsdf = std::get<1>(level_two_data[new_hash]);
+
+            // update
+            TSDFEntry updated_entry(cur_tsdf.value() + tsdf.value(), cur_tsdf.weight() + tsdf.weight());
+            int updated_counter = std::get<2>(level_two_data[new_hash]);
+            updated_counter++;
+
+            level_two_data[new_hash] = std::make_tuple(new_cell_avg, updated_entry, updated_counter);
         }
     }
 }
 
-std::pair<Vector3i, Vector3i> AssociationManager::calculate_bounding_box(
-    boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map)
-{
+std::pair<Vector3i, Vector3i> AssociationManager::calculate_level_three_bounding_box() {
     // get bounding box info
     float numeric_max = std::numeric_limits<float>::max();
     int bb_min_x = numeric_max;
@@ -277,7 +201,7 @@ std::pair<Vector3i, Vector3i> AssociationManager::calculate_bounding_box(
     // we need bounding box information to ensure minimum number of shifts when updating the localmap
     // TODO: this can probably also be done in the upper loop, not sure about the offset because of the if checks though, as they have to be done
     // a tone more often
-    for (auto &pair : new_tsdf_map)
+    for (auto &pair : level_two_data)
     {
         auto tuple = pair.second;
         Vector3i cell = std::get<0>(tuple);
@@ -318,21 +242,9 @@ std::pair<Vector3i, Vector3i> AssociationManager::calculate_bounding_box(
     return std::make_pair(bb_min, bb_max);
 }
 
-void AssociationManager::calc_map_seperations(Vector3i bb_min, Vector3i bb_max,
-                                              std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> &map_seperations)
+void AssociationManager::prepare_level_three_data(Vector3i bb_min, Vector3i bb_max)
 {
     Vector3i bb_diff = (bb_max - bb_min).cwiseAbs();
-
-#ifdef DEBUG
-    std::cout << "[AssociationManager - update_localmap()] - Found OLD Bounding Box between: " << std::endl
-              << bb_min << std::endl
-              << "and" << std::endl
-              << bb_max << std::endl
-              << "With localmap size: " << std::endl
-              << l_map_size << std::endl
-              << "With localmaphalf size: " << std::endl
-              << l_map_size_half << std::endl;
-#endif
 
     // now calculate the space seperation of the bounding box
 
@@ -344,50 +256,49 @@ void AssociationManager::calc_map_seperations(Vector3i bb_min, Vector3i bb_max,
         Vector3i center = bb_min + (bb_diff) / 2;
 
         auto entry = std::make_pair(center, std::vector<std::pair<Vector3i, TSDFEntry>>());
-        map_seperations.push_back(entry);
+        level_three_data.push_back(entry);
+
+        return;
     }
-    else
+
+    // if the bounding box is bigger than the localmap, we actually need to seperate the space in order to get at least shifts as possible
+
+    // calc the number of lmaps in each direction for the bb
+    int x_iterations = std::ceil(bb_diff.x() / (float)l_map_size.x());
+    int y_iterations = std::ceil(bb_diff.y() / (float)l_map_size.y());
+    int z_iterations = std::ceil(bb_diff.z() / (float)l_map_size.z());
+
+#ifdef DEBUG
+    std::cout << "There are " << x_iterations * y_iterations * z_iterations << " Localmaps which need to be considered!" << std::endl;
+#endif
+
+    // iterate over 3d
+    for (int x = 0; x < x_iterations; x++)
     {
-        // in this case, we actually need to seperate the space in order to get at least shifts as possible
-
-        // calc the number of lmaps in each direction for the bb
-        int x_iterations = std::ceil(bb_diff.x() / (float)l_map_size.x());
-        int y_iterations = std::ceil(bb_diff.y() / (float)l_map_size.y());
-        int z_iterations = std::ceil(bb_diff.z() / (float)l_map_size.z());
-
-#ifdef DEBUG
-        std::cout << "There are " << x_iterations * y_iterations * z_iterations << " Localmaps which need to be considered!" << std::endl;
-#endif
-
-        // iterate over 3d
-        for (int x = 0; x < x_iterations; x++)
+        for (int y = 0; y < y_iterations; y++)
         {
-            for (int y = 0; y < y_iterations; y++)
+            for (int z = 0; z < z_iterations; z++)
             {
-                for (int z = 0; z < z_iterations; z++)
-                {
-                    Vector3i sub_vec = Vector3i(x * l_map_size.x(), y * l_map_size.y(), z * l_map_size.z()) + l_map_size_half;
-                    Vector3i center = bb_max - sub_vec;
+                Vector3i sub_vec = Vector3i(x * l_map_size.x(), y * l_map_size.y(), z * l_map_size.z()) + l_map_size_half;
+                Vector3i center = bb_max - sub_vec;
 
-                    auto entry = std::make_pair(center, std::vector<std::pair<Vector3i, TSDFEntry>>());
-                    map_seperations.push_back(entry);
+                auto entry = std::make_pair(center, std::vector<std::pair<Vector3i, TSDFEntry>>());
+                level_three_data.push_back(entry);
 
 #ifdef DEBUG
-                    std::cout << "artificial localmap center for: [" << x << ", " << y << ", " << z << "] :" << std::endl
-                              << center << std::endl;
+                std::cout << "artificial localmap center for: [" << x << ", " << y << ", " << z << "] :" << std::endl
+                          << center << std::endl;
 #endif
-                }
             }
         }
     }
 }
 
-void AssociationManager::fill_map_seperations(std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> &map_seperations,
-                                              boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map)
+void AssociationManager::generate_level_three_data()
 {
     // now that the shift locations are calculated, we need to assign the cells to each "shift location"
 
-    for (auto pair : new_tsdf_map)
+    for (auto pair : level_two_data)
     {
         // captures, which of the seperations is the closest
         int closest_idx = -1;
@@ -396,27 +307,13 @@ void AssociationManager::fill_map_seperations(std::vector<std::pair<Vector3i, st
         TSDFEntry tsdf = std::get<1>(pair.second);
         int counter = std::get<2>(pair.second);
 
-        if (counter > 1)
-        {
-            tsdf.value(tsdf.value() / counter);
-            tsdf.weight(tsdf.weight() / counter);
-        }
+        tsdf.value(tsdf.value() / counter);
+        tsdf.weight(tsdf.weight() / counter);
 
         // now run over each of the map seperations and determine which pseudo localmap the new and old cell belong to
-        for (int i = 0; i < map_seperations.size(); i++)
+        for (int i = 0; i < level_three_data.size(); i++)
         {
-
-#ifdef DEBUG
-            // TODO: look into this
-            /*if (new_cell_map == Vector3i(0, 0, 0) || old_cell == Vector3i(0, 0, 0))
-            {
-                std::cout << "Vector is null vector " << std::endl
-                          << "Previous: (with counter: " << std::get<3>(pair.second) << ")" << std::endl
-                          << std::get<1>(pair.second) << std::endl;
-            }*/
-#endif
-
-            Eigen::Vector3i tmp = (cell - map_seperations[i].first).cwiseAbs();
+            Eigen::Vector3i tmp = (cell - level_three_data[i].first).cwiseAbs();
 
             // if the cell is inbounds, just skip all the other seperations
             if (tmp.x() <= l_map_size_half.x() && tmp.y() <= l_map_size_half.y() && tmp.z() <= l_map_size_half.z())
@@ -425,27 +322,48 @@ void AssociationManager::fill_map_seperations(std::vector<std::pair<Vector3i, st
             }
         }
 
-        // add cells to the seperations array
+        // add cells to the seperations
+        level_three_data[closest_idx].second.push_back(std::make_pair(cell, tsdf));
+    }
+}
 
-#ifdef DEBUG
-
-        // catch possible bugs, this is the location, where errors are most common
-        if (closest_idx == -1)
+void AssociationManager::update_localmap_level_three()
+{
+    for (auto seperation : level_three_data)
+    {
+        // skip empty seperations
+        if (seperation.second.size() == 0)
         {
-            std::stringstream ss;
-            ss << "[AssociationManager] A cell coulld not be assigned to a seperation group, this is a bug: " << std::endl
-               << cell << std::endl;
-            throw std::logic_error(ss.str());
+            continue;
         }
 
-#endif
+        // shift the local map into the right direction
+        local_map_ptr->shift(seperation.first);
 
-        // add cells to the seperations
-        map_seperations[closest_idx].second.push_back(std::make_pair(cell, tsdf));
+        // update the localmap by applying the level three data
+        for (auto pair : seperation.second)
+        {
+            // simply overwrite the existing data
+            local_map_ptr->value(pair.first) = pair.second;
+        }
     }
+}
 
-    // now: run through the seperations and update the individual localmaps
-    // whilst checking in the copy, if the value might have already been updated
+Vector3i AssociationManager::calculate_new_cell_position(Vector3i &old_cell, Eigen::Matrix4f &transform, Pose *old_pose)
+{
+    Vector3i new_cell;
+    Vector3f old_cell_real = map_to_real(old_cell);
+
+    // extract rotation and translation matrix from the pose difference
+    // the start index needs to be substacted here, which is important, as we want the correct pose transform
+    Eigen::Matrix3f rot_mat = transform.block<3, 3>(0, 0);
+    Vector3f transl_vec = transform.block<3, 1>(0, 3);
+
+    // transform vector by difference between old pose and new pose
+    Vector3f transformed_3d = rot_mat * (old_cell_real - old_pose->pos) + old_pose->pos + transl_vec;
+    new_cell = real_to_map(transformed_3d);
+
+    return new_cell;
 }
 
 /*********************************************
@@ -456,6 +374,13 @@ void AssociationManager::greedy_associations()
 {
     // go backwards through the path and greedily add all the cells, that are visible.
 
+    /**
+     * @todo this is currently done for all poses, this approach will take a lot more time
+     *       than necessary, as associations, which are not needed, are being generated..
+     */
+
+    int total_associations = 0;
+
     for (int i = associations.size() - 1; i >= 0; i--)
     {
         std::cout << std::endl
@@ -463,16 +388,18 @@ void AssociationManager::greedy_associations()
                   << i + 1 << " of " << associations.size() << std::endl
                   << std::endl;
 
-        // configure and start the ray tracer for every iteration, which will fill each association
-        // ray_tracer->update_map_pointer(local_map_ptr);
-
         // update ray tracer data for the next trace
         ray_tracer->update_pose(associations[i].getPose());
         ray_tracer->update_association(&associations[i]);
-        ray_tracer->start_bresenham(); // start tracing using bresenham, given the current association.
-        // ray_tracer->start(); // start tracing, given the current association.
+        // ray_tracer->start_bresenham(); // start tracing using bresenham, given the current association.
+        ray_tracer->start(); // start tracing, given the current association.
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+#ifdef DEBUG
+        // add up number of associations
+        total_associations += associations[i].getAssociations().size();
+#endif
 
         associations[i].serialize(); // serialize data
 
@@ -481,6 +408,11 @@ void AssociationManager::greedy_associations()
         std::cout << "[AssociationManager]: Time used for serialization: "
                   << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
     }
+#ifdef DEBUG
+    std::cout << std::endl
+              << "[AssociationManager]: Total number of associations serialized: " << total_associations << std::endl
+              << std::endl;
+#endif
 }
 
 void AssociationManager::plane_limited_associations()
@@ -489,246 +421,29 @@ void AssociationManager::plane_limited_associations()
 
 visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, int start_idx, int end_idx, UpdateMethod method)
 {
-#ifdef DEBUG
-    std::cout << "[AssociationManager - update_localmap] : Map Update requested between Pose " << start_idx << " and " << end_idx << " !!" << std::endl;
-#endif
-    /**********************/
-    /** Global variables **/
-    /**********************/
-    default_entry = TSDFEntry(global_map_ptr->get_attribute_data().get_tau(), 0); // default tsdf entry
+    calculate_pose_differences(new_path);
 
-    std::vector<Matrix4f> pose_differences; // will hold the transformations between each pose of the new and old path
-
-    boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> previous_new_map; // map holding the old and new cell positions
-
-    boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> new_tsdf_map; // a map which will contain a pair of a cell and its new tsdf value ( and an int as a counter)
-
-    std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> map_seperations; // map holding the map seperations in localmap sized chunks
-
-    /********************************************************************/
-    /** 1.) Calc a vector of pose differences between old and new pose **/
-    /********************************************************************/
-
-    pose_differences = calculate_pose_differences(new_path, start_idx, end_idx);
-
-    /***********************************************************************************************************/
-    /** 2.) now, that we got the relative transformations, we need to calc the new cell positions considering **/
-    /**     the update method                                                                                 **/
-    /**     RESEARCH (TODO:) should this be initialized with a size?                                          **/
-    /**     (might be resized every single time an element is inserted)                                       **/
-    /***********************************************************************************************************/
-
-    fill_hashmap(previous_new_map, pose_differences, start_idx, end_idx);
-
-#ifdef DEBUG
-    std::cout << "[AssociationManager - update_localmap] : Got " << previous_new_map.size() << " Association cells which will be updated." << std::endl;
-#endif
+    generate_level_one_data(start_idx, end_idx);
 
     // ros marker which will be returned, for debugging
-    auto marker = ROSViewhelper::init_TSDF_marker_from_hashmap(previous_new_map);
+    auto marker = ROSViewhelper::init_TSDF_marker_from_hashmap(level_one_data);
 
-    // filter duplicate destination cells, aka if after the update two cells fall on the same target cell, this should be considered
-    filter_duplicate_tagret_cells(previous_new_map, new_tsdf_map, method);
+    generate_level_two_data(method);
 
-#ifdef DEBUG
-    std::cout << "[Associationmanager: After filtering duplicate cell destinations and" << std::endl
-              << "adding old cell destinations, the number of updates to the map, which are necessary, is:" << new_tsdf_map.size() << std::endl;
-#endif
-    // calculate the bounding box of the remaining cell destinations
-    auto bounding_box = calculate_bounding_box(new_tsdf_map);
+    auto bb_pair = calculate_level_three_bounding_box();
 
-    // the bounding box covered by the association data is split into multiple parts of localmap size with center C (first part of the pair)
-    // this ensures, that only a very limited number of shifts is necessary.
+    prepare_level_three_data(bb_pair.first, bb_pair.second);
 
-    Vector3i bb_min = bounding_box.first;
-    Vector3i bb_max = bounding_box.second;
+    generate_level_three_data();
 
-    // calculate the map seperations
-    calc_map_seperations(bb_min, bb_max, map_seperations);
+    // now update the localmap :)
+    update_localmap_level_three();
 
-#ifdef DEBUG
-    std::cout << "[Associationmanager]: Got " << map_seperations.size() << " map seperations for this run!!" << std::endl;
-#endif
-
-    // fill the seperations with the data from the associations
-    // this ensures a minimum number of localmap shifts, thus reducing the runtime significantly
-    fill_map_seperations(map_seperations, new_tsdf_map);
-
-    int num_updates = 0;
-
-    for (auto seperation : map_seperations)
-    {
-        num_updates += seperation.second.size();
-    }
-
-#ifdef DEBUG
-    std::cout << "[Associationmanager: After calculating the map seperations and" << std::endl
-              << "filling them, the number of updates to the map, which are necessary, is:" << num_updates << std::endl;
-#endif
-
-#ifdef DEBUG
-    int counter = 0;
-    // * 2, as there are updates for new and old cells ;)
-    size_t hashmap_size = new_tsdf_map.size();
-    size_t five_percent = hashmap_size / 20;
-    int percent_counter = 0;
-    int already_updated = 0;
-    int initial_update = 0;
-#endif
-
-    for (auto seperation : map_seperations)
-    {
-        // completely skip empty seperations
-        if (seperation.second.size() == 0)
-        {
-
-#ifdef DEBUG
-            std::cout << "Empty seperation skipped " << std::endl;
-#endif
-
-            continue;
-        }
-
-        // every seperation has a center vertex, the localmap needs to be shifted there
-        Vector3i shift_location = seperation.first;
-        local_map_ptr->shift(shift_location);
-
-#ifdef DEBUG
-        // std::cout << "SHIFT! TO: " << std::endl
-        //           << local_map_ptr->get_pos() << std::endl;
-#endif
-
-        // obtain a copy of the local map to check if a cell has already been updated before
-        LocalMap localmap_copy(*local_map_ptr);
-
-#ifdef DEBUG
-        if (localmap_copy.getBuffer() != local_map_ptr->getBuffer())
-        {
-            throw std::logic_error("Error when copying the localmap");
-        }
-#endif
-
-        for (auto &pair : seperation.second)
-        {
-
-#ifdef DEBUG
-            // counter stuff
-            counter++;
-            if (counter % five_percent == 0)
-            {
-                if (counter > five_percent)
-                {
-                    std::cout << "\033[A\33[2K\r";
-                }
-
-                percent_counter += 5;
-                std::cout << "Updated " << percent_counter << " percent of the map" << std::endl;
-            }
-#endif
-            // update the cells
-
-#ifdef DEBUG
-            // if the cell is not inbounds the localmap, there has been an error in the math/indexing
-            if (!local_map_ptr->in_bounds(pair.first))
-            {
-                std::stringstream ss;
-
-                ss << "Every cell should be inbound now...." << std::endl
-                   << "Localmap - pos: " << std::endl
-                   << local_map_ptr->get_pos() << std::endl
-                   << "Cell: " << std::endl
-                   << pair.first << std::endl;
-
-                throw std::logic_error(ss.str());
-            }
-#endif
-
-            auto &tsdf = local_map_ptr->value(pair.first);
-            auto &tsdf_copy = localmap_copy.value(pair.first);
-
-            // TODO: use predefined factor here (parameter)
-
-            auto old_val = tsdf.value();
-            auto old_weight = tsdf.weight();
-            auto new_val = pair.second.value();
-            auto new_weight = pair.second.weight();
-
-            // dont do this, use paramter instead. defines how much the new value should be weighted.
-            float new_fac = 0.9f;
-
-            TSDFEntryHW::ValueType calced_value;
-            TSDFEntryHW::WeightType calced_weight;
-
-            if (old_val == global_map_ptr->get_attribute_data().get_tau() && old_weight == 0)
-            {
-                // if the cell contains default values, we overwrite them
-                calced_value = new_val;
-                calced_weight = new_weight;
-
-                // std::cout << "Cell is default" << std::endl;
-#ifdef DEBUG
-                initial_update++;
-#endif
-            }
-            else if (tsdf.value() != tsdf_copy.value() || tsdf.weight() != tsdf_copy.weight())
-            {
-                // two updates to the same cell, this is not yet covered...
-                // if the cell contains default values, we overwrite them
-
-                // TODO: dont do this!
-                calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
-                calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
-
-                // std::cout << "Cell is not default, but already updated" << std::endl;
-
-#ifdef DEBUG
-                already_updated++;
-#endif
-            }
-            else
-            {
-                // else the cell is non zero, but also not yet updated...
-                // if the target cell is a default cell, we completely overwrite it
-                calced_value = (1.0f - new_fac) * old_val + new_fac * new_val;
-                calced_weight = (1.0f - new_fac) * old_weight + new_fac * new_weight;
-
-                // std::cout << "Cell is not default, but not yet updated" << std::endl;
-
-#ifdef DEBUG
-                already_updated++;
-#endif
-            }
-
-            if (new_val < 0)
-            {
-                std::cout << "There actually is a val < 0" << std::endl;
-            }
-
-            TSDFEntry new_entry(calced_value, calced_weight);
-            new_entry.setIntersect(pair.second.getIntersect());
-
-            local_map_ptr->value(pair.first) = pair.second;
-            // local_map_ptr->value(pair.first) = new_entry;
-        }
-
-        local_map_ptr->write_back();
-    }
-
-#ifdef DEBUG
-    std::cout << "INITIAL UPDATES: " << initial_update << std::endl
-              << "ALREADY UPDATED" << already_updated << std::endl;
-#endif
-
-        // local_map_ptr->write_back();
-
-        return marker;
+    return marker;
 }
 
 void AssociationManager::test_associations()
 {
-    boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> new_tsdf_map;
-    std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> map_seperations; // map holding the map seperations in localmap sized chunks
-
     // create a cell map
 
     for (int i = 0; i < associations.size(); i++)
@@ -750,16 +465,16 @@ void AssociationManager::test_associations()
             auto association_data = data.second;
 
             // add association stuff.
-            if (new_tsdf_map.find(hash) == new_tsdf_map.end())
+            if (level_two_data.find(hash) == level_two_data.end())
             {
-                new_tsdf_map[hash] = std::make_tuple(association_data.first, default_entry, 1);
+                level_two_data[hash] = std::make_tuple(association_data.first, default_entry, 1);
             }
         }
     }
 
-    std::cout << "When testing, there are " << new_tsdf_map.size() << " cells in the hm" << std::endl;
+    std::cout << "When testing, there are " << level_two_data.size() << " cells in the hm" << std::endl;
 
-    auto bb_pair = calculate_bounding_box(new_tsdf_map);
+    auto bb_pair = calculate_level_three_bounding_box();
 
     int max_value = std::numeric_limits<int>::max();
     int min_value = std::numeric_limits<int>::min();
@@ -774,14 +489,14 @@ void AssociationManager::test_associations()
 #endif
 
     // calc the seperations
-    calc_map_seperations(bb_pair.first, bb_pair.second, map_seperations);
+    prepare_level_three_data(bb_pair.first, bb_pair.second);
 
     // fill the seperatoions
-    fill_map_seperations(map_seperations, new_tsdf_map);
+    generate_level_three_data();
 
     // now run over the seperations, shift the map and update the cells (void them as a test)
 
-    for (auto seperation : map_seperations)
+    for (auto seperation : level_three_data)
     {
         auto shift_location = seperation.first;
 
@@ -795,4 +510,17 @@ void AssociationManager::test_associations()
 
         local_map_ptr->write_back();
     }
+}
+
+void AssociationManager::cleanup()
+{
+    // cleanup hdf5
+    global_map_ptr->clear_association_data();
+    global_map_ptr->clear_intersection_data();
+
+    // cleanup hashmaps and vectors
+    level_one_data.clear();
+    level_two_data.clear();
+    level_three_data.clear();
+    pose_differences.clear();
 }

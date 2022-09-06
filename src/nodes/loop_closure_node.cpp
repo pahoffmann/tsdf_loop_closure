@@ -443,7 +443,11 @@ int main(int argc, char **argv)
   // tsdf_publisher.publish(single_marker);
   tsdf_read_publisher.publish(tsdf_read_marker);
   chunk_publisher.publish(chunk_marker);
-  bresenham_int_publisher.publish(bresenham_marker);
+  
+  if (bresenham_marker.points.size() != 0)
+  {
+    bresenham_int_publisher.publish(bresenham_marker);
+  }
 
   // publish path and loop detects
   for (auto marker : loop_visualizations)

@@ -414,7 +414,7 @@ namespace ROSViewhelper
      *
      * @return visualization_msgs::Marker
      */
-    static visualization_msgs::Marker init_TSDF_marker_from_hashmap(boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> previous_new_map)
+    static visualization_msgs::Marker init_TSDF_marker_from_hashmap(boost::unordered_map<size_t, std::tuple<Vector3i, Vector3i, TSDFEntry, int>> level_one_data)
     {
         // create marker.
         visualization_msgs::Marker tsdf_markers;
@@ -439,9 +439,10 @@ namespace ROSViewhelper
         auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
         auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
 
-        for (auto pair : previous_new_map)
+        for (auto pair : level_one_data)
         {
-            auto point_real = std::get<0>(pair.second);
+            auto point_map = std::get<0>(pair.second);
+            auto point_real = map_to_real(point_map);
             auto tsdf = std::get<2>(pair.second);
 
             geometry_msgs::Point point;

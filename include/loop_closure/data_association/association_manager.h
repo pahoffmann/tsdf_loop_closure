@@ -108,6 +108,13 @@ public:
    */
   void test_associations();
 
+  /**
+   * @brief will clear any data that is left in the manager, will also cleanup any association data in the hdf5
+   * @warning will delete association data from global map
+   * 
+   */
+  void cleanup();
+
 private:
   std::vector<Association> associations;
   Path *path;
@@ -121,70 +128,111 @@ private:
   Vector3i l_map_size_half;
   Vector3i l_map_size;
 
+  // different LEVELS of maps used to store data in
+
+  // LEVEL 0: No data here, but simply the pose differences before and after the loop closure
+  std::vector<Eigen::Matrix4f> pose_differences;
+
+  // LEVEL 1: Map containing <old_cell_pose, new_cell_pose_accumulated, tsdf_entry, number of accumulations>
+  //          Wheres the number of hits is determined by the poses, which have seen this
+  boost::unordered_map<size_t, std::tuple<Vector3i, Vector3i, TSDFEntry, int>> level_one_data;
+
+  // LEVEL 2: For different old cell poses, they may be mapped on the same new cell pose
+  //          This is a critical step, as in this case the tsdf value of the new cell needs to be estimated
+  //          This can be done in different version. To keep it easy we will stick to meaning them at first
+  //          The final product is a map, which contains new tsdf entries for every cell which has to be updated
+  //          The counter here is also used to accumulate tsdf values and weights:
+  //          <new cell position, accumulated tsdf, accumulation counter>
+  //          It is absolutely important, that this map also contains a reset of the old cell positions
+  //          aka: <old_cell, default_tsdf_entry, 1>
+  boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> level_two_data;
+
+  // LEVEL 3: The product of LEVEL 2 is a random collection of cells and its new TSDF values
+  //          Problem: the bounding box surrounding each of these cells might be bigger, than the localmap
+  //          Thus: the localmap needs to be shifted, if a cell that needs to be updated is currently ozt of bounds
+  //          But: Shifting each time a cell is out of bounds, is really ineffecient, as this might lead to thousands of 
+  //               shifts, with each shift taking hundreds of milliseconds or even seconds
+  //               In the worst case, the map needs to be shifted after every single cell update.
+  //               In that case no one would ever see a result of this algorithm, which keeps on shifting
+  //               millions of times.
+  //          Solution: To solve this problem the data needs to be structured to ensure a minimum number of shifts
+  //                    To do this, the Bounding box of the data is determined and split into boxes of the size of the localmap
+  //                    Afterwards, the data is inserted into it's belonging box/bucket
+  //                    Like this, the space is seperated nearly optimally and the update process may begin by running over
+  //                    each of these boxes/seperations, with empty boxes simply skipped to avoid useless shifts
+  //          Data: <box_position, vector of <cell, new_tsdf_value>>
+  std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> level_three_data;
+
   /**
    * @brief Create a serialization folder at the requested path using filesystem utils
-   *
+   * @deprecated
    * @param path
    */
   void create_serialization_folder(std::string path);
 
   /**
-   * @brief calculates the pose differences between two paths
+   * @brief calculates the pose differences between two paths (LEVEL 0 data)
+   *        currently pose differences for all poses are being calculated for simplicity
    *
    * @param before
    * @param after
    * @return std::vector<Matrix4f>
    */
-  std::vector<Matrix4f> calculate_pose_differences(Path *new_path, int start_idx, int end_idx);
+  void calculate_pose_differences(Path *new_path);
 
   /**
-   * @brief
+   * @brief Generates LEVEL 1 data as described above
    *
    * @param previous_new_map
    * @param pose_differences
    * @param start_idx
    * @param end_idx
    */
-  void fill_hashmap(
-      boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> &previous_new_map,
-      std::vector<Matrix4f> &pose_differences, int start_idx, int end_idx);
+  void generate_level_one_data(int start_idx, int end_idx);
 
   /**
-   * @brief this method will fill a new hashmap of <Vector3i, TSDFEntry> which basically contains information on
-   *        which
+   * @brief generates data of LEVEL 2 as described above
    *
-   * @param previous_new_map
-   * @param new_tsdf_map
-   * @param method
+   * @param method defines the way, the level 2 data should be generated, right now it is mean update only
    *
    */
-  void filter_duplicate_tagret_cells(boost::unordered_map<size_t, std::tuple<Vector3f, Vector3f, TSDFEntry, int>> &previous_new_map,
-                                     boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map,
-                                     UpdateMethod &method);
+  void generate_level_two_data(UpdateMethod method);
 
   /**
-   * @brief will calculate the bounding box of a number of given cells
-   *
-   * @param new_tsdf_map
+   * @brief will calculate the bounding box of a number of given cells, used to generate LEVEL 3 data
+   * 
    * @return std::pair<Vector3i, Vector3i>
    */
-  std::pair<Vector3i, Vector3i> calculate_bounding_box(
-      boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map);
+  std::pair<Vector3i, Vector3i> calculate_level_three_bounding_box();
 
   /**
-   * @brief function, which will calculate the seperations to ensure a minimum number of shifts
-   *
+   * @brief function used to prepare an array for LEVEL 3 data
+   * 
+   * @param bb_min Minimum cell of the bounding box (min of x, y and z)
+   * @param bb_max Maximum cell of the bounding box (max of x, y and z)
+   * 
    * @return std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>>
    */
-  void calc_map_seperations(Vector3i bb_min, Vector3i bb_max,
-                            std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> &map_seperations);
+  void prepare_level_three_data(Vector3i bb_min, Vector3i bb_max);
 
   /**
-   * @brief fill the calculated map seperations with association data
-   *
-   * @param map_seperations
-   * @param new_tsdf_map
+   * @brief generates data of LEVEL 3 as described above (actually fills the previously generated array with LEVEL 3 data)
    */
-  void fill_map_seperations(std::vector<std::pair<Vector3i, std::vector<std::pair<Vector3i, TSDFEntry>>>> &map_seperations,
-                            boost::unordered_map<size_t, std::tuple<Vector3i, TSDFEntry, int>> &new_tsdf_map);
+  void generate_level_three_data();
+
+  /**
+   * @brief updates the localmap with level three data
+   * 
+   */
+  void update_localmap_level_three();
+
+  /**
+   * @brief calculates a new cell position using a the associated pose and the difference between the old and new pose position
+   * 
+   * @param old_cell 
+   * @param transform 
+   * @param old_pose 
+   * @return Vector3i 
+   */
+  Vector3i calculate_new_cell_position(Vector3i &old_cell, Eigen::Matrix4f &transform, Pose *old_pose);
 };

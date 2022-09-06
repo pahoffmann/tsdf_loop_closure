@@ -101,7 +101,7 @@ public:
 
     /**
      * @brief clears the data in the association
-     * 
+     *
      */
     void clear_data()
     {

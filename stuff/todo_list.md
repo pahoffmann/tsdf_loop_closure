@@ -90,6 +90,10 @@ Intersection Data:
     -> There needs to be an additional array (e.g. init_rays)
     -> function to destroy current instance and make available for reinstanceiation
 [ ] implement a function in the global map, which returns the whole tsdf data as a vector
+[ ] think of a way to include connectivity between cells in the update process, so that connecting cells wont be ripped apart as much
+    -> somehow keep more of the connectivity
+[ ] write a raytracer routine, which removes artifacts not seen during the tracing process (aka keep going even once finished and mark hit cells to be
+    removed)
 
 
 ## ASAP ##
