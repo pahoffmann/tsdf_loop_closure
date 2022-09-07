@@ -171,18 +171,18 @@ void AssociationManager::generate_level_two_data(UpdateMethod method)
         level_two_marker.points.push_back(type_transform::eigen_point_to_ros_point(map_to_real(new_cell_avg)));
         level_two_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::navy));
 
-#ifdef DEBUG
-        if (cell_diff.x() != cell_diff.y() || cell_diff.y() != cell_diff.z() || cell_diff.x() != cell_diff.z() || cell_diff.x() != 46)
-        {
-            std::cout << "Cell diff after meaning: " << std::endl
-                      << cell_diff << std::endl
-                      << "Old:" << std::endl
-                      << old_cell << std::endl
-                      << "New:" << std::endl
-                      << new_cell_avg << std::endl;
-        }
+// #ifdef DEBUG
+//         if (cell_diff.x() != cell_diff.y() || cell_diff.y() != cell_diff.z() || cell_diff.x() != cell_diff.z() || cell_diff.x() != 46)
+//         {
+//             std::cout << "Cell diff after meaning: " << std::endl
+//                       << cell_diff << std::endl
+//                       << "Old:" << std::endl
+//                       << old_cell << std::endl
+//                       << "New:" << std::endl
+//                       << new_cell_avg << std::endl;
+//         }
 
-#endif
+// #endif
 
         size_t old_hash = pair.first;
         size_t new_hash = hash_from_vec(new_cell_avg);
