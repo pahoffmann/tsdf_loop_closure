@@ -24,7 +24,7 @@
 namespace ROSViewhelper
 {
 
-    static int TSDF_LIFETIME = 100;
+    static int TSDF_LIFETIME = 1000;
 
     /**
      * @brief visualizes a bounding box for a given pose and sidelengths

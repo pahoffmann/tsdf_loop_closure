@@ -348,16 +348,13 @@ void AssociationManager::generate_level_three_data()
 
         int counter = std::get<2>(pair.second);
 
-        std::cout << "Value after update: " << tsdf.value() << std::endl;
         tsdf.value(tsdf.value() / counter);
         tsdf.weight(tsdf.weight() / counter);
-        std::cout << "Value before update: " << tsdf.value() << std::endl;
 
         if (tsdf.value() < 0)
         {
             if (tsdf.value() < -600)
             {
-                std::cout << "TSDF OUT OF RANGE (NEG): " << tsdf.value() << std::endl;
                 too_low_counter++;
             }
 
@@ -369,7 +366,6 @@ void AssociationManager::generate_level_three_data()
         {
             if (tsdf.value() > 600)
             {
-                // std::cout << "TSDF OUT OF RANGE: " << tsdf.value() << std::endl;
                 too_high_counter++;
             }
             else if (tsdf.value() < 600)

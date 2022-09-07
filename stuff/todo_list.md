@@ -54,6 +54,14 @@
     -> This has been done, though the process doesnt really work the way i thought it would. basically need to rethink the whole thing
 [x] The current approach is (somewhat) errornous. We should look for one loop in the map, create associations in between these poses, update the map and look again
     This needs to be addressed and updated.
+[x] Problems with the map update: 
+[x] A. After the update, there are only positive valued cells left...
+[x] B. there is far less updates, than the code says... look into that
+    All the problems were solved, when the deserialization was fixed... :)
+[x] The association data should only be determined, when an actual loop is present in the map
+[x] Check diff between association number in map update vs. number of cells displayed in rviz (intersection markers) - they are off...
+[x] Write a test case, which checks the local map functionality... check if resetting all cells with value actually resets them. YUP
+[x] Only generate associations in bounds of the loop closure indices. can do
 
 Intersection Data:
 
@@ -76,6 +84,7 @@ Intersection Data:
 [ ] Keep on working on writing the intersectionstatus to the hdf5
 [ ] Write and read IntersectionStatus to / from HDF5
 [ ] Bresenham: precalc of thee finish vertices not necessary, just use the direction vector and do an inbounds() check with the localmap
+[ ] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
 
 ## TODO's ##
 
@@ -83,7 +92,6 @@ Intersection Data:
 [ ] Re-evaluate cleanup artifacts method from global map
 [ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
 
-[ ] The association data should only be determined, when an actual loop is present in the map
 [ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing (might be too runtime excessive)
 [ ] Write updated path back to h5
 [ ] Implement the ray tracer as a singleton, so the rays don't need initialization every time. (insert this into masters thesis)
@@ -94,24 +102,17 @@ Intersection Data:
     -> somehow keep more of the connectivity
 [ ] write a raytracer routine, which removes artifacts not seen during the tracing process (aka keep going even once finished and mark hit cells to be
     removed)
+[ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 
 
 ## ASAP ##
-[ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
 
 
 [ ] Implement tests to ensure writing to the globalmap works, write meta data (e.g. hit percentage, number hit vs total occupied cells)
     to hdf (/associations)
 
-[ ] Check diff between association number in map update vs. number of cells displayed in rviz (intersection markers) - they are off...
-[ ] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
-[ ] Write a test case, which checks the local map functionality... check if resetting all cells with value actually resets them.
-[ ] Only generate associations in bounds of the loop closure indices.
 
-[ ] Problems with the map update: 
-[ ] A. After the update, there are only positive valued cells left...
-[ ] B. there is far less updates, than the code says... look into that
 
 ## TODAY ##
 
