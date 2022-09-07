@@ -399,12 +399,13 @@ int main(int argc, char **argv)
     loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(lc_pair.first)->pos, path->at(lc_pair.second)->pos));
 
     // update the localmap with the updated path
-    manager->update_localmap(&updated_path, lc_pair.first, lc_pair.second, AssociationManager::UpdateMethod::MEAN);
+    tsdf_read_marker = manager->update_localmap(&updated_path, lc_pair.first, lc_pair.second, AssociationManager::UpdateMethod::MEAN);
+
+    std::cout << "[MAIN] IN THE LEVEL X DATA, THERE ARE " << tsdf_read_marker.points.size() << " POINTS!" << std::endl;
     // manager->test_associations();
 
     // after every run, the data needs to be cleaned
-    global_map_ptr_->clear_association_data();
-    global_map_ptr_->clear_intersection_data();
+    manager->cleanup();
   }
 
   // when no loop is found, we terminate early

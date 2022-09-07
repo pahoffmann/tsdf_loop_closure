@@ -234,7 +234,10 @@ static Vector3i vec_from_tag(std::string tag)
  * @return Vector3i 
  */
 static Vector3i real_to_map(Vector3f real) {
-    return (real * (1000.0f / MAP_RESOLUTION)).cast<int>();
+    return (real * (1000.0f) / MAP_RESOLUTION).unaryExpr([](float val) {
+        return std::floor(val);
+    }).cast<int>();
+    //return (real * (1000.0f / MAP_RESOLUTION)).cast<int>();
 }
 
 /**

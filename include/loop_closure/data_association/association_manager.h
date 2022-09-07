@@ -128,6 +128,9 @@ private:
   Vector3i l_map_size_half;
   Vector3i l_map_size;
 
+  visualization_msgs::Marker level_two_marker;
+  visualization_msgs::Marker level_three_marker;
+
   // different LEVELS of maps used to store data in
 
   // LEVEL 0: No data here, but simply the pose differences before and after the loop closure

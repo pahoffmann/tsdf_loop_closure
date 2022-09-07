@@ -27,6 +27,19 @@ AssociationManager::AssociationManager(Path *path, std::string file_path, RayTra
 
     default_entry = TSDFEntry(global_map_ptr->get_attribute_data().get_tau(), 0); // default tsdf entry used to "reset" old cell locations
 
+    // create marker.
+    level_two_marker.header.frame_id = "map";
+    level_two_marker.header.stamp = ros::Time();
+    level_two_marker.ns = "tsdf";
+    level_two_marker.id = 0;
+    level_two_marker.lifetime.fromSec(1000);
+    level_two_marker.type = visualization_msgs::Marker::POINTS;
+    level_two_marker.action = visualization_msgs::Marker::ADD;
+    level_two_marker.scale.x = level_two_marker.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
+
+    // markers are same
+    level_three_marker = level_two_marker;
+
     // only create this, if we use json as a serialzation, which we dont
     if (strat == Association::SerializationStrategy::JSON)
     {
@@ -66,6 +79,8 @@ AssociationManager::~AssociationManager()
 
 /*********************************************
  * PRIVATE METHODS                           *
+ *                                           *
+ * In execution order:                       *
  * *******************************************/
 
 void AssociationManager::create_serialization_folder(std::string path)
@@ -112,7 +127,10 @@ void AssociationManager::generate_level_one_data(int start_idx, int end_idx)
             // now transform the data according to the pose difference
             auto old_cell = data.first;
             auto tsdf = data.second;
+
             auto new_cell = calculate_new_cell_position(old_cell, pose_differences[i], associations[i].getPose());
+
+            auto cell_diff = new_cell - old_cell;
 
             if (level_one_data.find(hash) == level_one_data.end())
             {
@@ -147,6 +165,24 @@ void AssociationManager::generate_level_two_data(UpdateMethod method)
         Vector3i new_cell_avg = std::get<1>(data_tuple) / std::get<3>(data_tuple);
         Vector3i old_cell = std::get<0>(data_tuple);
         auto tsdf = std::get<2>(data_tuple);
+
+        auto cell_diff = new_cell_avg - old_cell;
+
+        level_two_marker.points.push_back(type_transform::eigen_point_to_ros_point(map_to_real(new_cell_avg)));
+        level_two_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::navy));
+
+#ifdef DEBUG
+        if (cell_diff.x() != cell_diff.y() || cell_diff.y() != cell_diff.z() || cell_diff.x() != cell_diff.z() || cell_diff.x() != 46)
+        {
+            std::cout << "Cell diff after meaning: " << std::endl
+                      << cell_diff << std::endl
+                      << "Old:" << std::endl
+                      << old_cell << std::endl
+                      << "New:" << std::endl
+                      << new_cell_avg << std::endl;
+        }
+
+#endif
 
         size_t old_hash = pair.first;
         size_t new_hash = hash_from_vec(new_cell_avg);
@@ -188,7 +224,8 @@ void AssociationManager::generate_level_two_data(UpdateMethod method)
     }
 }
 
-std::pair<Vector3i, Vector3i> AssociationManager::calculate_level_three_bounding_box() {
+std::pair<Vector3i, Vector3i> AssociationManager::calculate_level_three_bounding_box()
+{
     // get bounding box info
     float numeric_max = std::numeric_limits<float>::max();
     int bb_min_x = numeric_max;
@@ -298,6 +335,9 @@ void AssociationManager::generate_level_three_data()
 {
     // now that the shift locations are calculated, we need to assign the cells to each "shift location"
 
+    int too_high_counter = 0;
+    int too_low_counter = 0;
+
     for (auto pair : level_two_data)
     {
         // captures, which of the seperations is the closest
@@ -305,10 +345,40 @@ void AssociationManager::generate_level_three_data()
 
         Vector3i cell = std::get<0>(pair.second);
         TSDFEntry tsdf = std::get<1>(pair.second);
+
         int counter = std::get<2>(pair.second);
 
+        std::cout << "Value after update: " << tsdf.value() << std::endl;
         tsdf.value(tsdf.value() / counter);
         tsdf.weight(tsdf.weight() / counter);
+        std::cout << "Value before update: " << tsdf.value() << std::endl;
+
+        if (tsdf.value() < 0)
+        {
+            if (tsdf.value() < -600)
+            {
+                std::cout << "TSDF OUT OF RANGE (NEG): " << tsdf.value() << std::endl;
+                too_low_counter++;
+            }
+
+            level_three_marker.points.push_back(type_transform::eigen_point_to_ros_point(map_to_real(cell)));
+
+            level_three_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::red));
+        }
+        else
+        {
+            if (tsdf.value() > 600)
+            {
+                // std::cout << "TSDF OUT OF RANGE: " << tsdf.value() << std::endl;
+                too_high_counter++;
+            }
+            else if (tsdf.value() < 600)
+            {
+                level_three_marker.points.push_back(type_transform::eigen_point_to_ros_point(map_to_real(cell)));
+
+                level_three_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::green));
+            }
+        }
 
         // now run over each of the map seperations and determine which pseudo localmap the new and old cell belong to
         for (int i = 0; i < level_three_data.size(); i++)
@@ -325,6 +395,9 @@ void AssociationManager::generate_level_three_data()
         // add cells to the seperations
         level_three_data[closest_idx].second.push_back(std::make_pair(cell, tsdf));
     }
+
+    std::cout << "NUMBER OF TOO HIGH TSDF VALUES: " << too_high_counter << std::endl;
+    std::cout << "NUMBER OF TOO LOW TSDF VALUES: " << too_high_counter << std::endl;
 }
 
 void AssociationManager::update_localmap_level_three()
@@ -362,6 +435,7 @@ Vector3i AssociationManager::calculate_new_cell_position(Vector3i &old_cell, Eig
     // transform vector by difference between old pose and new pose
     Vector3f transformed_3d = rot_mat * (old_cell_real - old_pose->pos) + old_pose->pos + transl_vec;
     new_cell = real_to_map(transformed_3d);
+    Vector3f new_cell_f = real_to_map_float(transformed_3d);
 
     return new_cell;
 }
@@ -423,12 +497,18 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
 {
     calculate_pose_differences(new_path);
 
+    std::cout << "There are " << pose_differences.size() << " pose differences, that have been calculated" << std::endl;
+
     generate_level_one_data(start_idx, end_idx);
+
+    std::cout << "In the level one data, there are " << level_one_data.size() << " entries" << std::endl;
 
     // ros marker which will be returned, for debugging
     auto marker = ROSViewhelper::init_TSDF_marker_from_hashmap(level_one_data);
 
     generate_level_two_data(method);
+
+    std::cout << "In the level two data, there are " << level_two_data.size() << " entries" << std::endl;
 
     auto bb_pair = calculate_level_three_bounding_box();
 
@@ -436,10 +516,23 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
 
     generate_level_three_data();
 
+#ifdef DEBUG
+    int counter = 0;
+    for (auto sep : level_three_data)
+    {
+        counter += sep.second.size();
+    }
+
+    std::cout << "In the level three data, there are " << counter << " entries" << std::endl;
+
+#endif
+
     // now update the localmap :)
     update_localmap_level_three();
 
-    return marker;
+    // return marker;
+    // return level_two_marker;
+    return level_three_marker;
 }
 
 void AssociationManager::test_associations()
@@ -523,4 +616,7 @@ void AssociationManager::cleanup()
     level_two_data.clear();
     level_three_data.clear();
     pose_differences.clear();
+
+    level_two_marker.points.clear();
+    level_two_marker.colors.clear();
 }

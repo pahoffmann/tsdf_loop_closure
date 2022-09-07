@@ -168,9 +168,7 @@ void Association::serialize_HDF5()
 
 void Association::deserialize_HDF5()
 {
-    std::cout << "[Deserialization]: Reading association data from hdf5..." << std::endl;
     auto data = global_map_ptr->read_association_data(pose_number);
-    std::cout << "[Deserialization]: Done Reading association data from hdf5!" << std::endl;
 
     // transform data to map
     for (int i = 0; i < data.size(); i += 5)
@@ -179,7 +177,7 @@ void Association::deserialize_HDF5()
         boost::hash_combine(seed, data[i]);
         boost::hash_combine(seed, data[i + 1]);
         boost::hash_combine(seed, data[i + 2]);
-        associations[seed] = std::make_pair(Vector3i(data[i], data[i + 1], data[i + 2]), TSDFEntry(data[i + 4], data[i + 5]));
+        associations[seed] = std::make_pair(Vector3i(data[i], data[i + 1], data[i + 2]), TSDFEntry(data[i + 3], data[i + 4]));
     }
 }
 
