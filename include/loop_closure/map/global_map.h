@@ -16,6 +16,7 @@
 #include <loop_closure/util/point.h>
 #include <loop_closure/util/tsdf.h>
 #include <loop_closure/map/attribute_data_model.h>
+#include <omp.h>
 
 struct ActiveChunk
 {
@@ -79,6 +80,9 @@ private:
     // model for the attribute data
     attribute_data_model attribute_data_;
 
+    // default entry for checking if chunk may be empty
+    std::vector<TSDFEntry::RawType> default_chunk_data;
+
     /**
      * Returns the index of a global position in a chunk.
      * The returned index is that of the tsdf value.
@@ -101,7 +105,7 @@ public:
      * The chunks are instead created dynamically depending on which are used.
      * By default, the global map will intialize itself with it's attributes and create a model for those attributes
      * which can then later be used by the localmap constructor
-     * 
+     *
      * @param name name with path and extension (.h5) of the HDF5 file in which the map is stored
      * @param initial_tsdf_value default tsdf value
      * @param initial_weight initial default weight
@@ -231,7 +235,7 @@ public:
      *  -> walk through every chunk, load the dat
      *
      */
-    void cleanup_artifacts();
+    std::vector<Vector3i> cleanup_artifacts();
 
     /**
      * @brief Writes the passed association data to the pose dataset with number 'pose_number'
@@ -264,18 +268,25 @@ public:
     /**
      * @brief gets the attribute data of the local map
      *        ATTENTION: depending on which constructor was called, the attribute data might not be initialized.
-     * 
-     * @return attribute_data_model 
+     *
+     * @return attribute_data_model
      */
-    inline attribute_data_model get_attribute_data() {
+    inline attribute_data_model get_attribute_data()
+    {
         return attribute_data_;
     }
 
     /**
      * @brief Get the full data from the current hdf5 as an array, use with caution concerning RAM
      * @todo implement this
-     * 
-     * @return std::vector<Vector3i, TSDFEntry> 
+     *
+     * @return std::vector<Vector3i, TSDFEntry>
      */
-    std::vector<Vector3i, TSDFEntry>& get_full_data();
+    std::vector<Vector3i, TSDFEntry> &get_full_data();
+
+    /**
+     * @brief Labels the chunks as empty or not empty
+     *
+     */
+    std::vector<bool> chunks_empty();
 };

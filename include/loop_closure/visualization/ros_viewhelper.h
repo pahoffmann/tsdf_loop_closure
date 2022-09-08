@@ -20,6 +20,7 @@
 #include <loop_closure/util/constants.h>
 #include <loop_closure/util/colors.h>
 #include <loop_closure/util/eigen_vs_ros.h>
+#include <omp.h>
 
 namespace ROSViewhelper
 {
@@ -299,6 +300,7 @@ namespace ROSViewhelper
             local_map->shift(tmp_pos);
 
             // get values, ignore offset
+//#pragma omp parallel for
             for (int x = tmp_pos.x() + (-1 * (size.x() - 1) / 2); x < tmp_pos.x() + ((size.x() - 1) / 2); x++)
             {
                 for (int y = tmp_pos.y() + (-1 * (size.y() - 1) / 2); y < tmp_pos.y() + ((size.y() - 1) / 2); y++)
@@ -694,10 +696,8 @@ namespace ROSViewhelper
         points_marker.id = 0;
         points_marker.type = visualization_msgs::Marker::CUBE_LIST;
         points_marker.action = visualization_msgs::Marker::ADD;
-        points_marker.scale.x = 0.2;
-        points_marker.scale.y = 0.2;
-        points_marker.scale.z = 0.2;
-        points_marker.color.a = 0.5; // Don't forget to set the alpha!
+        points_marker.scale.x = points_marker.scale.y = points_marker.scale.z = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
+        points_marker.color.a = 0.5;                                                                          // Don't forget to set the alpha!
         points_marker.color.r = 136 / 255.0f;
         points_marker.color.g = 0 / 255.0f;
         points_marker.color.b = 255 / 255.0f;

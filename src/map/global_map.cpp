@@ -36,7 +36,7 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
 
     auto map_group = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
 
-    // check if attribute data should be considered, if so: 
+    // check if attribute data should be considered, if so:
     // 1. check if the number of attributes fit the definition
     // 2. create a data model based on those attributes
     if (use_attributes && map_group.listAttributeNames().size() != hdf5_constants::NUM_GM_ATTRIBUTES)
@@ -71,6 +71,7 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
 
         // set data from attributes
         initial_tsdf_value_.value(tau);
+        initial_tsdf_value_.weight(0);
     }
 
     // prior to doing anything with the global map association data, we clear it completely
@@ -79,6 +80,9 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
         clear_association_data();
         clear_intersection_data();
     }
+
+    // init default chunk
+    default_chunk_data = std::vector<TSDFEntry::RawType>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, initial_tsdf_value_.raw());
 }
 
 std::string GlobalMap::tag_from_chunk_pos(const Vector3i &pos)
@@ -365,9 +369,9 @@ std::vector<Vector3i> GlobalMap::get_26_neighborhood(Vector3i chunk_pos)
 
 /**
  * @brief function, which finds all the chunks, which could have been part of the path
- * 
- * @param l_map_size 
- * @return std::vector<Vector3i> 
+ *
+ * @param l_map_size
+ * @return std::vector<Vector3i>
  */
 std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
 {
@@ -619,7 +623,7 @@ void GlobalMap::write_path_node(Pose &pose)
  *
  * @todo this method still needs some work
  */
-void GlobalMap::cleanup_artifacts()
+std::vector<Vector3i> GlobalMap::cleanup_artifacts()
 {
     auto map = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
 
@@ -627,14 +631,27 @@ void GlobalMap::cleanup_artifacts()
     if (map.hasAttribute("cleaned"))
     {
         std::cout << "[GlobalMap]: Map already cleaned, no cleanup necessary" << std::endl;
-        return;
+        return std::vector<Vector3i>();
     }
 
     auto chunks = all_chunk_poses();
     int num_shitty = 0;
 
+    // detect empty chunks
+    auto empty_vec = chunks_empty();
+
+    // vector to store the outliers to display them later on
+    std::vector<Vector3i> shitty_cells;
+
     for (int i = 0; i < chunks.size(); i++)
     {
+        // std::vector<int> *int_status;
+
+        // if the current chunk is empty, go to the next one
+        if (empty_vec[i])
+        {
+            continue;
+        }
 
         Vector3i start = chunks[i] * CHUNK_SIZE;
         Vector3i end = start + Vector3i(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
@@ -660,6 +677,7 @@ void GlobalMap::cleanup_artifacts()
 
                     int num_interesting = 0;
 
+//#pragma omp parallel for reduction(+ : num_interesting) private(current_chunk)
                     for (auto cell : adj_cells)
                     {
                         Vector3i chunkPos = floor_divide(cell, CHUNK_SIZE);
@@ -678,13 +696,14 @@ void GlobalMap::cleanup_artifacts()
                         }
                     }
 
-                    if (num_interesting < 3)
+                    if (num_interesting < 11)
                     {
                         // mark as not so interesting in the tsdf...
                         current.weight(0);
                         current.value(600);
 
                         set_value(Vector3i(x, y, z), current);
+                        shitty_cells.push_back(Vector3i(x, y, z));
                         num_shitty++;
                     }
                 }
@@ -698,6 +717,8 @@ void GlobalMap::cleanup_artifacts()
 
     // create an attribute for the global map, to ensure it doesnt get cleaned multiple times
     map.createAttribute("cleaned", true);
+
+    return shitty_cells;
 }
 
 void GlobalMap::write_association_data(std::vector<int> &association_data, int pose_number)
@@ -818,6 +839,39 @@ void GlobalMap::clear_intersection_data()
     file_.flush();
 }
 
+std::vector<bool> GlobalMap::chunks_empty()
+{
+    auto chunks = all_chunk_poses();
+
+    std::vector<bool> ret(chunks.size(), false);
+
+    int empty_count = 0;
+
+    for (int i = 0; i < chunks.size(); i++)
+    {
+        auto chunk = chunks[i];
+
+        auto tag = tag_from_chunk_pos(chunk);
+
+        auto g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+        auto ds = g.getDataSet(tag);
+
+        std::vector<TSDFEntry::RawType> data;
+
+        ds.read(data);
+
+        if (data == default_chunk_data)
+        {
+            ret[i] = true;
+            empty_count++;
+        }
+    }
+
+    std::cout << "Empty count: " << empty_count << std::endl;
+
+    return ret;
+}
 
 /*std::vector<Vector3i, TSDFEntry>& GlobalMap::get_full_data()
 {
@@ -825,4 +879,3 @@ void GlobalMap::clear_intersection_data()
     std::vector<Vector3i, TSDFEntry> tmp;
     return tmp;
 }*/
-
