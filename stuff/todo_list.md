@@ -111,6 +111,9 @@ Intersection Data:
 
 [ ] Implement tests to ensure writing to the globalmap works, write meta data (e.g. hit percentage, number hit vs total occupied cells)
     to hdf (/associations)
+[ ] as of now, in the map update, only poses are considered, which have been updated, though - what about the ones, which have not been updated, but
+    may still be associated with the cell we want to move. because the pose itself has been practically unchanged, it also needs to be considered, when finding a new cell position.
+    Also, the loop closure does not only update the path poses between the start and end of the path, but finds new optimal poses for the whole path.
 
 
 
