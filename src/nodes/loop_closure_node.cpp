@@ -243,7 +243,7 @@ void populate_publishers(ros::NodeHandle &n)
   tsdf_read_publisher = n.advertise<visualization_msgs::Marker>("tsdf_read", 1, true);
   pose_publisher = n.advertise<visualization_msgs::Marker>("ray_trace_pose", 1, true);
   path_publisher = n.advertise<visualization_msgs::Marker>("path", 1, true);
-  updated_path_publisher = n.advertise<visualization_msgs::Marker>("path_blur", 1, true);
+  updated_path_publisher = n.advertise<visualization_msgs::Marker>("path_updated", 1, true);
   ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
   bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
   chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
@@ -323,8 +323,11 @@ void populate_markers()
   bb_marker = ROSViewhelper::getBoundingBoxMarker(map_to_real(local_map_ptr_->get_size()), path->at(0));
 
   // full tsdf map for display, very ressource intensive, especially for large maps..
-  tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &updated_path, true);
+  //tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &updated_path, true);
   // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
+
+  auto gm_data = global_map_ptr_->get_full_data();
+  tsdf_map_full_after = ROSViewhelper::marker_from_gm_read(gm_data);
 }
 
 /**
@@ -361,7 +364,8 @@ int main(int argc, char **argv)
   populate_publishers(n);
 
   // generate marker for before map
-  tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
+  auto gm_data = global_map_ptr_->get_full_data();
+  tsdf_map_full_before = ROSViewhelper::marker_from_gm_read(gm_data);
 
   // local variables used to handle the big while loop following:
   bool is_ok = true;
@@ -419,6 +423,9 @@ int main(int argc, char **argv)
     std::cout << "[Main]: Found " << num_loops << " loop(s)" << std::endl;
   }
 
+  // write back the data
+  local_map_ptr_->write_back();
+
   // now populate the markers
   populate_markers();
 
@@ -444,7 +451,7 @@ int main(int argc, char **argv)
   // tsdf_publisher.publish(single_marker);
   tsdf_read_publisher.publish(tsdf_read_marker);
   chunk_publisher.publish(chunk_marker);
-  
+
   if (bresenham_marker.points.size() != 0)
   {
     bresenham_int_publisher.publish(bresenham_marker);

@@ -39,7 +39,7 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
     // check if attribute data should be considered, if so:
     // 1. check if the number of attributes fit the definition
     // 2. create a data model based on those attributes
-    if (use_attributes && map_group.listAttributeNames().size() != hdf5_constants::NUM_GM_ATTRIBUTES)
+    if (use_attributes && map_group.listAttributeNames().size() < hdf5_constants::NUM_GM_ATTRIBUTES)
     {
         throw std::invalid_argument("[GLOBAL_MAP] The delivered map does not contain attribute data");
     }
@@ -101,7 +101,7 @@ int GlobalMap::index_from_pos(Vector3i pos, const Vector3i &chunkPos)
 /**
  * @todo this is the problem, why no intersection data is written to the global map:
  * when activating a chunk, we simply return a vector of rawtypes, which does not include the intersection status, therefore
- * we can neihter write, nor read any intersection data
+ * we can neither write, nor read any intersection data
  *
  * The current approach here is to also write/read the intersection data for visualiuation by overriding a pointer to intersection data.
  * A pointer pointing to no memory is readjusted to point at the specific intersection data in the active chunks, or it is gathered from the hdf5.
@@ -634,11 +634,15 @@ std::vector<Vector3i> GlobalMap::cleanup_artifacts()
         return std::vector<Vector3i>();
     }
 
+    TSDFEntry default_entry(600, 0);
+
     auto chunks = all_chunk_poses();
     int num_shitty = 0;
 
     // detect empty chunks
     auto empty_vec = chunks_empty();
+
+    std::cout << "[GlobalMap] Identifying outliers while skipping empty chunks..." << std::endl;
 
     // vector to store the outliers to display them later on
     std::vector<Vector3i> shitty_cells;
@@ -652,6 +656,8 @@ std::vector<Vector3i> GlobalMap::cleanup_artifacts()
         {
             continue;
         }
+
+        int wrong_counter = 0;
 
         Vector3i start = chunks[i] * CHUNK_SIZE;
         Vector3i end = start + Vector3i(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
@@ -677,32 +683,37 @@ std::vector<Vector3i> GlobalMap::cleanup_artifacts()
 
                     int num_interesting = 0;
 
-//#pragma omp parallel for reduction(+ : num_interesting) private(current_chunk)
-                    for (auto cell : adj_cells)
+                    for (int i = 0; i < adj_cells.size(); i++)
                     {
+                        auto cell = adj_cells[i];
+
                         Vector3i chunkPos = floor_divide(cell, CHUNK_SIZE);
 
                         // ignore edge cases, where the chunk doesnt exist.
-                        if (chunkPos != current_chunk && !chunk_exists(chunkPos))
+                        if (chunkPos == current_chunk && chunk_exists(chunkPos))
                         {
-                            continue;
-                        }
+                            auto tsdf = get_value(cell);
 
-                        auto tsdf = get_value(cell);
-
-                        if (tsdf.value() < 600 && tsdf.weight() > 0)
-                        {
-                            num_interesting++;
+                            if (tsdf.value() < 600 && tsdf.weight() > 0)
+                            {
+                                num_interesting++;
+                            }
                         }
                     }
 
-                    if (num_interesting < 11)
+                    if (num_interesting < 6)
                     {
                         // mark as not so interesting in the tsdf...
-                        current.weight(0);
-                        current.value(600);
+                        set_value(Vector3i(x, y, z), default_entry);
 
-                        set_value(Vector3i(x, y, z), current);
+                        // test if has been set:
+                        auto test = get_value(Vector3i(x, y, z));
+
+                        if (test.value() != default_entry.value() || test.weight() != default_entry.weight())
+                        {
+                            wrong_counter++;
+                        }
+
                         shitty_cells.push_back(Vector3i(x, y, z));
                         num_shitty++;
                     }
@@ -711,9 +722,10 @@ std::vector<Vector3i> GlobalMap::cleanup_artifacts()
         }
 
         std::cout << "[GlobalMap]: Chunk " << i + 1 << " of " << chunks.size() << " done. Currently found " << num_shitty << " cells" << std::endl;
-    }
+        std::cout << "[Globalmap] Errors when updating: " << wrong_counter << std::endl;
 
-    write_back();
+        write_back();
+    }
 
     // create an attribute for the global map, to ensure it doesnt get cleaned multiple times
     map.createAttribute("cleaned", true);
@@ -873,9 +885,72 @@ std::vector<bool> GlobalMap::chunks_empty()
     return ret;
 }
 
-/*std::vector<Vector3i, TSDFEntry>& GlobalMap::get_full_data()
+std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
 {
-    //TODO: implement
-    std::vector<Vector3i, TSDFEntry> tmp;
-    return tmp;
-}*/
+    // TODO: implement
+    std::vector<std::pair<Vector3i, TSDFEntry>> ret;
+
+    auto chunks = all_chunk_poses();
+
+    auto group = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    for (int i = 0; i < chunks.size(); i++)
+    {
+        auto chunk = chunks[i];
+
+        auto chunk_pos = chunk * CHUNK_SIZE;
+
+        auto tag = tag_from_chunk_pos(chunk);
+
+        auto ds = group.getDataSet(tag);
+
+        std::vector<TSDFEntry::RawType> data;
+        ds.read(data);
+
+        // std::cout << "[GlobalMap - get_full_data()] Read " << data.size() << " entries from h5!" << std::endl;
+
+        // now determine all <Vector3i, TSDFEntry> entries
+
+        for (int j = 0; j < data.size(); j++)
+        {
+            TSDFEntry tmp_tsdf(data[j]);
+
+            // skip default values
+            if (tmp_tsdf.value() == get_attribute_data().get_tau() || tmp_tsdf.weight() == 0)
+            {
+                continue;
+            }
+
+            // determine x, y and z from index
+            Vector3i index_pos = pos_from_index(j);
+
+            // currently pos is a relative pos. to make it absolute, we add the chunk pos;
+            index_pos += chunk_pos;
+
+            ret.push_back(std::make_pair(index_pos, tmp_tsdf));
+        }
+
+        // std::cout << "Finished reading data from chunk " << i << std::endl;
+    }
+
+    std::cout << "[GlobalMap - get_full_data()] Read " << ret.size() << " values from the whole globalmap" << std::endl;
+
+    return ret;
+}
+
+Vector3i GlobalMap::pos_from_index(int i)
+{
+    int tmp = i;
+    // reconstruct pos vector from data index
+    int z = i % CHUNK_SIZE;
+    i = (i - z) / CHUNK_SIZE;
+    int y = i % CHUNK_SIZE;
+    i = (i - y) / CHUNK_SIZE;
+    int x = i;
+
+    // std::cout << "Index: " << tmp << std::endl
+    //           << "Vector: " << std::endl
+    //           << Vector3i(x, y, z) << std::endl;
+
+    return Vector3i(x, y, z);
+}

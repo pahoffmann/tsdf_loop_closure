@@ -36,7 +36,7 @@ lc_options_reader *options;
 // ROS STUFF //
 visualization_msgs::Marker tsdf_map_full_before; // marker for the full tsdf map (global) (before map update)
 visualization_msgs::Marker tsdf_map_full_after;  // marker for the full tsdf map (global) (after map update)
-visualization_msgs::Marker removed_cells_marker;  // marker for the full tsdf map (global) (after map update)
+visualization_msgs::Marker removed_cells_marker; // marker for the full tsdf map (global) (after map update)
 visualization_msgs::Marker path_marker;          // marker for the full tsdf map (global) (after map update)
 
 // ros publishers declaration
@@ -52,32 +52,27 @@ std::shared_ptr<LocalMap> local_map_ptr_;
 // Path //
 Path *path;
 
+void initGlobalMap()
+{
+  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name()); // create a global map, use it's attributes
+  std::cout << "Finished init the gobal map" << std::endl;
+}
+
 /**
  * @brief initializes the local and global map
  *
  */
-void initMaps(bool cleanup)
+void initLocalMap()
 {
-  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name()); // create a global map, use it's attributes
-  auto attribute_data = global_map_ptr_->get_attribute_data();
 
-  // local_map_ptr_ = std::make_shared<LocalMap>(312.5, 312.5, 312.5, global_map_ptr_, true); // not used anymore, though good 2 know
+  auto attribute_data = global_map_ptr_->get_attribute_data();
 
   local_map_ptr_ = std::make_shared<LocalMap>(attribute_data.get_map_size_x(),
                                               attribute_data.get_map_size_y(),
                                               attribute_data.get_map_size_z(),
-                                              global_map_ptr_, true); // still hardcoded af
+                                              global_map_ptr_, true);
 
-  auto &size = local_map_ptr_.get()->get_size();
-
-  std::cout << "Finished init the maps" << std::endl;
-
-  // cleanup the maps, when specified
-  if (cleanup)
-  {
-    // cleans up global map a bit
-    global_map_ptr_->cleanup_artifacts();
-  }
+  std::cout << "Finished init the local map" << std::endl;
 }
 
 /**
@@ -173,8 +168,8 @@ int main(int argc, char **argv)
   // check the status returned from the options reading
   check_options_status(status);
 
-  // init local and global maps
-  initMaps(false);
+  // init global map
+  initGlobalMap();
 
   // retrieve path method from options (0 = from globalmap, 1 = from path extraction, 2 = from json)
   initialize_path(options->get_path_method());
@@ -184,15 +179,40 @@ int main(int argc, char **argv)
   populate_publishers(n);
 
   // generate marker for before map
-  tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
+  // tsdf_map_full_before = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
 
   // cleanup the map
   auto data = global_map_ptr_->cleanup_artifacts();
+
   std::cout << "Got " << data.size() << " cells which should have been deleted from cleanup process" << std::endl;
+
+  // init local map
+  initLocalMap();
+
+  int kekw_counter = 0;
+  int shesh_counter = 0;
+
+  for (auto data_pt : data)
+  {
+    if (local_map_ptr_->in_bounds(data_pt))
+    {
+      if (local_map_ptr_->value(data_pt).value() != 600 || local_map_ptr_->value(data_pt).weight() != 0)
+      {
+        kekw_counter++;
+      }
+    }
+    else
+    {
+      shesh_counter++;
+    }
+  }
+
+  std::cout << "Kekw counter: " << kekw_counter << std::endl;
+  std::cout << "Shesh counter: " << shesh_counter << std::endl;
 
   removed_cells_marker = ROSViewhelper::marker_from_map_points(data);
 
-  //global_map_ptr_->chunks_empty();
+  // global_map_ptr_->chunks_empty();
 
   tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, true);
 

@@ -428,7 +428,6 @@ namespace ROSViewhelper
         tsdf_markers.type = visualization_msgs::Marker::POINTS;
         tsdf_markers.action = visualization_msgs::Marker::ADD;
         tsdf_markers.scale.x = tsdf_markers.scale.y = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
-        std::vector<geometry_msgs::Point> points;                                   // 3 x 3 markers
 
         // check for duplicates when creating the map marker.
         int num_duplicates = 0;
@@ -707,6 +706,47 @@ namespace ROSViewhelper
             auto real_point = map_to_real(point);
 
             points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
+        }
+
+        return points_marker;
+    }
+
+    /**
+     * @brief gets a data array of a map vector and an attached tsdf entry and creates a ros marker from it
+     * 
+     * @param data 
+     * @return visualization_msgs::Marker 
+     */
+    static visualization_msgs::Marker marker_from_gm_read(std::vector<std::pair<Eigen::Vector3i, TSDFEntry>> data)
+    {
+        // raytrace pose
+        visualization_msgs::Marker points_marker;
+        points_marker.header.frame_id = "map";
+        points_marker.header.stamp = ros::Time();
+        points_marker.ns = "gm_read";
+        points_marker.id = 0;
+        points_marker.lifetime.fromSec(TSDF_LIFETIME);
+        points_marker.type = visualization_msgs::Marker::POINTS;
+        points_marker.action = visualization_msgs::Marker::ADD;
+        points_marker.scale.x = points_marker.scale.y = points_marker.scale.z = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
+
+        for (auto data_pt : data)
+        {
+            auto real_point = map_to_real(data_pt.first);
+            auto tsdf = data_pt.second;
+
+
+            points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
+
+            if(tsdf.value() < 0)
+            {
+                points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::maroon));
+            }
+            else
+            {
+                points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::green));
+            }
+
         }
 
         return points_marker;

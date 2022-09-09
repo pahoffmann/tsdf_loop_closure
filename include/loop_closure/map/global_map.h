@@ -282,11 +282,19 @@ public:
      *
      * @return std::vector<Vector3i, TSDFEntry>
      */
-    std::vector<Vector3i, TSDFEntry> &get_full_data();
+    std::vector<std::pair<Vector3i, TSDFEntry>> get_full_data();
 
     /**
      * @brief Labels the chunks as empty or not empty
      *
      */
     std::vector<bool> chunks_empty();
+    
+    /**
+     * @brief calculates the position which is associated with an index in a hdf5 dataset
+     * 
+     * @param i 
+     * @return Vector3i 
+     */
+    Vector3i pos_from_index(int i);
 };

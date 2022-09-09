@@ -62,6 +62,10 @@
 [x] Check diff between association number in map update vs. number of cells displayed in rviz (intersection markers) - they are off...
 [x] Write a test case, which checks the local map functionality... check if resetting all cells with value actually resets them. YUP
 [x] Only generate associations in bounds of the loop closure indices. can do
+[x] Implement tests to ensure writing to the globalmap works, write meta data (e.g. hit percentage, number hit vs total occupied cells)
+    to hdf (/associations)
+[x] implement a function in the global map, which returns the whole tsdf data as a vector
+[x] instead of using the localmap to generate a tsdf marker for ros, use the global maps functionality.
 
 Intersection Data:
 
@@ -81,10 +85,12 @@ Intersection Data:
 [x] get a better understanding on weights (using the original doc thesis)
 [ ] See, if there might be a quick fix for the path finder, which fixes issues with out of bounds vertices, same as bresenham! (relative real to world)
 [ ] BUG: during the loop closure process, the map is enlarged by empty chunks, probably due to some indexing problem. If there is time, try to fix this.
-[ ] Keep on working on writing the intersectionstatus to the hdf5
 [ ] Write and read IntersectionStatus to / from HDF5
 [ ] Bresenham: precalc of thee finish vertices not necessary, just use the direction vector and do an inbounds() check with the localmap
-[ ] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
+[ ] Implement the ray tracer as a singleton, so the rays don't need initialization every time. (insert this into masters thesis)
+    -> There needs to be an additional array (e.g. init_rays)
+    -> function to destroy current instance and make available for reinstanceiation
+[ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 
 ## TODO's ##
 
@@ -94,25 +100,19 @@ Intersection Data:
 
 [ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing (might be too runtime excessive)
 [ ] Write updated path back to h5
-[ ] Implement the ray tracer as a singleton, so the rays don't need initialization every time. (insert this into masters thesis)
-    -> There needs to be an additional array (e.g. init_rays)
-    -> function to destroy current instance and make available for reinstanceiation
-[ ] implement a function in the global map, which returns the whole tsdf data as a vector
 [ ] think of a way to include connectivity between cells in the update process, so that connecting cells wont be ripped apart as much
     -> somehow keep more of the connectivity
 [ ] write a raytracer routine, which removes artifacts not seen during the tracing process (aka keep going even once finished and mark hit cells to be
     removed)
-[ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
-[ ] Implement tests to ensure writing to the globalmap works, write meta data (e.g. hit percentage, number hit vs total occupied cells)
-    to hdf (/associations)
-
+[ ] instead of filtering outliers using the localmap interface, do it via the globalmap, this should be a lot faster
 
 ## ASAP ##
 [ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
-
-
+[ ] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
 [ ] as of now, in the map update, only poses are considered, which have been updated, though - what about the ones, which have not been updated, but
     may still be associated with the cell we want to move. because the pose itself has been practically unchanged, it also needs to be considered, when finding a new cell position.
+
+
     Also, the loop closure does not only update the path poses between the start and end of the path, but finds new optimal poses for the whole path.
 
 
