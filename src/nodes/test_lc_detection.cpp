@@ -62,6 +62,7 @@ float last_path_idx = 0;
 // ros
 ros::Subscriber pose_sub;
 ros::Publisher path_pub;
+ros::Publisher optimized_path_pub;
 ros::Publisher path_marker_pub;
 ros::Publisher loop_pub;
 
@@ -243,6 +244,17 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
 
         // add prior factor to every pos of the graph
         graph.add(factor);
+
+        // // add between factor
+        // if (i < path->get_length() - 1)
+        // {
+        //     auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
+        //     gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
+        //     Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
+        //     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+
+        //     graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i + 1, i + 2, gtsam::Pose3(rot3, point3), prior_noise));
+        // }
     }
 
     // add lc constraint
@@ -252,7 +264,7 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     // calculate the pose differences between the poses participating in the loop closure
     auto lc_pose_diff = getTransformationMatrixDiff(lc_pos_2->getTransformationMatrix(), lc_pos_1->getTransformationMatrix());
 
-    Vector3f pos_diff =lc_pose_diff.block<3, 1>(0, 3);
+    Vector3f pos_diff = lc_pose_diff.block<3, 1>(0, 3);
     gtsam::Rot3 rot3(lc_pose_diff.block<3, 3>(0, 0).cast<double>());
     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
 
@@ -298,6 +310,18 @@ void fill_optimized_path(gtsam::Values values)
 
     for (auto value : values)
     {
+        auto pose = value.value.cast<gtsam::Pose3>();
+
+        gtsam::Rot3 rotation = pose.rotation();
+        Vector3f position;
+        position << pose.x(), pose.y(), pose.z();
+        Eigen::Matrix3f rotation_mat = rotation.matrix().cast<float>();
+
+        Quaternionf quat(rotation_mat);
+        Pose new_pose;
+        new_pose.pos = position;
+        new_pose.quat = quat;
+        optimized_path->add_pose(new_pose);
     }
 }
 
@@ -324,6 +348,7 @@ int main(int argc, char **argv)
     // pose_sub = n.subscribe("/base_footprint_pose_ground_truth", 1, pose_callback);
 
     path_pub = n.advertise<nav_msgs::Path>("/test_path", 1);
+    optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     path_marker_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
 
@@ -360,13 +385,17 @@ int main(int argc, char **argv)
 
             create_factor_graph_from_path(path, res);
 
-            solve_factor_graph(path);
+            auto values = solve_factor_graph(path);
+
+            fill_optimized_path(values);
         }
         else
         {
             is_ok = false;
         }
     }
+
+    auto optimized_path_marker = ROSViewhelper::initPathMarker(optimized_path);
 
     std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
 
@@ -375,6 +404,7 @@ int main(int argc, char **argv)
     {
         // publish path and loop detects
         path_marker_pub.publish(path_marker);
+        optimized_path_pub.publish(optimized_path_marker);
 
         for (auto marker : loop_visualizations)
         {
