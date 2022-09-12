@@ -35,10 +35,17 @@
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 
+#include <gtsam/geometry/Pose3.h>
+#include <gtsam/geometry/Pose2.h>
+#include <gtsam/nonlinear/NonlinearFactorGraph.h>
+#include <gtsam/slam/BetweenFactor.h>
+#include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
+
 RayTracer *tracer;
 std::shared_ptr<LocalMap> local_map_ptr;
 std::shared_ptr<GlobalMap> global_map_ptr;
 Path *path;
+Path *optimized_path;
 int side_length_xy;
 int side_length_z;
 lc_options_reader *options;
@@ -59,6 +66,10 @@ ros::Publisher path_marker_pub;
 ros::Publisher loop_pub;
 
 nav_msgs::Path ros_path;
+
+// gtsam
+
+gtsam::NonlinearFactorGraph graph;
 
 /**
  * @brief method, which reacts to new odometry messages
@@ -201,9 +212,93 @@ void init_obj()
     path = new Path();
     path->attach_raytracer(tracer);
 
-
     ros_path.header.frame_id = "map";
     ros_path.header.stamp = ros::Time::now();
+}
+
+/**
+ * @brief Create a factor graph from path object,
+ *
+ */
+void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indices)
+{
+    Eigen::Quaternionf noise_quat;
+    auto rollAngle = Eigen::AngleAxisf(0.1, Eigen::Vector3f::UnitX());
+    auto pitchAngle = Eigen::AngleAxisf(0.1, Eigen::Vector3f::UnitY());
+    auto yawAngle = Eigen::AngleAxisf(0.1, Eigen::Vector3f::UnitZ());
+
+    gtsam::Vector6 noise_vec;
+    noise_vec << 0.2, 0.2, 0.2, 0.1, 0.1, 0.1;
+
+    gtsam::noiseModel::Diagonal::shared_ptr prior_noise =
+        gtsam::noiseModel::Diagonal::Sigmas(noise_vec);
+
+    for (int i = 0; i < path->get_length(); i++)
+    {
+        auto current_pose = path->at(i);
+        gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
+        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+
+        gtsam::PriorFactor<gtsam::Pose3> factor(i + 1, gtsam::Pose3(rot3, point3), prior_noise);
+
+        // add prior factor to every pos of the graph
+        graph.add(factor);
+    }
+
+    // add lc constraint
+    auto lc_pos_1 = path->at(lc_pair_indices.first);
+    auto lc_pos_2 = path->at(lc_pair_indices.second);
+
+    // calculate the pose differences between the poses participating in the loop closure
+    auto lc_pose_diff = getTransformationMatrixDiff(lc_pos_2->getTransformationMatrix(), lc_pos_1->getTransformationMatrix());
+
+    Vector3f pos_diff =lc_pose_diff.block<3, 1>(0, 3);
+    gtsam::Rot3 rot3(lc_pose_diff.block<3, 3>(0, 0).cast<double>());
+    gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+
+    // lc constraint added here
+    graph.add(gtsam::BetweenFactor<gtsam::Pose3>(lc_pair_indices.second + 1, lc_pair_indices.first + 1, gtsam::Pose3(rot3, point3)));
+}
+
+/**
+ * @brief will solve a previously filled factor graph using initial values
+ *
+ * @return gtsam::Values  the resulting position of the initial values
+ */
+gtsam::Values solve_factor_graph(Path *path)
+{
+    gtsam::Values initial;
+
+    // fill initial values with path positions
+    for (int i = 0; i < path->get_length(); i++)
+    {
+        auto current_pose = path->at(i);
+        gtsam::Rot3 rot3(path->at(i)->rotationMatrixFromQuaternion().cast<double>());
+        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+
+        initial.insert(i + 1, gtsam::Pose3(rot3, point3));
+    }
+
+    double error_prev = graph.error(initial);
+
+    std::cout << "Error (previous): " << error_prev << std::endl;
+
+    // optimize intial values using levenberg marquardt
+    gtsam::LevenbergMarquardtOptimizer optimizer(graph, initial);
+    auto values = optimizer.optimize();
+
+    std::cout << "Error (after): " << graph.error(values) << std::endl;
+
+    return values;
+}
+
+void fill_optimized_path(gtsam::Values values)
+{
+    optimized_path = new Path();
+
+    for (auto value : values)
+    {
+    }
 }
 
 /**
@@ -240,7 +335,7 @@ int main(int argc, char **argv)
         path->add_pose(pose);
     }
 
-    // crate path marker 
+    // crate path marker
     auto path_marker = ROSViewhelper::initPathMarker(path);
 
     int start_idx = 0;
@@ -262,6 +357,10 @@ int main(int argc, char **argv)
             std::cout << "Found a closed loop! Between index " << res.first << " and index " << res.second << std::endl;
 
             loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos));
+
+            create_factor_graph_from_path(path, res);
+
+            solve_factor_graph(path);
         }
         else
         {

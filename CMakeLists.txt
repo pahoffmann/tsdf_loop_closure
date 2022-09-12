@@ -67,6 +67,24 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 # openmp
 find_package(OpenMP)
 
+###### GTSAM STUFF STARTS HERE
+
+# Include GTSAM CMake tools
+find_package(GTSAMCMakeTools)
+#include(GtsamBuildTypes) # Load build type flags and default to Debug mode
+#include(GtsamTesting)    # Easy functions for creating unit tests and scripts
+#include(GtsamMatlabWrap) # Automatic MATLAB wrapper generation
+
+# Ensure that local folder is searched before library folders
+#include_directories(BEFORE "${PROJECT_SOURCE_DIR}")
+
+###################################################################################
+# Find GTSAM components
+find_package(GTSAM REQUIRED) # Uses installed package
+include_directories(${GTSAM_INCLUDE_DIR})
+
+###### GTSAM STUFF ENDS HER
+
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -162,6 +180,7 @@ target_link_libraries(loop_closure
   ${JSONCPP_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
+  gtsam
 )
 
 target_link_libraries(path_listener
@@ -182,6 +201,7 @@ target_link_libraries(test_lc_detection
   ${JSONCPP_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
+  gtsam
 )
 
 
