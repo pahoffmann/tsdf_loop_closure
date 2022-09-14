@@ -22,6 +22,7 @@
 #include <sstream>
 #include <loop_closure/LoopClosureConfig.h>
 #include <visualization_msgs/Marker.h>
+#include <omp.h>
 
 
 /**
@@ -250,4 +251,11 @@ public:
      * @param b 
      */
     bool is_visible(Pose &a, Pose &b) ;
+
+    /**
+     * @brief approximates a pointcloud for a given pose
+     * 
+     * @return std::vector<Eigen::Vector3f> 
+     */
+    std::vector<Eigen::Vector3f> approximate_pointcloud(Pose *pose);
 };

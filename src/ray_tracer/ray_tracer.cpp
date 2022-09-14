@@ -62,7 +62,6 @@ float RayTracer::start(int mode)
   {
     updateRaysNew(mode);
     num_iterations++;
-    // std::cout << "Num_Iterations: " << num_iterations << " | Finished Counter: " << finished_counter << " | num_rays: " << rays.size() << std::endl;
   }
 
   // more time measuring
@@ -140,6 +139,7 @@ void RayTracer::updateRaysNew(int mode)
   }
 
   // iterate over every 'line'
+
   for (int i = 0; i < rays.size(); i++)
   {
     // if the current ray is finished ( reached bounding box or sign switch in tsdf), skip it
@@ -664,6 +664,130 @@ void RayTracer::perform3DBresenham()
 
     tmp_cells.clear();
   }
+}
+
+std::vector<Eigen::Vector3f> RayTracer::approximate_pointcloud(Pose *pose)
+{
+  update_pose(pose);
+
+  // and do some time measuring
+  auto start_time = ros::Time::now();
+
+  // when either of these is NULL, we might as well just throw a logic error.
+  if ((lc_config == NULL && options == NULL) || current_pose == NULL)
+  {
+    throw std::logic_error("[RayTracer] - Major Error, no configuration data delivered to ray-tracer");
+  }
+  else if (current_pose == NULL)
+  {
+    throw std::invalid_argument("[RayTracer] The RayTracer needs a pose to be able to start tracing.");
+  }
+
+  opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
+  hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
+  vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
+  step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
+
+  side_length_xy = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
+  side_length_z = (local_map_ptr_->get_size().z() - 1) * MAP_RESOLUTION / 1000.0f;
+
+  ray_size = options != NULL ? options->get_ray_size() : lc_config->ray_size;
+
+  // just for better readablity
+  std::cout << std::endl;
+
+  std::cout << "[RayTracer] Started Tracing..." << std::endl;
+
+  // before doing anything, we need to cleanup the data from the last run
+  cleanup();
+
+  // first initialize the rays with the current pose and config data
+  initRays();
+
+  // now we initialized the "lines finished" - array and know exactly, when to stop updating the rays.
+  // exactly when all rays are finished :D
+
+  std::vector<Vector3f> surface_points;
+
+  while (finished_counter < lines_finished.size())
+  {
+    for (int i = 0; i < rays.size(); i++)
+    {
+      // if the current ray is finished ( reached bounding box or sign switch in tsdf), skip it
+      if (lines_finished[i] == RayStatus::FINISHED)
+      {
+        continue;
+      }
+
+      // get the two ray-points and calculate the current rays length
+      auto &p1 = rays[i];
+      auto &p2 = current_pose->pos;
+      float length = (p1 - p2).norm();
+      float factor = (length + step_size) / length; // vector enlargement
+
+      // save old pos, which is later used to check for zero crossings
+      Vector3i old_pos = real_to_map(p1);
+
+      // enlarge "vector"
+      p1 = (p1 - current_pose->pos) * factor + current_pose->pos; // translate to (0,0,0), enlarge, translate back
+
+      Vector3i new_pos = real_to_map(p1);
+
+      if (old_pos == new_pos)
+      {
+        continue;
+      }
+
+      // check if out of bounds of the local map, if so:
+      if (!local_map_ptr_->in_bounds(real_to_map(p1)))
+      {
+        finished_counter++;
+        lines_finished[i] = RayStatus::FINISHED;
+
+        continue;
+      }
+
+      // check if old tsdf is positive and (0 <= value < 600) and new tsdf is (< 0)
+      auto old_tsdf = local_map_ptr_->value(old_pos);
+      auto new_tsdf = local_map_ptr_->value(new_pos);
+
+      auto old_val = old_tsdf.value();
+      auto new_val = new_tsdf.value();
+
+      // zero crossing detected
+      if (old_val < 600 && old_val >= 0 && new_val < 0)
+      {
+        // calculate surface point
+        Vector3i old_mm = old_pos * MAP_RESOLUTION;
+        Vector3i new_mm = new_pos * MAP_RESOLUTION;
+
+        Vector3i diff = (new_pos - old_pos).cwiseAbs();
+        old_mm += diff * old_val;
+        new_mm += diff * new_val;
+
+        Vector3i avg_vec_mm = floor_divide((new_mm + old_mm), 2);
+
+        // project point onto ray (by intersecting the ray with the plane cutting through the cell)
+
+        // the normal is already the diff vector
+
+        Vector3f intersection_point;
+
+        auto is_ok = linePlaneIntersection(intersection_point, p1 - current_pose->pos, current_pose->pos, diff.cast<float>().normalized(), avg_vec_mm.cast<float>() / 1000.0f);
+
+        if (!is_ok)
+        {
+          std::cout << "No intersection detected" << std::endl;
+        }
+        else
+        {
+          surface_points.push_back(intersection_point);
+        }
+      }
+    }
+  }
+
+  return surface_points;
 }
 
 bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vector,

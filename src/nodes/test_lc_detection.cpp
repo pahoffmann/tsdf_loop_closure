@@ -65,6 +65,7 @@ ros::Publisher path_pub;
 ros::Publisher optimized_path_pub;
 ros::Publisher path_marker_pub;
 ros::Publisher loop_pub;
+ros::Publisher approx_pcl_pub;
 
 nav_msgs::Path ros_path;
 
@@ -228,13 +229,25 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     auto pitchAngle = Eigen::AngleAxisf(0.1, Eigen::Vector3f::UnitY());
     auto yawAngle = Eigen::AngleAxisf(0.1, Eigen::Vector3f::UnitZ());
 
+    // SIEHE:
+    // https://gtsam.org/tutorials/intro.html#magicparlabel-65728
+    // 20cm noise in x, y und z Richtung, 0.1 radiants fehler in z richtung
     gtsam::Vector6 noise_vec;
     noise_vec << 0.2, 0.2, 0.2, 0.1, 0.1, 0.1;
 
     gtsam::noiseModel::Diagonal::shared_ptr prior_noise =
         gtsam::noiseModel::Diagonal::Sigmas(noise_vec);
 
-    for (int i = 0; i < path->get_length(); i++)
+    auto current_pose = path->at(0);
+    gtsam::Rot3 rot3_prior(current_pose->rotationMatrixFromQuaternion().cast<double>());
+    gtsam::Point3 point3_prior(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+
+    gtsam::PriorFactor<gtsam::Pose3> factor(1, gtsam::Pose3(rot3_prior, point3_prior), prior_noise);
+
+    // add prior factor to every pos of the graph
+    graph.add(factor);
+
+    for (int i = 1; i < path->get_length(); i++)
     {
         auto current_pose = path->at(i);
         gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
@@ -245,10 +258,11 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
         // add prior factor to every pos of the graph
         graph.add(factor);
 
-        // // add between factor
+        // add between factor
         // if (i < path->get_length() - 1)
         // {
         //     auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
+
         //     gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
         //     Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
         //     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
@@ -269,6 +283,9 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
 
     // lc constraint added here
+    // siehe auch
+    // https://github.com/TixiaoShan/LIO-SAM/blob/e0b77a9654d32350338b7b9246934cff6271bec1/src/imuPreintegration.cpp
+    // Zeile 1488
     graph.add(gtsam::BetweenFactor<gtsam::Pose3>(lc_pair_indices.second + 1, lc_pair_indices.first + 1, gtsam::Pose3(rot3, point3)));
 }
 
@@ -351,6 +368,8 @@ int main(int argc, char **argv)
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     path_marker_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
+    approx_pcl_pub = n.advertise<visualization_msgs::Marker>("/approx_pcl", 1);
+
 
     // extract poses from global map and add to path
     auto poses = global_map_ptr->get_path();
@@ -395,6 +414,12 @@ int main(int argc, char **argv)
         }
     }
 
+    // test approx pcl
+    auto approx_data = tracer->approximate_pointcloud(path->at(0));
+    std::cout << "Approximated " << approx_data.size() << "points" << std::endl;
+
+    auto approx_pcl_marker = ROSViewhelper::marker_from_real_data(approx_data);
+
     auto optimized_path_marker = ROSViewhelper::initPathMarker(optimized_path);
 
     std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
@@ -405,6 +430,7 @@ int main(int argc, char **argv)
         // publish path and loop detects
         path_marker_pub.publish(path_marker);
         optimized_path_pub.publish(optimized_path_marker);
+        approx_pcl_pub.publish(approx_pcl_marker);
 
         for (auto marker : loop_visualizations)
         {

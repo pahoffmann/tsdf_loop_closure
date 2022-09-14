@@ -90,6 +90,14 @@ Visualization Manager:
         lc_detect: true
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /approx_pcl
+      Name: Marker
+      Namespaces:
+        wall: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -134,9 +142,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 0.30979645252227783
       Target Frame: <Fixed Frame>
-      Yaw: 4.501761436462402
+      Yaw: 4.671761512756348
     Saved: ~
 Window Geometry:
   Displays:

@@ -712,6 +712,38 @@ namespace ROSViewhelper
     }
 
     /**
+     * @brief creates a pcl marker from real world data
+     * 
+     * @param points 
+     * @return visualization_msgs::Marker 
+     */
+    static visualization_msgs::Marker marker_from_real_data(std::vector<Eigen::Vector3f> points)
+    {
+        // raytrace pose
+        visualization_msgs::Marker points_marker;
+        points_marker.header.frame_id = "map";
+        points_marker.header.stamp = ros::Time();
+        points_marker.ns = "wall";
+        points_marker.id = 0;
+        points_marker.type = visualization_msgs::Marker::POINTS;
+        points_marker.action = visualization_msgs::Marker::ADD;
+        points_marker.scale.x = points_marker.scale.y = points_marker.scale.z = 0.02; // 1.0 is the relative size of the marker
+        points_marker.color.a = 0.5;                                                                          // Don't forget to set the alpha!
+        points_marker.color.r = 136 / 255.0f;
+        points_marker.color.g = 0 / 255.0f;
+        points_marker.color.b = 255 / 255.0f;
+
+        for (auto point : points)
+        {
+            auto real_point = point;
+
+            points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
+        }
+
+        return points_marker;
+    }
+
+    /**
      * @brief gets a data array of a map vector and an attached tsdf entry and creates a ros marker from it
      * 
      * @param data 
