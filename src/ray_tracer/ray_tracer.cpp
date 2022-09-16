@@ -666,7 +666,7 @@ void RayTracer::perform3DBresenham()
   }
 }
 
-std::vector<Eigen::Vector3f> RayTracer::approximate_pointcloud(Pose *pose)
+pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
 {
   update_pose(pose);
 
@@ -707,7 +707,9 @@ std::vector<Eigen::Vector3f> RayTracer::approximate_pointcloud(Pose *pose)
   // now we initialized the "lines finished" - array and know exactly, when to stop updating the rays.
   // exactly when all rays are finished :D
 
-  std::vector<Vector3f> surface_points;
+  //std::vector<Vector3f> surface_points;
+  pcl::PointCloud<PointType>::Ptr pointcloud;
+  pointcloud.reset(new pcl::PointCloud<PointType>());
 
   while (finished_counter < lines_finished.size())
   {
@@ -781,13 +783,20 @@ std::vector<Eigen::Vector3f> RayTracer::approximate_pointcloud(Pose *pose)
         }
         else
         {
-          surface_points.push_back(intersection_point);
+          PointType point;
+          point.x = intersection_point.x();
+          point.y = intersection_point.y();
+          point.z = intersection_point.z();
+          
+          pointcloud->push_back(point);
+          //surface_points.push_back(intersection_point);
         }
       }
     }
   }
 
-  return surface_points;
+  //return surface_points;
+  return pointcloud;
 }
 
 bool RayTracer::linePlaneIntersection(Vector3f &intersection, Vector3f ray_vector,

@@ -24,6 +24,8 @@
 #include <visualization_msgs/Marker.h>
 #include <omp.h>
 
+#include <pcl/point_cloud.h>
+
 
 /**
  * @brief Class used to emulate a laserscan, by tracing artifical rays in space based on a 6D pose.
@@ -257,5 +259,5 @@ public:
      * 
      * @return std::vector<Eigen::Vector3f> 
      */
-    std::vector<Eigen::Vector3f> approximate_pointcloud(Pose *pose);
+    pcl::PointCloud<PointType>::Ptr approximate_pointcloud(Pose *pose);
 };

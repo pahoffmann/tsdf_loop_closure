@@ -41,6 +41,8 @@
 #include <gtsam/slam/BetweenFactor.h>
 #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
 
+#include <pcl/registration/icp.h>
+
 RayTracer *tracer;
 std::shared_ptr<LocalMap> local_map_ptr;
 std::shared_ptr<GlobalMap> global_map_ptr;
@@ -218,6 +220,76 @@ void init_obj()
     ros_path.header.stamp = ros::Time::now();
 }
 
+gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pair<int, int> lc_indices)
+{
+    int loop_key_cur = lc_indices.second;
+    int loop_key_pre = lc_indices.first;
+
+    // estimate point-clouds
+    // this is pretty runtime intensive right now
+    // it might be clever to reduce the number of rays here
+    auto pointcloud_pre = tracer->approximate_pointcloud(path->at(loop_key_pre));
+    auto pointcloud_cur = tracer->approximate_pointcloud(path->at(loop_key_cur));
+
+    // ICP Settings
+    static pcl::IterativeClosestPoint<PointType, PointType> icp;
+    icp.setMaxCorrespondenceDistance(10.0f); // hardcoded for now
+    icp.setMaximumIterations(100);
+    icp.setTransformationEpsilon(1e-6);
+    icp.setEuclideanFitnessEpsilon(1e-6);
+    icp.setRANSACIterations(0);
+
+    // Align clouds
+    icp.setInputSource(pointcloud_cur);
+    icp.setInputTarget(pointcloud_pre);
+    pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>());
+    icp.align(*unused_result);
+
+    // 0.3 from liosam:
+    // https://github.com/TixiaoShan/LIO-SAM/blob/e0b77a9654d32350338b7b9246934cff6271bec1/config/params.yaml#L88
+    if (icp.hasConverged() == false || icp.getFitnessScore() > 0.3)
+    {
+        std::cout << "ICP has not converged.." << std::endl;
+
+        throw std::logic_error("ICP not converged, look into this");
+    }
+
+    // corrected pointcloud might be published here...
+
+    // Get pose transformation [TODO]
+    /*
+    float x, y, z, roll, pitch, yaw;
+    Eigen::Affine3f correctionLidarFrame;
+    correctionLidarFrame = icp.getFinalTransformation();
+    // transform from world origin to wrong pose
+    Eigen::Affine3f tWrong(path->at(loop_key_cur)->getTransformationMatrix());
+    // transform from world origin to corrected pose
+    Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+    pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
+    gtsam::Pose3 poseFrom = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
+    gtsam::Pose3 poseTo(gtsam::Rot3::RzRyRx(transformIn[0], transformIn[1], transformIn[2]),
+                        gtsam::Point3(transformIn[3], transformIn[4], transformIn[5]));
+    gtsam::Vector Vector6(6);
+    float noiseScore = icp.getFitnessScore();
+    Vector6 << noiseScore, noiseScore, noiseScore, noiseScore, noiseScore, noiseScore;
+    noiseModel::Diagonal::shared_ptr constraintNoise = noiseModel::Diagonal::Variances(Vector6);
+
+    // Add pose constraint
+    mtx.lock();
+    loopIndexQueue.push_back(make_pair(loopKeyCur, loopKeyPre));
+    loopPoseQueue.push_back(poseFrom.between(poseTo));
+    loopNoiseQueue.push_back(constraintNoise);
+    mtx.unlock();*/
+
+    gtsam::Rot3 rot3;
+    gtsam::Point3 point3;
+
+    // create between factor
+    auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second + 1, lc_indices.first + 1, gtsam::Pose3(rot3, point3));
+
+    return between_fac;
+}
+
 /**
  * @brief Create a factor graph from path object,
  *
@@ -232,7 +304,7 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
 
     // SIEHE:
     // https://github.com/TixiaoShan/LIO-SAM/blob/6665aa0a4fcb5a9bb3af7d3923ae4a035b489d47/src/mapOptmization.cpp#L1385
-    gtsam::noiseModel::Diagonal::shared_ptr prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI*M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    gtsam::noiseModel::Diagonal::shared_ptr prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
     gtsam::noiseModel::Diagonal::shared_ptr in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4).finished());
     // gtsam::noiseModel::Diagonal::shared_ptr prior_noise =
     //     gtsam::noiseModel::Diagonal::Sigmas(noise_vec);
@@ -369,7 +441,6 @@ int main(int argc, char **argv)
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
     approx_pcl_pub = n.advertise<visualization_msgs::Marker>("/approx_pcl", 1);
 
-
     // extract poses from global map and add to path
     auto poses = global_map_ptr->get_path();
 
@@ -390,7 +461,7 @@ int main(int argc, char **argv)
     while (is_ok)
     {
         // find path, including visibility check
-        //auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+        // auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
         auto res = path->find_loop_kd_min_dist(start_idx, 3.0, 10.0f, true);
 
         // found
@@ -404,8 +475,8 @@ int main(int argc, char **argv)
             loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos));
 
             // create a factor graph using the current path and the found loop closure
-            create_factor_graph_from_path(path, res);  
-            
+            create_factor_graph_from_path(path, res);
+
             // solve the factor graph using levenberg marquardt and get the new Positions of the optimized path
             auto values = solve_factor_graph(path);
 
@@ -419,7 +490,7 @@ int main(int argc, char **argv)
     }
 
     // no loop found = success, exit program
-    if(loop_visualizations.size() == 0)
+    if (loop_visualizations.size() == 0)
     {
         std::cout << "No Loops found!" << std::endl;
         exit(EXIT_SUCCESS);
@@ -427,15 +498,14 @@ int main(int argc, char **argv)
 
     // test approx pcl from tsdf
     auto approx_data = tracer->approximate_pointcloud(path->at(0));
-    std::cout << "Approximated " << approx_data.size() << "points" << std::endl;
+    std::cout << "Approximated " << approx_data->size() << "points" << std::endl;
 
     // generate a ros marker from the approximated pointcloud
+    // this is currently broken, as the method requires other data, fix this [TODO]
     auto approx_pcl_marker = ROSViewhelper::marker_from_real_data(approx_data);
-
 
     // generate a marker for the optimized path
     auto optimized_path_marker = ROSViewhelper::initPathMarker(optimized_path);
-
 
     std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
 
