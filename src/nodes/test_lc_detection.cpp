@@ -224,19 +224,18 @@ void init_obj()
  */
 void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indices)
 {
-    Eigen::Quaternionf noise_quat;
-    auto rollAngle = Eigen::AngleAxisf(0.1, Eigen::Vector3f::UnitX());
-    auto pitchAngle = Eigen::AngleAxisf(0.1, Eigen::Vector3f::UnitY());
-    auto yawAngle = Eigen::AngleAxisf(0.1, Eigen::Vector3f::UnitZ());
-
     // SIEHE:
     // https://gtsam.org/tutorials/intro.html#magicparlabel-65728
     // 20cm noise in x, y und z Richtung, 0.1 radiants fehler in z richtung
-    gtsam::Vector6 noise_vec;
-    noise_vec << 0.2, 0.2, 0.2, 0.1, 0.1, 0.1;
+    // gtsam::Vector6 noise_vec;
+    // noise_vec << 0.5, 0.5, 0.5, 0.3, 0.3, 0.3;
 
-    gtsam::noiseModel::Diagonal::shared_ptr prior_noise =
-        gtsam::noiseModel::Diagonal::Sigmas(noise_vec);
+    // SIEHE:
+    // https://github.com/TixiaoShan/LIO-SAM/blob/6665aa0a4fcb5a9bb3af7d3923ae4a035b489d47/src/mapOptmization.cpp#L1385
+    gtsam::noiseModel::Diagonal::shared_ptr prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI*M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    gtsam::noiseModel::Diagonal::shared_ptr in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4).finished());
+    // gtsam::noiseModel::Diagonal::shared_ptr prior_noise =
+    //     gtsam::noiseModel::Diagonal::Sigmas(noise_vec);
 
     auto current_pose = path->at(0);
     gtsam::Rot3 rot3_prior(current_pose->rotationMatrixFromQuaternion().cast<double>());
@@ -249,26 +248,26 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
 
     for (int i = 1; i < path->get_length(); i++)
     {
-        auto current_pose = path->at(i);
-        gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
-        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+        // auto current_pose = path->at(i);
+        // gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
+        // gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
 
-        gtsam::PriorFactor<gtsam::Pose3> factor(i + 1, gtsam::Pose3(rot3, point3), prior_noise);
+        // gtsam::PriorFactor<gtsam::Pose3> factor(i + 1, gtsam::Pose3(rot3, point3), prior_noise);
 
-        // add prior factor to every pos of the graph
-        graph.add(factor);
+        // // add prior factor to every pos of the graph
+        // graph.add(factor);
 
         // add between factor
-        // if (i < path->get_length() - 1)
-        // {
-        //     auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
+        if (i < path->get_length() - 1)
+        {
+            auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
 
-        //     gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
-        //     Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
-        //     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+            gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
+            Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
+            gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
 
-        //     graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i + 1, i + 2, gtsam::Pose3(rot3, point3), prior_noise));
-        // }
+            graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i + 1, i + 2, gtsam::Pose3(rot3, point3), in_between_noise));
+        }
     }
 
     // add lc constraint
@@ -382,6 +381,7 @@ int main(int argc, char **argv)
     // crate path marker
     auto path_marker = ROSViewhelper::initPathMarker(path);
 
+    // variables for the lc detection
     int start_idx = 0;
     int end_idx = path->get_length() - 1;
     bool is_ok = true;
@@ -390,7 +390,8 @@ int main(int argc, char **argv)
     while (is_ok)
     {
         // find path, including visibility check
-        auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+        //auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+        auto res = path->find_loop_kd_min_dist(start_idx, 3.0, 10.0f, true);
 
         // found
         if (res.first != -1 && res.second != -1)
@@ -402,10 +403,13 @@ int main(int argc, char **argv)
 
             loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(res.first)->pos, path->at(res.second)->pos));
 
-            create_factor_graph_from_path(path, res);
-
+            // create a factor graph using the current path and the found loop closure
+            create_factor_graph_from_path(path, res);  
+            
+            // solve the factor graph using levenberg marquardt and get the new Positions of the optimized path
             auto values = solve_factor_graph(path);
 
+            // fill the optimized path with the newly found positions
             fill_optimized_path(values);
         }
         else
@@ -414,13 +418,24 @@ int main(int argc, char **argv)
         }
     }
 
-    // test approx pcl
+    // no loop found = success, exit program
+    if(loop_visualizations.size() == 0)
+    {
+        std::cout << "No Loops found!" << std::endl;
+        exit(EXIT_SUCCESS);
+    }
+
+    // test approx pcl from tsdf
     auto approx_data = tracer->approximate_pointcloud(path->at(0));
     std::cout << "Approximated " << approx_data.size() << "points" << std::endl;
 
+    // generate a ros marker from the approximated pointcloud
     auto approx_pcl_marker = ROSViewhelper::marker_from_real_data(approx_data);
 
+
+    // generate a marker for the optimized path
     auto optimized_path_marker = ROSViewhelper::initPathMarker(optimized_path);
+
 
     std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
 

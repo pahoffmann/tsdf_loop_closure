@@ -18,6 +18,10 @@
 #include <loop_closure/ray_tracer/ray_tracer.h>
 #include <loop_closure/util/random.h>
 
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
+
 class Path
 {
 private:
@@ -104,6 +108,18 @@ public:
     std::pair<int, int> find_loop_greedy(int start_idx, float max_dist, float min_traveled, bool check_visibility = false);
 
     /**
+     * @brief will use the method proposed by liosam to find a lc:
+     *        https://github.com/TixiaoShan/LIO-SAM/blob/6665aa0a4fcb5a9bb3af7d3923ae4a035b489d47/src/mapOptmization.cpp#L610
+     * 
+     * @param start_idx 
+     * @param max_dist 
+     * @param min_traveled 
+     * @param check_visibility 
+     * @return std::pair<int, int> 
+     */
+    std::pair<int, int> find_loop_kd_min_dist(int start_idx, float max_dist, float min_traveled, bool check_visibility);
+
+    /**
      * @brief returns a pose of the path for a given idx
      *
      * @param idx
@@ -118,7 +134,9 @@ public:
         }
         else
         {
-            throw std::out_of_range("[Path] There is no Pose at the requested Path-Index.");
+            std::stringstream ss;
+            ss << "[Path] There is no Pose at the requested Path-Index: " << idx << std::endl;
+            throw std::out_of_range(ss.str());
         }
     }
 
@@ -165,4 +183,13 @@ public:
      * @return Vector3f
      */
     Vector3f get_centroid();
+
+    /**
+     * @brief Get the distances between two path poses when following the path poses
+     * 
+     * @param idx1 
+     * @param idx2 
+     * @return float 
+     */
+    float get_distance_between_path_poses(int idx1, int idx2);
 };

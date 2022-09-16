@@ -1,6 +1,5 @@
 #include <loop_closure/path/path.h>
 
-
 Path::Path(Path &other)
 {
     this->ray_tracer = other.ray_tracer;
@@ -31,7 +30,7 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
         return std::make_pair(-1, -1);
     }
 
-    if(check_visibility && ray_tracer == NULL)
+    if (check_visibility && ray_tracer == NULL)
     {
         throw std::logic_error("[RayTracer] Must attach a ray tracer to the path, before trying visibility checks");
     }
@@ -121,6 +120,61 @@ std::pair<int, int> Path::find_loop_greedy(int start_idx, float max_dist, float 
     }
 
     return std::make_pair(index_i, index_j);
+}
+
+std::pair<int, int> Path::find_loop_kd_min_dist(int start_idx, float max_dist, float min_traveled, bool check_visibility = false)
+{
+    pcl::KdTreeFLANN<PointType>::Ptr kdtree_path;
+    pcl::PointCloud<PointType>::Ptr pose_cloud;
+
+    kdtree_path.reset(new pcl::KdTreeFLANN<PointType>());
+    pose_cloud.reset(new pcl::PointCloud<PointType>());
+
+    // fill pose cloud
+    for (int i = 0; i < get_length(); i++)
+    {
+        PointType point;
+        Pose *current = at(i);
+
+        point.x = current->pos.x();
+        point.y = current->pos.y();
+        point.z = current->pos.z();
+
+        pose_cloud->push_back(point);
+    }
+
+    std::vector<int> pointSearchIndLoop;
+    std::vector<float> pointSearchSqDisLoop;
+
+    kdtree_path->setInputCloud(pose_cloud);
+
+    int end_idx = -1;
+
+    // iterate over the path, find first lc with given criteria
+    for (int i = start_idx; i < get_length(); i++)
+    {
+        // do radius search around current pose
+        kdtree_path->radiusSearch(pose_cloud->at(i), max_dist, pointSearchIndLoop, pointSearchSqDisLoop, 0);
+
+        for (int j = 0; j < (int)pointSearchIndLoop.size(); j++)
+        {
+            int id = pointSearchIndLoop[j];
+
+            float distance = get_distance_between_path_poses(i, id);
+
+            if (distance > min_traveled)
+            {
+                end_idx = id;
+                start_idx = i;
+                
+                return std::make_pair(start_idx, end_idx);
+            }
+        }
+    }
+
+    // no loop found: return error value
+
+    return std::make_pair(-1, -1);
 }
 
 void Path::blur(int start_idx, int end_idx, double radius)
@@ -254,4 +308,33 @@ Vector3f Path::get_centroid()
     accumulated /= poses.size();
 
     return accumulated;
+}
+
+float Path::get_distance_between_path_poses(int idx1, int idx2)
+{
+    // guard clause
+    if (idx1 < 0 || idx1 > get_length() - 1 || idx2 < 0 || idx2 > get_length() - 1 || idx1 > idx2)
+    {
+        return -1.0f;
+    }
+
+    // distance is 0 for equal path indices
+    if (idx1 == idx2)
+    {
+        return 0;
+    }
+
+    float dist = 0.0f;
+
+    Pose *current;
+    Pose *next;
+
+    for (int i = idx1; i < idx2 - 1; i++)
+    {
+        current = at(i);
+        next = at(i + 1);
+        dist += (next->pos - current->pos).norm();
+    }
+
+    return dist;
 }

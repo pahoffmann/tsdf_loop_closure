@@ -60,6 +60,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 link_libraries(${JSONCPP_LIBRARIES})
 
+# find pcl
+find_package(PCL REQUIRED)
+
 #boost
 FIND_PACKAGE(Boost COMPONENTS program_options REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
@@ -91,7 +94,12 @@ include_directories(${GTSAM_INCLUDE_DIR})
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
+
+link_directories(${PCL_LIBRARY_DIRS})
+
+add_definitions(${PCL_DEFINITIONS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -178,6 +186,7 @@ target_link_libraries(loop_closure
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
   gtsam
@@ -189,6 +198,7 @@ target_link_libraries(path_listener
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
 )
@@ -199,6 +209,7 @@ target_link_libraries(test_lc_detection
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
   gtsam
@@ -211,6 +222,7 @@ target_link_libraries(test_map_update
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
 )
@@ -221,6 +233,7 @@ target_link_libraries(test_localmap
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
 )
@@ -231,6 +244,7 @@ target_link_libraries(test_map_cleanup
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
 )

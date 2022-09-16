@@ -15,6 +15,8 @@
 #include <loop_closure/util/constants.h>
 #include <loop_closure/util/algorithm.h>
 
+#include <pcl/point_types.h>
+
 using Eigen::Matrix4f;
 using Eigen::Matrix4i;
 using Eigen::Quaternionf;
@@ -23,6 +25,8 @@ using Eigen::Vector3i;
 using ScanPoints_t = std::vector<Vector3i>;
 using ScanPointType = int32_t;
 using ScanPoint = Eigen::Matrix<ScanPointType, 3, 1>;
+
+typedef pcl::PointXYZI PointType;
 
 /**
  * @brief struct defining a pose, might also use combinded 4x4 matrix representation, see:

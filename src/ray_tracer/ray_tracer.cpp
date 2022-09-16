@@ -777,7 +777,7 @@ std::vector<Eigen::Vector3f> RayTracer::approximate_pointcloud(Pose *pose)
 
         if (!is_ok)
         {
-          std::cout << "No intersection detected" << std::endl;
+          //std::cout << "No intersection detected" << std::endl;
         }
         else
         {

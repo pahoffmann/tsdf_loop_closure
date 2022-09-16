@@ -115,6 +115,13 @@ Intersection Data:
 
     Also, the loop closure does not only update the path poses between the start and end of the path, but finds new optimal poses for the whole path.
 
+[ ] Fix LC with liosam information
+[ ] fix lc detection by using the optimal lc found
+[ ] edge case: find bounding box (no axis aligned) of the tsdf volume, find overlap(s) with rest of the map
+    -> the data in the overlap(s) is basically broken and cannot be restored, because no sufficient data is present
+[ ] That's why the best way might actually be to use the incredibly greedy way and store the pcl data for each of the poses and redo the whole map when finding a lc
+[ ] -> basically applying the lc as a graph slam solution (with the data present), generating the new tsdf based on the new poses and their pcl data
+
 
 
 ## TODAY ##
