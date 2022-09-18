@@ -320,7 +320,7 @@ static Eigen::Matrix4f getTransformationMatrixDiffComp(Eigen::Matrix4f mat1, Eig
 }
 
 /**
- * @brief Get the transformation difference between to 3D Positions, displayed as 2 4x4 matrices, do this component-wise
+ * @brief Get the transformation difference between to 3D Positions, displayed as 2 4x4 matrices
  * 
  * @param mat1 
  * @param mat2 

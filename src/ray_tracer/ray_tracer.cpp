@@ -686,6 +686,8 @@ pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
   opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
   hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
   vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
+  // hor_res = 128;
+  // vert_res = 32;
   step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
 
   side_length_xy = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
