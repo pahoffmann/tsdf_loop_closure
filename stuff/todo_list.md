@@ -125,6 +125,9 @@ Intersection Data:
 
 [ ] showing above edge case is important
 [ ] use the dataset thomas implied to generate the (wrongly)
+[ ] When approximating the pointcloud, it needs to be 
+[ ] maybe actually use the fastsense prototype and introduce the findings there
+[ ] like that it is actually possible to save pointclouds, that have been optimized and reduced and later on use the approach of LIOSAM
 
 
 

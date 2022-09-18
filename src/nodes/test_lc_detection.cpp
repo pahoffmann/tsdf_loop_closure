@@ -67,9 +67,15 @@ ros::Publisher path_pub;
 ros::Publisher optimized_path_pub;
 ros::Publisher path_marker_pub;
 ros::Publisher loop_pub;
-ros::Publisher approx_pcl_pub;
+
+// publish approximated cloud for current pose of lc (cur_index > prev_index)
+ros::Publisher approx_pcl_pub_cur;
+// publish approximated cloud for previous pose of lc (cur_index > prev_index)
+ros::Publisher approx_pcl_pub_prev;
 
 nav_msgs::Path ros_path;
+sensor_msgs::PointCloud2 cur_pcl_msg;
+sensor_msgs::PointCloud2 prev_pcl_msg;
 
 // gtsam
 
@@ -231,12 +237,16 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     auto pointcloud_pre = tracer->approximate_pointcloud(path->at(loop_key_pre));
     auto pointcloud_cur = tracer->approximate_pointcloud(path->at(loop_key_cur));
 
+    // fill ros markers
+    prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_pre);
+    cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_cur);
+
     // ICP Settings
     static pcl::IterativeClosestPoint<PointType, PointType> icp;
-    icp.setMaxCorrespondenceDistance(10.0f); // hardcoded for now
-    icp.setMaximumIterations(100);
-    icp.setTransformationEpsilon(1e-6);
-    icp.setEuclideanFitnessEpsilon(1e-6);
+    icp.setMaxCorrespondenceDistance(5.0f); // hardcoded for now
+    icp.setMaximumIterations(1000);
+    icp.setTransformationEpsilon(1e-2);
+    icp.setEuclideanFitnessEpsilon(1e-3);
     icp.setRANSACIterations(0);
 
     // Align clouds
@@ -245,13 +255,17 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>());
     icp.align(*unused_result);
 
+    std::cout << "ICP Fitness Score: " << icp.getFitnessScore() << std::endl;
+    std::cout << "Final tranformation: " << std::endl
+              << icp.getFinalTransformation() << std::endl;
+
     // 0.3 from liosam:
     // https://github.com/TixiaoShan/LIO-SAM/blob/e0b77a9654d32350338b7b9246934cff6271bec1/config/params.yaml#L88
     if (icp.hasConverged() == false || icp.getFitnessScore() > 0.3)
     {
         std::cout << "ICP has not converged.." << std::endl;
 
-        throw std::logic_error("ICP not converged, look into this");
+        //throw std::logic_error("ICP not converged, look into this");
     }
 
     // corrected pointcloud might be published here...
@@ -346,6 +360,9 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     auto lc_pos_1 = path->at(lc_pair_indices.first);
     auto lc_pos_2 = path->at(lc_pair_indices.second);
 
+    // estimate the lc in between factor
+    auto test_tmp = estimate_loop_closure_between_factor(lc_pair_indices);
+
     // calculate the pose differences between the poses participating in the loop closure
     auto lc_pose_diff = getTransformationMatrixDiff(lc_pos_2->getTransformationMatrix(), lc_pos_1->getTransformationMatrix());
 
@@ -439,7 +456,8 @@ int main(int argc, char **argv)
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     path_marker_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
-    approx_pcl_pub = n.advertise<visualization_msgs::Marker>("/approx_pcl", 1);
+    approx_pcl_pub_cur = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_cur", 1);
+    approx_pcl_pub_prev = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_prev", 1);
 
     // extract poses from global map and add to path
     auto poses = global_map_ptr->get_path();
@@ -496,14 +514,6 @@ int main(int argc, char **argv)
         exit(EXIT_SUCCESS);
     }
 
-    // test approx pcl from tsdf
-    auto approx_data = tracer->approximate_pointcloud(path->at(0));
-    std::cout << "Approximated " << approx_data->size() << "points" << std::endl;
-
-    // generate a ros marker from the approximated pointcloud
-    // this is currently broken, as the method requires other data, fix this [TODO]
-    auto approx_pcl_marker = ROSViewhelper::marker_from_real_data(approx_data);
-
     // generate a marker for the optimized path
     auto optimized_path_marker = ROSViewhelper::initPathMarker(optimized_path);
 
@@ -515,7 +525,8 @@ int main(int argc, char **argv)
         // publish path and loop detects
         path_marker_pub.publish(path_marker);
         optimized_path_pub.publish(optimized_path_marker);
-        approx_pcl_pub.publish(approx_pcl_marker);
+        approx_pcl_pub_cur.publish(cur_pcl_msg);
+        approx_pcl_pub_prev.publish(prev_pcl_msg);
 
         for (auto marker : loop_visualizations)
         {

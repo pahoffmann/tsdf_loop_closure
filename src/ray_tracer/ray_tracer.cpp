@@ -707,7 +707,7 @@ pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
   // now we initialized the "lines finished" - array and know exactly, when to stop updating the rays.
   // exactly when all rays are finished :D
 
-  //std::vector<Vector3f> surface_points;
+  // std::vector<Vector3f> surface_points;
   pcl::PointCloud<PointType>::Ptr pointcloud;
   pointcloud.reset(new pcl::PointCloud<PointType>());
 
@@ -777,9 +777,18 @@ pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
 
         auto is_ok = linePlaneIntersection(intersection_point, p1 - current_pose->pos, current_pose->pos, diff.cast<float>().normalized(), avg_vec_mm.cast<float>() / 1000.0f);
 
+        // intersection point coordinates are currently in the coordinate system spanned by (0,0,0)
+        // transform into the current pose coordinate system:
+        auto trans_mat = pose->getTransformationMatrix();
+        auto rot_part = trans_mat.block<3, 3>(0, 0);
+        auto transl_part = trans_mat.block<3, 1>(0, 3);
+
+        // rotate and translate
+        intersection_point = rot_part * intersection_point + transl_part;
+
         if (!is_ok)
         {
-          //std::cout << "No intersection detected" << std::endl;
+          // std::cout << "No intersection detected" << std::endl;
         }
         else
         {
@@ -787,15 +796,15 @@ pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
           point.x = intersection_point.x();
           point.y = intersection_point.y();
           point.z = intersection_point.z();
-          
+
           pointcloud->push_back(point);
-          //surface_points.push_back(intersection_point);
+          // surface_points.push_back(intersection_point);
         }
       }
     }
   }
 
-  //return surface_points;
+  // return surface_points;
   return pointcloud;
 }
 

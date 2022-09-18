@@ -13,6 +13,7 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <unordered_map>
 #include <map>
 #include <boost/unordered_map.hpp>
@@ -21,6 +22,8 @@
 #include <loop_closure/util/colors.h>
 #include <loop_closure/util/eigen_vs_ros.h>
 #include <omp.h>
+#include <pcl/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 namespace ROSViewhelper
 {
@@ -244,6 +247,7 @@ namespace ROSViewhelper
      *          1.) Number of intersected tsdf cells (unique)
      *          2.) Number of cells, which have been missed by the ray tracer
      *
+     * @deprecated there is currently a much better way to display the whole tsdf map, implemented in the globalmap
      * @return visualization_msgs::Marker
      */
     static visualization_msgs::Marker initTSDFmarkerPath(std::shared_ptr<LocalMap> local_map_ptr_, Path *path, bool consider_none_associates = true)
@@ -741,6 +745,23 @@ namespace ROSViewhelper
         }
 
         return points_marker;
+    }
+
+    /**
+     * @brief generates a visualization marker
+     * 
+     * @param cloud 
+     * @return visualization_msgs::Marker 
+     */
+    static sensor_msgs::PointCloud2 marker_from_pcl_pointcloud(pcl::PointCloud<PointType>::Ptr cloud)
+    {
+        sensor_msgs::PointCloud2 ros_cloud_msg;
+        pcl::toROSMsg(*cloud.get(), ros_cloud_msg);
+
+        ros_cloud_msg.header.frame_id = "map";
+        ros_cloud_msg.header.stamp = ros::Time();
+
+        return ros_cloud_msg;
     }
 
     /**
