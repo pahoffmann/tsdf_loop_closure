@@ -168,6 +168,14 @@ add_executable(pcd2tsdf src/nodes/pcd2tsdf.cpp
                         src/map/global_map.cpp
                         src/map/attribute_data_model.cpp)
 
+add_executable(transform_coord_sys src/nodes/transform_coord_sys.cpp 
+                        src/util/runtime_evaluator.cpp
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp 
+                        src/map/attribute_data_model.cpp
+                        src/ray_tracer/ray_tracer.cpp
+                        src/path/path.cpp)
+
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -260,7 +268,18 @@ target_link_libraries(test_map_cleanup
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
 )
+
 target_link_libraries(pcd2tsdf PUBLIC
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${PCL_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX 
+)
+
+target_link_libraries(transform_coord_sys PUBLIC
   ${catkin_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}
