@@ -10,6 +10,26 @@
 
 #include <loop_closure/map/global_map.h>
 
+GlobalMap::GlobalMap(const MapParams &params)
+    : file_{std::string(params.filename.c_str()), HighFive::File::OpenOrCreate | HighFive::File::Truncate}, // Truncate clears already existing file
+      initial_tsdf_value_{static_cast<TSDFEntry::ValueType>(params.tau), static_cast<TSDFEntry::WeightType>(params.initial_weight)},
+      active_chunks_{},
+      num_poses_{0}
+{
+    if (!file_.exist(hdf5_constants::MAP_GROUP_NAME))
+    {
+        file_.createGroup(hdf5_constants::MAP_GROUP_NAME);
+    }
+
+    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
+    {
+      file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
+    }
+
+    write_meta(params);
+}
+
+
 GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight, bool use_attributes)
     : file_{name, HighFive::File::OpenOrCreate}, // Truncate clears already existing file
       initial_tsdf_value_{initial_tsdf_value, initial_weight},
@@ -954,3 +974,19 @@ Vector3i GlobalMap::pos_from_index(int i)
 
     return Vector3i(x, y, z);
 }
+
+void GlobalMap::write_meta(const MapParams &params)
+{
+  HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+  g.createAttribute("tau", params.tau);
+  g.createAttribute("map_size_x", params.size.x());
+  g.createAttribute("map_size_y", params.size.y());
+  g.createAttribute("map_size_z", params.size.z());
+  g.createAttribute("max_distance", params.max_distance);
+  g.createAttribute("map_resolution", params.resolution);
+  g.createAttribute("max_weight", params.max_weight);
+
+  file_.flush();
+}
+

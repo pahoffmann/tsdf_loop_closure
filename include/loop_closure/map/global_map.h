@@ -17,6 +17,7 @@
 #include <loop_closure/util/tsdf.h>
 #include <loop_closure/map/attribute_data_model.h>
 #include <omp.h>
+#include <loop_closure/params/loop_closure_params.h>
 
 struct ActiveChunk
 {
@@ -92,6 +93,14 @@ private:
      */
     int index_from_pos(Vector3i pos, const Vector3i &chunkPos);
 
+    /**
+     * @brief writes metadata to the map
+     * @author Julian Gaal
+     * 
+     * @param params 
+     */
+    void write_meta(const MapParams &params);
+
 public:
     /// Side length of the cube-shaped chunks
     static constexpr int CHUNK_SIZE = 64;
@@ -111,6 +120,13 @@ public:
      * @param initial_weight initial default weight
      */
     GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value = 600, TSDFEntry::WeightType initial_weight = 0, bool use_attributes = true);
+
+    /**
+     * @brief Creates a global map with given parameters
+     * 
+     * @param params 
+     */
+    GlobalMap(const MapParams &params);
 
     /**
      * Returns a value pair consisting of a tsdf value and a weight from the map.

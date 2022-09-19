@@ -39,37 +39,37 @@ public:
     attribute_data_model() = default;
     ~attribute_data_model() = default;
 
-    inline int get_map_resolution()
+    inline int get_map_resolution() const
     {
         return map_resolution;
     };
 
-    inline int get_map_size_x()
+    inline int get_map_size_x() const
     {
         return map_size_x;
     };
 
-    inline int get_map_size_y()
+    inline int get_map_size_y() const
     {
         return map_size_y;
     };
 
-    inline int get_map_size_z()
+    inline int get_map_size_z() const
     {
         return map_size_z;
     };
 
-    inline int get_max_distance()
+    inline int get_max_distance() const
     {
         return max_distance;
     };
 
-    inline int get_max_weight()
+    inline int get_max_weight() const
     {
         return max_weight;
     };
 
-    inline int get_tau()
+    inline int get_tau() const
     {
         return tau;
     };

@@ -200,7 +200,6 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
 
     std::cout << "After filter size: " << pointcloud_prev->size() << std::endl;
 
-
     // pretransform cur with centroid diff
 
     // get pretransform rotation from pose diff
@@ -256,36 +255,36 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     // corrected pointcloud might be published here...
 
     // Get pose transformation
-    
-    float x, y, z, roll, pitch, yaw;
-    Eigen::Affine3f correctionLidarFrame;
-    correctionLidarFrame = icp.getFinalTransformation();
-    // transform from world origin to wrong pose
-    Eigen::Affine3f tWrong(path->at(loop_key_cur)->getTransformationMatrix());
-    //transform from world origin to corrected pose
-    // LIOSAM
-    Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
-    pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
-    // ME
-    // Eigen::Affine3f tCorrect = correctionLidarFrame;// * tWrong; // pre-multiplying -> successive rotation about a fixed frame
-    // pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
-    //LIOSAM
-    gtsam::Pose3 poseFrom = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
-    gtsam::Pose3 poseTo(gtsam::Rot3(path->at(lc_indices.first)->quat.cast<double>()),
-                        gtsam::Point3(path->at(lc_indices.first)->pos.cast<double>()));
-    // ME
-    //gtsam::Pose3 between_trans = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
 
     gtsam::Vector Vector6(6);
     float noiseScore = icp.getFitnessScore();
     Vector6 << noiseScore, noiseScore, noiseScore, noiseScore, noiseScore, noiseScore;
     gtsam::noiseModel::Diagonal::shared_ptr constraintNoise = gtsam::noiseModel::Diagonal::Variances(Vector6);
 
-    // create between factor
+    float x, y, z, roll, pitch, yaw;
+    Eigen::Affine3f correctionLidarFrame;
+    correctionLidarFrame = icp.getFinalTransformation();
+
     // LIOSAM
-    auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, poseFrom.between(poseTo), constraintNoise);
+    // transform from world origin to wrong pose
+    // Eigen::Affine3f tWrong(path->at(loop_key_cur)->getTransformationMatrix());
+
+    // // transform from world origin to corrected pose
+    // Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+    // pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
+
+    // gtsam::Pose3 poseFrom = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
+    // gtsam::Pose3 poseTo(gtsam::Rot3(path->at(lc_indices.first)->quat.cast<double>()),
+    //                     gtsam::Point3(path->at(lc_indices.first)->pos.cast<double>()));
+
+    // auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, poseFrom.between(poseTo), constraintNoise);
+
     // ME
-    //auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, between_trans, constraintNoise);
+    Eigen::Affine3f tCorrect = correctionLidarFrame;// * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+    pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
+    gtsam::Pose3 between_trans = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
+    //create between factor
+    auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, between_trans, constraintNoise);
 
     return between_fac;
 }
@@ -315,20 +314,19 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
 
     gtsam::PriorFactor<gtsam::Pose3> factor(0, gtsam::Pose3(rot3_prior, point3_prior), prior_noise);
 
-
     // add prior factor to every pos of the graph
     graph.add(factor);
 
     for (int i = 1; i < path->get_length(); i++)
     {
         // auto current_pose = path->at(i);
-        // gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
-        // gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+        gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
+        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
 
-        // gtsam::PriorFactor<gtsam::Pose3> factor(i, gtsam::Pose3(rot3, point3), prior_noise);
+        gtsam::PriorFactor<gtsam::Pose3> factor(i, gtsam::Pose3(rot3, point3), prior_noise);
 
-        // // add prior factor to every pos of the graph
-        // graph.add(factor);
+        // add prior factor to every pos of the graph
+        graph.add(factor);
 
         // add between factor
         // if (i == 5)//i < path->get_length() - 1)
@@ -361,7 +359,7 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     // siehe auch
     // https://github.com/TixiaoShan/LIO-SAM/blob/e0b77a9654d32350338b7b9246934cff6271bec1/src/imuPreintegration.cpp
     // Zeile 1488
-    //graph.add(gtsam::BetweenFactor<gtsam::Pose3>(lc_pair_indices.second + 1, lc_pair_indices.first + 1, gtsam::Pose3(rot3, point3)));
+    // graph.add(gtsam::BetweenFactor<gtsam::Pose3>(lc_pair_indices.second + 1, lc_pair_indices.first + 1, gtsam::Pose3(rot3, point3)));
     graph.add(lc_between_fac);
 }
 

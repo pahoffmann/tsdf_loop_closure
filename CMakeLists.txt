@@ -159,6 +159,15 @@ add_executable(test_map_cleanup src/nodes/test_map_cleanup.cpp
                         src/path/path.cpp
                         src/options/options_reader.cpp
                         src/map/attribute_data_model.cpp)
+
+#pcd tsdf update test
+add_executable(pcd2tsdf src/nodes/pcd2tsdf.cpp 
+                        src/util/update_tsdf.cpp
+                        src/util/runtime_evaluator.cpp
+                        src/map/local_map.cpp
+                        src/map/global_map.cpp
+                        src/map/attribute_data_model.cpp)
+
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -177,6 +186,9 @@ target_compile_definitions(loop_closure PRIVATE DEBUG)
 target_compile_definitions(test_map_update PRIVATE DEBUG)
 target_compile_definitions(test_localmap PRIVATE DEBUG)
 target_compile_definitions(test_map_cleanup PRIVATE DEBUG)
+
+# globally available data path
+add_compile_definitions(DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 ## Specify libraries to link a library or executable target against
 
@@ -248,4 +260,14 @@ target_link_libraries(test_map_cleanup
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
 )
+target_link_libraries(pcd2tsdf PUBLIC
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${PCL_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX 
+)
+
 

@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <map>
 #include <boost/unordered_map.hpp>
+#include <loop_closure/path/path.h>
 #include <loop_closure/util/point.h>
 #include <loop_closure/util/constants.h>
 #include <loop_closure/util/colors.h>
