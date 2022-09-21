@@ -54,15 +54,18 @@ struct MapParams
     nh.param<bool>("map/refinement", refinement, true);
 
     std::string temp;
+
+    // if the filename is specifiec, we read an existing file :)
     nh.param<std::string>("map/filename", temp, "");
     if (temp.empty())
     {
-      nh.param<std::string>("map/dir", temp, "/home/julian/dev");
+      nh.param<std::string>("map/dir", temp, "/home/patrick/maps/generated");
       dir = fs::path(temp);
       if (!fs::exists(dir))
       {
         throw std::runtime_error("Save directory doesn't exist");
       }
+      // no filename specified, create new one
       create_identifier();
       filename = dir / (id + ".h5");
     }
@@ -72,6 +75,7 @@ struct MapParams
       filename.replace_extension("h5");
     }
 
+    // scale the values in order for the global map to use them
     scale_tau(max_distance, tau);
     scale_max_weight(max_weight);
     scale_map_size(size, resolution);

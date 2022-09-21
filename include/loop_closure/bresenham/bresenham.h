@@ -15,7 +15,6 @@
 #include <loop_closure/util/colors.h>
 #include <loop_closure/map/local_map.h>
 #include <loop_closure/data_association/association.h>
-#include <loop_closure/options/options_reader.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sstream>

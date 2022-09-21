@@ -21,7 +21,8 @@
 // external bibs
 #include <highfive/H5File.hpp>
 
-// relative includes
+#include <loop_closure/params/loop_closure_params.h>
+
 #include <loop_closure/map/global_map.h>
 #include <loop_closure/map/local_map.h>
 #include <loop_closure/util/colors.h>
@@ -30,13 +31,13 @@
 #include <loop_closure/ray_tracer/ray_tracer.h>
 #include <loop_closure/serialization/read_path_json.h>
 #include <loop_closure/data_association/association_manager.h>
-#include <loop_closure/options/options_reader.h>
 #include <loop_closure/visualization/ros_viewhelper.h>
 #include <loop_closure/path/path_exploration.h>
 #include <loop_closure/test/math_test.h>
 
 // Configuration stuff //
-lc_options_reader *options;
+
+LoopClosureParams params;
 
 // ROS STUFF //
 visualization_msgs::Marker ray_markers;
@@ -98,7 +99,7 @@ enum PathUpdateTestMethod
  */
 void initMaps(bool cleanup)
 {
-  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name()); // create a global map, use it's attributes
+  global_map_ptr_ = std::make_shared<GlobalMap>(params.map.filename.string()); // create a global map, use it's attributes
   auto attribute_data = global_map_ptr_->get_attribute_data();
 
   // local_map_ptr_ = std::make_shared<LocalMap>(312.5, 312.5, 312.5, global_map_ptr_, true); // not used anymore, though good 2 know
@@ -134,11 +135,11 @@ std::pair<int, int> find_next_loop(Path *path, int start_idx = 0)
   float MIN_TRAVELED = 10.0f;
 
   // find path, including visibility check
-  auto res = path->find_loop_greedy(start_idx, MAX_DISTANCE, MIN_TRAVELED, true);
+  auto res = path->find_loop_kd_min_dist(start_idx, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, true);
 
   if (res.first == -1 || res.second == -1)
   {
-    std::cout << "No further loop found" << std::endl;
+    std::cout << "No further loop found for the current parametrization" << std::endl;
   }
   else
   {
@@ -146,27 +147,6 @@ std::pair<int, int> find_next_loop(Path *path, int start_idx = 0)
   }
 
   return res;
-}
-
-/**
- * @brief checks the options status and terminates the program if necessary
- *
- * @param status
- */
-void check_options_status(int status)
-{
-  if (status == 1)
-  {
-    std::cout << "[CLI] Terminate node, because there were some errors while reading from cmd-line" << std::endl;
-
-    return exit(EXIT_FAILURE);
-  }
-  else if (status == 2)
-  {
-    std::cout << "[CLI] Terminate node, because help was requested" << std::endl;
-
-    return exit(EXIT_SUCCESS);
-  }
 }
 
 /**
@@ -211,10 +191,7 @@ void initialize_path(int path_method = 0)
       path_exploration exploration(local_map_ptr_, global_map_ptr_, path, ray_tracer);
       exploration.dijsktra();
     }
-    else
-    {
-      path->fromJSON(options->get_poses_file_name());
-    }
+
 
     if (path->get_length() == 0)
     {
@@ -343,21 +320,17 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
 
-  // read options from cmdline
-  options = new lc_options_reader();
-  int status = options->read_options(argc, argv);
-
-  // check the status returned from the options reading
-  check_options_status(status);
+  // read params
+  params = LoopClosureParams(nh);
 
   // init local and global maps
   initMaps(false);
 
   // define stuff for raytracer
-  ray_tracer = new RayTracer(options, local_map_ptr_, global_map_ptr_);
+  ray_tracer = new RayTracer(params, local_map_ptr_, global_map_ptr_);
 
-  // retrieve path method from options (0 = from globalmap, 1 = from path extraction, 2 = from json)
-  initialize_path(options->get_path_method());
+  // retrieve path method from options (0 = from globalmap, 1 = from path extraction)
+  initialize_path(params.loop_closure.path_method);
   path_marker = ROSViewhelper::initPathMarker(path);
 
   // generate publishers
@@ -390,7 +363,7 @@ int main(int argc, char **argv)
     num_loops++;
 
     // create associationmanager and find the associations for the current path
-    manager = new AssociationManager(path, options->get_base_file_name(), ray_tracer, local_map_ptr_, global_map_ptr_);
+    manager = new AssociationManager(path, params.loop_closure.json_dirname, ray_tracer, local_map_ptr_, global_map_ptr_);
 
     // TODO: this function should only generate associations of poses which 'participate' in the loop closure
     manager->greedy_associations();

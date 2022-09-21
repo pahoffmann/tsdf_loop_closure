@@ -1,46 +1,28 @@
 #include <loop_closure/ray_tracer/ray_tracer.h>
 
-RayTracer::RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in, Pose *start_pose)
+RayTracer::RayTracer(LoopClosureParams &lc_params, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in)
 {
-  lc_config = new_config;
-  local_map_ptr_ = local_map_in;
-  global_map_ptr_ = global_map_in;
-  current_pose = start_pose;
-}
-
-RayTracer::RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in)
-{
-  options = new_options;
+  params = lc_params;
   local_map_ptr_ = local_map_in;
   global_map_ptr_ = global_map_in;
   current_pose = NULL;
+
+  // define the side lengths of the localmap
+  side_length_x = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
+  side_length_y = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
+  side_length_z = (local_map_ptr_->get_size().z() - 1) * MAP_RESOLUTION / 1000.0f;
 }
 
 float RayTracer::start(int mode)
 {
-
   // and do some time measuring
   auto start_time = ros::Time::now();
 
-  // when either of these is NULL, we might as well just throw a logic error.
-  if ((lc_config == NULL && options == NULL) || current_pose == NULL)
-  {
-    throw std::logic_error("[RayTracer] - Major Error, no configuration data delivered to ray-tracer");
-  }
-  else if (current_pose == NULL)
+  // when no pose has been set before tracing, we throw an error
+  if (current_pose == NULL)
   {
     throw std::invalid_argument("[RayTracer] The RayTracer needs a pose to be able to start tracing.");
   }
-
-  opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
-  hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
-  vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
-  step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
-
-  side_length_xy = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
-  side_length_z = (local_map_ptr_->get_size().z() - 1) * MAP_RESOLUTION / 1000.0f;
-
-  ray_size = options != NULL ? options->get_ray_size() : lc_config->ray_size;
 
   // just for better readablity
   std::cout << std::endl;
@@ -81,13 +63,25 @@ float RayTracer::start(int mode)
   return (float)num_good / (float)num_not_good;
 }
 
-void RayTracer::initRays()
+void RayTracer::initRays(bool use_icp_params)
 {
   // simulate sensor
-  const float start_degree = -(float)opening_degree / 2.0f;
-  const float fin_degree = (float)opening_degree / 2.0f;
-  const float x_res = 360.0f / (float)(hor_res);
-  const float y_res = (float)opening_degree / (float)(vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
+
+  const float start_degree = use_icp_params
+                                 ? -(float)params.ray_tracer.opening_degree_icp / 2.0f
+                                 : -(float)params.ray_tracer.opening_degree / 2.0f;
+  const float fin_degree = use_icp_params
+                               ? (float)params.ray_tracer.opening_degree_icp / 2.0f
+                               : (float)params.ray_tracer.opening_degree / 2.0f;
+
+  const float x_res = use_icp_params
+                          ? 360.0f / (float)(params.ray_tracer.hor_res_icp)
+                          : 360.0f / (float)(params.ray_tracer.hor_res);
+
+  // assuming, that the fin degree is positive and start degree negative.
+  const float y_res = use_icp_params
+                          ? (float)params.ray_tracer.opening_degree_icp / (float)(params.ray_tracer.vert_res_icp - 1)
+                          : (float)params.ray_tracer.opening_degree / (float)(params.ray_tracer.vert_res - 1);
 
   // double for loop iterating over the specified resolution of the scanner (360 degrees horizontally, predefines angle vertically)
   for (float i = -180.0f; i < 180.0f; i += x_res)
@@ -112,7 +106,7 @@ void RayTracer::initRays()
 
       float length = (p1 - p2).norm(); // get length
 
-      float factor = step_size / length; // vector enlargement
+      float factor = params.ray_tracer.step_size / length; // vector enlargement
 
       // enlarge "vector" by translating to (0,0,0), rotating it in space and putting it back alla
       ray_point = (p1 - current_pose->pos) * factor + current_pose->pos;
@@ -152,7 +146,7 @@ void RayTracer::updateRaysNew(int mode)
     auto &p1 = rays[i];
     auto &p2 = current_pose->pos;
     float length = (p1 - p2).norm();
-    float factor = (length + step_size) / length; // vector enlargement
+    float factor = (length + params.ray_tracer.step_size) / length; // vector enlargement
 
     // enlarge "vector"
     p1 = (p1 - current_pose->pos) * factor + current_pose->pos; // translate to (0,0,0), enlarge, translate back
@@ -163,15 +157,15 @@ void RayTracer::updateRaysNew(int mode)
 
     // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
     // this is useful for visualization, but might not be useful for a production environment, at least in terms of the resizing which is done.
-    if (p1.x() > current_pose->pos.x() + side_length_xy / 2.0f || p1.x() < current_pose->pos.x() - side_length_xy / 2.0f)
+    if (p1.x() > current_pose->pos.x() + side_length_x / 2.0f || p1.x() < current_pose->pos.x() - side_length_x / 2.0f)
     {
-      fac_x = abs((side_length_xy / 2.0f) / (p1.x() - current_pose->pos.x()));
+      fac_x = abs((side_length_x / 2.0f) / (p1.x() - current_pose->pos.x()));
       needs_resize = true;
     }
 
-    if (p1.y() > current_pose->pos.y() + side_length_xy / 2.0f || p1.y() < current_pose->pos.y() - side_length_xy / 2.0f)
+    if (p1.y() > current_pose->pos.y() + side_length_y / 2.0f || p1.y() < current_pose->pos.y() - side_length_y / 2.0f)
     {
-      fac_y = abs((side_length_xy / 2.0f) / (p1.y() - current_pose->pos.y()));
+      fac_y = abs((side_length_y / 2.0f) / (p1.y() - current_pose->pos.y()));
       needs_resize = true;
     }
 
@@ -326,25 +320,11 @@ void RayTracer::start_bresenham()
 {
   auto start = ros::Time::now();
 
-  // when either of these is NULL, we might as well just throw a logic error.
-  if ((lc_config == NULL && options == NULL) || current_pose == NULL)
-  {
-    throw std::logic_error("[RayTracer] - Major Error, no configuration data delivered to ray-tracer");
-  }
-  else if (current_pose == NULL)
+  // if no pose has been set, we throw an error
+  if (current_pose == NULL)
   {
     throw std::invalid_argument("[RayTracer] The RayTracer needs a pose to be able to start tracing.");
   }
-
-  opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
-  hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
-  vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
-  step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
-
-  side_length_xy = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
-  side_length_z = (local_map_ptr_->get_size().z() - 1) * MAP_RESOLUTION / 1000.0f;
-
-  ray_size = options != NULL ? options->get_ray_size() : lc_config->ray_size;
 
   // just for better readablity
   std::cout << std::endl;
@@ -374,10 +354,10 @@ void RayTracer::init3DBresenham()
   // init localmap surfaces
 
   // simulate sensor
-  const float start_degree = -(float)opening_degree / 2.0f;
-  const float fin_degree = (float)opening_degree / 2.0f;
-  const float x_res = 360.0f / (float)(hor_res);
-  const float y_res = (float)opening_degree / (float)(vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
+  const float start_degree = -(float)params.ray_tracer.opening_degree / 2.0f;
+  const float fin_degree = (float)params.ray_tracer.opening_degree / 2.0f;
+  const float x_res = 360.0f / (float)(params.ray_tracer.hor_res);
+  const float y_res = (float)params.ray_tracer.opening_degree / (float)(params.ray_tracer.vert_res - 1); // assuming, that the fin degree is positive and start degree negative.
 
   int zero_counter = 0;
   int global_match_count = 0;
@@ -674,31 +654,15 @@ pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
   auto start_time = ros::Time::now();
 
   // when either of these is NULL, we might as well just throw a logic error.
-  if ((lc_config == NULL && options == NULL) || current_pose == NULL)
-  {
-    throw std::logic_error("[RayTracer] - Major Error, no configuration data delivered to ray-tracer");
-  }
-  else if (current_pose == NULL)
+  if (current_pose == NULL)
   {
     throw std::invalid_argument("[RayTracer] The RayTracer needs a pose to be able to start tracing.");
   }
 
-  opening_degree = options != NULL ? options->get_opening_degree() : lc_config->opening_degree;
-  hor_res = options != NULL ? options->get_hor_res() : lc_config->hor_res;
-  vert_res = options != NULL ? options->get_vert_res() : lc_config->vert_res;
-  // hor_res = 128;
-  // vert_res = 32;
-  step_size = options != NULL ? options->get_step_size() : lc_config->step_size;
-
-  side_length_xy = (local_map_ptr_->get_size().x() - 1) * MAP_RESOLUTION / 1000.0f;
-  side_length_z = (local_map_ptr_->get_size().z() - 1) * MAP_RESOLUTION / 1000.0f;
-
-  ray_size = options != NULL ? options->get_ray_size() : lc_config->ray_size;
-
   // just for better readablity
   std::cout << std::endl;
 
-  std::cout << "[RayTracer] Started Tracing..." << std::endl;
+  std::cout << "[RayTracer] Started approximating a pointcloud..." << std::endl;
 
   // before doing anything, we need to cleanup the data from the last run
   cleanup();
@@ -727,7 +691,7 @@ pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
       auto &p1 = rays[i];
       auto &p2 = current_pose->pos;
       float length = (p1 - p2).norm();
-      float factor = (length + step_size) / length; // vector enlargement
+      float factor = (length + params.ray_tracer.step_size) / length; // vector enlargement
 
       // save old pos, which is later used to check for zero crossings
       Vector3i old_pos = real_to_map(p1);
@@ -883,9 +847,9 @@ visualization_msgs::Marker RayTracer::get_ros_marker()
   ray_marker_list.pose.orientation.y = 0.0;
   ray_marker_list.pose.orientation.z = 0.0;
   ray_marker_list.pose.orientation.w = 1.0;
-  ray_marker_list.scale.x = ray_size;
-  ray_marker_list.scale.y = ray_size;
-  ray_marker_list.scale.z = ray_size;
+  ray_marker_list.scale.x = params.ray_tracer.ray_size;
+  ray_marker_list.scale.y = params.ray_tracer.ray_size;
+  ray_marker_list.scale.z = params.ray_tracer.ray_size;
   ray_marker_list.color.a = 0.6; // Don't forget to set the alpha!
   ray_marker_list.color.r = 0.0;
   ray_marker_list.color.g = 0.0;
@@ -962,7 +926,7 @@ bool RayTracer::is_visible(Pose &a, Pose &b)
   float distance = (b.pos - a.pos).norm();
 
   // calculate the number of steps aka, how many steps of size "step_size" need to be taken in order to get from point a to point b
-  int num_steps = std::floor(distance / step_size);
+  int num_steps = std::floor(distance / params.ray_tracer.step_size);
 
   // check if the value from a is positive or negative to check visibility later
   bool is_neg;
@@ -984,7 +948,7 @@ bool RayTracer::is_visible(Pose &a, Pose &b)
 
     std::cout << "current length: " << length << std::endl;
 
-    float factor = step_size / length; // vector enlargement
+    float factor = params.ray_tracer.step_size / length; // vector enlargement
 
     // enlarge "vector" by translating to (0,0,0), enlarging it from there and translating it back
     cur = (cur - a.pos) * factor + a.pos;

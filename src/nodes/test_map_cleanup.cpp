@@ -27,11 +27,10 @@
 #include <loop_closure/util/colors.h>
 #include <loop_closure/util/point.h>
 #include <loop_closure/path/path.h>
-#include <loop_closure/options/options_reader.h>
 #include <loop_closure/visualization/ros_viewhelper.h>
 
 // Configuration stuff //
-lc_options_reader *options;
+LoopClosureParams params;
 
 // ROS STUFF //
 visualization_msgs::Marker tsdf_map_full_before; // marker for the full tsdf map (global) (before map update)
@@ -54,7 +53,7 @@ Path *path;
 
 void initGlobalMap()
 {
-  global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name()); // create a global map, use it's attributes
+  global_map_ptr_ = std::make_shared<GlobalMap>(params.map.filename.string()); // create a global map, use it's attributes
   std::cout << "Finished init the gobal map" << std::endl;
 }
 
@@ -116,27 +115,6 @@ void initialize_path(int path_method = 0)
 }
 
 /**
- * @brief checks the options status and terminates the program if necessary
- *
- * @param status
- */
-void check_options_status(int status)
-{
-  if (status == 1)
-  {
-    std::cout << "[CLI] Terminate node, because there were some errors while reading from cmd-line" << std::endl;
-
-    return exit(EXIT_FAILURE);
-  }
-  else if (status == 2)
-  {
-    std::cout << "[CLI] Terminate node, because help was requested" << std::endl;
-
-    return exit(EXIT_SUCCESS);
-  }
-}
-
-/**
  * @brief Populate the ros publishers
  *
  */
@@ -161,18 +139,14 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
 
-  // read options from cmdline
-  options = new lc_options_reader();
-  int status = options->read_options(argc, argv);
-
-  // check the status returned from the options reading
-  check_options_status(status);
+  // read options 
+  params = LoopClosureParams(nh);
 
   // init global map
   initGlobalMap();
 
   // retrieve path method from options (0 = from globalmap, 1 = from path extraction, 2 = from json)
-  initialize_path(options->get_path_method());
+  initialize_path(params.loop_closure.path_method);
   path_marker = ROSViewhelper::initPathMarker(path);
 
   // generate publishers

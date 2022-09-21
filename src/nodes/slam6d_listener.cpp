@@ -3,7 +3,7 @@
  * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
  * @brief
  * @version 0.1
- * @date 2022-05-29
+ * @date 2022-09-21
  *
  * @copyright Copyright (c) 2022
  *
@@ -15,6 +15,9 @@
 #include <visualization_msgs/Marker.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/Odometry.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
 
 // c++ standard related includes
 #include <sstream>
@@ -44,8 +47,12 @@
 #include <pcl/registration/icp.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 
+using namespace message_filters;
+
+// parametrization
 LoopClosureParams params;
 
+// own stuff
 RayTracer *tracer;
 std::shared_ptr<LocalMap> local_map_ptr;
 std::shared_ptr<GlobalMap> global_map_ptr;
@@ -54,15 +61,15 @@ Path *optimized_path;
 int side_length_xy;
 int side_length_z;
 
-float cur_length = 0.0f;
-Eigen::Vector3f last_vec = Vector3f::Zero();
-float last_path_idx = 0;
+// distance between poses (min) in path -> do this in the config bra
+float MAX_DIST_LC = 1.0f;
+float MIN_TRAVELED_LC = 10.0f;
 
 // ros
-ros::Subscriber pose_sub;
+
+// subscribe to lsma6d cloud and poses
 ros::Publisher path_pub;
 ros::Publisher optimized_path_pub;
-ros::Publisher path_marker_pub;
 ros::Publisher loop_pub;
 
 // publish approximated cloud for current pose of lc (cur_index > prev_index)
@@ -80,34 +87,8 @@ sensor_msgs::PointCloud2 cur_pcl_filtered_msg;
 sensor_msgs::PointCloud2 prev_pcl_filtered_msg;
 
 // gtsam
-
+// factor graph used to store information about the path of the slam6d inital approximation
 gtsam::NonlinearFactorGraph graph;
-
-/**
- * @brief initializes the local and global map
- * @todo don't harcode this
- *
- */
-void init_maps()
-{
-    // create a global map from parametrization
-    global_map_ptr = std::make_shared<GlobalMap>(params.map.filename.string());
-
-    // extract attribute data from global map
-    auto attribute_data = global_map_ptr->get_attribute_data();
-
-    // init local map using attribute data
-    local_map_ptr = std::make_shared<LocalMap>(attribute_data.get_map_size_x(),
-                                               attribute_data.get_map_size_y(),
-                                               attribute_data.get_map_size_z(),
-                                               global_map_ptr, true); // still hardcoded af
-
-    auto &size = local_map_ptr.get()->get_size();
-    side_length_xy = size.x() * MAP_RESOLUTION / 1000.0f;
-    side_length_z = size.z() * MAP_RESOLUTION / 1000.0f;
-
-    std::cout << "Finished init the maps" << std::endl;
-}
 
 /**
  * @brief method used to initiate all the objects associated with this test case
@@ -115,8 +96,9 @@ void init_maps()
  */
 void init_obj()
 {
-    // initialize the map based ob the passed arguments first
-    init_maps();
+    // create maps
+    global_map_ptr.reset(new GlobalMap(params.map));
+    local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
     // init ray tracer
     tracer = new RayTracer(params, local_map_ptr, global_map_ptr);
@@ -200,7 +182,7 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     // ICP Settings
     static pcl::IterativeClosestPoint<PointType, PointType> icp;
     // icp.setMaxCorrespondenceDistance(0.2f); // hardcoded for now
-    icp.setMaximumIterations(params.loop_closure.max_icp_iterations);
+    icp.setMaximumIterations(200);
     // icp.setTransformationEpsilon(1e-6);
     // icp.setEuclideanFitnessEpsilon(1e-6);
     // icp.setRANSACIterations(0);
@@ -394,6 +376,16 @@ void fill_optimized_path(gtsam::Values values)
 }
 
 /**
+ * @brief handles incoming pointcloud2
+ *
+ * @param cloud_ptr
+ */
+void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_ptr, const geometry_msgs::PoseStampedConstPtr &pose_ptr)
+{
+    std::cout << "You a bitch" << std::endl;
+}
+
+/**
  * @brief Main method
  *
  * @param argc
@@ -402,21 +394,28 @@ void fill_optimized_path(gtsam::Values values)
  */
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "test_lc_detection_node");
+    ros::init(argc, argv, "slam6d_listener");
     ros::NodeHandle n;
     ros::NodeHandle nh("~");
 
-    // init params
+    // load params from nodehandle
     params = LoopClosureParams(nh);
+    params.load(nh);
 
     init_obj();
 
     // specify ros loop rate
     ros::Rate loop_rate(10);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "/slam6d_cloud", 1);
+    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(nh, "/slam6d_pose", 1);
+
+    typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> MySyncPolicy;
+    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), slam6d_cloud_sub, slam6d_pose_sub);
+    sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
 
     path_pub = n.advertise<nav_msgs::Path>("/test_path", 1);
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
-    path_marker_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
+    path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
     approx_pcl_pub_cur = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_cur", 1);
     approx_pcl_pub_prev = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_prev", 1);
@@ -443,7 +442,7 @@ int main(int argc, char **argv)
     {
         // find path, including visibility check
         // auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
-        auto res = path->find_loop_kd_min_dist(start_idx, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, true);
+        auto res = path->find_loop_kd_min_dist(start_idx, 3.0, 10.0f, true);
 
         // found
         if (res.first != -1 && res.second != -1)
@@ -486,7 +485,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         // publish path and loop detects
-        path_marker_pub.publish(path_marker);
+        path_pub.publish(path_marker);
         optimized_path_pub.publish(optimized_path_marker);
         approx_pcl_pub_cur.publish(cur_pcl_msg);
         approx_pcl_pub_prev.publish(prev_pcl_msg);

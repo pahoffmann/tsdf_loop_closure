@@ -22,6 +22,9 @@
 #include <highfive/H5File.hpp>
 
 // relative includes
+
+#include <loop_closure/params/loop_closure_params.h>
+
 #include <loop_closure/map/global_map.h>
 #include <loop_closure/map/local_map.h>
 #include <loop_closure/util/colors.h>
@@ -30,13 +33,12 @@
 #include <loop_closure/ray_tracer/ray_tracer.h>
 #include <loop_closure/serialization/read_path_json.h>
 #include <loop_closure/data_association/association_manager.h>
-#include <loop_closure/options/options_reader.h>
 #include <loop_closure/visualization/ros_viewhelper.h>
 #include <loop_closure/path/path_exploration.h>
 #include <loop_closure/test/math_test.h>
 
 // Configuration stuff //
-lc_options_reader *options;
+LoopClosureParams params;
 
 // ROS STUFF //
 visualization_msgs::Marker before_path;
@@ -61,7 +63,7 @@ AssociationManager *manager;
  */
 void initMaps()
 {
-    global_map_ptr_ = std::make_shared<GlobalMap>(options->get_map_file_name()); // create a global map, use it's attributes
+    global_map_ptr_ = std::make_shared<GlobalMap>(params.map.filename.string()); // create a global map, use it's attributes
     auto attribute_data = global_map_ptr_->get_attribute_data();
 
     // local_map_ptr_ = std::make_shared<LocalMap>(312.5, 312.5, 312.5, global_map_ptr_, true); // not used anymore, though good 2 know
@@ -87,25 +89,11 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::NodeHandle nh("~");
 
-    // read options from cmdline
-    options = new lc_options_reader();
-    int status = options->read_options(argc, argv);
-
-    if (status == 1)
-    {
-        std::cout << "[CLI] Terminate node, because there were some errors while reading from cmd-line" << std::endl;
-
-        return 1;
-    }
-    else if (status == 2)
-    {
-        std::cout << "[CLI] Terminate node, because help was requested" << std::endl;
-
-        return 0;
-    }
+    // read options
+    params = LoopClosureParams(nh);
 
     // retrieve path method from options (0 = from globalmap, 1 = from path extraction, 2 = from json)
-    int path_method = options->get_path_method();
+    int path_method = params.loop_closure.path_method;
 
     // init local and global maps
     initMaps();
@@ -114,7 +102,7 @@ int main(int argc, char **argv)
     // global_map_ptr_->cleanup_artifacts();
 
     // define stuff for raytracer
-    ray_tracer = new RayTracer(options, local_map_ptr_, global_map_ptr_);
+    ray_tracer = new RayTracer(params, local_map_ptr_, global_map_ptr_);
 
     /******************************************************
      *  Get Path                                          *

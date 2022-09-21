@@ -1,0 +1,5 @@
+<launch>
+    <node name="loop_closure" type="loop_closure" pkg="loop_closure" output="screen" clear_params="true">
+        <rosparam command="load" file="$(find loop_closure)/params/loop_closure.yaml"/>
+    </node>
+</launch>

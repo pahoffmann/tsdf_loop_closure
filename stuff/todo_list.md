@@ -66,6 +66,12 @@
     to hdf (/associations)
 [x] implement a function in the global map, which returns the whole tsdf data as a vector
 [x] instead of using the localmap to generate a tsdf marker for ros, use the global maps functionality.
+[x] When approximating the pointclouds for icp, it needs to be filtered to remove outliers, further the density of the points needs to be adapted in a way
+    This might also be interesting for the master thesis: connectivity between icp fitness score and the density of the approximated pointcloud
+    Here, also filters might come in handy
+[x] fix lc detection by using the optimal lc found
+[x] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html (basic integration)
+
 
 Intersection Data:
 
@@ -91,6 +97,7 @@ Intersection Data:
     -> There needs to be an additional array (e.g. init_rays)
     -> function to destroy current instance and make available for reinstanceiation
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
+[?] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
 
 ## TODO's ##
 
@@ -107,8 +114,7 @@ Intersection Data:
 [ ] instead of filtering outliers using the localmap interface, do it via the globalmap, this should be a lot faster
 
 ## ASAP ##
-[ ] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html
-[ ] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
+
 [ ] as of now, in the map update, only poses are considered, which have been updated, though - what about the ones, which have not been updated, but
     may still be associated with the cell we want to move. because the pose itself has been practically unchanged, it also needs to be considered, when finding a new cell position.
 
@@ -116,7 +122,6 @@ Intersection Data:
     Also, the loop closure does not only update the path poses between the start and end of the path, but finds new optimal poses for the whole path.
 
 [|] Fix LC with liosam information
-[x] fix lc detection by using the optimal lc found
 [ ] edge case: find bounding box (no axis aligned) of the tsdf volume, find overlap(s) with rest of the map
     -> the data in the overlap(s) is basically broken and cannot be restored, because no sufficient data is present
 [ ] That's why the best way might actually be to use the incredibly greedy way and store the pcl data for each of the poses and redo the whole map when finding a lc
@@ -125,7 +130,7 @@ Intersection Data:
 
 [ ] showing above edge case is important
 [ ] use the dataset thomas implied to generate the (wrongly)
-[ ] When approximating the pointcloud, it needs to be 
+
 [ ] maybe actually use the fastsense prototype and introduce the findings there
 [ ] like that it is actually possible to save pointclouds, that have been optimized and reduced and later on use the approach of LIOSAM
 
@@ -136,6 +141,11 @@ Intersection Data:
 # Main target #
 
 # What needs to be done? #
+
+# THESIS
+
+[ ] ICP: display correlation between raytrace resolution when approximating and the icp fitness score (for different datasets)
+[ ] ICP: check, which filtering method works best
 
 
 

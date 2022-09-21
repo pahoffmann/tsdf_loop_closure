@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   visualization_msgs
   dynamic_reconfigure
+  message_filters
 )
 
 ################################################
@@ -112,7 +113,6 @@ add_executable(loop_closure src/nodes/loop_closure_node.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
-                        src/options/options_reader.cpp
                         src/path/path_exploration.cpp
                         src/map/attribute_data_model.cpp)
 
@@ -125,7 +125,6 @@ add_executable(path_listener src/nodes/path_listener.cpp
 add_executable(test_lc_detection src/nodes/test_lc_detection.cpp 
                         src/path/path.cpp
                         src/ray_tracer/ray_tracer.cpp
-                        src/options/options_reader.cpp
                         src/map/global_map.cpp 
                         src/map/local_map.cpp
                         src/map/attribute_data_model.cpp)
@@ -137,7 +136,6 @@ add_executable(test_map_update src/nodes/test_map_update.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
-                        src/options/options_reader.cpp
                         src/path/path_exploration.cpp
                         src/map/attribute_data_model.cpp)
 
@@ -148,7 +146,6 @@ add_executable(test_localmap src/nodes/test_localmap.cpp
                         src/path/path.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
-                        src/options/options_reader.cpp
                         src/path/path_exploration.cpp
                         src/map/attribute_data_model.cpp)
 
@@ -157,7 +154,6 @@ add_executable(test_map_cleanup src/nodes/test_map_cleanup.cpp
                         src/map/local_map.cpp 
                         src/ray_tracer/ray_tracer.cpp
                         src/path/path.cpp
-                        src/options/options_reader.cpp
                         src/map/attribute_data_model.cpp)
 
 #pcd tsdf update test
@@ -174,6 +170,16 @@ add_executable(transform_coord_sys src/nodes/transform_coord_sys.cpp
                         src/map/local_map.cpp 
                         src/map/attribute_data_model.cpp
                         src/ray_tracer/ray_tracer.cpp
+                        src/path/path.cpp)
+
+add_executable(slam6d_listener src/nodes/slam6d_listener.cpp 
+                        src/util/runtime_evaluator.cpp
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp 
+                        src/map/attribute_data_model.cpp
+                        src/ray_tracer/ray_tracer.cpp
+                        src/data_association/association.cpp
+                        src/data_association/association_manager.cpp
                         src/path/path.cpp)
 
                   
@@ -194,6 +200,8 @@ target_compile_definitions(loop_closure PRIVATE DEBUG)
 target_compile_definitions(test_map_update PRIVATE DEBUG)
 target_compile_definitions(test_localmap PRIVATE DEBUG)
 target_compile_definitions(test_map_cleanup PRIVATE DEBUG)
+target_compile_definitions(slam6d_listener PRIVATE DEBUG)
+
 
 # globally available data path
 add_compile_definitions(DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data")
@@ -287,6 +295,18 @@ target_link_libraries(transform_coord_sys PUBLIC
   ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX 
+)
+
+target_link_libraries(slam6d_listener
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${JSONCPP_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
+  gtsam
 )
 
 

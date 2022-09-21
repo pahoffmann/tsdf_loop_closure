@@ -11,16 +11,16 @@
  * 
  */
 
+#include <loop_closure/params/loop_closure_params.h>
+
 #include <loop_closure/util/point.h>
 #include <loop_closure/util/colors.h>
 #include <loop_closure/map/local_map.h>
 #include <loop_closure/data_association/association.h>
-#include <loop_closure/options/options_reader.h>
 #include <loop_closure/util/eigen_vs_ros.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sstream>
-#include <loop_closure/LoopClosureConfig.h>
 #include <visualization_msgs/Marker.h>
 #include <omp.h>
 
@@ -40,11 +40,9 @@ private:
         ZERO_CROSSED,
         FINISHED
     };
-    // configuration for the ray tracer
-    loop_closure::LoopClosureConfig  *lc_config;
 
-    // options reader configuration for the ray_tracer
-    lc_options_reader *options;
+    // general parametrization
+    LoopClosureParams params;
     
     // current pose used for tracing
     Pose* current_pose;
@@ -64,9 +62,14 @@ private:
     std::vector<RayStatus> lines_finished;
 
     // counter, which tracks, how many lines have been finished, works hand in hand with above array.
+    // [DEBUG]
     int finished_counter = 0;
     int num_good = 0;
     int num_not_good = 0;
+
+    float side_length_x;
+    float side_length_y;
+    float side_length_z;
 
     // the actual rays, every ray starts at the current position of the tracer
     std::vector<Eigen::Vector3f> rays;
@@ -79,27 +82,15 @@ private:
     // the current data association we are working with
     Association *cur_association;
 
-    int opening_degree;
-    int hor_res;
-    int vert_res;
-    double step_size;
-
-    float side_length_xy; 
-    float side_length_z;
-
-    double ray_size;
-
-    // bresemham stuff
-
     // each pair contains the start and end vertex of bresenham
     std::vector<Vector3i> bresenham_cells;
-
 
     /**
      * @brief initializes the rays for the current position
      * 
+     * @param use_icp_params this flag controls, which parameters are used to init the rays (normal or the ones for icp)
      */
-    void initRays();
+    void initRays(bool use_icp_params = false);
 
     /**
      * @brief updates the rays, until every single one is finished
@@ -171,24 +162,13 @@ public:
      */
     RayTracer() = delete;
 
-    /**
-     * @brief Construct a new Raytracer object, inserts the respective config, including a shared pointer to the current local map.
-     * 
-     * @deprecated This constructor is only used by a ros test node, which uses dynamic reconfigure to test functionality. For all other
-     *             purposes, the constructor down below is supposed to be used
-     * 
-     * @param new_config 
-     * @param local_map_in 
-     */
-    RayTracer(loop_closure::LoopClosureConfig *new_config, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in, Pose *start_pose);
-
     /*
      * @brief Construct a new Raytracer object, inserts the respective config, including a shared pointer to the current local map.
      * 
      * @param new_config 
      * @param local_map_in 
      */
-    RayTracer(lc_options_reader *new_options, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in);
+    RayTracer(LoopClosureParams &lc_params, std::shared_ptr<LocalMap> local_map_in, std::shared_ptr<GlobalMap> global_map_in);
 
     /**
      * @brief function used to update the association the ray tracer is working with.

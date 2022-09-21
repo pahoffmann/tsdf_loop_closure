@@ -1,23 +1,42 @@
 loop_closure:
   max_icp_iterations: 100
+  max_dist_lc: 3.0      # in m
+  min_traveled_lc: 10.0 # in m
+
 
 map:
   # directory to save map in
   dir: "/home/patrick/maps/test_maps"
+  filename: "/home/patrick/maps/cafeteria.h5"
 
-  comment: "hellothere"
+  comment: "loop_closure"
 
   # Truncation distance for the TSDF values (in m)
   max_distance: 0.6
 
-  # Size of one grid cell in the discretised map (in m per cell)
+  # Size of one grid cell in the discretised map (in mm per cell)
   resolution: 64 #0.1 #0.03
 
-  # Number of grid cells in the map for every dimension (in m)
+  # local map size for every dimension (in m)
   size:
     x: 20
     y: 20
     z: 15
 
   # Maximum weight for one TSDF cell. This variable ensures that later changes can still have an influence to the map
-  max_weight: 5.0
+  max_weight: 10.0
+  
+  initial_weight: 0
+
+ray_tracer:
+  #general ray_tracer stuff
+  hor_res: 1024
+  vert_res: 128
+  opening_degree: 45
+  step_size: 0.032
+  ray_size: 0.01
+
+  # icp related stuff
+  hor_res_icp: 128
+  vert_res_icp: 64
+  opening_degree_icp: 45

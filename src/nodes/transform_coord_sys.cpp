@@ -4,8 +4,15 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <loop_closure/visualization/ros_viewhelper.h>
 #include <loop_closure/path/path.h>
+#include <loop_closure/params/loop_closure_params.h>
+
+#include <pcl/point_cloud.h>
+#include <pcl/common/transforms.h>
 
 namespace fs = boost::filesystem;
+
+
+LoopClosureParams params;
 
 sensor_msgs::PointCloud2 pcl_to_ros(pcl::PointCloud<PointType>::Ptr cloud)
 {
@@ -21,6 +28,8 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "transform_coord_sys");
     ros::NodeHandle nh("~");
+
+    params = LoopClosureParams(params);
 
     ros::Publisher trans_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/transformed_cloud", 0);
     ros::Publisher cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud", 0);
@@ -67,6 +76,8 @@ int main(int argc, char **argv)
         auto cloud = CoordSysTransform::read_scan_file(scan_path);
 
         auto pose_mat = CoordSysTransform::getTransformationFromPose(pose_path);
+
+        pcl::transformPointCloud(*transformed_cloud.get(), *transformed_cloud.get(), pose_mat);
 
         std::cout << "Pose transform for Pose " << pose_path.string() << ": " << std::endl
                   << pose_mat << std::endl;
