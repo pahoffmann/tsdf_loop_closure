@@ -61,8 +61,6 @@ namespace CoordSysTransform
             rPos[1] = -rPosInitial[0] / 100.0f;
             rPos[2] = rPosInitial[1] / 100.0f;
 
-            std::cout << "Winkel: " << rPosTheta[0] << " | " << rPosTheta[1] << " | " << rPosTheta[2] << std::endl;
-
             float x_axis_angle = 360.0f - rPosTheta[2];
             float y_axis_angle = 360.0f - rPosTheta[0]; // oder : rPosTheta[0];
             float z_axis_angle = 360.0f - rPosTheta[1];
@@ -74,8 +72,6 @@ namespace CoordSysTransform
             rPosTheta[0] = x_axis_angle * 0.0174533;
             rPosTheta[1] = y_axis_angle * 0.0174533;
             rPosTheta[2] = z_axis_angle * 0.0174533;
-
-            std::cout << "Winkel danch: " << rPosTheta[0] << " | " << rPosTheta[1] << " | " << rPosTheta[2] << std::endl;
 
 
             float sx = sin(rPosTheta[0]);

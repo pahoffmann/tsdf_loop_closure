@@ -406,8 +406,8 @@ int main(int argc, char **argv)
 
     // specify ros loop rate
     ros::Rate loop_rate(10);
-    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "/slam6d_cloud", 1);
-    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(nh, "/slam6d_pose", 1);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "slam6d_cloud", 1);
+    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(nh, "slam6d_pose", 1);
 
     typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), slam6d_cloud_sub, slam6d_pose_sub);
@@ -422,7 +422,7 @@ int main(int argc, char **argv)
     approx_pcl_pub_icp = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_icp", 1);
 
     // extract poses from global map and add to path
-    auto poses = global_map_ptr->get_path();
+    /*auto poses = global_map_ptr->get_path();
 
     for (auto pose : poses)
     {
@@ -479,28 +479,30 @@ int main(int argc, char **argv)
     // generate a marker for the optimized path
     auto optimized_path_marker = ROSViewhelper::initPathMarker(optimized_path);
 
-    std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
+    std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;*/
 
     // ros loop
     while (ros::ok())
-    {
-        // publish path and loop detects
-        path_pub.publish(path_marker);
-        optimized_path_pub.publish(optimized_path_marker);
-        approx_pcl_pub_cur.publish(cur_pcl_msg);
-        approx_pcl_pub_prev.publish(prev_pcl_msg);
-        approx_pcl_pub_icp.publish(icp_pcl_msg);
+    // {
+    //     // publish path and loop detects
+    //     path_pub.publish(path_marker);
+    //     optimized_path_pub.publish(optimized_path_marker);
+    //     approx_pcl_pub_cur.publish(cur_pcl_msg);
+    //     approx_pcl_pub_prev.publish(prev_pcl_msg);
+    //     approx_pcl_pub_icp.publish(icp_pcl_msg);
 
-        for (auto marker : loop_visualizations)
-        {
-            loop_pub.publish(marker);
-        }
+    //     for (auto marker : loop_visualizations)
+    //     {
+    //         loop_pub.publish(marker);
+    //     }
 
-        // more ros related stuff
-        ros::spinOnce();
+    //     // more ros related stuff
+    //     ros::spinOnce();
 
-        loop_rate.sleep();
-    }
+    //     loop_rate.sleep();
+    // }
+
+    ros::spin();
 
     return EXIT_SUCCESS;
 }

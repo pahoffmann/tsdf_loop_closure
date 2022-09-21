@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   dynamic_reconfigure
   message_filters
+  eigen_conversions
 )
 
 ################################################

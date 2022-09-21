@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find loop_closure)/launch/transform_coord_sys.launch"/>
+    <node name="slam6d_listener" type="slam6d_listener" pkg="loop_closure" output="screen" clear_params="true">
+        <rosparam command="load" file="$(find loop_closure)/params/loop_closure.yaml"/>
+    </node>
+</launch>
