@@ -406,8 +406,8 @@ int main(int argc, char **argv)
 
     // specify ros loop rate
     ros::Rate loop_rate(10);
-    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "slam6d_cloud", 1);
-    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(nh, "slam6d_pose", 1);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "/slam6d_cloud", 1);
+    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(nh, "/slam6d_pose", 1);
 
     typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), slam6d_cloud_sub, slam6d_pose_sub);
