@@ -133,6 +133,7 @@ Intersection Data:
 
 [ ] maybe actually use the fastsense prototype and introduce the findings there
 [ ] like that it is actually possible to save pointclouds, that have been optimized and reduced and later on use the approach of LIOSAM
+[ ] Update params in GlobalMap: only use map params
 
 
 
