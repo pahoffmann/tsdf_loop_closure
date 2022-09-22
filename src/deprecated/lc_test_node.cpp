@@ -121,7 +121,7 @@ visualization_msgs::Marker initTSDFmarker()
   auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
   auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
 
-  ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
+  //ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
 
   // get values, ignore offset
   for (int x = -1 * (size.x() - 1) / 2; x < (size.x() - 1) / 2; x++)

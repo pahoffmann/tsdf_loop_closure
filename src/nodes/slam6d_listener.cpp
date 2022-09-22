@@ -35,8 +35,11 @@
 #include <loop_closure/visualization/ros_viewhelper.h>
 #include <loop_closure/util/point.h>
 #include <loop_closure/util/eigen_vs_ros.h>
+#include <loop_closure/util/update_tsdf.h>
+
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 
 #include <gtsam/geometry/Pose3.h>
 #include <gtsam/geometry/Pose2.h>
@@ -46,6 +49,8 @@
 
 #include <pcl/registration/icp.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 using namespace message_filters;
 
@@ -71,6 +76,7 @@ float MIN_TRAVELED_LC = 10.0f;
 ros::Publisher path_pub;
 ros::Publisher optimized_path_pub;
 ros::Publisher loop_pub;
+ros::Publisher tsdf_pub;
 
 // publish approximated cloud for current pose of lc (cur_index > prev_index)
 ros::Publisher approx_pcl_pub_cur;
@@ -78,6 +84,9 @@ ros::Publisher approx_pcl_pub_cur;
 ros::Publisher approx_pcl_pub_prev;
 //
 ros::Publisher approx_pcl_pub_icp;
+
+ros::Publisher input_cloud_pub;
+ros::Publisher filtered_cloud_pub;
 
 nav_msgs::Path ros_path;
 sensor_msgs::PointCloud2 cur_pcl_msg;
@@ -375,6 +384,18 @@ void fill_optimized_path(gtsam::Values values)
     }
 }
 
+inline Eigen::Matrix4i to_int_mat(const Eigen::Matrix4f &mat)
+{
+    return (mat * MATRIX_RESOLUTION).cast<int>();
+}
+
+inline Eigen::Vector3i transform_point(const Eigen::Vector3i &input, const Eigen::Matrix4i &mat)
+{
+    Eigen::Vector4i v;
+    v << input, 1;
+    return (mat * v).block<3, 1>(0, 0) / MATRIX_RESOLUTION;
+}
+
 /**
  * @brief handles incoming pointcloud2
  *
@@ -382,7 +403,76 @@ void fill_optimized_path(gtsam::Values values)
  */
 void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_ptr, const geometry_msgs::PoseStampedConstPtr &pose_ptr)
 {
-    std::cout << "You a bitch" << std::endl;
+    // std::cout << "Received Cloud timestamp: " << cloud_ptr->header.stamp << std::endl;
+    // std::cout << "Received Pose timestamp: " << pose_ptr->header.stamp << std::endl;
+
+    // filter input cloud:
+    pcl::PointCloud<PointType>::Ptr input_cloud(new pcl::PointCloud<PointType>);
+    pcl::PointCloud<PointType>::Ptr filtered_cloud(new pcl::PointCloud<PointType>);
+    pcl::fromROSMsg(*cloud_ptr.get(), *input_cloud.get());
+    pcl::VoxelGrid<PointType> sor;
+    sor.setInputCloud(input_cloud);
+    sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
+    sor.filter(*filtered_cloud.get());
+
+
+    // create Pose from ros pose
+    Pose input_pose;
+    Eigen::Vector3d tmp_point;
+    Eigen::Quaterniond tmp_quat;
+    tf::pointMsgToEigen(pose_ptr->pose.position, tmp_point);
+    tf::quaternionMsgToEigen(pose_ptr->pose.orientation, tmp_quat);
+    input_pose.quat = tmp_quat.cast<float>();
+    input_pose.pos = tmp_point.cast<float>();
+
+
+    Matrix4f pose = input_pose.getTransformationMatrix();
+
+    // update tsdf
+    std::vector<Eigen::Vector3i> points_original(filtered_cloud->size());
+    //std::vector<Eigen::Vector3i> points_original(input_cloud->size());
+
+    // transform points to map coordinates
+#pragma omp parallel for schedule(static) default(shared)
+    for (int i = 0; i < filtered_cloud->size(); ++i)
+    {
+        const auto &cp = (*filtered_cloud)[i];
+        points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
+    }
+
+
+    // Shift
+    
+    Vector3i pos = real_to_map(pose.block<3, 1>(0, 3));
+    local_map_ptr->shift(pos);
+
+    Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
+    rot.block<3, 3>(0, 0) = to_int_mat(pose).block<3, 3>(0, 0);
+    Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
+
+    // create TSDF Volume
+    update_tsdf(points_original, pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution);
+
+    path->add_pose(input_pose);
+
+
+    // check for loops
+
+    // fix map
+
+    // publish
+    local_map_ptr->write_back();
+
+    auto gm_data = global_map_ptr->get_full_data();
+    auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    //auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+
+    tsdf_pub.publish(marker);
+    input_cloud_pub.publish(*cloud_ptr);
+
+    sensor_msgs::PointCloud2 filtered_ros_cloud;
+    pcl::toROSMsg(*filtered_cloud, filtered_ros_cloud);
+    filtered_cloud_pub.publish(filtered_ros_cloud);
 }
 
 /**
@@ -400,18 +490,18 @@ int main(int argc, char **argv)
 
     // load params from nodehandle
     params = LoopClosureParams(nh);
-    params.load(nh);
-
     init_obj();
 
+
     // specify ros loop rate
-    ros::Rate loop_rate(10);
-    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "/slam6d_cloud", 1);
-    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(nh, "/slam6d_pose", 1);
+    ros::Rate loop_rate(1.0f);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "/slam6d_cloud", 100);
+    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(nh, "/slam6d_pose", 100);
 
     typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), slam6d_cloud_sub, slam6d_pose_sub);
     sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
+
 
     path_pub = n.advertise<nav_msgs::Path>("/test_path", 1);
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
@@ -420,6 +510,9 @@ int main(int argc, char **argv)
     approx_pcl_pub_cur = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_cur", 1);
     approx_pcl_pub_prev = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_prev", 1);
     approx_pcl_pub_icp = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_icp", 1);
+    input_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/input_cloud", 1);
+    filtered_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/filtered_cloud", 1);
+    tsdf_pub = n.advertise<visualization_msgs::Marker>("/tsdf", 1);
 
     // extract poses from global map and add to path
     /*auto poses = global_map_ptr->get_path();
@@ -483,26 +576,26 @@ int main(int argc, char **argv)
 
     // ros loop
     while (ros::ok())
-    // {
-    //     // publish path and loop detects
-    //     path_pub.publish(path_marker);
-    //     optimized_path_pub.publish(optimized_path_marker);
-    //     approx_pcl_pub_cur.publish(cur_pcl_msg);
-    //     approx_pcl_pub_prev.publish(prev_pcl_msg);
-    //     approx_pcl_pub_icp.publish(icp_pcl_msg);
+        // {
+        //     // publish path and loop detects
+        //     path_pub.publish(path_marker);
+        //     optimized_path_pub.publish(optimized_path_marker);
+        //     approx_pcl_pub_cur.publish(cur_pcl_msg);
+        //     approx_pcl_pub_prev.publish(prev_pcl_msg);
+        //     approx_pcl_pub_icp.publish(icp_pcl_msg);
 
-    //     for (auto marker : loop_visualizations)
-    //     {
-    //         loop_pub.publish(marker);
-    //     }
+        //     for (auto marker : loop_visualizations)
+        //     {
+        //         loop_pub.publish(marker);
+        //     }
 
-    //     // more ros related stuff
-    //     ros::spinOnce();
+        //     // more ros related stuff
+        //     ros::spinOnce();
 
-    //     loop_rate.sleep();
-    // }
+        //     loop_rate.sleep();
+        // }
 
-    ros::spin();
+        ros::spin();
 
     return EXIT_SUCCESS;
 }

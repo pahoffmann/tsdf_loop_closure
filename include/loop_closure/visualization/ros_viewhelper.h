@@ -165,7 +165,7 @@ namespace ROSViewhelper
         auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
         auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
 
-        ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
+        //ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
 
         // global cell index
         Vector3i tmp_pos = real_to_map(pose->pos);
@@ -235,9 +235,9 @@ namespace ROSViewhelper
             }
         }
 
-        ROS_INFO("NUM_INTERSECTS: %d", num_intersects);
-        ROS_INFO("NUM_NOT_INTERSECTED: %d", not_intersected);
-        ROS_INFO("NUM_Free: %d", num_free);
+        // ROS_INFO("NUM_INTERSECTS: %d", num_intersects);
+        // ROS_INFO("NUM_NOT_INTERSECTED: %d", not_intersected);
+        // ROS_INFO("NUM_Free: %d", num_free);
 
         return tsdf_markers;
     }

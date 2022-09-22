@@ -82,12 +82,14 @@ int main(int argc, char **argv)
   // load params from nodehandle
   params = LoopClosureParams(nh);
   params.load(nh);
-  auto tsdf_pub = nh.advertise<visualization_msgs::Marker>("/tsdf", 0);
-  auto pcl_pub = nh.advertise<sensor_msgs::PointCloud2>("/pcl", 0);
+  auto tsdf_pub = nh.advertise<visualization_msgs::Marker>("/tsdf_pcd", 0);
+  auto pcl_pub = nh.advertise<sensor_msgs::PointCloud2>("/pcl_pcd", 0);
 
   // setup point data
   pcl::PointCloud<PointType>::Ptr orig(new pcl::PointCloud<PointType>);
-  fs::path filename = fs::path(DATA_PATH) / "frame_1000.pcd";
+  //fs::path filename = fs::path(DATA_PATH) / "frame_1000.pcd";
+  fs::path filename = fs::path(DATA_PATH) / "test.pcd";
+
   if (pcl::io::loadPCDFile<PointType>(filename.string(), *orig) == -1)
   {
     PCL_ERROR("Couldn't read test pcd\n");

@@ -5,9 +5,11 @@
 #include <loop_closure/visualization/ros_viewhelper.h>
 #include <loop_closure/path/path.h>
 #include <loop_closure/params/loop_closure_params.h>
+#include <iostream>
 
 #include <pcl/point_cloud.h>
 #include <pcl/common/transforms.h>
+#include <pcl/io/pcd_io.h>
 #include <eigen_conversions/eigen_msg.h>
 
 namespace fs = boost::filesystem;
@@ -26,9 +28,9 @@ sensor_msgs::PointCloud2 pcl_to_ros(pcl::PointCloud<PointType>::Ptr cloud)
 
 /**
  * @brief converts an eigen 4x4 transform matrix to a ros pose stamped, with the stamp being the current time
- * 
- * @param transform 
- * @return geometry_msgs::PoseStamped 
+ *
+ * @param transform
+ * @return geometry_msgs::PoseStamped
  */
 geometry_msgs::PoseStamped transform_to_ros_pose_stamped(Matrix4f &transform)
 {
@@ -56,10 +58,10 @@ int main(int argc, char **argv)
 
     params = LoopClosureParams(params);
 
-    ros::Publisher trans_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/transformed_cloud", 0);
-    ros::Publisher cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);
-    ros::Publisher trans_pose_pub = nh.advertise<visualization_msgs::Marker>("/transformed_pose", 0);
-    ros::Publisher pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/slam6d_pose", 0);
+    ros::Publisher trans_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);
+    ros::Publisher cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud", 0);
+    ros::Publisher trans_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/slam6d_pose", 0);
+    ros::Publisher pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/pose", 0);
 
     boost::filesystem::path directory_name = fs::path("/home/patrick/data/hannover1/");
 
@@ -98,6 +100,11 @@ int main(int argc, char **argv)
         auto pose_path = scan_pose_filename_pairs.second[counter];
 
         auto transformed_cloud = CoordSysTransform::read_scan_file_and_transform(scan_path);
+
+        // pcl::io::savePCDFile("/home/patrick/maps/generated/test.pcd", *transformed_cloud);
+
+        // ros::shutdown();
+
         auto cloud = CoordSysTransform::read_scan_file(scan_path);
 
         auto pose_mat = CoordSysTransform::getTransformationFromPose(pose_path);
@@ -114,16 +121,16 @@ int main(int argc, char **argv)
 
         sensor_msgs::PointCloud2 transformed_ros_cloud = pcl_to_ros(transformed_cloud);
 
-        std::cout << "Timestamp cloud: " << ros_cloud.header.stamp << std::endl;
-        std::cout << "Timestamp pose: " << ros_pose.header.stamp << std::endl;
+        // std::cout << "Timestamp cloud: " << transformed_ros_cloud.header.stamp << std::endl;
+        // std::cout << "Timestamp pose: " << ros_pose.header.stamp << std::endl;
 
-        cloud_pub.publish(ros_cloud);
-        pose_pub.publish(ros_pose);
+        // cloud_pub.publish(ros_cloud);
+        // pose_pub.publish(ros_pose);
 
         trans_cloud_pub.publish(transformed_ros_cloud);
 
         // trans_pose_pub.publish(trans_pose_marker);
-        trans_pose_pub.publish(path_marker);
+        trans_pose_pub.publish(ros_pose);
 
         counter++;
     }

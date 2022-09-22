@@ -10,9 +10,9 @@
 
 #include <loop_closure/map/global_map.h>
 
-GlobalMap::GlobalMap(const MapParams &params)
-    : file_{std::string(params.filename.c_str()), HighFive::File::OpenOrCreate | HighFive::File::Truncate}, // Truncate clears already existing file
-      initial_tsdf_value_{static_cast<TSDFEntry::ValueType>(params.tau), static_cast<TSDFEntry::WeightType>(params.initial_weight)},
+GlobalMap::GlobalMap(const MapParams &input_params)
+    : file_{std::string(input_params.filename.c_str()), HighFive::File::OpenOrCreate | HighFive::File::Truncate}, // Truncate clears already existing file
+      initial_tsdf_value_{static_cast<TSDFEntry::ValueType>(input_params.tau), static_cast<TSDFEntry::WeightType>(input_params.initial_weight)},
       active_chunks_{},
       num_poses_{0}
 {
@@ -26,6 +26,9 @@ GlobalMap::GlobalMap(const MapParams &params)
       file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
     }
 
+    params = input_params;
+
+    
     write_meta(params);
 }
 
@@ -936,7 +939,7 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
             TSDFEntry tmp_tsdf(data[j]);
 
             // skip default values
-            if (tmp_tsdf.value() == get_attribute_data().get_tau() || tmp_tsdf.weight() == 0)
+            if (tmp_tsdf.value() == params.tau || tmp_tsdf.weight() == 0)
             {
                 continue;
             }

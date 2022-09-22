@@ -81,6 +81,9 @@ private:
     // model for the attribute data
     attribute_data_model attribute_data_;
 
+    // map params
+    MapParams params;
+
     // default entry for checking if chunk may be empty
     std::vector<TSDFEntry::RawType> default_chunk_data;
 
@@ -126,7 +129,7 @@ public:
      * 
      * @param params 
      */
-    GlobalMap(const MapParams &params);
+    GlobalMap(const MapParams &input_params);
 
     /**
      * Returns a value pair consisting of a tsdf value and a weight from the map.
