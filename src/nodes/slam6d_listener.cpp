@@ -66,9 +66,8 @@ Path *optimized_path;
 int side_length_xy;
 int side_length_z;
 
-// distance between poses (min) in path -> do this in the config bra
-float MAX_DIST_LC = 1.0f;
-float MIN_TRAVELED_LC = 10.0f;
+// vector to store found lc index pairs
+std::vector<std::pair<int, int>> lc_index_pairs;
 
 // ros
 
@@ -397,6 +396,39 @@ inline Eigen::Vector3i transform_point(const Eigen::Vector3i &input, const Eigen
 }
 
 /**
+ * @brief will check the currently found lc pair against the ones already found
+ *
+ * @param pair
+ * @return true
+ * @return false
+ */
+bool is_viable_lc(std::pair<int, int> candidate_pair)
+{
+    if (lc_index_pairs.size() == 0)
+    {
+        return true;
+    }
+
+    // the first index of the candidate pair needs to be greater than the already found pair
+    // [TODO] eval this solution
+    for (auto lc_pair : lc_index_pairs)
+    {
+        // if (candidate_pair.first < lc_pair.second || path->get_distance_between_path_poses(lc_pair.first, lc_pair.second) < params.loop_closure.min_traveled_lc)
+        // {
+        //     return false;
+        // }
+
+        // testing purpose, using different indices
+        if (candidate_pair.second < lc_pair.second || path->get_distance_between_path_poses(lc_pair.second, candidate_pair.second) < params.loop_closure.min_traveled_lc)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
  * @brief handles incoming pointcloud2
  *
  * @param cloud_ptr
@@ -415,7 +447,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
     sor.filter(*filtered_cloud.get());
 
-
     // create Pose from ros pose
     Pose input_pose;
     Eigen::Vector3d tmp_point;
@@ -425,12 +456,11 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_pose.quat = tmp_quat.cast<float>();
     input_pose.pos = tmp_point.cast<float>();
 
-
     Matrix4f pose = input_pose.getTransformationMatrix();
 
     // update tsdf
     std::vector<Eigen::Vector3i> points_original(filtered_cloud->size());
-    //std::vector<Eigen::Vector3i> points_original(input_cloud->size());
+    // std::vector<Eigen::Vector3i> points_original(input_cloud->size());
 
     // transform points to map coordinates
 #pragma omp parallel for schedule(static) default(shared)
@@ -440,9 +470,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
     }
 
-
     // Shift
-    
+
     Vector3i pos = real_to_map(pose.block<3, 1>(0, 3));
     local_map_ptr->shift(pos);
 
@@ -455,17 +484,11 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     path->add_pose(input_pose);
 
-
-    // check for loops
-
-    // fix map
-
-    // publish
     local_map_ptr->write_back();
 
     auto gm_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    //auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
 
     tsdf_pub.publish(marker);
     input_cloud_pub.publish(*cloud_ptr);
@@ -473,6 +496,30 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     sensor_msgs::PointCloud2 filtered_ros_cloud;
     pcl::toROSMsg(*filtered_cloud, filtered_ros_cloud);
     filtered_cloud_pub.publish(filtered_ros_cloud);
+
+    path_pub.publish(ROSViewhelper::initPathMarker(path));
+
+    // check for loops
+
+    auto lc_pair = path->find_loop_kd_min_dist(0, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, false);
+
+    // no viable lc found, return
+    if (!is_viable_lc(lc_pair))
+    {
+        return;
+    }
+    else
+    {
+        std::cout << "LC found between " << lc_pair.first << " and " << lc_pair.second << std::endl;
+    }
+
+    auto lc_marker = ROSViewhelper::init_loop_detected_marker(path->at(lc_pair.first)->pos, path->at(lc_pair.second)->pos);
+
+    loop_pub.publish(lc_marker);
+
+    // fix map
+
+    // publish
 }
 
 /**
@@ -492,7 +539,6 @@ int main(int argc, char **argv)
     params = LoopClosureParams(nh);
     init_obj();
 
-
     // specify ros loop rate
     ros::Rate loop_rate(1.0f);
     message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "/slam6d_cloud", 100);
@@ -502,8 +548,6 @@ int main(int argc, char **argv)
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), slam6d_cloud_sub, slam6d_pose_sub);
     sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
 
-
-    path_pub = n.advertise<nav_msgs::Path>("/test_path", 1);
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);

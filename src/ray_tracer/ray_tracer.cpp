@@ -600,6 +600,8 @@ void RayTracer::perform3DBresenham()
       {
         // if we have already had a sign change in tsdf and the value gets positive again, we are done.
         // else, we are still in the negative value range and therefore, we add the association and mark the intersection in the local map
+        // [TODO] we may also need to stop here, if the distance between the current cell and the cell of the zero crossing is larger
+        //        than the distance defined by tau (as the values further out do not belong to this pose)
         if (!(tsdf.value() < 0 && tsdf.weight() > 0))
         {
           lines_finished[i] = RayStatus::FINISHED;

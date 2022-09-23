@@ -32,24 +32,23 @@ private:
     RayTracer *ray_tracer;
 
 public:
-
     /**
      * @brief Copy constructor of the path
      *
      * @param other
      */
     Path(Path &other);
-    
+
     /**
      * @brief default constructor
-     * 
+     *
      */
     Path() = default;
 
     /**
      * @brief attaches a ray tracer to the path, needs to be called before any visibility checks take place
-     * 
-     * @param tracer 
+     *
+     * @param tracer
      */
     void attach_raytracer(RayTracer *tracer)
     {
@@ -110,14 +109,26 @@ public:
     /**
      * @brief will use the method proposed by liosam to find a lc:
      *        https://github.com/TixiaoShan/LIO-SAM/blob/6665aa0a4fcb5a9bb3af7d3923ae4a035b489d47/src/mapOptmization.cpp#L610
-     * 
-     * @param start_idx 
-     * @param max_dist 
-     * @param min_traveled 
-     * @param check_visibility 
-     * @return std::pair<int, int> 
+     *
+     * @param start_idx
+     * @param max_dist
+     * @param min_traveled
+     * @param check_visibility
+     * @return std::pair<int, int>
      */
     std::pair<int, int> find_loop_kd_min_dist(int start_idx, float max_dist, float min_traveled, bool check_visibility);
+
+    // /**
+    //  * @brief will use the method proposed by liosam to find a lc:
+    //  *        https://github.com/TixiaoShan/LIO-SAM/blob/6665aa0a4fcb5a9bb3af7d3923ae4a035b489d47/src/mapOptmization.cpp#L610
+    //  *
+    //  * @param start_idx
+    //  * @param max_dist
+    //  * @param min_traveled
+    //  * @param check_visibility
+    //  * @return std::pair<int, int>
+    //  */
+    // std::pair<int, int> find_loop_kd_min_dist_backwards(int idx, float max_dist, float min_traveled, bool check_visibility, std::vector<std::pair<int, int>());
 
     /**
      * @brief returns a pose of the path for a given idx
@@ -186,10 +197,10 @@ public:
 
     /**
      * @brief Get the distances between two path poses when following the path poses
-     * 
-     * @param idx1 
-     * @param idx2 
-     * @return float 
+     *
+     * @param idx1
+     * @param idx2
+     * @return float
      */
     float get_distance_between_path_poses(int idx1, int idx2);
 };
