@@ -9,6 +9,7 @@ Panels:
         - /PointCloud21
         - /PointCloud22
         - /Pose1
+        - /Marker3
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz/Selection
@@ -135,6 +136,22 @@ Visualization Manager:
       Topic: /slam6d_pose
       Unreliable: false
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /loop
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /path
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -163,7 +180,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 26.82947540283203
+      Distance: 142.37770080566406
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -171,17 +188,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.4505937099456787
-        Y: 0.7664326429367065
-        Z: 0.043288204818964005
+        X: -0.23316380381584167
+        Y: 13.937642097473145
+        Z: -29.460325241088867
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.32479795813560486
+      Pitch: 0.8247976303100586
       Target Frame: <Fixed Frame>
-      Yaw: 1.2753901481628418
+      Yaw: 5.774911403656006
     Saved: ~
 Window Geometry:
   Displays:
