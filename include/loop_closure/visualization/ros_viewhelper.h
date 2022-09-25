@@ -72,8 +72,11 @@ namespace ROSViewhelper
      *
      * @return visualization_msgs::Marker (Sphere)
      */
-    static visualization_msgs::Marker initPoseMarker(Pose *pose)
+    static visualization_msgs::Marker initPoseMarker(Pose *pose, Colors::ColorNames color_name = Colors::ColorNames::red)
     {
+        // get color from name
+        std_msgs::ColorRGBA color = Colors::color_from_name(color_name);
+
         // raytrace pose
         visualization_msgs::Marker raytrace_starting_pose_marker;
         raytrace_starting_pose_marker.header.frame_id = "map";
@@ -93,16 +96,16 @@ namespace ROSViewhelper
         raytrace_starting_pose_marker.scale.y = 0.4;
         raytrace_starting_pose_marker.scale.z = 0.4;
         raytrace_starting_pose_marker.color.a = 0.5; // Don't forget to set the alpha!
-        raytrace_starting_pose_marker.color.r = 1.0;
-        raytrace_starting_pose_marker.color.g = 0.0;
-        raytrace_starting_pose_marker.color.b = 0.0;
+        raytrace_starting_pose_marker.color = color;
 
         return raytrace_starting_pose_marker;
     }
 
-    static visualization_msgs::Marker initPathMarker(Path *path)
+    static visualization_msgs::Marker initPathMarker(Path *path, Colors::ColorNames color_name = Colors::ColorNames::navy)
     {
-        // raytrace pose
+        // get color from name
+        std_msgs::ColorRGBA color = Colors::color_from_name(color_name);
+
         visualization_msgs::Marker path_marker;
         path_marker.header.frame_id = "map";
         path_marker.header.stamp = ros::Time();
@@ -110,13 +113,11 @@ namespace ROSViewhelper
         path_marker.id = 0;
         path_marker.type = visualization_msgs::Marker::CUBE_LIST;
         path_marker.action = visualization_msgs::Marker::ADD;
-        path_marker.scale.x = 0.2;
-        path_marker.scale.y = 0.2;
-        path_marker.scale.z = 0.2;
-        path_marker.color.a = 0.5; // Don't forget to set the alpha!
-        path_marker.color.r = 64 / 255.0f;
-        path_marker.color.g = 224 / 255.0f;
-        path_marker.color.b = 208 / 255.0f;
+        path_marker.scale.x = 0.3;
+        path_marker.scale.y = 0.3;
+        path_marker.scale.z = 0.3;
+        path_marker.color.a = 1; // Don't forget to set the alpha!
+        path_marker.color = color;
 
         for (Pose pose : path->getPoses())
         {
@@ -165,7 +166,7 @@ namespace ROSViewhelper
         auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
         auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
 
-        //ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
+        // ROS_INFO("Color: %f, %f, %f", intersectColor.r, intersectColor.g, intersectColor.b);
 
         // global cell index
         Vector3i tmp_pos = real_to_map(pose->pos);
@@ -305,7 +306,7 @@ namespace ROSViewhelper
             local_map->shift(tmp_pos);
 
             // get values, ignore offset
-//#pragma omp parallel for
+            //#pragma omp parallel for
             for (int x = tmp_pos.x() + (-1 * (size.x() - 1) / 2); x < tmp_pos.x() + ((size.x() - 1) / 2); x++)
             {
                 for (int y = tmp_pos.y() + (-1 * (size.y() - 1) / 2); y < tmp_pos.y() + ((size.y() - 1) / 2); y++)
@@ -673,19 +674,64 @@ namespace ROSViewhelper
         line_marker.pose.orientation.y = 0.0;
         line_marker.pose.orientation.z = 0.0;
         line_marker.pose.orientation.w = 1.0;
-        line_marker.scale.x = 0.3;
-        line_marker.scale.y = 0.3;
-        line_marker.scale.z = 0.3;
+        line_marker.scale.x = 0.5;
+        line_marker.scale.y = 0.5;
+        line_marker.scale.z = 0.5;
         line_marker.color.r = 255 / 255.0f;
         line_marker.color.g = 0 / 255.0f;
         line_marker.color.b = 0 / 255.0f;
-        line_marker.color.a = 0.6;
+        line_marker.color.a = 0.85;
         line_marker.type = visualization_msgs::Marker::LINE_LIST;
         line_marker.header.frame_id = "map";
         line_marker.header.stamp = ros::Time();
         line_marker.id = 0;
         line_marker.points.push_back(type_transform::eigen_point_to_ros_point(first));
         line_marker.points.push_back(type_transform::eigen_point_to_ros_point(second));
+
+        return line_marker;
+    }
+
+    /**
+     * @brief Constructs a ros marker which displays a line between the two positions passed to the function
+     *
+     * @param first
+     * @param second
+     * @return visualization_msgs::Marker
+     */
+    static visualization_msgs::Marker init_loop_detected_marker_multiple(Path *path, std::vector<std::pair<int, int>> lc_pairs)
+    {
+
+        // todo: check, wether the line marker needs two points or one point and scaljgnk
+        visualization_msgs::Marker line_marker;
+        line_marker.ns = "lc_detect";
+        line_marker.action = visualization_msgs::Marker::ADD;
+        line_marker.pose.position.x = 0;
+        line_marker.pose.position.y = 0;
+        line_marker.pose.position.z = 0;
+        line_marker.pose.orientation.x = 0.0;
+        line_marker.pose.orientation.y = 0.0;
+        line_marker.pose.orientation.z = 0.0;
+        line_marker.pose.orientation.w = 1.0;
+        line_marker.scale.x = 0.5;
+        line_marker.scale.y = 0.5;
+        line_marker.scale.z = 0.5;
+        line_marker.color.r = 255 / 255.0f;
+        line_marker.color.g = 0 / 255.0f;
+        line_marker.color.b = 0 / 255.0f;
+        line_marker.color.a = 0.85;
+        line_marker.type = visualization_msgs::Marker::LINE_LIST;
+        line_marker.header.frame_id = "map";
+        line_marker.header.stamp = ros::Time();
+        line_marker.id = 0;
+
+        for (auto pair : lc_pairs)
+        {
+            Vector3f first = path->at(pair.first)->pos;
+            Vector3f second = path->at(pair.second)->pos;
+
+            line_marker.points.push_back(type_transform::eigen_point_to_ros_point(first));
+            line_marker.points.push_back(type_transform::eigen_point_to_ros_point(second));
+        }
 
         return line_marker;
     }
@@ -718,9 +764,9 @@ namespace ROSViewhelper
 
     /**
      * @brief creates a pcl marker from real world data
-     * 
-     * @param points 
-     * @return visualization_msgs::Marker 
+     *
+     * @param points
+     * @return visualization_msgs::Marker
      */
     static visualization_msgs::Marker marker_from_real_data(std::vector<Eigen::Vector3f> points)
     {
@@ -733,7 +779,7 @@ namespace ROSViewhelper
         points_marker.type = visualization_msgs::Marker::POINTS;
         points_marker.action = visualization_msgs::Marker::ADD;
         points_marker.scale.x = points_marker.scale.y = points_marker.scale.z = 0.02; // 1.0 is the relative size of the marker
-        points_marker.color.a = 0.5;                                                                          // Don't forget to set the alpha!
+        points_marker.color.a = 0.5;                                                  // Don't forget to set the alpha!
         points_marker.color.r = 136 / 255.0f;
         points_marker.color.g = 0 / 255.0f;
         points_marker.color.b = 255 / 255.0f;
@@ -750,9 +796,9 @@ namespace ROSViewhelper
 
     /**
      * @brief generates a visualization marker
-     * 
-     * @param cloud 
-     * @return visualization_msgs::Marker 
+     *
+     * @param cloud
+     * @return visualization_msgs::Marker
      */
     static sensor_msgs::PointCloud2 marker_from_pcl_pointcloud(pcl::PointCloud<PointType>::Ptr cloud)
     {
@@ -767,9 +813,9 @@ namespace ROSViewhelper
 
     /**
      * @brief gets a data array of a map vector and an attached tsdf entry and creates a ros marker from it
-     * 
-     * @param data 
-     * @return visualization_msgs::Marker 
+     *
+     * @param data
+     * @return visualization_msgs::Marker
      */
     static visualization_msgs::Marker marker_from_gm_read(std::vector<std::pair<Eigen::Vector3i, TSDFEntry>> data)
     {
@@ -789,10 +835,9 @@ namespace ROSViewhelper
             auto real_point = map_to_real(data_pt.first);
             auto tsdf = data_pt.second;
 
-
             points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
 
-            if(tsdf.value() < 0)
+            if (tsdf.value() < 0)
             {
                 points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::maroon));
             }
@@ -800,7 +845,6 @@ namespace ROSViewhelper
             {
                 points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::green));
             }
-
         }
 
         return points_marker;

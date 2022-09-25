@@ -54,10 +54,6 @@ Path *optimized_path;
 int side_length_xy;
 int side_length_z;
 
-float cur_length = 0.0f;
-Eigen::Vector3f last_vec = Vector3f::Zero();
-float last_path_idx = 0;
-
 // ros
 ros::Subscriber pose_sub;
 ros::Publisher path_pub;
@@ -143,17 +139,17 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     // as the estimated clouds will be very far from each other most of the time, we will
     // pretransform the current pcl
 
-    Eigen::Vector4d centroid_prev, centroid_cur;
-    pcl::compute3DCentroid(*pointcloud_cur.get(), centroid_cur);
-    pcl::compute3DCentroid(*pointcloud_prev.get(), centroid_prev);
+    // Eigen::Vector4d centroid_prev, centroid_cur;
+    // pcl::compute3DCentroid(*pointcloud_cur.get(), centroid_cur);
+    // pcl::compute3DCentroid(*pointcloud_prev.get(), centroid_prev);
 
-    std::cout << "Computed centroid cur: " << std::endl
-              << centroid_cur << std::endl;
-    std::cout << "Computed centroid prev: " << std::endl
-              << centroid_prev << std::endl;
+    // std::cout << "Computed centroid cur: " << std::endl
+    //           << centroid_cur << std::endl;
+    // std::cout << "Computed centroid prev: " << std::endl
+    //           << centroid_prev << std::endl;
 
-    // calculate centoid diff from cur to prev
-    Eigen::Vector3f centroid_diff(centroid_prev.x() - centroid_cur.x(), centroid_prev.y() - centroid_cur.y(), centroid_prev.z() - centroid_cur.z());
+    // // calculate centoid diff from cur to prev
+    // Eigen::Vector3f centroid_diff(centroid_prev.x() - centroid_cur.x(), centroid_prev.y() - centroid_cur.y(), centroid_prev.z() - centroid_cur.z());
 
     // filter outliers
     // Create the filtering object
@@ -184,11 +180,11 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
 
     // pretransform cur cloud with rotation pose diff and translation diff from centroids
     // as icp cannot work with changes this big.
-    Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
-    transform.block<3, 1>(0, 3) = centroid_diff;
+    // Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
+    // transform.block<3, 1>(0, 3) = centroid_diff;
     // transform.block<3, 3>(0, 0) = pose_pretransform.block<3, 3>(0, 0);
-    pcl::PointCloud<PointType>::Ptr pointcloud_cur_pretransformed;
-    pointcloud_cur_pretransformed.reset(new pcl::PointCloud<PointType>());
+    // pcl::PointCloud<PointType>::Ptr pointcloud_cur_pretransformed;
+    // pointcloud_cur_pretransformed.reset(new pcl::PointCloud<PointType>());
     // pcl::transformPointCloud(*pointcloud_cur.get(), *pointcloud_cur_pretransformed.get(), transform);
     //  pcl::transformPointCloud(*pointcloud_cur.get(), *pointcloud_cur_pretransformed.get(), pose_pretransform);
 
@@ -244,24 +240,24 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
 
     // LIOSAM
     // transform from world origin to wrong pose
-    Eigen::Affine3f tWrong(path->at(loop_key_cur)->getTransformationMatrix());
+    // Eigen::Affine3f tWrong(path->at(loop_key_cur)->getTransformationMatrix());
 
-    // transform from world origin to corrected pose
-    Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
-    pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
+    // // transform from world origin to corrected pose
+    // Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+    // pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
 
-    gtsam::Pose3 poseFrom = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
-    gtsam::Pose3 poseTo(gtsam::Rot3(path->at(lc_indices.first)->quat.cast<double>()),
-                        gtsam::Point3(path->at(lc_indices.first)->pos.cast<double>()));
+    // gtsam::Pose3 poseFrom = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
+    // gtsam::Pose3 poseTo(gtsam::Rot3(path->at(lc_indices.first)->quat.cast<double>()),
+    //                     gtsam::Point3(path->at(lc_indices.first)->pos.cast<double>()));
 
-    auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, poseFrom.between(poseTo), constraintNoise);
+    // auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, poseFrom.between(poseTo), constraintNoise);
 
     // ME
-    // Eigen::Affine3f tCorrect = correctionLidarFrame;// * tWrong; // pre-multiplying -> successive rotation about a fixed frame
-    // pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
-    // gtsam::Pose3 between_trans = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
-    // //create between factor
-    // auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, between_trans, constraintNoise);
+    Eigen::Affine3f tCorrect = correctionLidarFrame;// * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+    pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
+    gtsam::Pose3 between_trans = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
+    //create between factor
+    auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, between_trans, constraintNoise);
 
     return between_fac;
 }
@@ -442,7 +438,9 @@ int main(int argc, char **argv)
     while (is_ok)
     {
         // find path, including visibility check
-        // auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+        //auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+
+        std::cout << "Trying to find a loop for max dist: " << params.loop_closure.max_dist_lc << " , min traveled: " << params.loop_closure.min_traveled_lc << std::endl;
         auto res = path->find_loop_kd_min_dist(start_idx, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, true);
 
         // found

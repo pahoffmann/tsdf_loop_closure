@@ -101,7 +101,7 @@ struct MapParams
   {
     std::string max_distance_str = max_distance_identifier(max_distance);
 
-    id = std::string("warpsense-int") \
+    id = std::string("loop_closure") \
       + std::string(comment.empty() ? "_" : "_" + std::string(comment) + "_") \
       + "res-" + std::to_string(resolution) + "_"
          + "max_d-" + max_distance_str + "_" \

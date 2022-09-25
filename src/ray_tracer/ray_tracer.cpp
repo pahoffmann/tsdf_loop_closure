@@ -670,7 +670,7 @@ pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
   cleanup();
 
   // first initialize the rays with the current pose and config data
-  initRays();
+  initRays(true);
 
   // now we initialized the "lines finished" - array and know exactly, when to stop updating the rays.
   // exactly when all rays are finished :D

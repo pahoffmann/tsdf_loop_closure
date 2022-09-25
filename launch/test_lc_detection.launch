@@ -1,0 +1,5 @@
+<launch>
+    <node name="test_lc_detection" type="test_lc_detection" pkg="loop_closure" output="screen" clear_params="true">
+        <rosparam command="load" file="$(find loop_closure)/params/test_lc_detection.yaml"/>
+    </node>
+</launch>

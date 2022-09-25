@@ -166,9 +166,60 @@ std::pair<int, int> Path::find_loop_kd_min_dist(int start_idx, float max_dist, f
             {
                 end_idx = id;
                 start_idx = i;
-                
+
                 return std::make_pair(start_idx, end_idx);
             }
+        }
+    }
+
+    // no loop found: return error value
+
+    return std::make_pair(-1, -1);
+}
+
+std::pair<int, int> Path::find_loop_kd_min_dist_backwards(int idx, float max_dist, float min_traveled, bool check_visibility)
+{
+    pcl::KdTreeFLANN<PointType>::Ptr kdtree_path;
+    pcl::PointCloud<PointType>::Ptr pose_cloud;
+
+    kdtree_path.reset(new pcl::KdTreeFLANN<PointType>());
+    pose_cloud.reset(new pcl::PointCloud<PointType>());
+
+    // fill pose cloud
+    for (int i = 0; i < get_length(); i++)
+    {
+        PointType point;
+        Pose *current = at(i);
+
+        point.x = current->pos.x();
+        point.y = current->pos.y();
+        point.z = current->pos.z();
+
+        pose_cloud->push_back(point);
+    }
+
+    std::vector<int> pointSearchIndLoop;
+    std::vector<float> pointSearchSqDisLoop;
+
+    kdtree_path->setInputCloud(pose_cloud);
+
+    int end_idx = idx;
+    int start_idx = -1;
+
+    // do radius search around current pose
+    kdtree_path->radiusSearch(pose_cloud->at(idx), max_dist, pointSearchIndLoop, pointSearchSqDisLoop, 0);
+
+    for (int i = 0; i < (int)pointSearchIndLoop.size(); i++)
+    {
+        int id = pointSearchIndLoop[i];
+
+        float distance = get_distance_between_path_poses(id, idx);
+
+        if (distance > min_traveled)
+        {
+            start_idx = id;
+
+            return std::make_pair(start_idx, end_idx);
         }
     }
 
