@@ -98,6 +98,8 @@ Intersection Data:
     -> function to destroy current instance and make available for reinstanceiation
 [ ] Update local and global map with a feature, which allows writing the Intersection status to the hdf5 and reading it
 [?] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
+[ ] Because icp does not yield good results, it might be a good idea to use a different scanmatching approach. e.g.: teaser++ combined with FFPFH features 
+    (e.g. from pcl)
 
 ## TODO's ##
 
@@ -134,6 +136,8 @@ Intersection Data:
 [ ] maybe actually use the fastsense prototype and introduce the findings there
 [ ] like that it is actually possible to save pointclouds, that have been optimized and reduced and later on use the approach of LIOSAM
 [ ] Update params in GlobalMap: only use map params
+
+
 
 
 

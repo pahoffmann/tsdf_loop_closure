@@ -427,7 +427,7 @@ int main(int argc, char **argv)
     }
 
     // crate path marker
-    auto path_marker = ROSViewhelper::initPathMarker(path);
+    auto path_marker = ROSViewhelper::initPathMarker(path, Colors::ColorNames::red);
 
     // variables for the lc detection
     int start_idx = 0;
@@ -476,7 +476,7 @@ int main(int argc, char **argv)
     }
 
     // generate a marker for the optimized path
-    auto optimized_path_marker = ROSViewhelper::initPathMarker(optimized_path);
+    auto optimized_path_marker = ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::lime);
 
     std::cout << "Found " << loop_visualizations.size() << " loop(s)" << std::endl;
 

@@ -3,5 +3,5 @@
         <rosparam command="load" file="$(find loop_closure)/params/slam6d_listening.yaml"/>
     </node>
     <include file="$(find loop_closure)/launch/transform_coord_sys.launch"/>
-    <include file="$(find loop_closure)/launch/update_tsdf_pcd.launch"/>
+    <!--include file="$(find loop_closure)/launch/update_tsdf_pcd.launch"/-->
 </launch>

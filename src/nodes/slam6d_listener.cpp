@@ -70,6 +70,9 @@ int side_length_z;
 // vector to store found lc index pairs
 std::vector<std::pair<int, int>> lc_index_pairs;
 
+// save a vector of pointclouds (which should be preprocessed)
+std::vector<pcl::PointCloud<PointType>::Ptr> dataset_clouds;
+
 // ros
 
 // subscribe to lsma6d cloud and poses
@@ -77,6 +80,9 @@ ros::Publisher path_pub;
 ros::Publisher optimized_path_pub;
 ros::Publisher loop_pub;
 ros::Publisher tsdf_pub;
+
+// publisher used to signal to it's subscribers, that the node is back in idle mode
+ros::Publisher ready_flag_pub;
 
 // publish approximated cloud for current pose of lc (cur_index > prev_index)
 ros::Publisher approx_pcl_pub_cur;
@@ -131,22 +137,28 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     auto pointcloud_prev = tracer->approximate_pointcloud(path->at(loop_key_pre));
     auto pointcloud_cur = tracer->approximate_pointcloud(path->at(loop_key_cur));
 
+    std::cout << "Previous pose: " << std::endl << *path->at(loop_key_pre) << std::endl;
+    std::cout << "Current pose: " << std::endl << *path->at(loop_key_cur) << std::endl;
+
     // todo: instead of approximating the pcl's, use the actual clouds
 
     // as the estimated clouds will be very far from each other most of the time, we will
     // pretransform the current pcl
 
-    // Eigen::Vector4d centroid_prev, centroid_cur;
-    // pcl::compute3DCentroid(*pointcloud_cur.get(), centroid_cur);
-    // pcl::compute3DCentroid(*pointcloud_prev.get(), centroid_prev);
+    Eigen::Vector4d centroid_prev, centroid_cur;
+    pcl::compute3DCentroid(*pointcloud_cur.get(), centroid_cur);
+    pcl::compute3DCentroid(*pointcloud_prev.get(), centroid_prev);
 
-    // std::cout << "Computed centroid cur: " << std::endl
-    //           << centroid_cur << std::endl;
-    // std::cout << "Computed centroid prev: " << std::endl
-    //           << centroid_prev << std::endl;
+    std::cout << "Computed centroid cur: " << std::endl
+              << centroid_cur << std::endl;
+    std::cout << "Computed centroid prev: " << std::endl
+              << centroid_prev << std::endl;
 
     // calculate centoid diff from cur to prev
-    // Eigen::Vector3f centroid_diff(centroid_prev.x() - centroid_cur.x(), centroid_prev.y() - centroid_cur.y(), centroid_prev.z() - centroid_cur.z());
+    Eigen::Vector3f centroid_diff(centroid_prev.x() - centroid_cur.x(), centroid_prev.y() - centroid_cur.y(), centroid_prev.z() - centroid_cur.z());
+
+    std::cout << "Computed centroid diff: " << std::endl
+              << centroid_diff << std::endl;
 
     // filter outliers
     // Create the filtering object
@@ -311,28 +323,28 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     // add prior factor to every pos of the graph
     graph.add(factor);
 
-    for (int i = 0; i < path->get_length() ; i++)
+    for (int i = 0; i < path->get_length(); i++)
     {
         // // auto current_pose = path->at(i);
-        // gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
-        // gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+        gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
+        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
 
-        // gtsam::PriorFactor<gtsam::Pose3> factor(i, gtsam::Pose3(rot3, point3), prior_noise);
+        gtsam::PriorFactor<gtsam::Pose3> factor(i, gtsam::Pose3(rot3, point3), prior_noise);
 
-        // // add prior factor to every pos of the graph
-        // graph.add(factor);
+        // add prior factor to every pos of the graph
+        graph.add(factor);
 
         // add between factor
-        if (i < path->get_length() - 1)
-        {
-            auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
+        // if (i < path->get_length() - 1)
+        // {
+        //     auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
 
-            gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
-            Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
-            gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+        //     gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
+        //     Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
+        //     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
 
-            graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i, i + 1, gtsam::Pose3(rot3, point3), in_between_noise));
-        }
+        //     graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i, i + 1, gtsam::Pose3(rot3, point3), in_between_noise));
+        // }
     }
 
     // add lc constraint
@@ -470,6 +482,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // std::cout << "Received Cloud timestamp: " << cloud_ptr->header.stamp << std::endl;
     // std::cout << "Received Pose timestamp: " << pose_ptr->header.stamp << std::endl;
 
+    std_msgs::String ready_msg;
+    ready_msg.data = std::string("ready");
+
     // filter input cloud:
     pcl::PointCloud<PointType>::Ptr input_cloud(new pcl::PointCloud<PointType>);
     pcl::PointCloud<PointType>::Ptr filtered_cloud(new pcl::PointCloud<PointType>);
@@ -478,6 +493,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     sor.setInputCloud(input_cloud);
     sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
     sor.filter(*filtered_cloud.get());
+
+    // save 
+    dataset_clouds.push_back(filtered_cloud);
 
     // create Pose from ros pose
     Pose input_pose;
@@ -520,7 +538,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // auto gm_data = global_map_ptr->get_full_data();
     // auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    //auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
 
     // tsdf_pub.publish(marker);
     input_cloud_pub.publish(*cloud_ptr);
@@ -543,6 +561,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         if (!is_viable_lc(lc_pair))
         {
             std::cout << "LC pair not viable!" << std::endl;
+            ready_flag_pub.publish(ready_msg);
 
             return;
         }
@@ -556,6 +575,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     else
     {
         std::cout << "No loop found when inserting Pose" << path->get_length() << std::endl;
+        ready_flag_pub.publish(ready_msg);
 
         return;
     }
@@ -589,6 +609,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // fix map
 
     // publish
+
+    ready_flag_pub.publish(ready_msg);
 }
 
 /**
@@ -604,18 +626,20 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::NodeHandle nh("~");
 
+    // specify ros loop rate
+    ros::Rate loop_rate(1.0f);
+
     // load params from nodehandle
     params = LoopClosureParams(nh);
     init_obj();
 
-    // specify ros loop rate
-    ros::Rate loop_rate(1.0f);
-    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(nh, "/slam6d_cloud", 100);
-    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(nh, "/slam6d_pose", 100);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(n, "/slam6d_cloud", 100);
+    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(n, "/slam6d_pose", 100);
+    message_filters::Subscriber<std_msgs::String> slam6d_filename_sub(n, "/slam6d_filename", 100);
 
-    typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> MySyncPolicy;
-    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), slam6d_cloud_sub, slam6d_pose_sub);
-    sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
+    typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped, std_msgs::String> MySyncPolicy;
+    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(40), slam6d_cloud_sub, slam6d_pose_sub, slam6d_filename_sub);
+    sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2, _3));
 
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
@@ -626,11 +650,19 @@ int main(int argc, char **argv)
     input_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/input_cloud", 1);
     filtered_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/filtered_cloud", 1);
     tsdf_pub = n.advertise<visualization_msgs::Marker>("/tsdf", 1);
+    ready_flag_pub = n.advertise<std_msgs::String>("/slam6d_listener_ready", 1);
+
+    std_msgs::String ready_msg;
+    ready_msg.data = std::string("ready");
+
+    ready_flag_pub.publish(ready_msg);
 
     // ros loop
     while (ros::ok())
     {
-        ros::spin();
+        ros::spinOnce();
+
+        loop_rate.sleep();
     }
 
     return EXIT_SUCCESS;
