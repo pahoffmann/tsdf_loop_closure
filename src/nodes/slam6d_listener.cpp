@@ -41,11 +41,7 @@
 #include <tf2_eigen/tf2_eigen.h>
 #include <eigen_conversions/eigen_msg.h>
 
-#include <gtsam/geometry/Pose3.h>
-#include <gtsam/geometry/Pose2.h>
-#include <gtsam/nonlinear/NonlinearFactorGraph.h>
-#include <gtsam/slam/BetweenFactor.h>
-#include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
+#include <loop_closure/gtsam/gtsam_wrapper.h>
 
 #include <pcl/registration/icp.h>
 #include <pcl/registration/gicp.h>
@@ -62,6 +58,7 @@ LoopClosureParams params;
 RayTracer *tracer;
 std::shared_ptr<LocalMap> local_map_ptr;
 std::shared_ptr<GlobalMap> global_map_ptr;
+std::unique_ptr<GTSAMWrapper> gtsam_wrapper_ptr;
 Path *path;
 Path *optimized_path;
 int side_length_xy;
@@ -101,10 +98,6 @@ sensor_msgs::PointCloud2 icp_pcl_msg;
 sensor_msgs::PointCloud2 cur_pcl_filtered_msg;
 sensor_msgs::PointCloud2 prev_pcl_filtered_msg;
 
-// gtsam
-// factor graph used to store information about the path of the slam6d inital approximation
-gtsam::NonlinearFactorGraph graph;
-
 /**
  * @brief method used to initiate all the objects associated with this test case
  *
@@ -114,6 +107,7 @@ void init_obj()
     // create maps
     global_map_ptr.reset(new GlobalMap(params.map));
     local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+    gtsam_wrapper_ptr.reset(new GTSAMWrapper(params));
 
     // init ray tracer
     tracer = new RayTracer(params, local_map_ptr, global_map_ptr);
@@ -126,7 +120,7 @@ void init_obj()
     ros_path.header.stamp = ros::Time::now();
 }
 
-gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pair<int, int> lc_indices)
+/*gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pair<int, int> lc_indices, bool &converged)
 {
     int loop_key_cur = lc_indices.second;
     int loop_key_pre = lc_indices.first;
@@ -134,11 +128,24 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     // estimate point-clouds
     // this is pretty runtime intensive right now
     // it might be clever to reduce the number of rays here
-    auto pointcloud_prev = tracer->approximate_pointcloud(path->at(loop_key_pre));
-    auto pointcloud_cur = tracer->approximate_pointcloud(path->at(loop_key_cur));
+    // auto pointcloud_prev = tracer->approximate_pointcloud(path->at(loop_key_pre));
+    // auto pointcloud_cur = tracer->approximate_pointcloud(path->at(loop_key_cur));
 
-    std::cout << "Previous pose: " << std::endl << *path->at(loop_key_pre) << std::endl;
-    std::cout << "Current pose: " << std::endl << *path->at(loop_key_cur) << std::endl;
+    // get data from respective poses
+    auto pointcloud_prev = dataset_clouds.at(loop_key_pre);
+    auto pointcloud_cur = dataset_clouds.at(loop_key_cur);
+
+    pcl::transformPointCloud(*pointcloud_prev, *pointcloud_prev, path->at(loop_key_pre)->getTransformationMatrix());
+    pcl::transformPointCloud(*pointcloud_cur, *pointcloud_cur, path->at(loop_key_cur)->getTransformationMatrix());
+
+    std::cout << "Previous pose: " << std::endl
+              << *path->at(loop_key_pre) << std::endl
+              << "Transformation Prev:" << std::endl
+              << path->at(loop_key_pre)->getTransformationMatrix() << std::endl;
+    std::cout << "Current pose: " << std::endl
+              << *path->at(loop_key_cur) << std::endl
+              << "Transformation Cur:" << std::endl
+              << path->at(loop_key_cur)->getTransformationMatrix() << std::endl;
 
     // todo: instead of approximating the pcl's, use the actual clouds
 
@@ -203,73 +210,78 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_cur);
 
     // ICP Settings
-    static pcl::IterativeClosestPoint<PointType, PointType> icp;
-    // icp.setMaxCorrespondenceDistance(0.2f); // hardcoded for now
-    icp.setMaximumIterations(params.loop_closure.max_icp_iterations);
-    // icp.setTransformationEpsilon(1e-6);
-    // icp.setEuclideanFitnessEpsilon(1e-6);
-    // icp.setRANSACIterations(0);
+    // static pcl::IterativeClosestPoint<PointType, PointType> icp;
+    // // icp.setMaxCorrespondenceDistance(0.2f); // hardcoded for now
+    // icp.setMaximumIterations(params.loop_closure.max_icp_iterations);
+    // // icp.setTransformationEpsilon(1e-6);
+    // // icp.setEuclideanFitnessEpsilon(1e-6);
+    // // icp.setRANSACIterations(0);
 
-    // Align clouds
-    // icp.setInputSource(pointcloud_cur_pretransformed);
-    icp.setInputSource(pointcloud_cur);
-    icp.setInputTarget(pointcloud_prev);
-    pcl::PointCloud<PointType>::Ptr icp_result(new pcl::PointCloud<PointType>());
-    icp.align(*icp_result);
+    // // Align clouds
+    // // icp.setInputSource(pointcloud_cur_pretransformed);
+    // icp.setInputSource(pointcloud_cur);
+    // icp.setInputTarget(pointcloud_prev);
+    // pcl::PointCloud<PointType>::Ptr icp_result(new pcl::PointCloud<PointType>());
+    // icp.align(*icp_result);
 
     // general icp
-    /*static pcl::GeneralizedIterativeClosestPoint<PointType, PointType> g_icp;
+    static pcl::GeneralizedIterativeClosestPoint<PointType, PointType> g_icp;
     g_icp.setMaximumIterations(params.loop_closure.max_icp_iterations);
 
     g_icp.setInputSource(pointcloud_cur);
     g_icp.setInputTarget(pointcloud_prev);
     pcl::PointCloud<PointType>::Ptr g_icp_result(new pcl::PointCloud<PointType>());
-    g_icp.align(*g_icp_result);*/
+    g_icp.align(*g_icp_result);
 
     // get a aligned cloud marker
-    icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_result);
-    // icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(g_icp_result);
+    // icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_result);
+    icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(g_icp_result);
 
-    std::cout << "ICP Fitness Score: " << icp.getFitnessScore() << std::endl;
-    std::cout << "ICP converged? " << icp.hasConverged() << std::endl;
-    std::cout << "Final tranformation: " << std::endl
-              << icp.getFinalTransformation() << std::endl;
-
-    // std::cout << "ICP Fitness Score: " << g_icp.getFitnessScore() << std::endl;
-    // std::cout << "ICP converged? " << g_icp.hasConverged() << std::endl;
+    // std::cout << "ICP Fitness Score: " << icp.getFitnessScore() << std::endl;
+    // std::cout << "ICP converged? " << icp.hasConverged() << std::endl;
     // std::cout << "Final tranformation: " << std::endl
-    //           << g_icp.getFinalTransformation() << std::endl;
+    //           << icp.getFinalTransformation() << std::endl;
+
+    std::cout << "ICP Fitness Score: " << g_icp.getFitnessScore() << std::endl;
+    std::cout << "ICP converged? " << g_icp.hasConverged() << std::endl;
+    std::cout << "Final tranformation: " << std::endl
+              << g_icp.getFinalTransformation() << std::endl;
 
     // 0.3 from liosam:
     // https://github.com/TixiaoShan/LIO-SAM/blob/e0b77a9654d32350338b7b9246934cff6271bec1/config/params.yaml#L88
-    if (icp.hasConverged() == false || icp.getFitnessScore() > 0.3)
-    {
-        std::cout << "ICP has not converged.." << std::endl;
-
-        // throw std::logic_error("ICP not converged, look into this");
-    }
-
-    // if (g_icp.hasConverged() == false || g_icp.getFitnessScore() > 0.3)
+    // if (icp.hasConverged() == false || icp.getFitnessScore() > 0.3)
     // {
     //     std::cout << "ICP has not converged.." << std::endl;
 
     //     // throw std::logic_error("ICP not converged, look into this");
     // }
 
+    if (g_icp.hasConverged() == false || g_icp.getFitnessScore() > 0.3)
+    {
+        std::cout << "ICP has not converged.." << std::endl;
+        converged = false;
+
+        // throw std::logic_error("ICP not converged, look into this");
+    }
+    else
+    {
+        converged = true;
+    }
+
     // corrected pointcloud might be published here...
 
     // Get pose transformation
 
     gtsam::Vector Vector6(6);
-    float noiseScore = icp.getFitnessScore();
-    // float noiseScore = g_icp.getFitnessScore();
+    // float noiseScore = icp.getFitnessScore();
+    float noiseScore = g_icp.getFitnessScore();
     Vector6 << noiseScore, noiseScore, noiseScore, noiseScore, noiseScore, noiseScore;
     gtsam::noiseModel::Diagonal::shared_ptr constraintNoise = gtsam::noiseModel::Diagonal::Variances(Vector6);
 
     float x, y, z, roll, pitch, yaw;
     Eigen::Affine3f correctionLidarFrame;
-    correctionLidarFrame = icp.getFinalTransformation();
-    // correctionLidarFrame = g_icp.getFinalTransformation();
+    // correctionLidarFrame = icp.getFinalTransformation();
+    correctionLidarFrame = g_icp.getFinalTransformation();
 
     // LIOSAM
     // transform from world origin to wrong pose
@@ -293,13 +305,13 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, between_trans, constraintNoise);
 
     return between_fac;
-}
+}*/
 
 /**
  * @brief Create a factor graph from path object,
  *
  */
-void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indices)
+/*void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indices)
 {
     // SIEHE:
     // https://gtsam.org/tutorials/intro.html#magicparlabel-65728
@@ -310,7 +322,8 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     // SIEHE:
     // https://github.com/TixiaoShan/LIO-SAM/blob/6665aa0a4fcb5a9bb3af7d3923ae4a035b489d47/src/mapOptmization.cpp#L1385
     gtsam::noiseModel::Diagonal::shared_ptr prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
-    gtsam::noiseModel::Diagonal::shared_ptr in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4).finished());
+    // gtsam::noiseModel::Diagonal::shared_ptr in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4).finished());
+    gtsam::noiseModel::Diagonal::shared_ptr in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
     // gtsam::noiseModel::Diagonal::shared_ptr prior_noise =
     //     gtsam::noiseModel::Diagonal::Sigmas(noise_vec);
 
@@ -323,58 +336,61 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     // add prior factor to every pos of the graph
     graph.add(factor);
 
-    for (int i = 0; i < path->get_length(); i++)
+    for (int i = 0; i < path->get_length() - 1; i++)
     {
         // // auto current_pose = path->at(i);
-        gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
-        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+        // gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
+        // gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
 
-        gtsam::PriorFactor<gtsam::Pose3> factor(i, gtsam::Pose3(rot3, point3), prior_noise);
+        // gtsam::PriorFactor<gtsam::Pose3> factor(i, gtsam::Pose3(rot3, point3), prior_noise);
 
-        // add prior factor to every pos of the graph
-        graph.add(factor);
+        // // add prior factor to every pos of the graph
+        // graph.add(factor);
 
         // add between factor
-        // if (i < path->get_length() - 1)
-        // {
-        //     auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
 
-        //     gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
-        //     Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
-        //     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+        auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
 
-        //     graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i, i + 1, gtsam::Pose3(rot3, point3), in_between_noise));
-        // }
+        gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
+        Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
+        gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+
+        graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i, i + 1, gtsam::Pose3(rot3, point3), in_between_noise));
     }
 
     // add lc constraint
-    auto lc_pos_1 = path->at(lc_pair_indices.first);
-    auto lc_pos_2 = path->at(lc_pair_indices.second);
+    // auto lc_pos_1 = path->at(lc_pair_indices.first);
+    // auto lc_pos_2 = path->at(lc_pair_indices.second);
 
     // estimate the lc in between factor
-    auto lc_between_fac = estimate_loop_closure_between_factor(lc_pair_indices);
+    bool converged;
+    auto lc_between_fac = estimate_loop_closure_between_factor(lc_pair_indices, converged);
 
-    // calculate the pose differences between the poses participating in the loop closure
-    auto lc_pose_diff = getTransformationMatrixDiff(lc_pos_2->getTransformationMatrix(), lc_pos_1->getTransformationMatrix());
+    // // calculate the pose differences between the poses participating in the loop closure
+    // auto lc_pose_diff = getTransformationMatrixDiff(lc_pos_2->getTransformationMatrix(), lc_pos_1->getTransformationMatrix());
 
-    Vector3f pos_diff = lc_pose_diff.block<3, 1>(0, 3);
-    gtsam::Rot3 rot3(lc_pose_diff.block<3, 3>(0, 0).cast<double>());
-    gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+    // Vector3f pos_diff = lc_pose_diff.block<3, 1>(0, 3);
+    // gtsam::Rot3 rot3(lc_pose_diff.block<3, 3>(0, 0).cast<double>());
+    // gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
 
     // lc constraint added here
     // siehe auch
     // https://github.com/TixiaoShan/LIO-SAM/blob/e0b77a9654d32350338b7b9246934cff6271bec1/src/imuPreintegration.cpp
     // Zeile 1488
     // graph.add(gtsam::BetweenFactor<gtsam::Pose3>(lc_pair_indices.second + 1, lc_pair_indices.first + 1, gtsam::Pose3(rot3, point3)));
-    graph.add(lc_between_fac);
-}
+
+    if (converged)
+    {
+        graph.add(lc_between_fac);
+    }
+}*/
 
 /**
  * @brief will solve a previously filled factor graph using initial values
  *
  * @return gtsam::Values  the resulting position of the initial values
  */
-gtsam::Values solve_factor_graph(Path *path)
+/*gtsam::Values solve_factor_graph(Path *path)
 {
     gtsam::Values initial;
 
@@ -399,7 +415,7 @@ gtsam::Values solve_factor_graph(Path *path)
     std::cout << "Error (after): " << graph.error(values) << std::endl;
 
     return values;
-}
+}*/
 
 void fill_optimized_path(gtsam::Values values)
 {
@@ -494,8 +510,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
     sor.filter(*filtered_cloud.get());
 
-    // save 
-    dataset_clouds.push_back(filtered_cloud);
+    // save
+    // dataset_clouds.push_back(filtered_cloud);
+    dataset_clouds.push_back(input_cloud);
 
     // create Pose from ros pose
     Pose input_pose;
@@ -521,7 +538,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     }
 
     // Shift
-
     Vector3i pos = real_to_map(pose.block<3, 1>(0, 3));
     local_map_ptr->shift(pos);
 
@@ -534,15 +550,30 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     path->add_pose(input_pose);
 
+    // gtsam optimizations
+
+    // add gtsam constraints
+    if (path->get_length() == 1)
+    {
+        Matrix4f pose_mat = path->at(0)->getTransformationMatrix();
+        gtsam_wrapper_ptr->add_prior_constraint(pose_mat);
+    }
+    else
+    {
+        int from_idx = path->get_length() - 2;
+        int to_idx = path->get_length() - 1;
+        auto transform_diff = getTransformationMatrixDiff(path->at(from_idx)->getTransformationMatrix(), path->at(to_idx)->getTransformationMatrix());
+        gtsam_wrapper_ptr->add_in_between_contraint(transform_diff, from_idx, to_idx);
+    }
+
     local_map_ptr->write_back();
 
     // auto gm_data = global_map_ptr->get_full_data();
     // auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    //auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
-
+    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
     // tsdf_pub.publish(marker);
-    input_cloud_pub.publish(*cloud_ptr);
 
+    input_cloud_pub.publish(*cloud_ptr);
     sensor_msgs::PointCloud2 filtered_ros_cloud;
     pcl::toROSMsg(*filtered_cloud, filtered_ros_cloud);
     filtered_cloud_pub.publish(filtered_ros_cloud);
@@ -567,9 +598,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         }
         else
         {
-            std::cout << "LC found between " << lc_pair.first << " and " << lc_pair.second << std::endl;
-
-            lc_index_pairs.push_back(lc_pair);
+            std::cout << "Possible LC found between " << lc_pair.first << " and " << lc_pair.second << std::endl;
         }
     }
     else
@@ -580,27 +609,57 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         return;
     }
 
-    // auto lc_marker = ROSViewhelper::init_loop_detected_marker(path->at(lc_pair.first)->pos, path->at(lc_pair.second)->pos);
-    auto lc_marker = ROSViewhelper::init_loop_detected_marker_multiple(path, lc_index_pairs);
+    pcl::PointCloud<PointType>::Ptr icp_cloud;
+    icp_cloud.reset(new pcl::PointCloud<PointType>());
+    bool converged = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair, dataset_clouds[lc_pair.second], dataset_clouds[lc_pair.first], icp_cloud);
 
+    // if the lc found did not converge, we skip everything else
+    if (!converged)
+    {
+        ready_flag_pub.publish(ready_msg);
+
+        return;
+    }
+
+    lc_index_pairs.push_back(lc_pair);
+    auto lc_marker = ROSViewhelper::init_loop_detected_marker_multiple(path, lc_index_pairs);
     loop_pub.publish(lc_marker);
 
-    // gtsam optimizations
+    // // create a factor graph using the current path and the found loop closure
+    // create_factor_graph_from_path(path, lc_pair);
 
-    // create a factor graph using the current path and the found loop closure
-    create_factor_graph_from_path(path, lc_pair);
+    // // solve the factor graph using levenberg marquardt and get the new Positions of the optimized path
+    // auto values = solve_factor_graph(path);
 
-    // solve the factor graph using levenberg marquardt and get the new Positions of the optimized path
-    auto values = solve_factor_graph(path);
-
-    // fill the optimized path with the newly found positions
-    fill_optimized_path(values);
+    // // fill the optimized path with the newly found positions
+    // fill_optimized_path(values);
 
     // std::cout << std::endl << "Values in optimized path: " << optimized_path->get_length() << std::endl;
 
-    optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::purple));
+    gtsam::Values initial;
+
+    // fill initial values with path positions
+    for (int i = 0; i < path->get_length(); i++)
+    {
+        auto current_pose = path->at(i);
+        gtsam::Rot3 rot3(path->at(i)->rotationMatrixFromQuaternion().cast<double>());
+        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+
+        initial.insert(i, gtsam::Pose3(rot3, point3));
+    }
+
+    auto new_values = gtsam_wrapper_ptr->perform_optimization(initial);
+
+    fill_optimized_path(new_values);
+
+    optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
 
     std::cout << "Points in msg: " << cur_pcl_msg.data.size() << std::endl;
+
+    cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(dataset_clouds[lc_pair.second]);
+    prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(dataset_clouds[lc_pair.first]);
+    icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_cloud);
+    
 
     approx_pcl_pub_cur.publish(cur_pcl_msg);
     approx_pcl_pub_prev.publish(prev_pcl_msg);
@@ -637,9 +696,9 @@ int main(int argc, char **argv)
     message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(n, "/slam6d_pose", 100);
     message_filters::Subscriber<std_msgs::String> slam6d_filename_sub(n, "/slam6d_filename", 100);
 
-    typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped, std_msgs::String> MySyncPolicy;
-    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(40), slam6d_cloud_sub, slam6d_pose_sub, slam6d_filename_sub);
-    sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2, _3));
+    typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> MySyncPolicy;
+    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(40), slam6d_cloud_sub, slam6d_pose_sub);
+    sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
 
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);

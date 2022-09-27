@@ -92,7 +92,7 @@ void publish_next_data()
     if (global_scan_counter >= scan_pose_filename_pairs.first.size())
     {
         // all data is published, shut down
-        ros::shutdown();
+        exit(EXIT_SUCCESS);
     }
 
     auto scan_path = scan_pose_filename_pairs.first[global_scan_counter];

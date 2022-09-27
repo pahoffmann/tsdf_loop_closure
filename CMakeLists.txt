@@ -182,7 +182,8 @@ add_executable(slam6d_listener src/nodes/slam6d_listener.cpp
                         src/ray_tracer/ray_tracer.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
-                        src/path/path.cpp)
+                        src/path/path.cpp
+                        src/gtsam/gtsam_wrapper.cpp)
 
                   
 # currently only for the test node.

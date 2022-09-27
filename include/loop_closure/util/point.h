@@ -331,5 +331,6 @@ static Eigen::Matrix4f getTransformationMatrixDiff(Eigen::Matrix4f mat1, Eigen::
     // do the calc directly, the order is very important here:
     // because matrices are applied from right to left, the inverse transform needs to be multiplied from the right, so we transform to (0,0,0) first and transform
     // to the other transform after. only this will give the right answer
-    return mat2 * mat1.inverse();
+    //return mat2 * mat1.inverse();
+    return mat1.inverse() * mat2;
 }

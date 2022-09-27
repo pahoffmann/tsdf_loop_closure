@@ -253,10 +253,10 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     // auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, poseFrom.between(poseTo), constraintNoise);
 
     // ME
-    Eigen::Affine3f tCorrect = correctionLidarFrame;// * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+    Eigen::Affine3f tCorrect = correctionLidarFrame; // * tWrong; // pre-multiplying -> successive rotation about a fixed frame
     pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
     gtsam::Pose3 between_trans = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
-    //create between factor
+    // create between factor
     auto between_fac = gtsam::BetweenFactor<gtsam::Pose3>(lc_indices.second, lc_indices.first, between_trans, constraintNoise);
 
     return between_fac;
@@ -289,29 +289,38 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
 
     // add prior factor to every pos of the graph
     graph.add(factor);
+{
+    auto pose_diff = getTransformationMatrixDiff(path->at(0)->getTransformationMatrix(), path->at(1)->getTransformationMatrix());
+
+    gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
+    Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
+    gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+
+    graph.add(gtsam::BetweenFactor<gtsam::Pose3>(0, 1, gtsam::Pose3(rot3, point3), in_between_noise));
+}
 
     for (int i = 1; i < path->get_length(); i++)
     {
-        // auto current_pose = path->at(i);
-        gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
-        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+        // // auto current_pose = path->at(i);
+        // gtsam::Rot3 rot3(current_pose->rotationMatrixFromQuaternion().cast<double>());
+        // gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
 
-        gtsam::PriorFactor<gtsam::Pose3> factor(i, gtsam::Pose3(rot3, point3), prior_noise);
+        // gtsam::PriorFactor<gtsam::Pose3> factor(i, gtsam::Pose3(rot3, point3), prior_noise);
 
-        // add prior factor to every pos of the graph
-        graph.add(factor);
+        // // add prior factor to every pos of the graph
+        // graph.add(factor);
 
         // add between factor
-        // if (i == 5)//i < path->get_length() - 1)
-        // {
-        //     auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
+        if (i < path->get_length() - 1)
+        {
+            auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
 
-        //     gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
-        //     Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
-        //     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
+            gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
+            Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
+            gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
 
-        //     graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i, i + 1, gtsam::Pose3(rot3, point3), in_between_noise));
-        // }
+            graph.add(gtsam::BetweenFactor<gtsam::Pose3>(i, i + 1, gtsam::Pose3(rot3, point3), in_between_noise));
+        }
     }
 
     // add lc constraint
@@ -438,7 +447,7 @@ int main(int argc, char **argv)
     while (is_ok)
     {
         // find path, including visibility check
-        //auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
+        // auto res = path->find_loop_greedy(start_idx, 3.0f, 10.0f, true);
 
         std::cout << "Trying to find a loop for max dist: " << params.loop_closure.max_dist_lc << " , min traveled: " << params.loop_closure.min_traveled_lc << std::endl;
         auto res = path->find_loop_kd_min_dist(start_idx, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, true);
