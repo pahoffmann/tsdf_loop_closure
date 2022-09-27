@@ -71,6 +71,8 @@
     Here, also filters might come in handy
 [x] fix lc detection by using the optimal lc found
 [x] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html (basic integration)
+[x] Also, the loop closure does not only update the path poses between the start and end of the path, but finds new optimal poses for the whole path.
+
 
 
 Intersection Data:
@@ -101,6 +103,13 @@ Intersection Data:
 [ ] Because icp does not yield good results, it might be a good idea to use a different scanmatching approach. e.g.: teaser++ combined with FFPFH features 
     (e.g. from pcl)
 
+[|] maybe actually use the fastsense prototype and introduce the findings there
+[|] like that it is actually possible to save pointclouds, that have been optimized and reduced and later on use the approach of LIOSAM
+[ ] Write updated path back to h5
+[ ] instead of filtering outliers using the localmap interface, do it via the globalmap, this should be a lot faster
+[ ] write a raytracer routine, which removes artifacts not seen during the tracing process (aka keep going even once finished and mark hit cells to be
+    removed)
+
 ## TODO's ##
 
 [ ] read paper on loop closure, write down most important points
@@ -108,20 +117,14 @@ Intersection Data:
 [ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
 
 [ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing (might be too runtime excessive)
-[ ] Write updated path back to h5
 [ ] think of a way to include connectivity between cells in the update process, so that connecting cells wont be ripped apart as much
     -> somehow keep more of the connectivity
-[ ] write a raytracer routine, which removes artifacts not seen during the tracing process (aka keep going even once finished and mark hit cells to be
-    removed)
-[ ] instead of filtering outliers using the localmap interface, do it via the globalmap, this should be a lot faster
-
-## ASAP ##
-
 [ ] as of now, in the map update, only poses are considered, which have been updated, though - what about the ones, which have not been updated, but
     may still be associated with the cell we want to move. because the pose itself has been practically unchanged, it also needs to be considered, when finding a new cell position.
 
+## ASAP ##
 
-    Also, the loop closure does not only update the path poses between the start and end of the path, but finds new optimal poses for the whole path.
+
 
 [|] Fix LC with liosam information
 [ ] edge case: find bounding box (no axis aligned) of the tsdf volume, find overlap(s) with rest of the map
@@ -133,9 +136,9 @@ Intersection Data:
 [ ] showing above edge case is important
 [ ] use the dataset thomas implied to generate the (wrongly)
 
-[ ] maybe actually use the fastsense prototype and introduce the findings there
-[ ] like that it is actually possible to save pointclouds, that have been optimized and reduced and later on use the approach of LIOSAM
+
 [ ] Update params in GlobalMap: only use map params
+[ ] update poses after optimizing the path with a found lc
 
 
 
