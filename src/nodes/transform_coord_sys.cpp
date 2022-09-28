@@ -29,6 +29,7 @@ ros::Publisher cloud_pub;
 ros::Publisher trans_pose_pub;
 ros::Publisher pose_pub;
 ros::Publisher filename_pub;
+ros::Publisher initial_path_pub;
 
 sensor_msgs::PointCloud2 pcl_to_ros(pcl::PointCloud<PointType>::Ptr cloud)
 {
@@ -78,12 +79,12 @@ void prepare()
     std::sort(scan_pose_filename_pairs.first.begin(), scan_pose_filename_pairs.first.end());
     std::sort(scan_pose_filename_pairs.second.begin(), scan_pose_filename_pairs.second.end());
 
-    // for (auto pose_path : scan_pose_filename_pairs.second)
-    // {
-    //     auto pose_mat = CoordSysTransform::getTransformationFromPose(pose_path);
-    //     Pose pose(pose_mat);
-    //     path->add_pose(pose);
-    // }
+    for (auto pose_path : scan_pose_filename_pairs.second)
+    {
+        auto pose_mat = CoordSysTransform::getTransformationFromPose(pose_path);
+        Pose pose(pose_mat);
+        path->add_pose(pose);
+    }
 }
 
 void publish_next_data()
@@ -170,6 +171,7 @@ int main(int argc, char **argv)
     trans_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/slam6d_pose", 0);
     pose_pub = n.advertise<geometry_msgs::PoseStamped>("/pose", 0);
     filename_pub = n.advertise<std_msgs::String>("/slam6d_filename", 0);
+    initial_path_pub = n.advertise<visualization_msgs::Marker>("/initial_path", 0);
 
     // subscribe to the ready topic
     ros::Subscriber slam6d_listener_ready_sub = n.subscribe("/slam6d_listener_ready", 1, handle_slam6d_listener_ready);
@@ -185,6 +187,8 @@ int main(int argc, char **argv)
         {
             publish_next_data();
         }
+
+        initial_path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::red));
 
         ros::spinOnce();
         r.sleep();

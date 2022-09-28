@@ -295,7 +295,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     pcl::toROSMsg(*filtered_cloud, filtered_ros_cloud);
     filtered_cloud_pub.publish(filtered_ros_cloud);
 
-    path_pub.publish(ROSViewhelper::initPathMarker(path));
+    path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::lime));
 
 #pragma endregion
 

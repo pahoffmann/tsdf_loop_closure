@@ -15,7 +15,8 @@ GTSAMWrapper::GTSAMWrapper(LoopClosureParams &input_params)
     // noise_vec << 0.5, 0.5, 0.5, 0.3, 0.3, 0.3;
 
     // initialize prior and in between noise with default values used for noising the constraints
-    prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    //prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
     in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
 }
 
