@@ -55,6 +55,15 @@ private:
     void perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr source_cloud, pcl::PointCloud<PointType>::Ptr target_cloud,
                           pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
 
+    /**
+     * @brief will preprocess the incoming scans used to check for a closed loop, might also pretransform the cur cloud in order to achieve better results 
+     * 
+     * @param source_cloud 
+     * @param target_cloud 
+     * @param pretransform_mat will contain the final pretransform matrix 
+     */
+    void preprocess_scans(pcl::PointCloud<PointType>::Ptr cur_cloud, pcl::PointCloud<PointType>::Ptr prev_cloud, Eigen::Matrix4f &pretransform_mat);
+
 public:
 
     /**
@@ -86,7 +95,7 @@ public:
      * @return if the loop closure constraint was added to the graph
      */
     bool add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr current_cloud, pcl::PointCloud<PointType>::Ptr previous_cloud,
-                                    pcl::PointCloud<PointType>::Ptr icp_cloud);
+                                    pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f cur_cloud_transform, Matrix4f prev_cloud_transform);
 
     /**
      * @brief will optimize the gtsam factor graph

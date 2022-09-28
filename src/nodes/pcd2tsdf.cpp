@@ -8,11 +8,12 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-// warpsense
+// loop closure
 #include <loop_closure/util/runtime_evaluator.h>
 #include <loop_closure/util/update_tsdf.h>
 #include <loop_closure/map/local_map.h>
 #include <loop_closure/visualization/ros_viewhelper.h>
+#include <loop_closure/util/point.h>
 
 namespace fs = boost::filesystem;
 
@@ -26,18 +27,6 @@ Eigen::Matrix4f last_updated_pose_ = Eigen::Matrix4f::Identity();
 /// Map Stuff ///
 std::shared_ptr<GlobalMap> global_map_ptr_;
 std::shared_ptr<LocalMap> local_map_ptr_;
-
-inline Eigen::Matrix4i to_int_mat(const Eigen::Matrix4f &mat)
-{
-  return (mat * MATRIX_RESOLUTION).cast<int>();
-}
-
-inline Eigen::Vector3i transform_point(const Eigen::Vector3i &input, const Eigen::Matrix4i &mat)
-{
-  Eigen::Vector4i v;
-  v << input, 1;
-  return (mat * v).block<3, 1>(0, 0) / MATRIX_RESOLUTION;
-}
 
 /**
  * @brief wrapper function to shift the localmap and update it using the tsdf update method

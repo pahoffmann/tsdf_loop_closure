@@ -104,7 +104,7 @@ void publish_next_data()
 
     // ros::shutdown();
 
-    auto cloud = CoordSysTransform::read_scan_file(scan_path);
+    auto cloud = CoordSysTransform::read_scan_file_and_transform(scan_path);
 
     auto pose_mat = CoordSysTransform::getTransformationFromPose(pose_path);
 
@@ -123,7 +123,7 @@ void publish_next_data()
     // std::cout << "Timestamp cloud: " << transformed_ros_cloud.header.stamp << std::endl;
     // std::cout << "Timestamp pose: " << ros_pose.header.stamp << std::endl;
 
-    // cloud_pub.publish(ros_cloud);
+    cloud_pub.publish(ros_cloud);
     // pose_pub.publish(ros_pose);
 
     trans_cloud_pub.publish(transformed_ros_cloud);
@@ -165,8 +165,8 @@ int main(int argc, char **argv)
     params = LoopClosureParams(params);
 
     // init publishers
-    trans_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);
-    cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/cloud", 0);
+    trans_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/cloud_transformed", 0);
+    cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);
     trans_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/slam6d_pose", 0);
     pose_pub = n.advertise<geometry_msgs::PoseStamped>("/pose", 0);
     filename_pub = n.advertise<std_msgs::String>("/slam6d_filename", 0);

@@ -334,3 +334,19 @@ static Eigen::Matrix4f getTransformationMatrixDiff(Eigen::Matrix4f mat1, Eigen::
     //return mat2 * mat1.inverse();
     return mat1.inverse() * mat2;
 }
+
+
+/// THE FOLLOWING IS USED TO PREPARE DATA FOR TSDF UPDATE ///
+inline Eigen::Matrix4i to_int_mat(const Eigen::Matrix4f &mat)
+{
+    return (mat * MATRIX_RESOLUTION).cast<int>();
+}
+
+inline Eigen::Vector3i transform_point(const Eigen::Vector3i &input, const Eigen::Matrix4i &mat)
+{
+    Eigen::Vector4i v;
+    v << input, 1;
+    return (mat * v).block<3, 1>(0, 0) / MATRIX_RESOLUTION;
+}
+/// THE PREVIOUS IS USED TO PREPARE DATA FOR TSDF UPDATE ///
+
