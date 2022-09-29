@@ -14,6 +14,7 @@ Panels:
         - /PointCloud23
         - /PointCloud24
         - /PointCloud25
+        - /Marker6
       Splitter Ratio: 0.5
     Tree Height: 746
   - Class: rviz/Selection
@@ -145,7 +146,7 @@ Visualization Manager:
       Marker Topic: /loop
       Name: Marker
       Namespaces:
-        {}
+        lc_detect: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -161,7 +162,7 @@ Visualization Manager:
       Marker Topic: /optimized_path
       Name: Marker
       Namespaces:
-        {}
+        path: true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -256,6 +257,14 @@ Visualization Manager:
         path: true
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /lc_candidates
+      Name: Marker
+      Namespaces:
+        lc_detect: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 211; 215; 207
@@ -284,7 +293,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 125.5597915649414
+      Distance: 116.79645538330078
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -292,17 +301,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -1.2459299564361572
-        Y: 7.462255001068115
-        Z: 11.27388858795166
+        X: 71.8650894165039
+        Y: -8.926018714904785
+        Z: -37.15439224243164
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5547963380813599
+      Pitch: 1.0297971963882446
       Target Frame: <Fixed Frame>
-      Yaw: 1.7966997623443604
+      Yaw: 4.0384697914123535
     Saved: ~
 Window Geometry:
   Displays:
