@@ -34,7 +34,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -153,7 +153,7 @@ Visualization Manager:
       Marker Topic: /path
       Name: Marker
       Namespaces:
-        {}
+        path: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -248,6 +248,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /initial_path
+      Name: Marker
+      Namespaces:
+        path: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 211; 215; 207
@@ -276,7 +284,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 57.45645523071289
+      Distance: 125.5597915649414
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -292,9 +300,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.124796748161316
+      Pitch: 1.5547963380813599
       Target Frame: <Fixed Frame>
-      Yaw: 2.416700601577759
+      Yaw: 1.7966997623443604
     Saved: ~
 Window Geometry:
   Displays:
