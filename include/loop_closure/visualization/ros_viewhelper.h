@@ -660,8 +660,10 @@ namespace ROSViewhelper
      * @param second
      * @return visualization_msgs::Marker
      */
-    static visualization_msgs::Marker init_loop_detected_marker(Eigen::Vector3f first, Eigen::Vector3f second)
+    static visualization_msgs::Marker init_loop_detected_marker(Eigen::Vector3f first, Eigen::Vector3f second, Colors::ColorNames color_name = Colors::ColorNames::red)
     {
+        // get color from name
+        std_msgs::ColorRGBA color = Colors::color_from_name(color_name);
 
         // todo: check, wether the line marker needs two points or one point and scaljgnk
         visualization_msgs::Marker line_marker;
@@ -677,9 +679,7 @@ namespace ROSViewhelper
         line_marker.scale.x = 0.5;
         line_marker.scale.y = 0.5;
         line_marker.scale.z = 0.5;
-        line_marker.color.r = 255 / 255.0f;
-        line_marker.color.g = 0 / 255.0f;
-        line_marker.color.b = 0 / 255.0f;
+        line_marker.color = color;
         line_marker.color.a = 0.85;
         line_marker.type = visualization_msgs::Marker::LINE_LIST;
         line_marker.header.frame_id = "map";
@@ -698,8 +698,12 @@ namespace ROSViewhelper
      * @param second
      * @return visualization_msgs::Marker
      */
-    static visualization_msgs::Marker init_loop_detected_marker_multiple(Path *path, std::vector<std::pair<int, int>> lc_pairs)
+    static visualization_msgs::Marker init_loop_detected_marker_multiple(Path *path, std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_pairs,
+                                                                         Colors::ColorNames color_name = Colors::ColorNames::red)
     {
+
+        // get color from name
+        std_msgs::ColorRGBA color = Colors::color_from_name(color_name);
 
         // todo: check, wether the line marker needs two points or one point and scaljgnk
         visualization_msgs::Marker line_marker;
@@ -715,9 +719,7 @@ namespace ROSViewhelper
         line_marker.scale.x = 0.5;
         line_marker.scale.y = 0.5;
         line_marker.scale.z = 0.5;
-        line_marker.color.r = 255 / 255.0f;
-        line_marker.color.g = 0 / 255.0f;
-        line_marker.color.b = 0 / 255.0f;
+        line_marker.color = color;
         line_marker.color.a = 0.85;
         line_marker.type = visualization_msgs::Marker::LINE_LIST;
         line_marker.header.frame_id = "map";
@@ -726,8 +728,8 @@ namespace ROSViewhelper
 
         for (auto pair : lc_pairs)
         {
-            Vector3f first = path->at(pair.first)->pos;
-            Vector3f second = path->at(pair.second)->pos;
+            Vector3f first = path->at(pair.second.first)->pos;
+            Vector3f second = path->at(pair.second.second)->pos;
 
             line_marker.points.push_back(type_transform::eigen_point_to_ros_point(first));
             line_marker.points.push_back(type_transform::eigen_point_to_ros_point(second));

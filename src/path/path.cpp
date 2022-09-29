@@ -177,7 +177,7 @@ std::pair<int, int> Path::find_loop_kd_min_dist(int start_idx, float max_dist, f
     return std::make_pair(-1, -1);
 }
 
-std::pair<int, int> Path::find_loop_kd_min_dist_backwards(int idx, float max_dist, float min_traveled, bool check_visibility)
+std::vector<std::pair<int, int>> Path::find_loop_kd_min_dist_backwards(int idx, float max_dist, float min_traveled, bool check_visibility)
 {
     pcl::KdTreeFLANN<PointType>::Ptr kdtree_path;
     pcl::PointCloud<PointType>::Ptr pose_cloud;
@@ -209,6 +209,8 @@ std::pair<int, int> Path::find_loop_kd_min_dist_backwards(int idx, float max_dis
     // do radius search around current pose
     kdtree_path->radiusSearch(pose_cloud->at(idx), max_dist, pointSearchIndLoop, pointSearchSqDisLoop, 0);
 
+    std::vector<std::pair<int, int>> lc_candidates;
+
     for (int i = 0; i < (int)pointSearchIndLoop.size(); i++)
     {
         int id = pointSearchIndLoop[i];
@@ -218,14 +220,15 @@ std::pair<int, int> Path::find_loop_kd_min_dist_backwards(int idx, float max_dis
         if (distance > min_traveled)
         {
             start_idx = id;
-
-            return std::make_pair(start_idx, end_idx);
+            lc_candidates.push_back(std::make_pair(start_idx, end_idx));
         }
+        
+        // TODO: limit number of pairs
     }
 
     // no loop found: return error value
 
-    return std::make_pair(-1, -1);
+    return lc_candidates;
 }
 
 void Path::blur(int start_idx, int end_idx, double radius)

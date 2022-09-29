@@ -5,6 +5,7 @@
 #include <loop_closure/visualization/ros_viewhelper.h>
 #include <loop_closure/path/path.h>
 #include <loop_closure/params/loop_closure_params.h>
+#include <loop_closure/util/point.h>
 #include <iostream>
 
 #include <pcl/point_cloud.h>
@@ -185,7 +186,7 @@ int main(int argc, char **argv)
     {
         if (!first_ready)
         {
-            publish_next_data();
+             publish_next_data();
         }
 
         initial_path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::red));

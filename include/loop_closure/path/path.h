@@ -129,7 +129,7 @@ public:
      * @param check_visibility
      * @return std::pair<int, int>
      */
-    std::pair<int, int> find_loop_kd_min_dist_backwards(int idx, float max_dist, float min_traveled, bool check_visibility);
+    std::vector<std::pair<int, int>> find_loop_kd_min_dist_backwards(int idx, float max_dist, float min_traveled, bool check_visibility);
 
     /**
      * @brief returns a pose of the path for a given idx

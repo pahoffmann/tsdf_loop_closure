@@ -18,6 +18,7 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <geometry_msgs/PoseStamped.h>
 
 // c++ standard related includes
 #include <sstream>
@@ -42,6 +43,10 @@
 #include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <eigen_conversions/eigen_msg.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <geometry_msgs/TransformStamped.h>
 
 // pcl includes
 #include <pcl/registration/icp.h>
@@ -66,10 +71,13 @@ int side_length_xy;
 int side_length_z;
 
 // vector to store found lc index pairs
-std::vector<std::pair<int, int>> lc_index_pairs;
+std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_index_pairs;
 
 // save a vector of pointclouds (which should be preprocessed)
 std::vector<pcl::PointCloud<PointType>::Ptr> dataset_clouds;
+
+// saves the last initial estimate coming from the slam6d dataset
+Matrix4f last_initial_estimate;
 
 // loop closure information ((cur) pose of the last lc before transformation and the transformation difference of the last pose due to the lc)
 Pose last_loop_old_pose;
@@ -90,11 +98,15 @@ ros::Publisher ready_flag_pub;
 ros::Publisher approx_pcl_pub_cur;
 // publish approximated cloud for previous pose of lc (cur_index > prev_index)
 ros::Publisher approx_pcl_pub_prev;
-//
+// result of icp
 ros::Publisher approx_pcl_pub_icp;
 
+// publishes the input cloud
 ros::Publisher input_cloud_pub;
 ros::Publisher filtered_cloud_pub;
+
+// publishes loop closure candidates
+ros::Publisher lc_candidate_publisher;
 
 nav_msgs::Path ros_path;
 sensor_msgs::PointCloud2 cur_pcl_msg;
@@ -128,6 +140,7 @@ void init_obj()
     last_loop_old_pose.pos = Vector3f::Zero();
     last_loop_old_pose.quat = Eigen::Quaternionf::Identity();
     last_loop_transform_diff = Matrix4f::Identity();
+    last_initial_estimate = Matrix4f::Identity();
 }
 
 void fill_optimized_path(gtsam::Values values)
@@ -172,21 +185,72 @@ bool is_viable_lc(std::pair<int, int> candidate_pair)
 
     // the first index of the candidate pair needs to be greater than the already found pair
     // [TODO] eval this solution
-    for (auto lc_pair : lc_index_pairs)
-    {
-        // if (candidate_pair.first < lc_pair.second || path->get_distance_between_path_poses(lc_pair.first, lc_pair.second) < params.loop_closure.min_traveled_lc)
-        // {
-        //     return false;
-        // }
+    // for (auto lc_pair : lc_index_pairs)
+    // {
+    //     // if (candidate_pair.first < lc_pair.second || path->get_distance_between_path_poses(lc_pair.first, lc_pair.second) < params.loop_closure.min_traveled_lc)
+    //     // {
+    //     //     return false;
+    //     // }
 
-        // testing purpose, using different indices
-        if (candidate_pair.second < lc_pair.second || path->get_distance_between_path_poses(lc_pair.second, candidate_pair.second) < params.loop_closure.min_traveled_lc)
-        {
-            return false;
-        }
-    }
+    //     // testing purpose, using different indices
+    //     if (candidate_pair.second < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.second, candidate_pair.second) < params.loop_closure.dist_between_lcs)
+    //     {
+    //         return false;
+    //     }
+    // }
 
     return true;
+}
+
+/**
+ * @brief will refill the gtsam graph after finding a lc
+ *
+ */
+void refill_graph()
+{
+    gtsam_wrapper_ptr->reset();
+
+    Matrix4f pose_mat = path->at(0)->getTransformationMatrix();
+    gtsam_wrapper_ptr->add_prior_constraint(pose_mat);
+
+    for (int i = 0; i < path->get_length() - 1; i++)
+    {
+        Matrix4f diff_mat = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
+        gtsam_wrapper_ptr->add_in_between_contraint(diff_mat, i, i + 1);
+    }
+
+    // readd a lc constraints?
+    for (int i = 0; i < lc_index_pairs.size(); i++)
+    {
+        gtsam_wrapper_ptr->add_in_between_contraint(lc_index_pairs[i].first, lc_index_pairs[i].second.second, lc_index_pairs[i].second.first);
+    }
+}
+
+void broadcast_robot_pose(Pose &pose)
+{
+    std::cout << "Broadcasting transform.. " << std::endl;
+
+    static tf2_ros::TransformBroadcaster br;
+
+    geometry_msgs::TransformStamped transformStamped;
+
+    transformStamped.header.stamp = ros::Time::now();
+    transformStamped.header.frame_id = "map";
+    transformStamped.child_frame_id = "robot";
+    transformStamped.transform.translation.x = pose.pos.x();
+    transformStamped.transform.translation.y = pose.pos.y();
+    transformStamped.transform.translation.z = pose.pos.z();
+
+    auto euler = pose.quat.toRotationMatrix().eulerAngles(0, 1, 2);
+
+    tf2::Quaternion q;
+    q.setRPY(euler.x(), euler.y(), euler.z());
+    transformStamped.transform.rotation.x = q.x();
+    transformStamped.transform.rotation.y = q.y();
+    transformStamped.transform.rotation.z = q.z();
+    transformStamped.transform.rotation.w = q.w();
+
+    br.sendTransform(transformStamped);
 }
 
 /**
@@ -228,16 +292,41 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_pose.pos = tmp_point.cast<float>();
 
     // transform input pose according to the last loop closure
-    auto input_pose_origin = last_loop_old_pose.getTransformationMatrix().inverse() * input_pose.getTransformationMatrix();
-    auto input_pose_origin_transformed = last_loop_transform_diff * input_pose_origin;
-    auto input_pose_transformed = last_loop_old_pose.getTransformationMatrix() * input_pose_origin_transformed;
+    auto initial_pose_delta = getTransformationMatrixDiff(last_initial_estimate, input_pose.getTransformationMatrix());
+    last_initial_estimate = input_pose.getTransformationMatrix();
+    Matrix4f input_pose_transformed;
 
-    input_pose = Pose(input_pose_transformed);
+    if (path->get_length() > 0)
+    {
+        input_pose_transformed = path->at(path->get_length() - 1)->getTransformationMatrix() * initial_pose_delta;
+        path->add_pose(Pose(input_pose_transformed));
+    }
+    else
+    {
+        path->add_pose(input_pose);
+    }
+
+    std::cout << "Input pose: " << std::endl
+              << input_pose << std::endl;
+    std::cout << "Last loop pose:" << std::endl
+              << last_loop_old_pose << std::endl;
+    std::cout << "Transformed pose: " << std::endl
+              << Pose(input_pose_transformed) << std::endl;
+
+    input_pose = *path->at(path->get_length() - 1);
 
     // add the new pose to the path
-    path->add_pose(input_pose);
 
     Matrix4f pose = input_pose.getTransformationMatrix();
+
+    // publish cloud and transform for robot coordinate system
+    sensor_msgs::PointCloud2 input_cloud_tf;
+    pcl::toROSMsg(*input_cloud, input_cloud_tf);
+    input_cloud_tf.header.frame_id = "robot";
+    input_cloud_pub.publish(input_cloud_tf);
+
+    broadcast_robot_pose(*path->at(path->get_length() - 1));
+
 
 #pragma endregion
 
@@ -272,6 +361,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     {
         Matrix4f pose_mat = path->at(0)->getTransformationMatrix();
         gtsam_wrapper_ptr->add_prior_constraint(pose_mat);
+
+        ready_flag_pub.publish(ready_msg);
+
+        return;
     }
     else
     {
@@ -290,7 +383,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
     // tsdf_pub.publish(marker);
 
-    input_cloud_pub.publish(*cloud_ptr);
     sensor_msgs::PointCloud2 filtered_ros_cloud;
     pcl::toROSMsg(*filtered_cloud, filtered_ros_cloud);
     filtered_cloud_pub.publish(filtered_ros_cloud);
@@ -301,53 +393,93 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma region LOOP_IDENTIFICATION
     // check for loops
-    auto lc_pair = path->find_loop_kd_min_dist_backwards(path->get_length() - 1, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, false);
+    auto lc_pairs = path->find_loop_kd_min_dist_backwards(path->get_length() - 1, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, false);
+    std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_candidate_pairs;
 
     // check the return of the loop detection method
-    if (lc_pair.first != -1 && lc_pair.second != -1)
+
+    // when no pair is returned, go to the next pose
+    if (lc_pairs.size() == 0)
     {
+        std::cout << "No loop found when inserting Pose" << path->get_length() << ":" << std::endl
+                  << *path->at(path->get_length() - 1) << std::endl;
+
+        ready_flag_pub.publish(ready_msg);
+
+        return;
+    }
+
+    for (auto lc_pair : lc_pairs)
+    {
+
         std::cout << "Found LC Candidate between pose " << lc_pair.first << " and " << lc_pair.second << std::endl;
 
         // check if the detected loop might be viable considering already found loops
         if (!is_viable_lc(lc_pair))
         {
             std::cout << "LC pair not viable!" << std::endl;
-            ready_flag_pub.publish(ready_msg);
 
-            return;
+            continue;
         }
         else
         {
             std::cout << "Possible LC found between " << lc_pair.first << " and " << lc_pair.second << std::endl;
+            lc_candidate_pairs.push_back(std::make_pair(Matrix4f::Identity(), lc_pair));
         }
     }
-    else
-    {
-        std::cout << "No loop found when inserting Pose" << path->get_length() << std::endl;
-        ready_flag_pub.publish(ready_msg);
 
-        return;
-    }
+    // publish candidate
+    auto lc_candidate_markers = ROSViewhelper::init_loop_detected_marker_multiple(path, lc_candidate_pairs, Colors::ColorNames::black);
+
+    lc_candidate_publisher.publish(lc_candidate_markers);
+
 #pragma endregion
 
 #pragma region LOOP_EXAMINATION
 
-    pcl::PointCloud<PointType>::Ptr icp_cloud;
-    icp_cloud.reset(new pcl::PointCloud<PointType>());
+    bool converged = false;
 
-    auto cur_cloud_transform = path->at(lc_pair.second)->getTransformationMatrix();
-    auto prev_cloud_transform = path->at(lc_pair.first)->getTransformationMatrix();
+    for (auto lc_pair : lc_candidate_pairs)
+    {
+        pcl::PointCloud<PointType>::Ptr icp_cloud;
+        icp_cloud.reset(new pcl::PointCloud<PointType>());
 
-    pcl::PointCloud<PointType>::Ptr source_cloud;
-    pcl::PointCloud<PointType>::Ptr target_cloud;
-    source_cloud.reset(new pcl::PointCloud<PointType>());
-    target_cloud.reset(new pcl::PointCloud<PointType>());
-    pcl::transformPointCloud(*dataset_clouds[lc_pair.second], *source_cloud, cur_cloud_transform);
-    pcl::transformPointCloud(*dataset_clouds[lc_pair.first], *target_cloud, prev_cloud_transform);
+        auto cur_cloud_transform = path->at(lc_pair.second.second)->getTransformationMatrix();
+        auto prev_cloud_transform = path->at(lc_pair.second.first)->getTransformationMatrix();
 
-    bool converged = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair, source_cloud, target_cloud,
-                                                                    icp_cloud, cur_cloud_transform, prev_cloud_transform);
+        pcl::PointCloud<PointType>::Ptr source_cloud;
+        pcl::PointCloud<PointType>::Ptr target_cloud;
+        source_cloud.reset(new pcl::PointCloud<PointType>());
+        target_cloud.reset(new pcl::PointCloud<PointType>());
+        pcl::transformPointCloud(*dataset_clouds[lc_pair.second.second], *source_cloud, cur_cloud_transform);
+        pcl::transformPointCloud(*dataset_clouds[lc_pair.second.first], *target_cloud, prev_cloud_transform);
 
+        Matrix4f final_transformation = Matrix4f::Identity();
+        bool converged_unit = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair.second, source_cloud, target_cloud,
+                                                                             icp_cloud, cur_cloud_transform, prev_cloud_transform, final_transformation);
+
+        // add lc if unit converged, update converge flag for all found lcs for the current position
+        if (converged_unit)
+        {
+            converged = true;
+            lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
+        }
+
+        else
+        {
+            std::cout << "Unit not converged" << std::endl;
+        }
+
+        cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(source_cloud);
+        prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(target_cloud);
+        icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_cloud);
+
+        std::cout << "Number of points in icp cloud: " << icp_cloud->size() << std::endl;
+
+        approx_pcl_pub_cur.publish(cur_pcl_msg);
+        approx_pcl_pub_prev.publish(prev_pcl_msg);
+        approx_pcl_pub_icp.publish(icp_pcl_msg);
+    }
     // if the lc found did not converge, we skip everything else
     if (!converged)
     {
@@ -361,7 +493,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // THE FOLLOWING IS ONLY EXECUTED, WHEN A LOOP CLOSURE WAS IDENTIFIED AND SCAN MATCHING CONVERGED IN A NICE MANNER //
 
 #pragma region LOOP_PROCESSING_AND_VISUALIZATION
-    lc_index_pairs.push_back(lc_pair);
     auto lc_marker = ROSViewhelper::init_loop_detected_marker_multiple(path, lc_index_pairs);
     loop_pub.publish(lc_marker);
 
@@ -383,23 +514,11 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
 
-    std::cout << "Points in msg: " << cur_pcl_msg.data.size() << std::endl;
-
-    cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(source_cloud);
-    prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(target_cloud);
-    icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_cloud);
-
-    approx_pcl_pub_cur.publish(cur_pcl_msg);
-    approx_pcl_pub_prev.publish(prev_pcl_msg);
-    approx_pcl_pub_icp.publish(icp_pcl_msg);
-
-    // update path and save transform and diffs
-    last_loop_old_pose = *path->at(path->get_length() - 1);
-    last_loop_transform_diff =
-        getTransformationMatrixDiff(last_loop_old_pose.getTransformationMatrix(), optimized_path->at(optimized_path->get_length() - 1)->getTransformationMatrix());
-
     // copy values
     path = new Path(*optimized_path);
+
+    // refill the graph based on the updated positions
+    refill_graph();
 
 #pragma endregion
 
@@ -448,6 +567,7 @@ int main(int argc, char **argv)
     filtered_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/filtered_cloud", 1);
     tsdf_pub = n.advertise<visualization_msgs::Marker>("/tsdf", 1);
     ready_flag_pub = n.advertise<std_msgs::String>("/slam6d_listener_ready", 1);
+    lc_candidate_publisher = n.advertise<visualization_msgs::Marker>("/lc_candidates", 1);
 
     std_msgs::String ready_msg;
     ready_msg.data = std::string("ready");
@@ -457,6 +577,7 @@ int main(int argc, char **argv)
     // ros loop
     while (ros::ok())
     {
+
         ros::spinOnce();
 
         loop_rate.sleep();

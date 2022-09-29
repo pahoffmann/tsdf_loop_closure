@@ -95,7 +95,8 @@ public:
      * @return if the loop closure constraint was added to the graph
      */
     bool add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr current_cloud, pcl::PointCloud<PointType>::Ptr previous_cloud,
-                                    pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f cur_cloud_transform, Matrix4f prev_cloud_transform);
+                                    pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f cur_cloud_transform, Matrix4f prev_cloud_transform,
+                                    Matrix4f &final_transformation);
 
     /**
      * @brief will optimize the gtsam factor graph

@@ -26,6 +26,8 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   message_filters
   eigen_conversions
+  tf2_ros
+  tf2
 )
 
 ################################################
