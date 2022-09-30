@@ -461,16 +461,16 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // not only converges, but also has minimal error.
         // To ensure this, ICP needs to have a low MSD between the clouds
         // after registration (e.g. 0.3)
-        // 
+        //
         // NORMALLY one would pretransform the scan towards the model
-        // using the inital estimates. Here we proceed the other way 
+        // using the inital estimates. Here we proceed the other way
         // round:
-        // 
-        // We transform the model into the coordinate system of the 
+        //
+        // We transform the model into the coordinate system of the
         // scan, because it is the current robot position and therefore
         // the current coordinate system of the roboter.
         // So all this is actually for display purposes.
-        // 
+        //
         // This transformation needs to be considered later on in the
         // following manner:
         /////////////////////////////////////////////////////////////
@@ -483,7 +483,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
         // transform from the current pose (aka the scan) to the previous pose (aka the model) (aka.: switching from current coordinate system to the previous)
         // this has to be added to the final transformation!!!!
-        //auto cur_to_prev_initial = getTransformationMatrixBetween(prev_to_map, cur_to_map);
+        // auto cur_to_prev_initial = getTransformationMatrixBetween(prev_to_map, cur_to_map);
         auto prev_to_cur_initial = getTransformationMatrixBetween(cur_to_map, prev_to_map);
 
         pcl::PointCloud<PointType>::Ptr model_cloud;
@@ -492,8 +492,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
 
         // transform the scan cloud into the coordinate system of the model cloud using the initial estimate
-        //pcl::transformPointCloud(*scan_cloud, *scan_cloud, cur_to_prev_initial);
-        
+        // pcl::transformPointCloud(*scan_cloud, *scan_cloud, cur_to_prev_initial);
+
         // transform the model cloud into the coordinate system of the scan cloud using the initial estimate
         pcl::transformPointCloud(*model_cloud, *model_cloud, prev_to_cur_initial);
 
@@ -559,6 +559,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // copy values
     path = new Path(*optimized_path);
+
+    // publish loops again to be consistant
+    lc_marker = ROSViewhelper::init_loop_detected_marker_multiple(path, lc_index_pairs);
+    loop_pub.publish(lc_marker);
 
     // refill the graph based on the updated positions
     refill_graph();
