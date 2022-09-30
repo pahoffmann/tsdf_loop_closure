@@ -187,19 +187,19 @@ bool is_viable_lc(std::pair<int, int> candidate_pair)
 
     // the first index of the candidate pair needs to be greater than the already found pair
     // [TODO] eval this solution
-    // for (auto lc_pair : lc_index_pairs)
-    // {
-    //     // if (candidate_pair.first < lc_pair.second || path->get_distance_between_path_poses(lc_pair.first, lc_pair.second) < params.loop_closure.min_traveled_lc)
-    //     // {
-    //     //     return false;
-    //     // }
+    for (auto lc_pair : lc_index_pairs)
+    {
+        // if (candidate_pair.first < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.first, lc_pair.second.second) < params.loop_closure.min_traveled_lc)
+        // {
+        //     return false;
+        // }
 
-    //     // testing purpose, using different indices
-    //     if (candidate_pair.second < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.second, candidate_pair.second) < params.loop_closure.dist_between_lcs)
-    //     {
-    //         return false;
-    //     }
-    // }
+        // testing purpose, using different indices
+        if (candidate_pair.second < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.second, candidate_pair.second) < params.loop_closure.dist_between_lcs)
+        {
+            return false;
+        }
+    }
 
     return true;
 }
@@ -506,6 +506,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         {
             converged = true;
             lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
+            break;
         }
 
         else
