@@ -473,6 +473,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         //
         // This transformation needs to be considered later on in the
         // following manner:
+        // TODO: add math
         /////////////////////////////////////////////////////////////
 
         pcl::PointCloud<PointType>::Ptr icp_cloud;
@@ -524,6 +525,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         approx_pcl_pub_prev.publish(prev_pcl_msg);
         approx_pcl_pub_icp.publish(icp_pcl_msg);
     }
+    
     // if the lc found did not converge, we skip everything else
     if (!converged)
     {
