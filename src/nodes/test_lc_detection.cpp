@@ -176,7 +176,7 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     // pretransform cur with centroid diff
 
     // get pretransform rotation from pose diff
-    // auto pose_pretransform = getTransformationMatrixDiff(path->at(loop_key_cur)->getTransformationMatrix(), path->at(loop_key_pre)->getTransformationMatrix());
+    // auto pose_pretransform = getTransformationMatrixBetween(path->at(loop_key_cur)->getTransformationMatrix(), path->at(loop_key_pre)->getTransformationMatrix());
 
     // pretransform cur cloud with rotation pose diff and translation diff from centroids
     // as icp cannot work with changes this big.
@@ -189,9 +189,9 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     //  pcl::transformPointCloud(*pointcloud_cur.get(), *pointcloud_cur_pretransformed.get(), pose_pretransform);
 
     // fill ros markers
-    prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_prev);
-    // cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_cur_pretransformed);
-    cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_cur);
+    prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_prev, "map");
+    // cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_cur_pretransformed, "map");
+    cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(pointcloud_cur, "map");
 
     // ICP Settings
     static pcl::IterativeClosestPoint<PointType, PointType> icp;
@@ -209,7 +209,7 @@ gtsam::BetweenFactor<gtsam::Pose3> estimate_loop_closure_between_factor(std::pai
     icp.align(*icp_result);
 
     // get a aligned cloud marker
-    icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_result);
+    icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_result, "map");
 
     std::cout << "ICP Fitness Score: " << icp.getFitnessScore() << std::endl;
     std::cout << "ICP converged? " << icp.hasConverged() << std::endl;
@@ -290,7 +290,7 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     // add prior factor to every pos of the graph
     graph.add(factor);
 {
-    auto pose_diff = getTransformationMatrixDiff(path->at(0)->getTransformationMatrix(), path->at(1)->getTransformationMatrix());
+    auto pose_diff = getTransformationMatrixBetween(path->at(0)->getTransformationMatrix(), path->at(1)->getTransformationMatrix());
 
     gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
     Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
@@ -313,7 +313,7 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
         // add between factor
         if (i < path->get_length() - 1)
         {
-            auto pose_diff = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
+            auto pose_diff = getTransformationMatrixBetween(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
 
             gtsam::Rot3 rot3(pose_diff.block<3, 3>(0, 0).cast<double>());
             Vector3f pos_diff = pose_diff.block<3, 1>(0, 3);
@@ -331,7 +331,7 @@ void create_factor_graph_from_path(Path *path, std::pair<int, int> lc_pair_indic
     auto lc_between_fac = estimate_loop_closure_between_factor(lc_pair_indices);
 
     // calculate the pose differences between the poses participating in the loop closure
-    auto lc_pose_diff = getTransformationMatrixDiff(lc_pos_2->getTransformationMatrix(), lc_pos_1->getTransformationMatrix());
+    auto lc_pose_diff = getTransformationMatrixBetween(lc_pos_2->getTransformationMatrix(), lc_pos_1->getTransformationMatrix());
 
     Vector3f pos_diff = lc_pose_diff.block<3, 1>(0, 3);
     gtsam::Rot3 rot3(lc_pose_diff.block<3, 3>(0, 0).cast<double>());

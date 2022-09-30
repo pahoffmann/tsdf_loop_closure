@@ -53,7 +53,7 @@ namespace Testing
             Matrix4f previous_pose = before->at(i)->getTransformationMatrix();
             Matrix4f new_pose = after->at(i)->getTransformationMatrix();
 
-            pose_differences.push_back(getTransformationMatrixDiff(previous_pose, new_pose));
+            pose_differences.push_back(getTransformationMatrixBetween(previous_pose, new_pose));
         }
 
         return pose_differences;

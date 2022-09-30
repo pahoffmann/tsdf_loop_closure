@@ -802,12 +802,12 @@ namespace ROSViewhelper
      * @param cloud
      * @return visualization_msgs::Marker
      */
-    static sensor_msgs::PointCloud2 marker_from_pcl_pointcloud(pcl::PointCloud<PointType>::Ptr cloud)
+    static sensor_msgs::PointCloud2 marker_from_pcl_pointcloud(pcl::PointCloud<PointType>::Ptr cloud, std::string frame_id)
     {
         sensor_msgs::PointCloud2 ros_cloud_msg;
         pcl::toROSMsg(*cloud.get(), ros_cloud_msg);
 
-        ros_cloud_msg.header.frame_id = "map";
+        ros_cloud_msg.header.frame_id = frame_id;
         ros_cloud_msg.header.stamp = ros::Time();
 
         return ros_cloud_msg;

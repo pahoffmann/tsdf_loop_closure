@@ -306,7 +306,7 @@ static size_t hash_from_vec(Vector3i vec)
  * @param mat2
  * @return Eigen::Matrix4f
  */
-static Eigen::Matrix4f getTransformationMatrixDiffComp(Eigen::Matrix4f mat1, Eigen::Matrix4f mat2)
+static Eigen::Matrix4f getTransformationMatrixBetweenComp(Eigen::Matrix4f mat1, Eigen::Matrix4f mat2)
 {
     // extract components
     Eigen::Matrix3f rot_com1 = mat1.block<3, 3>(0, 0);
@@ -326,18 +326,15 @@ static Eigen::Matrix4f getTransformationMatrixDiffComp(Eigen::Matrix4f mat1, Eig
 }
 
 /**
- * @brief Get the transformation difference between to 3D Positions, displayed as 2 4x4 matrices
+ * @brief Calculates the delta between poses, aka. the transformation needed to get from coordinate system mat2 to coordinate system mat1
  *
  * @param mat1
  * @param mat2
  * @return Eigen::Matrix4f
  */
-static Eigen::Matrix4f getTransformationMatrixDiff(Eigen::Matrix4f mat1, Eigen::Matrix4f mat2)
+static Eigen::Matrix4f getTransformationMatrixBetween(Eigen::Matrix4f mat1, Eigen::Matrix4f mat2)
 {
-    // do the calc directly, the order is very important here:
-    // because matrices are applied from right to left, the inverse transform needs to be multiplied from the right, so we transform to (0,0,0) first and transform
-    // to the other transform after. only this will give the right answer
-    // return mat2 * mat1.inverse();
+    // as matrix multiplication is not commutative, the order here is extremely important
     return mat1.inverse() * mat2;
 }
 

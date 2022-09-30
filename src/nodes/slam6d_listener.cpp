@@ -9,6 +9,8 @@
  *
  */
 
+#pragma region INCLUDES
+
 // ros related includes
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -17,7 +19,7 @@
 #include <nav_msgs/Odometry.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/sync_policies/exact_time.h>
 #include <geometry_msgs/PoseStamped.h>
 
 // c++ standard related includes
@@ -55,7 +57,11 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#pragma endregion
+
 using namespace message_filters;
+
+#pragma region GLOBAL_VARIABLES
 
 // parametrization
 LoopClosureParams params;
@@ -83,9 +89,7 @@ Matrix4f last_initial_estimate;
 Pose last_loop_old_pose;
 Matrix4f last_loop_transform_diff;
 
-// ros
-
-// subscribe to lsma6d cloud and poses
+// ROS //
 ros::Publisher path_pub;
 ros::Publisher optimized_path_pub;
 ros::Publisher loop_pub;
@@ -94,26 +98,24 @@ ros::Publisher tsdf_pub;
 // publisher used to signal to it's subscribers, that the node is back in idle mode
 ros::Publisher ready_flag_pub;
 
-// publish approximated cloud for current pose of lc (cur_index > prev_index)
-ros::Publisher approx_pcl_pub_cur;
-// publish approximated cloud for previous pose of lc (cur_index > prev_index)
-ros::Publisher approx_pcl_pub_prev;
-// result of icp
-ros::Publisher approx_pcl_pub_icp;
+ros::Publisher approx_pcl_pub_cur;  // publish approximated cloud for current pose of lc (cur_index > prev_index)
+ros::Publisher approx_pcl_pub_prev; // publish approximated cloud for previous pose of lc (cur_index > prev_index)
+ros::Publisher approx_pcl_pub_icp;  // result of icp
 
 // publishes the input cloud
 ros::Publisher input_cloud_pub;
-ros::Publisher filtered_cloud_pub;
+ros::Publisher tsdf_cloud_pub;
 
 // publishes loop closure candidates
 ros::Publisher lc_candidate_publisher;
 
+// Ros messages
 nav_msgs::Path ros_path;
 sensor_msgs::PointCloud2 cur_pcl_msg;
 sensor_msgs::PointCloud2 prev_pcl_msg;
 sensor_msgs::PointCloud2 icp_pcl_msg;
-sensor_msgs::PointCloud2 cur_pcl_filtered_msg;
-sensor_msgs::PointCloud2 prev_pcl_filtered_msg;
+
+#pragma endregion
 
 /**
  * @brief method used to initiate all the objects associated with this test case
@@ -215,7 +217,7 @@ void refill_graph()
 
     for (int i = 0; i < path->get_length() - 1; i++)
     {
-        Matrix4f diff_mat = getTransformationMatrixDiff(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
+        Matrix4f diff_mat = getTransformationMatrixBetween(path->at(i)->getTransformationMatrix(), path->at(i + 1)->getTransformationMatrix());
         gtsam_wrapper_ptr->add_in_between_contraint(diff_mat, i, i + 1);
     }
 
@@ -260,30 +262,35 @@ void broadcast_robot_pose(Pose &pose)
  */
 void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_ptr, const geometry_msgs::PoseStampedConstPtr &pose_ptr)
 {
-    // std::cout << "Received Cloud timestamp: " << cloud_ptr->header.stamp << std::endl;
-    // std::cout << "Received Pose timestamp: " << pose_ptr->header.stamp << std::endl;
 
+#pragma region FUNCTION_VARIABLES
     // message used to show, that the processing of the last message pair is done and the node awaits new data
     std_msgs::String ready_msg;
     ready_msg.data = std::string("ready");
 
+    Pose input_pose;
+    Matrix4f input_pose_mat;
+    Matrix4f input_pose_transformed;
+
+#pragma endregion
+
 #pragma region PREPROCESSING
 
-    // filter input cloud:
     pcl::PointCloud<PointType>::Ptr input_cloud(new pcl::PointCloud<PointType>);
-    pcl::PointCloud<PointType>::Ptr filtered_cloud(new pcl::PointCloud<PointType>);
+    pcl::PointCloud<PointType>::Ptr tsdf_cloud(new pcl::PointCloud<PointType>);
+
     pcl::fromROSMsg(*cloud_ptr.get(), *input_cloud.get());
+
+    // CREATE POINTCLOUD USED FOR TSDF UPDATE
     pcl::VoxelGrid<PointType> sor;
     sor.setInputCloud(input_cloud);
     sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
-    sor.filter(*filtered_cloud.get());
+    sor.filter(*tsdf_cloud.get());
 
     // save
-    // dataset_clouds.push_back(filtered_cloud);
     dataset_clouds.push_back(input_cloud);
 
     // create Pose from ros pose
-    Pose input_pose;
     Eigen::Vector3d tmp_point;
     Eigen::Quaterniond tmp_quat;
     tf::pointMsgToEigen(pose_ptr->pose.position, tmp_point);
@@ -291,10 +298,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_pose.quat = tmp_quat.cast<float>();
     input_pose.pos = tmp_point.cast<float>();
 
-    // transform input pose according to the last loop closure
-    auto initial_pose_delta = getTransformationMatrixDiff(last_initial_estimate, input_pose.getTransformationMatrix());
+    // add the delta between the initial poses to the last pose of the (maybe already updated) path
+    auto initial_pose_delta = getTransformationMatrixBetween(last_initial_estimate, input_pose.getTransformationMatrix());
     last_initial_estimate = input_pose.getTransformationMatrix();
-    Matrix4f input_pose_transformed;
 
     if (path->get_length() > 0)
     {
@@ -306,57 +312,72 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         path->add_pose(input_pose);
     }
 
-    std::cout << "Input pose: " << std::endl
-              << input_pose << std::endl;
-    std::cout << "Last loop pose:" << std::endl
-              << last_loop_old_pose << std::endl;
-    std::cout << "Transformed pose: " << std::endl
-              << Pose(input_pose_transformed) << std::endl;
+    // std::cout << "Input pose: " << std::endl
+    //           << input_pose << std::endl;
+    // std::cout << "Last loop pose:" << std::endl
+    //           << last_loop_old_pose << std::endl;
+    // std::cout << "Transformed pose: " << std::endl
+    //           << Pose(input_pose_transformed) << std::endl;
 
     input_pose = *path->at(path->get_length() - 1);
 
     // add the new pose to the path
 
-    Matrix4f pose = input_pose.getTransformationMatrix();
+    input_pose_mat = input_pose.getTransformationMatrix();
 
     // publish cloud and transform for robot coordinate system
+    broadcast_robot_pose(*path->at(path->get_length() - 1));
+
     sensor_msgs::PointCloud2 input_cloud_tf;
     pcl::toROSMsg(*input_cloud, input_cloud_tf);
     input_cloud_tf.header.frame_id = "robot";
     input_cloud_pub.publish(input_cloud_tf);
 
-    broadcast_robot_pose(*path->at(path->get_length() - 1));
-
-
 #pragma endregion
 
 #pragma region TSDF_UPDATE
-    std::vector<Eigen::Vector3i> points_original(filtered_cloud->size());
+    std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
 
     // transform points to map coordinates
 #pragma omp parallel for schedule(static) default(shared)
-    for (int i = 0; i < filtered_cloud->size(); ++i)
+    for (int i = 0; i < tsdf_cloud->size(); ++i)
     {
-        const auto &cp = (*filtered_cloud)[i];
+        const auto &cp = (*tsdf_cloud)[i];
         points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
     }
 
     // Shift
-    Vector3i pos = real_to_map(pose.block<3, 1>(0, 3));
-    local_map_ptr->shift(pos);
+    Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
+    local_map_ptr->shift(input_3d_pos);
 
     Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
-    rot.block<3, 3>(0, 0) = to_int_mat(pose).block<3, 3>(0, 0);
+    rot.block<3, 3>(0, 0) = to_int_mat(input_pose_mat).block<3, 3>(0, 0);
     Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
 
     // create TSDF Volume
-    update_tsdf(points_original, pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution);
+    update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution);
+
+#pragma endregion
+
+#pragma region CLOUD_GM_VIS
+    // auto gm_data = global_map_ptr->get_full_data();
+    // auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    // tsdf_pub.publish(marker);
+
+    sensor_msgs::PointCloud2 filtered_ros_cloud;
+    pcl::toROSMsg(*tsdf_cloud, filtered_ros_cloud);
+    tsdf_cloud_pub.publish(filtered_ros_cloud);
+
+    path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::lime));
 
 #pragma endregion
 
 #pragma region GTSAM_EDGE_CONSTRAINTS
-    // gtsam optimizations
+
     // add gtsam constraints
+
+    // right here at least one object has already been added
     if (path->get_length() == 1)
     {
         Matrix4f pose_mat = path->at(0)->getTransformationMatrix();
@@ -370,33 +391,22 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     {
         int from_idx = path->get_length() - 2;
         int to_idx = path->get_length() - 1;
-        auto transform_diff = getTransformationMatrixDiff(path->at(from_idx)->getTransformationMatrix(), path->at(to_idx)->getTransformationMatrix());
-        gtsam_wrapper_ptr->add_in_between_contraint(transform_diff, from_idx, to_idx);
+        // auto transform_diff = getTransformationMatrixBetween(path->at(from_idx)->getTransformationMatrix(), path->at(to_idx)->getTransformationMatrix());
+        // gtsam_wrapper_ptr->add_in_between_contraint(transform_diff, from_idx, to_idx);
+
+        // when a new pose is added, the between factor added to the graph is the same as the initial delta
+        gtsam_wrapper_ptr->add_in_between_contraint(initial_pose_delta, from_idx, to_idx);
     }
 #pragma endregion
 
-    local_map_ptr->write_back();
-
-#pragma region CLOUD_GM_VIS
-    // auto gm_data = global_map_ptr->get_full_data();
-    // auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
-    // tsdf_pub.publish(marker);
-
-    sensor_msgs::PointCloud2 filtered_ros_cloud;
-    pcl::toROSMsg(*filtered_cloud, filtered_ros_cloud);
-    filtered_cloud_pub.publish(filtered_ros_cloud);
-
-    path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::lime));
-
-#pragma endregion
+    // local_map_ptr->write_back();
 
 #pragma region LOOP_IDENTIFICATION
     // check for loops
     auto lc_pairs = path->find_loop_kd_min_dist_backwards(path->get_length() - 1, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, false);
     std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_candidate_pairs;
 
-    // check the return of the loop detection method
+    // check the potentially found loop closure candidates
 
     // when no pair is returned, go to the next pose
     if (lc_pairs.size() == 0)
@@ -435,28 +445,61 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
+    // MATHE BIS HIERHER OK!
+
 #pragma region LOOP_EXAMINATION
 
     bool converged = false;
 
     for (auto lc_pair : lc_candidate_pairs)
     {
+        //////////////////////////////////////////////////////////////
+        // The identified loops are only candidates at the moment.
+        // To verify them we need to check if a scan matching between
+        // The model (aka the pointcloud of the previous pose) and
+        // The scan (aka the pointcloud of the current)
+        // not only converges, but also has minimal error.
+        // To ensure this, ICP needs to have a low MSD between the clouds
+        // after registration (e.g. 0.3)
+        // 
+        // NORMALLY one would pretransform the scan towards the model
+        // using the inital estimates. Here we proceed the other way 
+        // round:
+        // 
+        // We transform the model into the coordinate system of the 
+        // scan, because it is the current robot position and therefore
+        // the current coordinate system of the roboter.
+        // So all this is actually for display purposes.
+        // 
+        // This transformation needs to be considered later on in the
+        // following manner:
+        /////////////////////////////////////////////////////////////
+
         pcl::PointCloud<PointType>::Ptr icp_cloud;
         icp_cloud.reset(new pcl::PointCloud<PointType>());
 
-        auto cur_cloud_transform = path->at(lc_pair.second.second)->getTransformationMatrix();
-        auto prev_cloud_transform = path->at(lc_pair.second.first)->getTransformationMatrix();
+        auto cur_to_map = path->at(lc_pair.second.second)->getTransformationMatrix();
+        auto prev_to_map = path->at(lc_pair.second.first)->getTransformationMatrix();
 
-        pcl::PointCloud<PointType>::Ptr source_cloud;
-        pcl::PointCloud<PointType>::Ptr target_cloud;
-        source_cloud.reset(new pcl::PointCloud<PointType>());
-        target_cloud.reset(new pcl::PointCloud<PointType>());
-        pcl::transformPointCloud(*dataset_clouds[lc_pair.second.second], *source_cloud, cur_cloud_transform);
-        pcl::transformPointCloud(*dataset_clouds[lc_pair.second.first], *target_cloud, prev_cloud_transform);
+        // transform from the current pose (aka the scan) to the previous pose (aka the model) (aka.: switching from current coordinate system to the previous)
+        // this has to be added to the final transformation!!!!
+        //auto cur_to_prev_initial = getTransformationMatrixBetween(prev_to_map, cur_to_map);
+        auto prev_to_cur_initial = getTransformationMatrixBetween(cur_to_map, prev_to_map);
+
+        pcl::PointCloud<PointType>::Ptr model_cloud;
+        pcl::PointCloud<PointType>::Ptr scan_cloud;
+        model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
+        scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
+
+        // transform the scan cloud into the coordinate system of the model cloud using the initial estimate
+        //pcl::transformPointCloud(*scan_cloud, *scan_cloud, cur_to_prev_initial);
+        
+        // transform the model cloud into the coordinate system of the scan cloud using the initial estimate
+        pcl::transformPointCloud(*model_cloud, *model_cloud, prev_to_cur_initial);
 
         Matrix4f final_transformation = Matrix4f::Identity();
-        bool converged_unit = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair.second, source_cloud, target_cloud,
-                                                                             icp_cloud, cur_cloud_transform, prev_cloud_transform, final_transformation);
+        bool converged_unit = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair.second, model_cloud, scan_cloud,
+                                                                             icp_cloud, final_transformation, prev_to_cur_initial);
 
         // add lc if unit converged, update converge flag for all found lcs for the current position
         if (converged_unit)
@@ -470,9 +513,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             std::cout << "Unit not converged" << std::endl;
         }
 
-        cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(source_cloud);
-        prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(target_cloud);
-        icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_cloud);
+        cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(scan_cloud, "robot");
+        prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(model_cloud, "robot");
+        icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_cloud, "robot");
 
         std::cout << "Number of points in icp cloud: " << icp_cloud->size() << std::endl;
 
@@ -549,11 +592,11 @@ int main(int argc, char **argv)
     params = LoopClosureParams(nh);
     init_obj();
 
-    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(n, "/slam6d_cloud", 100);
-    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(n, "/slam6d_pose", 100);
-    message_filters::Subscriber<std_msgs::String> slam6d_filename_sub(n, "/slam6d_filename", 100);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> slam6d_cloud_sub(n, "/slam6d_cloud", 1);
+    message_filters::Subscriber<geometry_msgs::PoseStamped> slam6d_pose_sub(n, "/slam6d_pose", 1);
+    message_filters::Subscriber<std_msgs::String> slam6d_filename_sub(n, "/slam6d_filename", 1);
 
-    typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> MySyncPolicy;
+    typedef sync_policies::ExactTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(40), slam6d_cloud_sub, slam6d_pose_sub);
     sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
 
@@ -564,7 +607,7 @@ int main(int argc, char **argv)
     approx_pcl_pub_prev = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_prev", 1);
     approx_pcl_pub_icp = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_icp", 1);
     input_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/input_cloud", 1);
-    filtered_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/filtered_cloud", 1);
+    tsdf_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/tsdf_cloud", 1);
     tsdf_pub = n.advertise<visualization_msgs::Marker>("/tsdf", 1);
     ready_flag_pub = n.advertise<std_msgs::String>("/slam6d_listener_ready", 1);
     lc_candidate_publisher = n.advertise<visualization_msgs::Marker>("/lc_candidates", 1);
@@ -574,14 +617,7 @@ int main(int argc, char **argv)
 
     ready_flag_pub.publish(ready_msg);
 
-    // ros loop
-    while (ros::ok())
-    {
-
-        ros::spinOnce();
-
-        loop_rate.sleep();
-    }
+    ros::spin();
 
     return EXIT_SUCCESS;
 }

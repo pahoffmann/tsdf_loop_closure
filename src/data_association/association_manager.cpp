@@ -100,7 +100,7 @@ void AssociationManager::calculate_pose_differences(Path *new_path)
         Matrix4f current_pose = new_path->at(i)->getTransformationMatrix();
 
         // calculate the difference between the transformations via a transformation matrix
-        pose_differences.push_back(getTransformationMatrixDiff(previous_pose, current_pose));
+        pose_differences.push_back(getTransformationMatrixBetween(previous_pose, current_pose));
     }
 }
 

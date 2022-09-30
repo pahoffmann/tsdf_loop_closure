@@ -25,9 +25,7 @@ bool first_ready = false;
 
 std::pair<std::vector<fs::path>, std::vector<fs::path>> scan_pose_filename_pairs;
 
-ros::Publisher trans_cloud_pub;
 ros::Publisher cloud_pub;
-ros::Publisher trans_pose_pub;
 ros::Publisher pose_pub;
 ros::Publisher filename_pub;
 ros::Publisher initial_path_pub;
@@ -110,28 +108,19 @@ void publish_next_data()
 
     auto pose_mat = CoordSysTransform::getTransformationFromPose(pose_path);
 
-    pcl::transformPointCloud(*transformed_cloud.get(), *transformed_cloud.get(), pose_mat);
-
-    // std::cout << "Pose transform for Pose " << pose_path.string() << ": " << std::endl
-    //           << pose_mat << std::endl;
-
     auto trans_pose_marker = ROSViewhelper::initPoseMarker(new Pose(pose_mat));
 
     sensor_msgs::PointCloud2 ros_cloud = pcl_to_ros(cloud);
     geometry_msgs::PoseStamped ros_pose = transform_to_ros_pose_stamped(pose_mat);
+    ros_pose.header.stamp = ros_cloud.header.stamp;
 
     sensor_msgs::PointCloud2 transformed_ros_cloud = pcl_to_ros(transformed_cloud);
 
-    // std::cout << "Timestamp cloud: " << transformed_ros_cloud.header.stamp << std::endl;
-    // std::cout << "Timestamp pose: " << ros_pose.header.stamp << std::endl;
+    std::cout << "Timestamp cloud: " << ros_cloud.header.stamp << std::endl;
+    std::cout << "Timestamp pose: " << ros_pose.header.stamp << std::endl;
 
     cloud_pub.publish(ros_cloud);
-    // pose_pub.publish(ros_pose);
-
-    trans_cloud_pub.publish(transformed_ros_cloud);
-
-    // trans_pose_pub.publish(trans_pose_marker);
-    trans_pose_pub.publish(ros_pose);
+    pose_pub.publish(ros_pose);
 
     // publish the current filename
     std_msgs::String string_msg;
@@ -167,10 +156,8 @@ int main(int argc, char **argv)
     params = LoopClosureParams(params);
 
     // init publishers
-    trans_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/cloud_transformed", 0);
     cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);
-    trans_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/slam6d_pose", 0);
-    pose_pub = n.advertise<geometry_msgs::PoseStamped>("/pose", 0);
+    pose_pub = n.advertise<geometry_msgs::PoseStamped>("/slam6d_pose", 0);
     filename_pub = n.advertise<std_msgs::String>("/slam6d_filename", 0);
     initial_path_pub = n.advertise<visualization_msgs::Marker>("/initial_path", 0);
 
@@ -186,7 +173,8 @@ int main(int argc, char **argv)
     {
         if (!first_ready)
         {
-             publish_next_data();
+            std::cout << "No ready yet, publishing..." << std::endl;
+            publish_next_data();
         }
 
         initial_path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::red));

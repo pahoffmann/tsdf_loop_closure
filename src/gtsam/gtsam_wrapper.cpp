@@ -15,11 +15,10 @@ GTSAMWrapper::GTSAMWrapper(LoopClosureParams &input_params)
     // noise_vec << 0.5, 0.5, 0.5, 0.3, 0.3, 0.3;
 
     // initialize prior and in between noise with default values used for noising the constraints
-    //prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
-    prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
-    //in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
+    prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    // prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
+    // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
     in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, 1e-2, 0.3, 0.3, 0.3).finished());
-
 }
 
 void GTSAMWrapper::add_prior_constraint(Matrix4f &transform)
@@ -50,35 +49,32 @@ void GTSAMWrapper::add_in_between_contraint(Eigen::Matrix4f transform, int from_
     graph->add(factor);
 }
 
-bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr current_cloud, pcl::PointCloud<PointType>::Ptr previous_cloud,
-                                               pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f cur_cloud_transform, Matrix4f prev_cloud_transform,
-                                               Matrix4f &final_transformation)
+bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                               pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial)
 {
     // variables for icp/gicp
     float fitness_score;
     bool converged;
 
-    // proprocessing
-    Matrix4f pretransform_mat = Matrix4f::Identity();
-
-    // calculate rotation difference between cur and prev transforms
-    // pretransform_mat.block<3, 3>(0, 0) = getTransformationMatrixDiff(cur_cloud_transform, prev_cloud_transform).block<3, 3>(0, 0);
-
-    // pretransform mat will contain the final pretransform, needs to be combined with
-    //preprocess_scans(current_cloud, previous_cloud, pretransform_mat);
-
     // different scan matching possibilities
-    //perform_pcl_icp(current_cloud, previous_cloud, icp_cloud, converged, final_transformation, fitness_score);
-    perform_pcl_gicp(current_cloud, previous_cloud, icp_cloud, converged, final_transformation, fitness_score);
+    perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
+    // perform_pcl_gicp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
 
-    final_transformation = final_transformation * pretransform_mat;
+    // this is basically the most important point. we just calculated the transformation
+    // P_cur' -> P_cur (as icp is executed in the P_cur coordinate system)
+    // to get the transformation P_prev -> P_cur', we need to apply P_prev -> P_cur and P_cur -> P_cur' 
+    // (which is the inverse of the calculated transform)
+    // keep in mind the order of the transformations: execution order is right to left
+    final_transformation = final_transformation.inverse() * prev_to_cur_initial;
 
     if (converged)
     {
         std::cout << print_prefix << "Scan matching converged for lc with indices: " << lc_indices.first << " | " << lc_indices.second << std::endl;
         std::cout << print_prefix << "ICP Fitness Score: " << fitness_score << std::endl;
-        std::cout << print_prefix << "Final tranformation: " << std::endl
+        std::cout << print_prefix << "Final transformation: " << std::endl
                   << final_transformation << std::endl;
+        std::cout << "Final transformation readable: " << std::endl
+                  << Pose(final_transformation) << std::endl;
 
         // check if the fitness score is above a certain upper boundary, if so scan matching was not good enough
         if (fitness_score > 0.5)
@@ -159,7 +155,7 @@ void GTSAMWrapper::reset()
     graph.reset(new gtsam::NonlinearFactorGraph());
 }
 
-void GTSAMWrapper::perform_pcl_icp(pcl::PointCloud<PointType>::Ptr source_cloud, pcl::PointCloud<PointType>::Ptr target_cloud,
+void GTSAMWrapper::perform_pcl_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
                                    pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
 {
 
@@ -173,8 +169,8 @@ void GTSAMWrapper::perform_pcl_icp(pcl::PointCloud<PointType>::Ptr source_cloud,
 
     // Align clouds
     // icp.setInputSource(pointcloud_cur_pretransformed);
-    icp.setInputSource(source_cloud);
-    icp.setInputTarget(target_cloud);
+    icp.setInputSource(scan_cloud);
+    icp.setInputTarget(model_cloud);
     icp.align(*result);
 
     // fill data with icp results
@@ -183,7 +179,7 @@ void GTSAMWrapper::perform_pcl_icp(pcl::PointCloud<PointType>::Ptr source_cloud,
     converged = icp.hasConverged();
 }
 
-void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr source_cloud, pcl::PointCloud<PointType>::Ptr target_cloud,
+void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
                                     pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
 {
     // align the clouds using generalized icp
@@ -196,57 +192,12 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr source_cloud
     g_icp.setRANSACOutlierRejectionThreshold(1.0);
     g_icp.setUseReciprocalCorrespondences(false);
 
-    g_icp.setInputSource(source_cloud);
-    g_icp.setInputTarget(target_cloud);
+    g_icp.setInputSource(scan_cloud);
+    g_icp.setInputTarget(model_cloud);
     g_icp.align(*result);
 
     // fill data with g_icp results
     fitness_score = g_icp.getFitnessScore();
     final_transformation = g_icp.getFinalTransformation();
     converged = g_icp.hasConverged();
-}
-
-void GTSAMWrapper::preprocess_scans(pcl::PointCloud<PointType>::Ptr cur_cloud, pcl::PointCloud<PointType>::Ptr prev_cloud, Eigen::Matrix4f &pretransform_mat)
-{
-    // as the estimated clouds will be very far from each other most of the time, we will
-    // pretransform the current pcl
-
-    // CENTROID COMPUTATION AS PRETRANSFORM
-
-    Eigen::Vector4d centroid_prev, centroid_cur;
-    pcl::compute3DCentroid(*cur_cloud.get(), centroid_cur);
-    pcl::compute3DCentroid(*prev_cloud.get(), centroid_prev);
-
-    // calculate centoid diff from cur to prev
-    Eigen::Vector3f centroid_diff(centroid_prev.x() - centroid_cur.x(), centroid_prev.y() - centroid_cur.y(), centroid_prev.z() - centroid_cur.z());
-
-    std::cout << "Computed centroid diff: " << std::endl
-              << centroid_diff << std::endl;
-
-    // STATISTICAL OUTLIER FILTERING in the respective clouds
-    std::cout << "Before filter size: " << cur_cloud->size() << std::endl;
-
-    pcl::StatisticalOutlierRemoval<PointType> sor;
-    sor.setInputCloud(cur_cloud);
-    sor.setMeanK(50);
-    sor.setStddevMulThresh(1.0);
-    sor.filter(*cur_cloud);
-
-    std::cout << "After filter size: " << cur_cloud->size() << std::endl;
-
-    std::cout << "Before filter size: " << prev_cloud->size() << std::endl;
-
-    sor.setInputCloud(prev_cloud);
-    sor.setMeanK(50);
-    sor.setStddevMulThresh(1.0);
-    sor.filter(*prev_cloud);
-
-    std::cout << "After filter size: " << prev_cloud->size() << std::endl;
-    // END OUTLIER FILTERING
-
-    // centroid diff is new translation pretransform
-    pretransform_mat.block<3, 1>(0, 3) = centroid_diff;
-
-    // pretransform cur
-    pcl::transformPointCloud(*cur_cloud, *cur_cloud, pretransform_mat);
 }

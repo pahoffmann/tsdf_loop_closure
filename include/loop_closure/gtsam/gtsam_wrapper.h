@@ -40,7 +40,7 @@ private:
      * @param final_transformation
      * @param fitness_score
      */
-    void perform_pcl_icp(pcl::PointCloud<PointType>::Ptr source_cloud, pcl::PointCloud<PointType>::Ptr target_cloud,
+    void perform_pcl_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
                          pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
 
     /**
@@ -52,7 +52,7 @@ private:
      * @param final_transformation
      * @param fitness_score
      */
-    void perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr source_cloud, pcl::PointCloud<PointType>::Ptr target_cloud,
+    void perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
                           pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
 
     /**
@@ -90,13 +90,25 @@ public:
     void add_in_between_contraint(Eigen::Matrix4f transform, int from_idx, int to_idx);
 
     /**
-     * @brief adds a loop closure constraint to the factor graph, if icp / gicp converges
+     * @brief 
      *
-     * @return if the loop closure constraint was added to the graph
+     * @return 
      */
-    bool add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr current_cloud, pcl::PointCloud<PointType>::Ptr previous_cloud,
-                                    pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f cur_cloud_transform, Matrix4f prev_cloud_transform,
-                                    Matrix4f &final_transformation);
+
+    /**
+     * @brief adds a loop closure constraint to the factor graph, if icp / gicp converges
+     * 
+     * @param lc_indices 
+     * @param model_cloud 
+     * @param scan_cloud 
+     * @param icp_cloud 
+     * @param final_transformation 
+     * @param prev_to_cur_initial 
+     * @return true if the loop closure constraint was added to the graph
+     * @return false if not
+     */
+    bool add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                    pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial);
 
     /**
      * @brief will optimize the gtsam factor graph
