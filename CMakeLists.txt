@@ -92,6 +92,9 @@ include_directories(${GTSAM_INCLUDE_DIR})
 
 ###### GTSAM STUFF ENDS HER
 
+## teaser ++ ##
+find_package(teaserpp REQUIRED)
+
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -308,6 +311,9 @@ target_link_libraries(slam6d_listener
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  teaserpp::teaser_registration
+  teaserpp::teaser_features
+  teaserpp::teaser_io
   ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX

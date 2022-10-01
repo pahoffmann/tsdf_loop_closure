@@ -15,7 +15,7 @@ GTSAMWrapper::GTSAMWrapper(LoopClosureParams &input_params)
     // noise_vec << 0.5, 0.5, 0.5, 0.3, 0.3, 0.3;
 
     // initialize prior and in between noise with default values used for noising the constraints
-    //prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    // prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
     prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
     // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
     in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, 1e-2, 0.3, 0.3, 0.3).finished());
@@ -57,12 +57,13 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     bool converged;
 
     // different scan matching possibilities
-    //perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
+    // perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
     perform_pcl_gicp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
+    perform_teaser_plus_plus(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
 
     // this is basically the most important point. we just calculated the transformation
     // P_cur' -> P_cur (as icp is executed in the P_cur coordinate system)
-    // to get the transformation P_prev -> P_cur', we need to apply P_prev -> P_cur and P_cur -> P_cur' 
+    // to get the transformation P_prev -> P_cur', we need to apply P_prev -> P_cur and P_cur -> P_cur'
     // (which is the inverse of the calculated transform)
     // keep in mind the order of the transformations: execution order is right to left
     final_transformation = final_transformation.inverse() * prev_to_cur_initial;
@@ -200,4 +201,48 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud,
     fitness_score = g_icp.getFitnessScore();
     final_transformation = g_icp.getFinalTransformation();
     converged = g_icp.hasConverged();
+}
+
+void GTSAMWrapper::perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                            pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
+{
+    // pcl pointclouds to teaser clouds
+
+    // transform model cloud
+    teaser::PointCloud t_model_cloud;
+
+    for (auto point : *model_cloud)
+    {
+        teaser::PointXYZ t_point;
+        t_point.x = point.x;
+        t_point.y = point.y;
+        t_point.z = point.z;
+
+        t_model_cloud.push_back(t_point);
+    }
+
+    // transform scan cloud
+    teaser::PointCloud t_scan_cloud;
+
+    for (auto point : *scan_cloud)
+    {
+        teaser::PointXYZ t_point;
+        t_point.x = point.x;
+        t_point.y = point.y;
+        t_point.z = point.z;
+
+        t_scan_cloud.push_back(t_point);
+    }
+
+    // calculate features
+    // Compute FPFH
+    teaser::FPFHEstimation fpfh;
+    auto obj_descriptors = fpfh.computeFPFHFeatures(t_scan_cloud, 0.02, 0.04);
+    auto scene_descriptors = fpfh.computeFPFHFeatures(t_model_cloud, 0.02, 0.04);
+
+    teaser::Matcher matcher;
+    auto correspondences = matcher.calculateCorrespondences(
+        t_scan_cloud, t_model_cloud, *obj_descriptors, *scene_descriptors, false, true, false, 0.95);
+
+    std::cout << "Number of correspondences: " << correspondences.size() << std::endl;
 }
