@@ -240,8 +240,8 @@ void GTSAMWrapper::perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr mode
     auto obj_descriptors = fpfh.computeFPFHFeatures(t_scan_cloud, 0.02, 0.04);
     auto scene_descriptors = fpfh.computeFPFHFeatures(t_model_cloud, 0.02, 0.04);
 
-    std::cout << "Number of scan descriptors: " << obj_descriptors << std::endl;
-    std::cout << "Number of model descriptors: " << scene_descriptors << std::endl;
+    std::cout << "Number of scan descriptors: " << obj_descriptors->size() << std::endl;
+    std::cout << "Number of model descriptors: " << scene_descriptors->size() << std::endl;
 
     teaser::Matcher matcher;
     auto correspondences = matcher.calculateCorrespondences(
