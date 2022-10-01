@@ -240,9 +240,37 @@ void GTSAMWrapper::perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr mode
     auto obj_descriptors = fpfh.computeFPFHFeatures(t_scan_cloud, 0.02, 0.04);
     auto scene_descriptors = fpfh.computeFPFHFeatures(t_model_cloud, 0.02, 0.04);
 
+    std::cout << "Number of scan descriptors: " << obj_descriptors << std::endl;
+    std::cout << "Number of model descriptors: " << scene_descriptors << std::endl;
+
     teaser::Matcher matcher;
     auto correspondences = matcher.calculateCorrespondences(
         t_scan_cloud, t_model_cloud, *obj_descriptors, *scene_descriptors, false, true, false, 0.95);
 
-    std::cout << "Number of correspondences: " << correspondences.size() << std::endl;
+    std::cout << "Number of FPFH correspondences: " << correspondences.size() << std::endl;
+
+    // Run TEASER++ registration
+    // Prepare solver parameters
+    teaser::RobustRegistrationSolver::Params params;
+    params.noise_bound = 0.05;
+    params.cbar2 = 1;
+    params.estimate_scaling = false;
+    params.rotation_max_iterations = 100;
+    params.rotation_gnc_factor = 1.4;
+    params.rotation_estimation_algorithm =
+        teaser::RobustRegistrationSolver::ROTATION_ESTIMATION_ALGORITHM::GNC_TLS;
+    params.rotation_cost_threshold = 0.005;
+
+    // Solve with TEASER++
+    teaser::RobustRegistrationSolver solver(params);
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    solver.solve(t_scan_cloud, t_model_cloud, correspondences);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    auto solution = solver.getSolution();
+
+    std::cout << "Time taken for T++ (s): "
+            << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
+                   1000000.0
+            << std::endl;
 }
