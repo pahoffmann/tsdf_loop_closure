@@ -14,6 +14,9 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/registration/correspondence_estimation.h>
+#include <pcl/features/fpfh.h>
 
 // teaser++
 #include <teaser/ply_io.h>
@@ -34,7 +37,7 @@ private:
     gtsam::noiseModel::Diagonal::shared_ptr in_between_noise;
     gtsam::noiseModel::Diagonal::shared_ptr loop_closure_noise;
 
-    std::string print_prefix = "[GTSAMWrapper] "; 
+    std::string print_prefix = "[GTSAMWrapper] ";
 
     /**
      * @brief performs basic ICP between source and target, will return information about the performance of the icp
@@ -62,37 +65,49 @@ private:
 
     /**
      * @brief will use the teaser++ library and FPFH Features (+ Normal estimation) to register two pcl's
-     * 
-     * @param model_cloud 
-     * @param scan_cloud 
-     * @param result 
-     * @param converged 
-     * @param final_transformation 
-     * @param fitness_score 
+     *
+     * @param model_cloud
+     * @param scan_cloud
+     * @param result
+     * @param converged
+     * @param final_transformation
+     * @param fitness_score
      */
     void perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                          pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
+                                  pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
+
+    /**
+     * @brief will use the teaser++ library and FPFH Features (+ Normal estimation) to register two pcl's
+     *
+     * @param model_cloud
+     * @param scan_cloud
+     * @param result
+     * @param converged
+     * @param final_transformation
+     * @param fitness_score
+     */
+    void perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                      pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
 
     /**
      * @brief will calculate the Mean Squared Distance between the two input pointclouds
-     * 
-     * @param model_cloud 
-     * @param scan_cloud 
-     * @return float 
+     *
+     * @param model_cloud
+     * @param scan_cloud
+     * @return float
      */
     float calculate_fitness_score(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud);
 
     /**
-     * @brief will preprocess the incoming scans used to check for a closed loop, might also pretransform the cur cloud in order to achieve better results 
-     * 
-     * @param source_cloud 
-     * @param target_cloud 
-     * @param pretransform_mat will contain the final pretransform matrix 
+     * @brief will preprocess the incoming scans used to check for a closed loop, might also pretransform the cur cloud in order to achieve better results
+     *
+     * @param source_cloud
+     * @param target_cloud
+     * @param pretransform_mat will contain the final pretransform matrix
      */
     void preprocess_scans(pcl::PointCloud<PointType>::Ptr cur_cloud, pcl::PointCloud<PointType>::Ptr prev_cloud, Eigen::Matrix4f &pretransform_mat);
 
 public:
-
     /**
      * @brief Construct a new GTSAMWrapper, will intialize the noises(TODO: from parameters)
      *
@@ -117,35 +132,35 @@ public:
     void add_in_between_contraint(Eigen::Matrix4f transform, int from_idx, int to_idx);
 
     /**
-     * @brief 
+     * @brief
      *
-     * @return 
+     * @return
      */
 
     /**
      * @brief adds a loop closure constraint to the factor graph, if icp / gicp converges
-     * 
-     * @param lc_indices 
-     * @param model_cloud 
-     * @param scan_cloud 
-     * @param icp_cloud 
-     * @param final_transformation 
-     * @param prev_to_cur_initial 
+     *
+     * @param lc_indices
+     * @param model_cloud
+     * @param scan_cloud
+     * @param icp_cloud
+     * @param final_transformation
+     * @param prev_to_cur_initial
      * @return true if the loop closure constraint was added to the graph
      * @return false if not
      */
     bool add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                                    pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial);
+                                     pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial);
 
     /**
      * @brief will optimize the gtsam factor graph
-     * 
+     *
      */
     gtsam::Values perform_optimization(gtsam::Values initial);
 
     /**
      * @brief will reset the graph
-     * 
+     *
      */
     void reset();
 };

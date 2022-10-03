@@ -230,7 +230,7 @@ void refill_graph()
 
 void broadcast_robot_pose(Pose &pose)
 {
-    std::cout << "Broadcasting transform.. " << std::endl;
+    //std::cout << "Broadcasting transform.. " << std::endl;
 
     static tf2_ros::TransformBroadcaster br;
 

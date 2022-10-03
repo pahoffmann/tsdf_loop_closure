@@ -116,8 +116,8 @@ void publish_next_data()
 
     sensor_msgs::PointCloud2 transformed_ros_cloud = pcl_to_ros(transformed_cloud);
 
-    std::cout << "Timestamp cloud: " << ros_cloud.header.stamp << std::endl;
-    std::cout << "Timestamp pose: " << ros_pose.header.stamp << std::endl;
+    // std::cout << "Timestamp cloud: " << ros_cloud.header.stamp << std::endl;
+    // std::cout << "Timestamp pose: " << ros_pose.header.stamp << std::endl;
 
     cloud_pub.publish(ros_cloud);
     pose_pub.publish(ros_pose);

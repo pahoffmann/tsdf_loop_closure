@@ -207,7 +207,7 @@ std::vector<std::pair<int, int>> Path::find_loop_kd_min_dist_backwards(int idx, 
     int start_idx = -1;
 
     // do radius search around current pose
-    kdtree_path->radiusSearch(pose_cloud->at(idx), max_dist, pointSearchIndLoop, pointSearchSqDisLoop, 0);
+    kdtree_path->radiusSearch(pose_cloud->at(end_idx), max_dist, pointSearchIndLoop, pointSearchSqDisLoop, 0); // TODO: parameterize
 
     std::vector<std::pair<int, int>> lc_candidates;
 
@@ -215,16 +215,42 @@ std::vector<std::pair<int, int>> Path::find_loop_kd_min_dist_backwards(int idx, 
     {
         int id = pointSearchIndLoop[i];
 
-        float distance = get_distance_between_path_poses(id, idx);
+        float distance = get_distance_between_path_poses(id, end_idx);
 
         if (distance > min_traveled)
         {
             start_idx = id;
             lc_candidates.push_back(std::make_pair(start_idx, end_idx));
         }
-        
+
         // TODO: limit number of pairs
     }
+
+    // if the number is too small redo with bigger params (as there might be something going on)
+    // if (lc_candidates.size() < 10)
+    // {
+    //     lc_candidates.clear();
+
+    //     // do radius search around current pose
+    //     //kdtree_path->radiusSearch(pose_cloud->at(end_idx), max_dist * 2, pointSearchIndLoop, pointSearchSqDisLoop, 0); // TODO: parameterize
+
+    //     std::vector<std::pair<int, int>> lc_candidates;
+
+    //     for (int i = 0; i < (int)pointSearchIndLoop.size(); i++)
+    //     {
+    //         int id = pointSearchIndLoop[i];
+
+    //         float distance = get_distance_between_path_poses(id, end_idx);
+
+    //         if (distance > (min_traveled * 1.7f) && lc_candidates.size() < 10)
+    //         {
+    //             start_idx = id;
+    //             lc_candidates.push_back(std::make_pair(start_idx, end_idx));
+    //         }
+
+    //         // TODO: limit number of pairs
+    //     }
+    // }
 
     // no loop found: return error value
 

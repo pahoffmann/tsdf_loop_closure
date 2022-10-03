@@ -55,18 +55,38 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     // variables for icp/gicp
     float fitness_score;
     bool converged;
+    Eigen::Matrix4f teaser_transform;
 
     // different scan matching possibilities
+
+    // pretransform using teaser ++
+    // perform_teaser_plus_plus(model_cloud, scan_cloud, icp_cloud, converged, teaser_transform, fitness_score);
+    // perform_own_teaser_plus_plus(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
+
+    // transform model cloud towards proposed pose from teaser++
+    // Eigen::Matrix4f teaser_inversed = teaser_transform.inverse();
+    // std::cout << "Inverse transform of T++: " << std::endl << Pose(teaser_inversed) << std::endl;
+    // pcl::transformPointCloud(*model_cloud, *model_cloud, teaser_transform.inverse());
+
     // perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
     perform_pcl_gicp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
-    perform_teaser_plus_plus(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
+
+    // std::cout << "Teaser++ transformation:: (readable)" << std::endl
+    //           << Pose(teaser_transform) << std::endl;
+
+    // std::cout << "ICP transformation:: (readable)" << std::endl
+    //           << Pose(final_transformation) << std::endl;
+
+    // std::cout << "Prev to cur transformation:: (readable)" << std::endl
+    //           << Pose(prev_to_cur_initial) << std::endl;
+
 
     // this is basically the most important point. we just calculated the transformation
     // P_cur' -> P_cur (as icp is executed in the P_cur coordinate system)
     // to get the transformation P_prev -> P_cur', we need to apply P_prev -> P_cur and P_cur -> P_cur'
     // (which is the inverse of the calculated transform)
     // keep in mind the order of the transformations: execution order is right to left
-    final_transformation = final_transformation.inverse() * prev_to_cur_initial;
+    final_transformation = final_transformation.inverse() /* * teaser_transform.inverse() */ * prev_to_cur_initial;
 
     if (converged)
     {
@@ -237,8 +257,8 @@ void GTSAMWrapper::perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr mode
     // calculate features
     // Compute FPFH
     teaser::FPFHEstimation fpfh;
-    auto obj_descriptors = fpfh.computeFPFHFeatures(t_scan_cloud, 0.02, 0.04);
-    auto scene_descriptors = fpfh.computeFPFHFeatures(t_model_cloud, 0.02, 0.04);
+    auto obj_descriptors = fpfh.computeFPFHFeatures(t_scan_cloud, 0.08, 0.24);
+    auto scene_descriptors = fpfh.computeFPFHFeatures(t_model_cloud, 0.08, 0.24);
 
     std::cout << "Number of scan descriptors: " << obj_descriptors->size() << std::endl;
     std::cout << "Number of model descriptors: " << scene_descriptors->size() << std::endl;
@@ -269,8 +289,239 @@ void GTSAMWrapper::perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr mode
 
     auto solution = solver.getSolution();
 
+    final_transformation = Matrix4f::Identity();
+
+    final_transformation.block<3, 3>(0, 0) = solution.rotation.cast<float>();
+    final_transformation.block<3, 1>(0, 3) = solution.translation.cast<float>();
+
+    std::cout << "Final transformation from TEASER++:: (readable)" << std::endl
+              << Pose(final_transformation) << std::endl;
+
+    if (!solution.valid)
+    {
+        std::cout << "Solution not valid" << std::endl;
+    }
+
     std::cout << "Time taken for T++ (s): "
-            << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
-                   1000000.0
-            << std::endl;
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
+                     1000000.0
+              << std::endl;
+}
+
+void GTSAMWrapper::perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                                pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
+{
+    // estimate normals for model and scan cloud
+    pcl::NormalEstimation<PointType, pcl::Normal> normal_estimation;
+    normal_estimation.setRadiusSearch(0.1); // 10 cm
+    pcl::PointCloud<pcl::Normal>::Ptr model_normals(new pcl::PointCloud<pcl::Normal>());
+    pcl::PointCloud<pcl::Normal>::Ptr scan_normals(new pcl::PointCloud<pcl::Normal>());
+
+    // Output datasets
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs_model(new pcl::PointCloud<pcl::FPFHSignature33>());
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs_scan(new pcl::PointCloud<pcl::FPFHSignature33>());
+
+    normal_estimation.setInputCloud(model_cloud);
+    normal_estimation.compute(*model_normals);
+
+    normal_estimation.setInputCloud(scan_cloud);
+    normal_estimation.compute(*scan_normals);
+
+    pcl::FPFHEstimation<PointType, pcl::Normal, pcl::FPFHSignature33> fpfh;
+
+    // Create an empty kdtree representation, and pass it to the FPFH estimation object.
+    // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+    pcl::search::KdTree<PointType>::Ptr tree(new pcl::search::KdTree<PointType>);
+    fpfh.setSearchMethod(tree);
+
+    // Use all neighbors in a sphere of radius 15cm
+    // IMPORTANT: the radius used here has to be larger than the radius used to estimate the surface normals!!!
+    fpfh.setRadiusSearch(0.2);
+
+    fpfh.setInputCloud(model_cloud);
+    fpfh.setInputNormals(model_normals);
+
+    // Compute the features
+    fpfh.compute(*fpfhs_model);
+
+    fpfh.setInputCloud(scan_cloud);
+    fpfh.setInputNormals(scan_normals);
+
+    // Compute the features
+    fpfh.compute(*fpfhs_scan);
+
+    std::cout << "Number of descriptors for scan cloud: " << fpfhs_scan->size() << std::endl;
+    std::cout << "Number of descriptors for model cloud: " << fpfhs_model->size() << std::endl;
+
+    // try estimating correspondences
+    pcl::registration::CorrespondenceEstimation<pcl::FPFHSignature33, pcl::FPFHSignature33> est;
+    pcl::CorrespondencesPtr correspondences(new pcl::Correspondences());
+    est.setInputSource(fpfhs_scan);
+    est.setInputTarget(fpfhs_model);
+    est.determineCorrespondences(*correspondences);
+
+    int counter = 0;
+    int min_weight = std::numeric_limits<int>::max();
+    int max_weight = -std::numeric_limits<int>::max();
+    int num_bigger_zero = 0;
+
+    long long avg_weight = 0;
+    std::vector<int> weight_vector;
+
+    for (auto correspondence : *correspondences)
+    {
+        if (correspondence.index_match != -1)
+        {
+            counter++;
+        }
+
+        if (correspondence.index_match >= fpfhs_model->size())
+        {
+            std::cout << "Index out of bounds of the model descriptor size" << std::endl;
+        }
+
+        if (correspondence.weight < min_weight)
+        {
+            min_weight = correspondence.weight;
+        }
+
+        if (correspondence.weight > max_weight)
+        {
+            max_weight = correspondence.weight;
+        }
+
+        if (correspondence.weight > 0)
+        {
+            num_bigger_zero++;
+        }
+
+        avg_weight += correspondence.weight;
+        weight_vector.push_back(correspondence.weight);
+    }
+
+    std::sort(weight_vector.begin(), weight_vector.end());
+
+    int median_weight = weight_vector.at(weight_vector.size() / 2);
+
+    std::cout << "Found correspondences: " << counter << std::endl;
+    std::cout << "Found min_weight:      " << min_weight << std::endl;
+    std::cout << "Found max_weight:      " << max_weight << std::endl;
+    std::cout << "Found average_weight:      " << avg_weight / weight_vector.size() << std::endl;
+    std::cout << "Found median_weight:      " << median_weight << std::endl;
+    std::cout << "Found weights > 0:      " << num_bigger_zero << std::endl;
+
+    for (auto correspondence : *correspondences)
+    {
+        if (correspondence.index_match != -1)
+        {
+            counter++;
+        }
+
+        if (correspondence.index_match >= fpfhs_model->size())
+        {
+            std::cout << "Index out of bounds of the model descriptor size" << std::endl;
+        }
+
+        if (correspondence.weight < min_weight)
+        {
+            min_weight = correspondence.weight;
+        }
+
+        if (correspondence.weight > max_weight)
+        {
+            max_weight = correspondence.weight;
+        }
+
+        if (correspondence.weight > 0)
+        {
+            num_bigger_zero++;
+        }
+
+        avg_weight += correspondence.weight;
+        weight_vector.push_back(correspondence.weight);
+    }
+
+    // holds <scan, match> index correspondences
+    std::vector<std::pair<int, int>> pcl_correspondences;
+
+    for (auto correspondence : *correspondences)
+    {
+        if (correspondence.weight > avg_weight)
+        {
+            if (correspondence.index_match < 0 || correspondence.index_query < 0)
+                std::cout << "index < 0 !!" << std::endl;
+
+            pcl_correspondences.push_back(std::make_pair(correspondence.index_query, correspondence.index_match));
+
+            std::cout << correspondence.index_query << " | " << correspondence.index_match << std::endl;
+        }
+    }
+
+    // transform model cloud
+    teaser::PointCloud t_model_cloud;
+
+    for (auto point : *model_cloud)
+    {
+        teaser::PointXYZ t_point;
+        t_point.x = point.x;
+        t_point.y = point.y;
+        t_point.z = point.z;
+
+        t_model_cloud.push_back(t_point);
+    }
+
+    // transform scan cloud
+    teaser::PointCloud t_scan_cloud;
+
+    for (auto point : *scan_cloud)
+    {
+        teaser::PointXYZ t_point;
+        t_point.x = point.x;
+        t_point.y = point.y;
+        t_point.z = point.z;
+
+        t_scan_cloud.push_back(t_point);
+    }
+
+    std::cout << __LINE__ << std::endl;
+
+    // Run TEASER++ registration
+    // Prepare solver parameters
+    teaser::RobustRegistrationSolver::Params params;
+    params.noise_bound = 0.05;
+    params.cbar2 = 1;
+    params.estimate_scaling = false;
+    params.rotation_max_iterations = 100;
+    params.rotation_gnc_factor = 1.4;
+    params.rotation_estimation_algorithm =
+        teaser::RobustRegistrationSolver::ROTATION_ESTIMATION_ALGORITHM::GNC_TLS;
+    params.rotation_cost_threshold = 0.005;
+
+    std::cout << __LINE__ << std::endl;
+
+    // Solve with TEASER++
+    teaser::RobustRegistrationSolver solver(params);
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    solver.solve(t_scan_cloud, t_model_cloud, pcl_correspondences);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    std::cout << __LINE__ << std::endl;
+
+    auto solution = solver.getSolution();
+
+    std::cout << __LINE__ << std::endl;
+
+    Eigen::Matrix4d solution_mat = Eigen::Matrix4d::Identity();
+    solution_mat.block<3, 3>(0, 0) = solution.rotation;
+    solution_mat.block<3, 1>(0, 3) = solution.translation;
+
+    std::cout << __LINE__ << std::endl;
+
+    std::cout << "Rotation output: " << std::endl
+              << Pose(solution_mat.cast<float>()) << std::endl;
+
+    std::cout << "Time taken for T++ (s): "
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
+                     1000000.0
+              << std::endl;
 }
