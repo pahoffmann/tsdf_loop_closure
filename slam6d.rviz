@@ -12,7 +12,7 @@ Panels:
         - /Marker6
         - /TF1
       Splitter Ratio: 0.5
-    Tree Height: 746
+    Tree Height: 719
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -142,7 +142,7 @@ Visualization Manager:
       Marker Topic: /loop
       Name: Marker
       Namespaces:
-        {}
+        lc_detect: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -158,7 +158,7 @@ Visualization Manager:
       Marker Topic: /optimized_path
       Name: Marker
       Namespaces:
-        {}
+        path: true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -246,13 +246,13 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /initial_path
       Name: Marker
       Namespaces:
-        path: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /lc_candidates
@@ -268,16 +268,1884 @@ Visualization Manager:
         All Enabled: true
         map:
           Value: true
+        pose_0:
+          Value: true
+        pose_1:
+          Value: true
+        pose_10:
+          Value: true
+        pose_100:
+          Value: true
+        pose_101:
+          Value: true
+        pose_102:
+          Value: true
+        pose_103:
+          Value: true
+        pose_104:
+          Value: true
+        pose_105:
+          Value: true
+        pose_106:
+          Value: true
+        pose_107:
+          Value: true
+        pose_108:
+          Value: true
+        pose_109:
+          Value: true
+        pose_11:
+          Value: true
+        pose_110:
+          Value: true
+        pose_111:
+          Value: true
+        pose_112:
+          Value: true
+        pose_113:
+          Value: true
+        pose_114:
+          Value: true
+        pose_115:
+          Value: true
+        pose_116:
+          Value: true
+        pose_117:
+          Value: true
+        pose_118:
+          Value: true
+        pose_119:
+          Value: true
+        pose_12:
+          Value: true
+        pose_120:
+          Value: true
+        pose_121:
+          Value: true
+        pose_122:
+          Value: true
+        pose_123:
+          Value: true
+        pose_124:
+          Value: true
+        pose_125:
+          Value: true
+        pose_126:
+          Value: true
+        pose_127:
+          Value: true
+        pose_128:
+          Value: true
+        pose_129:
+          Value: true
+        pose_13:
+          Value: true
+        pose_130:
+          Value: true
+        pose_131:
+          Value: true
+        pose_132:
+          Value: true
+        pose_133:
+          Value: true
+        pose_134:
+          Value: true
+        pose_135:
+          Value: true
+        pose_136:
+          Value: true
+        pose_137:
+          Value: true
+        pose_138:
+          Value: true
+        pose_139:
+          Value: true
+        pose_14:
+          Value: true
+        pose_140:
+          Value: true
+        pose_141:
+          Value: true
+        pose_142:
+          Value: true
+        pose_143:
+          Value: true
+        pose_144:
+          Value: true
+        pose_145:
+          Value: true
+        pose_146:
+          Value: true
+        pose_147:
+          Value: true
+        pose_148:
+          Value: true
+        pose_149:
+          Value: true
+        pose_15:
+          Value: true
+        pose_150:
+          Value: true
+        pose_151:
+          Value: true
+        pose_152:
+          Value: true
+        pose_153:
+          Value: true
+        pose_154:
+          Value: true
+        pose_155:
+          Value: true
+        pose_156:
+          Value: true
+        pose_157:
+          Value: true
+        pose_158:
+          Value: true
+        pose_159:
+          Value: true
+        pose_16:
+          Value: true
+        pose_160:
+          Value: true
+        pose_161:
+          Value: true
+        pose_162:
+          Value: true
+        pose_163:
+          Value: true
+        pose_164:
+          Value: true
+        pose_165:
+          Value: true
+        pose_166:
+          Value: true
+        pose_167:
+          Value: true
+        pose_168:
+          Value: true
+        pose_169:
+          Value: true
+        pose_17:
+          Value: true
+        pose_170:
+          Value: true
+        pose_171:
+          Value: true
+        pose_172:
+          Value: true
+        pose_173:
+          Value: true
+        pose_174:
+          Value: true
+        pose_175:
+          Value: true
+        pose_176:
+          Value: true
+        pose_177:
+          Value: true
+        pose_178:
+          Value: true
+        pose_179:
+          Value: true
+        pose_18:
+          Value: true
+        pose_180:
+          Value: true
+        pose_181:
+          Value: true
+        pose_182:
+          Value: true
+        pose_183:
+          Value: true
+        pose_184:
+          Value: true
+        pose_185:
+          Value: true
+        pose_186:
+          Value: true
+        pose_187:
+          Value: true
+        pose_188:
+          Value: true
+        pose_189:
+          Value: true
+        pose_19:
+          Value: true
+        pose_190:
+          Value: true
+        pose_191:
+          Value: true
+        pose_192:
+          Value: true
+        pose_193:
+          Value: true
+        pose_194:
+          Value: true
+        pose_195:
+          Value: true
+        pose_196:
+          Value: true
+        pose_197:
+          Value: true
+        pose_198:
+          Value: true
+        pose_199:
+          Value: true
+        pose_2:
+          Value: true
+        pose_20:
+          Value: true
+        pose_200:
+          Value: true
+        pose_201:
+          Value: true
+        pose_202:
+          Value: true
+        pose_203:
+          Value: true
+        pose_204:
+          Value: true
+        pose_205:
+          Value: true
+        pose_206:
+          Value: true
+        pose_207:
+          Value: true
+        pose_208:
+          Value: true
+        pose_209:
+          Value: true
+        pose_21:
+          Value: true
+        pose_210:
+          Value: true
+        pose_211:
+          Value: true
+        pose_212:
+          Value: true
+        pose_213:
+          Value: true
+        pose_214:
+          Value: true
+        pose_215:
+          Value: true
+        pose_216:
+          Value: true
+        pose_217:
+          Value: true
+        pose_218:
+          Value: true
+        pose_219:
+          Value: true
+        pose_22:
+          Value: true
+        pose_220:
+          Value: true
+        pose_221:
+          Value: true
+        pose_222:
+          Value: true
+        pose_223:
+          Value: true
+        pose_224:
+          Value: true
+        pose_225:
+          Value: true
+        pose_226:
+          Value: true
+        pose_227:
+          Value: true
+        pose_228:
+          Value: true
+        pose_229:
+          Value: true
+        pose_23:
+          Value: true
+        pose_230:
+          Value: true
+        pose_231:
+          Value: true
+        pose_232:
+          Value: true
+        pose_233:
+          Value: true
+        pose_234:
+          Value: true
+        pose_235:
+          Value: true
+        pose_236:
+          Value: true
+        pose_237:
+          Value: true
+        pose_238:
+          Value: true
+        pose_239:
+          Value: true
+        pose_24:
+          Value: true
+        pose_240:
+          Value: true
+        pose_241:
+          Value: true
+        pose_242:
+          Value: true
+        pose_243:
+          Value: true
+        pose_244:
+          Value: true
+        pose_245:
+          Value: true
+        pose_246:
+          Value: true
+        pose_247:
+          Value: true
+        pose_248:
+          Value: true
+        pose_249:
+          Value: true
+        pose_25:
+          Value: true
+        pose_250:
+          Value: true
+        pose_251:
+          Value: true
+        pose_252:
+          Value: true
+        pose_253:
+          Value: true
+        pose_254:
+          Value: true
+        pose_255:
+          Value: true
+        pose_256:
+          Value: true
+        pose_257:
+          Value: true
+        pose_258:
+          Value: true
+        pose_259:
+          Value: true
+        pose_26:
+          Value: true
+        pose_260:
+          Value: true
+        pose_261:
+          Value: true
+        pose_262:
+          Value: true
+        pose_263:
+          Value: true
+        pose_264:
+          Value: true
+        pose_265:
+          Value: true
+        pose_266:
+          Value: true
+        pose_267:
+          Value: true
+        pose_268:
+          Value: true
+        pose_269:
+          Value: true
+        pose_27:
+          Value: true
+        pose_270:
+          Value: true
+        pose_271:
+          Value: true
+        pose_272:
+          Value: true
+        pose_273:
+          Value: true
+        pose_274:
+          Value: true
+        pose_275:
+          Value: true
+        pose_276:
+          Value: true
+        pose_277:
+          Value: true
+        pose_278:
+          Value: true
+        pose_279:
+          Value: true
+        pose_28:
+          Value: true
+        pose_280:
+          Value: true
+        pose_281:
+          Value: true
+        pose_282:
+          Value: true
+        pose_283:
+          Value: true
+        pose_284:
+          Value: true
+        pose_285:
+          Value: true
+        pose_286:
+          Value: true
+        pose_287:
+          Value: true
+        pose_288:
+          Value: true
+        pose_289:
+          Value: true
+        pose_29:
+          Value: true
+        pose_290:
+          Value: true
+        pose_291:
+          Value: true
+        pose_292:
+          Value: true
+        pose_293:
+          Value: true
+        pose_294:
+          Value: true
+        pose_295:
+          Value: true
+        pose_296:
+          Value: true
+        pose_297:
+          Value: true
+        pose_298:
+          Value: true
+        pose_299:
+          Value: true
+        pose_3:
+          Value: true
+        pose_30:
+          Value: true
+        pose_300:
+          Value: true
+        pose_301:
+          Value: true
+        pose_302:
+          Value: true
+        pose_303:
+          Value: true
+        pose_304:
+          Value: true
+        pose_305:
+          Value: true
+        pose_306:
+          Value: true
+        pose_307:
+          Value: true
+        pose_308:
+          Value: true
+        pose_309:
+          Value: true
+        pose_31:
+          Value: true
+        pose_310:
+          Value: true
+        pose_311:
+          Value: true
+        pose_312:
+          Value: true
+        pose_313:
+          Value: true
+        pose_314:
+          Value: true
+        pose_315:
+          Value: true
+        pose_316:
+          Value: true
+        pose_317:
+          Value: true
+        pose_318:
+          Value: true
+        pose_319:
+          Value: true
+        pose_32:
+          Value: true
+        pose_320:
+          Value: true
+        pose_321:
+          Value: true
+        pose_322:
+          Value: true
+        pose_323:
+          Value: true
+        pose_324:
+          Value: true
+        pose_325:
+          Value: true
+        pose_326:
+          Value: true
+        pose_327:
+          Value: true
+        pose_328:
+          Value: true
+        pose_329:
+          Value: true
+        pose_33:
+          Value: true
+        pose_330:
+          Value: true
+        pose_331:
+          Value: true
+        pose_332:
+          Value: true
+        pose_333:
+          Value: true
+        pose_334:
+          Value: true
+        pose_335:
+          Value: true
+        pose_336:
+          Value: true
+        pose_337:
+          Value: true
+        pose_338:
+          Value: true
+        pose_339:
+          Value: true
+        pose_34:
+          Value: true
+        pose_340:
+          Value: true
+        pose_341:
+          Value: true
+        pose_342:
+          Value: true
+        pose_343:
+          Value: true
+        pose_344:
+          Value: true
+        pose_345:
+          Value: true
+        pose_346:
+          Value: true
+        pose_347:
+          Value: true
+        pose_348:
+          Value: true
+        pose_349:
+          Value: true
+        pose_35:
+          Value: true
+        pose_350:
+          Value: true
+        pose_351:
+          Value: true
+        pose_352:
+          Value: true
+        pose_353:
+          Value: true
+        pose_354:
+          Value: true
+        pose_355:
+          Value: true
+        pose_356:
+          Value: true
+        pose_357:
+          Value: true
+        pose_358:
+          Value: true
+        pose_359:
+          Value: true
+        pose_36:
+          Value: true
+        pose_360:
+          Value: true
+        pose_361:
+          Value: true
+        pose_362:
+          Value: true
+        pose_363:
+          Value: true
+        pose_364:
+          Value: true
+        pose_365:
+          Value: true
+        pose_366:
+          Value: true
+        pose_367:
+          Value: true
+        pose_368:
+          Value: true
+        pose_369:
+          Value: true
+        pose_37:
+          Value: true
+        pose_370:
+          Value: true
+        pose_371:
+          Value: true
+        pose_372:
+          Value: true
+        pose_373:
+          Value: true
+        pose_374:
+          Value: true
+        pose_375:
+          Value: true
+        pose_376:
+          Value: true
+        pose_377:
+          Value: true
+        pose_378:
+          Value: true
+        pose_379:
+          Value: true
+        pose_38:
+          Value: true
+        pose_380:
+          Value: true
+        pose_381:
+          Value: true
+        pose_382:
+          Value: true
+        pose_383:
+          Value: true
+        pose_384:
+          Value: true
+        pose_385:
+          Value: true
+        pose_386:
+          Value: true
+        pose_387:
+          Value: true
+        pose_388:
+          Value: true
+        pose_389:
+          Value: true
+        pose_39:
+          Value: true
+        pose_390:
+          Value: true
+        pose_391:
+          Value: true
+        pose_392:
+          Value: true
+        pose_393:
+          Value: true
+        pose_394:
+          Value: true
+        pose_395:
+          Value: true
+        pose_396:
+          Value: true
+        pose_397:
+          Value: true
+        pose_398:
+          Value: true
+        pose_399:
+          Value: true
+        pose_4:
+          Value: true
+        pose_40:
+          Value: true
+        pose_400:
+          Value: true
+        pose_401:
+          Value: true
+        pose_402:
+          Value: true
+        pose_403:
+          Value: true
+        pose_404:
+          Value: true
+        pose_405:
+          Value: true
+        pose_406:
+          Value: true
+        pose_407:
+          Value: true
+        pose_408:
+          Value: true
+        pose_409:
+          Value: true
+        pose_41:
+          Value: true
+        pose_410:
+          Value: true
+        pose_411:
+          Value: true
+        pose_412:
+          Value: true
+        pose_413:
+          Value: true
+        pose_414:
+          Value: true
+        pose_415:
+          Value: true
+        pose_416:
+          Value: true
+        pose_417:
+          Value: true
+        pose_418:
+          Value: true
+        pose_419:
+          Value: true
+        pose_42:
+          Value: true
+        pose_420:
+          Value: true
+        pose_421:
+          Value: true
+        pose_422:
+          Value: true
+        pose_423:
+          Value: true
+        pose_424:
+          Value: true
+        pose_425:
+          Value: true
+        pose_426:
+          Value: true
+        pose_427:
+          Value: true
+        pose_428:
+          Value: true
+        pose_429:
+          Value: true
+        pose_43:
+          Value: true
+        pose_430:
+          Value: true
+        pose_431:
+          Value: true
+        pose_432:
+          Value: true
+        pose_433:
+          Value: true
+        pose_434:
+          Value: true
+        pose_435:
+          Value: true
+        pose_436:
+          Value: true
+        pose_437:
+          Value: true
+        pose_438:
+          Value: true
+        pose_439:
+          Value: true
+        pose_44:
+          Value: true
+        pose_440:
+          Value: true
+        pose_441:
+          Value: true
+        pose_442:
+          Value: true
+        pose_443:
+          Value: true
+        pose_444:
+          Value: true
+        pose_445:
+          Value: true
+        pose_446:
+          Value: true
+        pose_447:
+          Value: true
+        pose_448:
+          Value: true
+        pose_449:
+          Value: true
+        pose_45:
+          Value: true
+        pose_450:
+          Value: true
+        pose_451:
+          Value: true
+        pose_452:
+          Value: true
+        pose_453:
+          Value: true
+        pose_454:
+          Value: true
+        pose_455:
+          Value: true
+        pose_456:
+          Value: true
+        pose_457:
+          Value: true
+        pose_458:
+          Value: true
+        pose_459:
+          Value: true
+        pose_46:
+          Value: true
+        pose_460:
+          Value: true
+        pose_461:
+          Value: true
+        pose_462:
+          Value: true
+        pose_463:
+          Value: true
+        pose_464:
+          Value: true
+        pose_465:
+          Value: true
+        pose_466:
+          Value: true
+        pose_47:
+          Value: true
+        pose_48:
+          Value: true
+        pose_49:
+          Value: true
+        pose_5:
+          Value: true
+        pose_50:
+          Value: true
+        pose_51:
+          Value: true
+        pose_52:
+          Value: true
+        pose_53:
+          Value: true
+        pose_54:
+          Value: true
+        pose_55:
+          Value: true
+        pose_56:
+          Value: true
+        pose_57:
+          Value: true
+        pose_58:
+          Value: true
+        pose_59:
+          Value: true
+        pose_6:
+          Value: true
+        pose_60:
+          Value: true
+        pose_61:
+          Value: true
+        pose_62:
+          Value: true
+        pose_63:
+          Value: true
+        pose_64:
+          Value: true
+        pose_65:
+          Value: true
+        pose_66:
+          Value: true
+        pose_67:
+          Value: true
+        pose_68:
+          Value: true
+        pose_69:
+          Value: true
+        pose_7:
+          Value: true
+        pose_70:
+          Value: true
+        pose_71:
+          Value: true
+        pose_72:
+          Value: true
+        pose_73:
+          Value: true
+        pose_74:
+          Value: true
+        pose_75:
+          Value: true
+        pose_76:
+          Value: true
+        pose_77:
+          Value: true
+        pose_78:
+          Value: true
+        pose_79:
+          Value: true
+        pose_8:
+          Value: true
+        pose_80:
+          Value: true
+        pose_81:
+          Value: true
+        pose_82:
+          Value: true
+        pose_83:
+          Value: true
+        pose_84:
+          Value: true
+        pose_85:
+          Value: true
+        pose_86:
+          Value: true
+        pose_87:
+          Value: true
+        pose_88:
+          Value: true
+        pose_89:
+          Value: true
+        pose_9:
+          Value: true
+        pose_90:
+          Value: true
+        pose_91:
+          Value: true
+        pose_92:
+          Value: true
+        pose_93:
+          Value: true
+        pose_94:
+          Value: true
+        pose_95:
+          Value: true
+        pose_96:
+          Value: true
+        pose_97:
+          Value: true
+        pose_98:
+          Value: true
+        pose_99:
+          Value: true
         robot:
           Value: true
       Marker Alpha: 1
       Marker Scale: 10
       Name: TF
-      Show Arrows: true
+      Show Arrows: false
       Show Axes: true
       Show Names: true
       Tree:
         map:
+          pose_0:
+            {}
+          pose_1:
+            {}
+          pose_10:
+            {}
+          pose_100:
+            {}
+          pose_101:
+            {}
+          pose_102:
+            {}
+          pose_103:
+            {}
+          pose_104:
+            {}
+          pose_105:
+            {}
+          pose_106:
+            {}
+          pose_107:
+            {}
+          pose_108:
+            {}
+          pose_109:
+            {}
+          pose_11:
+            {}
+          pose_110:
+            {}
+          pose_111:
+            {}
+          pose_112:
+            {}
+          pose_113:
+            {}
+          pose_114:
+            {}
+          pose_115:
+            {}
+          pose_116:
+            {}
+          pose_117:
+            {}
+          pose_118:
+            {}
+          pose_119:
+            {}
+          pose_12:
+            {}
+          pose_120:
+            {}
+          pose_121:
+            {}
+          pose_122:
+            {}
+          pose_123:
+            {}
+          pose_124:
+            {}
+          pose_125:
+            {}
+          pose_126:
+            {}
+          pose_127:
+            {}
+          pose_128:
+            {}
+          pose_129:
+            {}
+          pose_13:
+            {}
+          pose_130:
+            {}
+          pose_131:
+            {}
+          pose_132:
+            {}
+          pose_133:
+            {}
+          pose_134:
+            {}
+          pose_135:
+            {}
+          pose_136:
+            {}
+          pose_137:
+            {}
+          pose_138:
+            {}
+          pose_139:
+            {}
+          pose_14:
+            {}
+          pose_140:
+            {}
+          pose_141:
+            {}
+          pose_142:
+            {}
+          pose_143:
+            {}
+          pose_144:
+            {}
+          pose_145:
+            {}
+          pose_146:
+            {}
+          pose_147:
+            {}
+          pose_148:
+            {}
+          pose_149:
+            {}
+          pose_15:
+            {}
+          pose_150:
+            {}
+          pose_151:
+            {}
+          pose_152:
+            {}
+          pose_153:
+            {}
+          pose_154:
+            {}
+          pose_155:
+            {}
+          pose_156:
+            {}
+          pose_157:
+            {}
+          pose_158:
+            {}
+          pose_159:
+            {}
+          pose_16:
+            {}
+          pose_160:
+            {}
+          pose_161:
+            {}
+          pose_162:
+            {}
+          pose_163:
+            {}
+          pose_164:
+            {}
+          pose_165:
+            {}
+          pose_166:
+            {}
+          pose_167:
+            {}
+          pose_168:
+            {}
+          pose_169:
+            {}
+          pose_17:
+            {}
+          pose_170:
+            {}
+          pose_171:
+            {}
+          pose_172:
+            {}
+          pose_173:
+            {}
+          pose_174:
+            {}
+          pose_175:
+            {}
+          pose_176:
+            {}
+          pose_177:
+            {}
+          pose_178:
+            {}
+          pose_179:
+            {}
+          pose_18:
+            {}
+          pose_180:
+            {}
+          pose_181:
+            {}
+          pose_182:
+            {}
+          pose_183:
+            {}
+          pose_184:
+            {}
+          pose_185:
+            {}
+          pose_186:
+            {}
+          pose_187:
+            {}
+          pose_188:
+            {}
+          pose_189:
+            {}
+          pose_19:
+            {}
+          pose_190:
+            {}
+          pose_191:
+            {}
+          pose_192:
+            {}
+          pose_193:
+            {}
+          pose_194:
+            {}
+          pose_195:
+            {}
+          pose_196:
+            {}
+          pose_197:
+            {}
+          pose_198:
+            {}
+          pose_199:
+            {}
+          pose_2:
+            {}
+          pose_20:
+            {}
+          pose_200:
+            {}
+          pose_201:
+            {}
+          pose_202:
+            {}
+          pose_203:
+            {}
+          pose_204:
+            {}
+          pose_205:
+            {}
+          pose_206:
+            {}
+          pose_207:
+            {}
+          pose_208:
+            {}
+          pose_209:
+            {}
+          pose_21:
+            {}
+          pose_210:
+            {}
+          pose_211:
+            {}
+          pose_212:
+            {}
+          pose_213:
+            {}
+          pose_214:
+            {}
+          pose_215:
+            {}
+          pose_216:
+            {}
+          pose_217:
+            {}
+          pose_218:
+            {}
+          pose_219:
+            {}
+          pose_22:
+            {}
+          pose_220:
+            {}
+          pose_221:
+            {}
+          pose_222:
+            {}
+          pose_223:
+            {}
+          pose_224:
+            {}
+          pose_225:
+            {}
+          pose_226:
+            {}
+          pose_227:
+            {}
+          pose_228:
+            {}
+          pose_229:
+            {}
+          pose_23:
+            {}
+          pose_230:
+            {}
+          pose_231:
+            {}
+          pose_232:
+            {}
+          pose_233:
+            {}
+          pose_234:
+            {}
+          pose_235:
+            {}
+          pose_236:
+            {}
+          pose_237:
+            {}
+          pose_238:
+            {}
+          pose_239:
+            {}
+          pose_24:
+            {}
+          pose_240:
+            {}
+          pose_241:
+            {}
+          pose_242:
+            {}
+          pose_243:
+            {}
+          pose_244:
+            {}
+          pose_245:
+            {}
+          pose_246:
+            {}
+          pose_247:
+            {}
+          pose_248:
+            {}
+          pose_249:
+            {}
+          pose_25:
+            {}
+          pose_250:
+            {}
+          pose_251:
+            {}
+          pose_252:
+            {}
+          pose_253:
+            {}
+          pose_254:
+            {}
+          pose_255:
+            {}
+          pose_256:
+            {}
+          pose_257:
+            {}
+          pose_258:
+            {}
+          pose_259:
+            {}
+          pose_26:
+            {}
+          pose_260:
+            {}
+          pose_261:
+            {}
+          pose_262:
+            {}
+          pose_263:
+            {}
+          pose_264:
+            {}
+          pose_265:
+            {}
+          pose_266:
+            {}
+          pose_267:
+            {}
+          pose_268:
+            {}
+          pose_269:
+            {}
+          pose_27:
+            {}
+          pose_270:
+            {}
+          pose_271:
+            {}
+          pose_272:
+            {}
+          pose_273:
+            {}
+          pose_274:
+            {}
+          pose_275:
+            {}
+          pose_276:
+            {}
+          pose_277:
+            {}
+          pose_278:
+            {}
+          pose_279:
+            {}
+          pose_28:
+            {}
+          pose_280:
+            {}
+          pose_281:
+            {}
+          pose_282:
+            {}
+          pose_283:
+            {}
+          pose_284:
+            {}
+          pose_285:
+            {}
+          pose_286:
+            {}
+          pose_287:
+            {}
+          pose_288:
+            {}
+          pose_289:
+            {}
+          pose_29:
+            {}
+          pose_290:
+            {}
+          pose_291:
+            {}
+          pose_292:
+            {}
+          pose_293:
+            {}
+          pose_294:
+            {}
+          pose_295:
+            {}
+          pose_296:
+            {}
+          pose_297:
+            {}
+          pose_298:
+            {}
+          pose_299:
+            {}
+          pose_3:
+            {}
+          pose_30:
+            {}
+          pose_300:
+            {}
+          pose_301:
+            {}
+          pose_302:
+            {}
+          pose_303:
+            {}
+          pose_304:
+            {}
+          pose_305:
+            {}
+          pose_306:
+            {}
+          pose_307:
+            {}
+          pose_308:
+            {}
+          pose_309:
+            {}
+          pose_31:
+            {}
+          pose_310:
+            {}
+          pose_311:
+            {}
+          pose_312:
+            {}
+          pose_313:
+            {}
+          pose_314:
+            {}
+          pose_315:
+            {}
+          pose_316:
+            {}
+          pose_317:
+            {}
+          pose_318:
+            {}
+          pose_319:
+            {}
+          pose_32:
+            {}
+          pose_320:
+            {}
+          pose_321:
+            {}
+          pose_322:
+            {}
+          pose_323:
+            {}
+          pose_324:
+            {}
+          pose_325:
+            {}
+          pose_326:
+            {}
+          pose_327:
+            {}
+          pose_328:
+            {}
+          pose_329:
+            {}
+          pose_33:
+            {}
+          pose_330:
+            {}
+          pose_331:
+            {}
+          pose_332:
+            {}
+          pose_333:
+            {}
+          pose_334:
+            {}
+          pose_335:
+            {}
+          pose_336:
+            {}
+          pose_337:
+            {}
+          pose_338:
+            {}
+          pose_339:
+            {}
+          pose_34:
+            {}
+          pose_340:
+            {}
+          pose_341:
+            {}
+          pose_342:
+            {}
+          pose_343:
+            {}
+          pose_344:
+            {}
+          pose_345:
+            {}
+          pose_346:
+            {}
+          pose_347:
+            {}
+          pose_348:
+            {}
+          pose_349:
+            {}
+          pose_35:
+            {}
+          pose_350:
+            {}
+          pose_351:
+            {}
+          pose_352:
+            {}
+          pose_353:
+            {}
+          pose_354:
+            {}
+          pose_355:
+            {}
+          pose_356:
+            {}
+          pose_357:
+            {}
+          pose_358:
+            {}
+          pose_359:
+            {}
+          pose_36:
+            {}
+          pose_360:
+            {}
+          pose_361:
+            {}
+          pose_362:
+            {}
+          pose_363:
+            {}
+          pose_364:
+            {}
+          pose_365:
+            {}
+          pose_366:
+            {}
+          pose_367:
+            {}
+          pose_368:
+            {}
+          pose_369:
+            {}
+          pose_37:
+            {}
+          pose_370:
+            {}
+          pose_371:
+            {}
+          pose_372:
+            {}
+          pose_373:
+            {}
+          pose_374:
+            {}
+          pose_375:
+            {}
+          pose_376:
+            {}
+          pose_377:
+            {}
+          pose_378:
+            {}
+          pose_379:
+            {}
+          pose_38:
+            {}
+          pose_380:
+            {}
+          pose_381:
+            {}
+          pose_382:
+            {}
+          pose_383:
+            {}
+          pose_384:
+            {}
+          pose_385:
+            {}
+          pose_386:
+            {}
+          pose_387:
+            {}
+          pose_388:
+            {}
+          pose_389:
+            {}
+          pose_39:
+            {}
+          pose_390:
+            {}
+          pose_391:
+            {}
+          pose_392:
+            {}
+          pose_393:
+            {}
+          pose_394:
+            {}
+          pose_395:
+            {}
+          pose_396:
+            {}
+          pose_397:
+            {}
+          pose_398:
+            {}
+          pose_399:
+            {}
+          pose_4:
+            {}
+          pose_40:
+            {}
+          pose_400:
+            {}
+          pose_401:
+            {}
+          pose_402:
+            {}
+          pose_403:
+            {}
+          pose_404:
+            {}
+          pose_405:
+            {}
+          pose_406:
+            {}
+          pose_407:
+            {}
+          pose_408:
+            {}
+          pose_409:
+            {}
+          pose_41:
+            {}
+          pose_410:
+            {}
+          pose_411:
+            {}
+          pose_412:
+            {}
+          pose_413:
+            {}
+          pose_414:
+            {}
+          pose_415:
+            {}
+          pose_416:
+            {}
+          pose_417:
+            {}
+          pose_418:
+            {}
+          pose_419:
+            {}
+          pose_42:
+            {}
+          pose_420:
+            {}
+          pose_421:
+            {}
+          pose_422:
+            {}
+          pose_423:
+            {}
+          pose_424:
+            {}
+          pose_425:
+            {}
+          pose_426:
+            {}
+          pose_427:
+            {}
+          pose_428:
+            {}
+          pose_429:
+            {}
+          pose_43:
+            {}
+          pose_430:
+            {}
+          pose_431:
+            {}
+          pose_432:
+            {}
+          pose_433:
+            {}
+          pose_434:
+            {}
+          pose_435:
+            {}
+          pose_436:
+            {}
+          pose_437:
+            {}
+          pose_438:
+            {}
+          pose_439:
+            {}
+          pose_44:
+            {}
+          pose_440:
+            {}
+          pose_441:
+            {}
+          pose_442:
+            {}
+          pose_443:
+            {}
+          pose_444:
+            {}
+          pose_445:
+            {}
+          pose_446:
+            {}
+          pose_447:
+            {}
+          pose_448:
+            {}
+          pose_449:
+            {}
+          pose_45:
+            {}
+          pose_450:
+            {}
+          pose_451:
+            {}
+          pose_452:
+            {}
+          pose_453:
+            {}
+          pose_454:
+            {}
+          pose_455:
+            {}
+          pose_456:
+            {}
+          pose_457:
+            {}
+          pose_458:
+            {}
+          pose_459:
+            {}
+          pose_46:
+            {}
+          pose_460:
+            {}
+          pose_461:
+            {}
+          pose_462:
+            {}
+          pose_463:
+            {}
+          pose_464:
+            {}
+          pose_465:
+            {}
+          pose_466:
+            {}
+          pose_47:
+            {}
+          pose_48:
+            {}
+          pose_49:
+            {}
+          pose_5:
+            {}
+          pose_50:
+            {}
+          pose_51:
+            {}
+          pose_52:
+            {}
+          pose_53:
+            {}
+          pose_54:
+            {}
+          pose_55:
+            {}
+          pose_56:
+            {}
+          pose_57:
+            {}
+          pose_58:
+            {}
+          pose_59:
+            {}
+          pose_6:
+            {}
+          pose_60:
+            {}
+          pose_61:
+            {}
+          pose_62:
+            {}
+          pose_63:
+            {}
+          pose_64:
+            {}
+          pose_65:
+            {}
+          pose_66:
+            {}
+          pose_67:
+            {}
+          pose_68:
+            {}
+          pose_69:
+            {}
+          pose_7:
+            {}
+          pose_70:
+            {}
+          pose_71:
+            {}
+          pose_72:
+            {}
+          pose_73:
+            {}
+          pose_74:
+            {}
+          pose_75:
+            {}
+          pose_76:
+            {}
+          pose_77:
+            {}
+          pose_78:
+            {}
+          pose_79:
+            {}
+          pose_8:
+            {}
+          pose_80:
+            {}
+          pose_81:
+            {}
+          pose_82:
+            {}
+          pose_83:
+            {}
+          pose_84:
+            {}
+          pose_85:
+            {}
+          pose_86:
+            {}
+          pose_87:
+            {}
+          pose_88:
+            {}
+          pose_89:
+            {}
+          pose_9:
+            {}
+          pose_90:
+            {}
+          pose_91:
+            {}
+          pose_92:
+            {}
+          pose_93:
+            {}
+          pose_94:
+            {}
+          pose_95:
+            {}
+          pose_96:
+            {}
+          pose_97:
+            {}
+          pose_98:
+            {}
+          pose_99:
+            {}
           robot:
             {}
       Update Interval: 0
@@ -338,7 +2206,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 76.58167266845703
+      Distance: 456.4688720703125
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -346,25 +2214,25 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -12.504825592041016
-        Y: 25.353099822998047
-        Z: -19.185413360595703
+        X: 13.577741622924805
+        Y: 8.337485313415527
+        Z: -21.328996658325195
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6997971534729004
+      Pitch: 1.4197964668273926
       Target Frame: <Fixed Frame>
-      Yaw: 5.0184807777404785
+      Yaw: 4.393472194671631
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1043
+  Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000015600000375fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000375000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000375fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d00000375000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065010000000000000780000002eb00fffffffb0000000800540069006d006501000000000000045000000000000000000000050f0000037500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001560000035afc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000035a000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000035afc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d0000035a000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065010000000000000780000002eb00fffffffb0000000800540069006d006501000000000000045000000000000000000000050f0000035a00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -374,5 +2242,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1920
-  X: 0
-  Y: 0
+  X: 1920
+  Y: 27

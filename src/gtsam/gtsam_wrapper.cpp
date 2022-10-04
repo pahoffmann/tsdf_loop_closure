@@ -212,6 +212,7 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud,
     g_icp.setRANSACIterations(100);
     g_icp.setRANSACOutlierRejectionThreshold(1.0);
     g_icp.setUseReciprocalCorrespondences(false);
+    //g_icp.addCorrespondenceRejector(pcl::r)
 
     g_icp.setInputSource(scan_cloud);
     g_icp.setInputTarget(model_cloud);

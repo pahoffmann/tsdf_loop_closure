@@ -51,17 +51,11 @@ struct Pose
 
     Eigen::Matrix4f getTransformationMatrix()
     {
-
-        // std::cout << "Rotation mat: " << std::endl << rotationMatrixFromQuaternion() << std::endl;
-        // std::cout << "Translation mat: " << std::endl << pos << std::endl;
-        //  identity so bottom left corner is filled
-        //  TODO: access in eigen should be <row, column> check hits
+        //  identity so bottom right corner is filled
         Eigen::Matrix4f tmp = Eigen::Matrix4f::Identity();
         tmp.block<3, 3>(0, 0) = rotationMatrixFromQuaternion();
         tmp.block<3, 1>(0, 3) = pos;
-
-        // std::cout << "Comined mat: " << std::endl << tmp << std::endl;
-
+        
         return tmp;
     }
 

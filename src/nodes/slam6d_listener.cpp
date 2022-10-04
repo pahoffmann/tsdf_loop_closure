@@ -89,6 +89,10 @@ Matrix4f last_initial_estimate;
 Pose last_loop_old_pose;
 Matrix4f last_loop_transform_diff;
 
+// just some hacky stuff
+Matrix4f hacky_rotation;
+Pose hacky_pose;
+
 // ROS //
 ros::Publisher path_pub;
 ros::Publisher optimized_path_pub;
@@ -143,6 +147,11 @@ void init_obj()
     last_loop_old_pose.quat = Eigen::Quaternionf::Identity();
     last_loop_transform_diff = Matrix4f::Identity();
     last_initial_estimate = Matrix4f::Identity();
+
+    float rotate_z = 15.0f;
+
+    hacky_rotation = poseFromEuler(0, 0, 0, 0, 0, 15.0f).getTransformationMatrix();
+    std::cout << "Initialization: hacky rotation:" << Pose(hacky_rotation) << std::endl;
 }
 
 void fill_optimized_path(gtsam::Values values)
@@ -230,7 +239,7 @@ void refill_graph()
 
 void broadcast_robot_pose(Pose &pose)
 {
-    //std::cout << "Broadcasting transform.. " << std::endl;
+    // std::cout << "Broadcasting transform.. " << std::endl;
 
     static tf2_ros::TransformBroadcaster br;
 
@@ -253,6 +262,37 @@ void broadcast_robot_pose(Pose &pose)
     transformStamped.transform.rotation.w = q.w();
 
     br.sendTransform(transformStamped);
+}
+
+void broadcast_robot_path(Path *path)
+{
+    // std::cout << "Broadcasting transform.. " << std::endl;
+
+    static tf2_ros::StaticTransformBroadcaster path_br;
+
+    for (int idx = 0; idx < path->get_length(); idx++)
+    {
+        Pose *current = path->at(idx);
+        geometry_msgs::TransformStamped transformStamped;
+
+        transformStamped.header.stamp = ros::Time::now();
+        transformStamped.header.frame_id = "map";
+        transformStamped.child_frame_id = "pose_" + std::to_string(idx);
+        transformStamped.transform.translation.x = current->pos.x();
+        transformStamped.transform.translation.y = current->pos.y();
+        transformStamped.transform.translation.z = current->pos.z();
+
+        auto euler = current->quat.toRotationMatrix().eulerAngles(0, 1, 2);
+
+        tf2::Quaternion q;
+        q.setRPY(euler.x(), euler.y(), euler.z());
+        transformStamped.transform.rotation.x = q.x();
+        transformStamped.transform.rotation.y = q.y();
+        transformStamped.transform.rotation.z = q.z();
+        transformStamped.transform.rotation.w = q.w();
+
+        path_br.sendTransform(transformStamped);
+    }
 }
 
 /**
@@ -298,8 +338,36 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_pose.quat = tmp_quat.cast<float>();
     input_pose.pos = tmp_point.cast<float>();
 
+    // hacky
+
+    // if(path->get_length() == 261)
+    // {
+    //     // save rotation pose
+    //     hacky_pose = *path->at(path->get_length() - 1);
+    // }
+
+    // if(path->get_length() > 261 && path->get_length() < 280)
+    // {
+    //     // Matrix4f hacky_transformation = Matrix4f::Identity();
+    //     // hacky_transformation(1, 3) = -0.5f * (path->get_length() - 261);
+
+    //     std::cout << "Old transformation: " << std::endl << input_pose << std::endl;
+
+    //     auto input_pose_mat = input_pose.getTransformationMatrix();
+    //     auto hacky_mat = input_pose_mat * hacky_transformation;
+
+    //     input_pose = Pose(hacky_mat);
+
+    //     std::cout << "New transformation: " << std::endl << input_pose << std::endl;
+    // }
+    // else
+    // {
+    //     std::cout << "Current path length: " << path->get_length() << std::endl;
+    // }
+
     // add the delta between the initial poses to the last pose of the (maybe already updated) path
     auto initial_pose_delta = getTransformationMatrixBetween(last_initial_estimate, input_pose.getTransformationMatrix());
+
     last_initial_estimate = input_pose.getTransformationMatrix();
 
     if (path->get_length() > 0)
@@ -327,6 +395,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // publish cloud and transform for robot coordinate system
     broadcast_robot_pose(*path->at(path->get_length() - 1));
+    broadcast_robot_path(path);
 
     sensor_msgs::PointCloud2 input_cloud_tf;
     pcl::toROSMsg(*input_cloud, input_cloud_tf);
@@ -403,7 +472,16 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma region LOOP_IDENTIFICATION
     // check for loops
-    auto lc_pairs = path->find_loop_kd_min_dist_backwards(path->get_length() - 1, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, false);
+
+    std::vector<std::pair<int, int>> lc_pairs;
+    if (path->get_length() > 231 && path->get_length() < 285)
+    {
+        lc_pairs = path->find_loop_kd_min_dist_backwards(path->get_length() - 1, 20, 4, false);
+    }
+    else
+    {
+        lc_pairs = path->find_loop_kd_min_dist_backwards(path->get_length() - 1, params.loop_closure.max_dist_lc, params.loop_closure.min_traveled_lc, false);
+    }
     std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_candidate_pairs;
 
     // check the potentially found loop closure candidates
@@ -487,6 +565,21 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // auto cur_to_prev_initial = getTransformationMatrixBetween(prev_to_map, cur_to_map);
         auto prev_to_cur_initial = getTransformationMatrixBetween(cur_to_map, prev_to_map);
 
+        if ((cur_to_map.block<3, 1>(0, 3) - prev_to_map.block<3, 1>(0, 3)).norm() > params.loop_closure.max_dist_lc / 2.0f)
+        {
+            Matrix4f tmp = Matrix4f::Identity();
+
+            tmp.block<3, 3>(0, 0) = prev_to_cur_initial.block<3, 3>(0, 0);
+
+            std::cout << "It's far... !!!" << std::endl;
+            std::cout << "PrevToCur:" << std::endl
+                      << Pose(prev_to_cur_initial) << std::endl;
+            std::cout << "OnlyRot:" << std::endl
+                      << Pose(tmp) << std::endl;
+
+            prev_to_cur_initial = tmp;
+        }
+
         pcl::PointCloud<PointType>::Ptr model_cloud;
         pcl::PointCloud<PointType>::Ptr scan_cloud;
         model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
@@ -525,7 +618,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         approx_pcl_pub_prev.publish(prev_pcl_msg);
         approx_pcl_pub_icp.publish(icp_pcl_msg);
     }
-    
+
     // if the lc found did not converge, we skip everything else
     if (!converged)
     {

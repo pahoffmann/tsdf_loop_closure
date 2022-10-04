@@ -84,6 +84,8 @@ void prepare()
         Pose pose(pose_mat);
         path->add_pose(pose);
     }
+    
+    // global_scan_counter = 230;
 }
 
 void publish_next_data()
