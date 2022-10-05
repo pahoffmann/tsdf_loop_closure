@@ -40,30 +40,6 @@ private:
     std::string print_prefix = "[GTSAMWrapper] ";
 
     /**
-     * @brief performs basic ICP between source and target, will return information about the performance of the icp
-     *
-     * @param source_cloud
-     * @param target_cloud
-     * @param converged
-     * @param final_transformation
-     * @param fitness_score
-     */
-    void perform_pcl_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                         pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
-
-    /**
-     * @brief performs generalized icp between the two pointclouds, will return information about the performance of the icp
-     *
-     * @param source_cloud
-     * @param target_cloud
-     * @param converged
-     * @param final_transformation
-     * @param fitness_score
-     */
-    void perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                          pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
-
-    /**
      * @brief will use the teaser++ library and FPFH Features (+ Normal estimation) to register two pcl's
      *
      * @param model_cloud
@@ -163,4 +139,28 @@ public:
      *
      */
     void reset();
+
+        /**
+     * @brief performs basic ICP between source and target, will return information about the performance of the icp
+     *
+     * @param source_cloud
+     * @param target_cloud
+     * @param converged
+     * @param final_transformation
+     * @param fitness_score
+     */
+    void perform_pcl_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                         pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
+
+    /**
+     * @brief performs generalized icp between the two pointclouds, will return information about the performance of the icp
+     *
+     * @param source_cloud
+     * @param target_cloud
+     * @param converged
+     * @param final_transformation
+     * @param fitness_score
+     */
+    void perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                          pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
 };

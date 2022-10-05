@@ -71,7 +71,7 @@ void prepare()
 {
     path = new Path();
 
-    boost::filesystem::path directory_name = fs::path("/home/patrick/data/hannover1_mod/");
+    boost::filesystem::path directory_name = fs::path("/home/patrick/data/hannover1/");
 
     std::cout << "[TRANSFORM_COORD_SYS] Using dataset in folder: " << directory_name.string() << std::endl;
 
