@@ -6,7 +6,7 @@ loop_closure:
 
 map:
   # directory to save map in
-  dir: "/home/patrick/maps/test_maps"
+  dir: "/home/patrick/maps/generated"
 
   comment: "slam6d_listening"
 

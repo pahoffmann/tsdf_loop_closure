@@ -72,6 +72,9 @@
 [x] fix lc detection by using the optimal lc found
 [x] Integration of GTSAM for Loop Closure optimization: https://gtsam.org/tutorials/intro.html (basic integration)
 [x] Also, the loop closure does not only update the path poses between the start and end of the path, but finds new optimal poses for the whole path.
+[x] Fix LC with liosam information
+[x] update poses after optimizing the path with a found lc
+[x] Re-evaluate cleanup artifacts method from global map
 
 
 
@@ -113,7 +116,6 @@ Intersection Data:
 ## TODO's ##
 
 [ ] read paper on loop closure, write down most important points
-[ ] Re-evaluate cleanup artifacts method from global map
 [ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
 
 [ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing (might be too runtime excessive)
@@ -126,7 +128,6 @@ Intersection Data:
 
 
 
-[|] Fix LC with liosam information
 [ ] edge case: find bounding box (no axis aligned) of the tsdf volume, find overlap(s) with rest of the map
     -> the data in the overlap(s) is basically broken and cannot be restored, because no sufficient data is present
 [ ] That's why the best way might actually be to use the incredibly greedy way and store the pcl data for each of the poses and redo the whole map when finding a lc
@@ -138,7 +139,15 @@ Intersection Data:
 
 
 [ ] Update params in GlobalMap: only use map params
-[ ] update poses after optimizing the path with a found lc
+
+[x] write the routing which basically throws away the whole global map and regenerates it after a successful closure ---- or: at the end :)
+    [x] use bond to bound the data publisher and slam6d subscriber (this way we can terminate really cleanly)
+    [x] map the tsdf behind the initial path and after (weird results)
+    [x] save the old gm and the updated gm to get good comparison when creating an actual mesh from it
+    [ ] the results of the tsdf map reconstructions look weird and wrong, check the update process and the way the volume looks
+
+[ ] fill evaluation attributes
+[ ] noise relative to the pose difference, no absolute values
 
 
 
@@ -154,6 +163,10 @@ Intersection Data:
 
 [ ] ICP: display correlation between raytrace resolution when approximating and the icp fitness score (for different datasets)
 [ ] ICP: check, which filtering method works best
+
+[ ] Write about bond, usage in general
+
+
 
 
 

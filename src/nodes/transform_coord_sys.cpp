@@ -12,6 +12,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <eigen_conversions/eigen_msg.h>
+#include <bondcpp/bond.h>
 
 namespace fs = boost::filesystem;
 
@@ -21,14 +22,15 @@ Path *path;
 
 int global_scan_counter = 0;
 
-bool first_ready = false;
-
 std::pair<std::vector<fs::path>, std::vector<fs::path>> scan_pose_filename_pairs;
 
 ros::Publisher cloud_pub;
 ros::Publisher pose_pub;
 ros::Publisher filename_pub;
 ros::Publisher initial_path_pub;
+
+// create a data bound between the data publisher (this node) and the data subscriber
+std::unique_ptr<bond::Bond> bond_ptr;
 
 sensor_msgs::PointCloud2 pcl_to_ros(pcl::PointCloud<PointType>::Ptr cloud)
 {
@@ -69,7 +71,9 @@ void prepare()
 {
     path = new Path();
 
-    boost::filesystem::path directory_name = fs::path("/home/patrick/data/hannover1/");
+    boost::filesystem::path directory_name = fs::path("/home/patrick/data/hannover1_mod/");
+
+    std::cout << "[TRANSFORM_COORD_SYS] Using dataset in folder: " << directory_name.string() << std::endl;
 
     scan_pose_filename_pairs = CoordSysTransform::get_filenames(directory_name);
     size_t num_scans = scan_pose_filename_pairs.first.size();
@@ -84,17 +88,29 @@ void prepare()
         Pose pose(pose_mat);
         path->add_pose(pose);
     }
-    
+
     // global_scan_counter = 230;
 }
 
 void publish_next_data()
 {
     // no need to proceed, if all data is already published
-    if (global_scan_counter >= scan_pose_filename_pairs.first.size())
+    if (global_scan_counter == scan_pose_filename_pairs.first.size())
     {
         // all data is published, shut down
-        exit(EXIT_SUCCESS);
+        std::cout << "[TransformCoordSys] Breaking the Bond to the listener" << std::endl;
+        bond_ptr->breakBond();
+        return;
+    }
+
+    // testing
+    if (global_scan_counter > 210)
+    {
+        // all data is published, break the bound and shutdown
+
+        std::cout << "[TransformCoordSys] Breaking the Bond to the listener (test)" << std::endl;
+        bond_ptr->breakBond();
+        return;
     }
 
     auto scan_path = scan_pose_filename_pairs.first[global_scan_counter];
@@ -142,11 +158,24 @@ void publish_next_data()
  */
 void handle_slam6d_listener_ready(const std_msgs::String::ConstPtr &msg)
 {
-    std::cout << "READY" << std::endl;
-
-    first_ready = true;
+    // std::cout << "READY" << std::endl;
 
     publish_next_data();
+}
+
+void bond_formed_callback()
+{
+    std::cout << "[TransformCoordSys] Connection established.." << std::endl;
+
+    publish_next_data();
+}
+
+void bond_broken_callback()
+{
+    std::cout << "[TransformCoordSys] Done publishing.." << std::endl;
+
+    bond_ptr.release();
+    exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -169,16 +198,17 @@ int main(int argc, char **argv)
     // prepare everything needed for this node
     prepare();
 
+    std::string id = "42"; // id currently hardcoded
+    bond_ptr.reset(new bond::Bond("/data_bound", id));
+    bond_ptr->setHeartbeatTimeout(1000000);
+    bond_ptr->start();
+    bond_ptr->setFormedCallback(bond_formed_callback);
+    bond_ptr->setBrokenCallback(bond_broken_callback);
+
     ros::Rate r(1.0f);
 
     while (ros::ok())
     {
-        if (!first_ready)
-        {
-            std::cout << "No ready yet, publishing..." << std::endl;
-            publish_next_data();
-        }
-
         initial_path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::red));
 
         ros::spinOnce();

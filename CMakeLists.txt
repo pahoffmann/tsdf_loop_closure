@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   tf2_ros
   tf2
+  bondcpp
 )
 
 ################################################

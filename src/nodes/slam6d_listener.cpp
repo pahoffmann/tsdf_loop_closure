@@ -22,6 +22,8 @@
 #include <message_filters/sync_policies/exact_time.h>
 #include <geometry_msgs/PoseStamped.h>
 
+#include <bondcpp/bond.h>
+
 // c++ standard related includes
 #include <sstream>
 #include <iostream>
@@ -76,6 +78,15 @@ Path *optimized_path;
 int side_length_xy;
 int side_length_z;
 
+// evaluation purpose:
+float mean_fitness_score = 0.0f;
+int num_loops = 0;
+float mean_loop_fitness_score;
+float min_fitness_score;
+float max_fitness_score;
+float max_loop_fitness_score;
+
+
 // vector to store found lc index pairs
 std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_index_pairs;
 
@@ -89,35 +100,27 @@ Matrix4f last_initial_estimate;
 Pose last_loop_old_pose;
 Matrix4f last_loop_transform_diff;
 
-// just some hacky stuff
-Matrix4f hacky_rotation;
-Pose hacky_pose;
-
 // ROS //
 ros::Publisher path_pub;
 ros::Publisher optimized_path_pub;
 ros::Publisher loop_pub;
 ros::Publisher tsdf_pub;
-
-// publisher used to signal to it's subscribers, that the node is back in idle mode
-ros::Publisher ready_flag_pub;
-
+ros::Publisher ready_flag_pub;      // publisher used to signal to it's subscribers, that the node is back in idle mode
 ros::Publisher approx_pcl_pub_cur;  // publish approximated cloud for current pose of lc (cur_index > prev_index)
 ros::Publisher approx_pcl_pub_prev; // publish approximated cloud for previous pose of lc (cur_index > prev_index)
 ros::Publisher approx_pcl_pub_icp;  // result of icp
-
-// publishes the input cloud
-ros::Publisher input_cloud_pub;
+ros::Publisher input_cloud_pub;     // publishes the input cloud
 ros::Publisher tsdf_cloud_pub;
-
-// publishes loop closure candidates
-ros::Publisher lc_candidate_publisher;
+ros::Publisher lc_candidate_publisher; // publishes loop closure candidates
 
 // Ros messages
 nav_msgs::Path ros_path;
 sensor_msgs::PointCloud2 cur_pcl_msg;
 sensor_msgs::PointCloud2 prev_pcl_msg;
 sensor_msgs::PointCloud2 icp_pcl_msg;
+
+// Boncpp
+std::unique_ptr<bond::Bond> bond_ptr;
 
 #pragma endregion
 
@@ -147,11 +150,6 @@ void init_obj()
     last_loop_old_pose.quat = Eigen::Quaternionf::Identity();
     last_loop_transform_diff = Matrix4f::Identity();
     last_initial_estimate = Matrix4f::Identity();
-
-    float rotate_z = 15.0f;
-
-    hacky_rotation = poseFromEuler(0, 0, 0, 0, 0, 15.0f).getTransformationMatrix();
-    std::cout << "Initialization: hacky rotation:" << Pose(hacky_rotation) << std::endl;
 }
 
 void fill_optimized_path(gtsam::Values values)
@@ -338,33 +336,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_pose.quat = tmp_quat.cast<float>();
     input_pose.pos = tmp_point.cast<float>();
 
-    // hacky
-
-    // if(path->get_length() == 261)
-    // {
-    //     // save rotation pose
-    //     hacky_pose = *path->at(path->get_length() - 1);
-    // }
-
-    // if(path->get_length() > 261 && path->get_length() < 280)
-    // {
-    //     // Matrix4f hacky_transformation = Matrix4f::Identity();
-    //     // hacky_transformation(1, 3) = -0.5f * (path->get_length() - 261);
-
-    //     std::cout << "Old transformation: " << std::endl << input_pose << std::endl;
-
-    //     auto input_pose_mat = input_pose.getTransformationMatrix();
-    //     auto hacky_mat = input_pose_mat * hacky_transformation;
-
-    //     input_pose = Pose(hacky_mat);
-
-    //     std::cout << "New transformation: " << std::endl << input_pose << std::endl;
-    // }
-    // else
-    // {
-    //     std::cout << "Current path length: " << path->get_length() << std::endl;
-    // }
-
     // add the delta between the initial poses to the last pose of the (maybe already updated) path
     auto initial_pose_delta = getTransformationMatrixBetween(last_initial_estimate, input_pose.getTransformationMatrix());
 
@@ -471,8 +442,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // local_map_ptr->write_back();
 
 #pragma region LOOP_IDENTIFICATION
-    // check for loops
 
+    // check for loops
     std::vector<std::pair<int, int>> lc_pairs;
     if (path->get_length() > 231 && path->get_length() < 285)
     {
@@ -500,18 +471,18 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     for (auto lc_pair : lc_pairs)
     {
 
-        std::cout << "Found LC Candidate between pose " << lc_pair.first << " and " << lc_pair.second << std::endl;
+        // std::cout << "Found LC Candidate between pose " << lc_pair.first << " and " << lc_pair.second << std::endl;
 
         // check if the detected loop might be viable considering already found loops
         if (!is_viable_lc(lc_pair))
         {
-            std::cout << "LC pair not viable!" << std::endl;
+            // std::cout << "LC pair not viable!" << std::endl;
 
             continue;
         }
         else
         {
-            std::cout << "Possible LC found between " << lc_pair.first << " and " << lc_pair.second << std::endl;
+            // std::cout << "Possible LC found between " << lc_pair.first << " and " << lc_pair.second << std::endl;
             lc_candidate_pairs.push_back(std::make_pair(Matrix4f::Identity(), lc_pair));
         }
     }
@@ -565,20 +536,21 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // auto cur_to_prev_initial = getTransformationMatrixBetween(prev_to_map, cur_to_map);
         auto prev_to_cur_initial = getTransformationMatrixBetween(cur_to_map, prev_to_map);
 
-        if ((cur_to_map.block<3, 1>(0, 3) - prev_to_map.block<3, 1>(0, 3)).norm() > params.loop_closure.max_dist_lc / 2.0f)
-        {
-            Matrix4f tmp = Matrix4f::Identity();
+        // TODO: evaluate the performance of gicp based on this
+        // if ((cur_to_map.block<3, 1>(0, 3) - prev_to_map.block<3, 1>(0, 3)).norm() > params.loop_closure.max_dist_lc / 2.0f)
+        // {
+        //     Matrix4f tmp = Matrix4f::Identity();
 
-            tmp.block<3, 3>(0, 0) = prev_to_cur_initial.block<3, 3>(0, 0);
+        //     tmp.block<3, 3>(0, 0) = prev_to_cur_initial.block<3, 3>(0, 0);
 
-            std::cout << "It's far... !!!" << std::endl;
-            std::cout << "PrevToCur:" << std::endl
-                      << Pose(prev_to_cur_initial) << std::endl;
-            std::cout << "OnlyRot:" << std::endl
-                      << Pose(tmp) << std::endl;
+        //     std::cout << "It's far... !!!" << std::endl;
+        //     std::cout << "PrevToCur:" << std::endl
+        //               << Pose(prev_to_cur_initial) << std::endl;
+        //     std::cout << "OnlyRot:" << std::endl
+        //               << Pose(tmp) << std::endl;
 
-            prev_to_cur_initial = tmp;
-        }
+        //     prev_to_cur_initial = tmp;
+        // }
 
         pcl::PointCloud<PointType>::Ptr model_cloud;
         pcl::PointCloud<PointType>::Ptr scan_cloud;
@@ -605,14 +577,14 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
         else
         {
-            std::cout << "Unit not converged" << std::endl;
+            // std::cout << "Unit not converged" << std::endl;
         }
 
         cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(scan_cloud, "robot");
         prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(model_cloud, "robot");
         icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_cloud, "robot");
 
-        std::cout << "Number of points in icp cloud: " << icp_cloud->size() << std::endl;
+        // std::cout << "Number of points in icp cloud: " << icp_cloud->size() << std::endl;
 
         approx_pcl_pub_cur.publish(cur_pcl_msg);
         approx_pcl_pub_prev.publish(prev_pcl_msg);
@@ -673,6 +645,63 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 }
 
 /**
+ * @brief callback if the bond from data publisher to the current node is broken
+ *
+ */
+void clear_and_update_tsdf()
+{
+    std::cout << "[Slam6D_Listener] Cleanup and write new tsdf" << std::endl;
+
+    // write data
+    local_map_ptr->write_back();
+    std::cout << "Old map has been written to: " << params.map.filename.string() << std::endl;
+
+    // update filename
+    auto previous_filename_path = params.map.filename;
+    params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + "updated").string() + previous_filename_path.extension().string());
+
+    std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
+
+    // reset global and localmap
+    global_map_ptr.reset(new GlobalMap(params.map));
+    local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+
+    // refill tsdf map
+    for (int i = 0; i < path->get_length(); i++)
+    {
+        auto current_pose_ptr = path->at(i);
+        auto pose_mat = current_pose_ptr->getTransformationMatrix();
+        auto cloud_ptr = dataset_clouds.at(i);
+
+        std::vector<Eigen::Vector3i> points_original(cloud_ptr->size());
+
+        // transform points to map coordinates
+#pragma omp parallel for schedule(static) default(shared)
+        for (int i = 0; i < cloud_ptr->size(); ++i)
+        {
+            const auto &cp = (*cloud_ptr)[i];
+            points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
+        }
+
+        // Shift
+        Vector3i input_3d_pos = real_to_map(pose_mat.block<3, 1>(0, 3));
+        local_map_ptr->shift(input_3d_pos);
+
+        Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
+        rot.block<3, 3>(0, 0) = to_int_mat(pose_mat).block<3, 3>(0, 0);
+        Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
+
+        // create TSDF Volume
+        update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution);
+    }
+
+    local_map_ptr->write_back();
+
+    bond_ptr.release();
+    exit(EXIT_SUCCESS);
+}
+
+/**
  * @brief Main method
  *
  * @param argc
@@ -712,10 +741,12 @@ int main(int argc, char **argv)
     ready_flag_pub = n.advertise<std_msgs::String>("/slam6d_listener_ready", 1);
     lc_candidate_publisher = n.advertise<visualization_msgs::Marker>("/lc_candidates", 1);
 
-    std_msgs::String ready_msg;
-    ready_msg.data = std::string("ready");
-
-    ready_flag_pub.publish(ready_msg);
+    // bond
+    std::string id = "42";
+    bond_ptr.reset(new bond::Bond("/data_bound", id));
+    bond_ptr->setHeartbeatTimeout(1000000);
+    bond_ptr->start();
+    bond_ptr->setBrokenCallback(clear_and_update_tsdf);
 
     ros::spin();
 

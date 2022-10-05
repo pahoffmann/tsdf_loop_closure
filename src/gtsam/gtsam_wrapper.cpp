@@ -15,10 +15,11 @@ GTSAMWrapper::GTSAMWrapper(LoopClosureParams &input_params)
     // noise_vec << 0.5, 0.5, 0.5, 0.3, 0.3, 0.3;
 
     // initialize prior and in between noise with default values used for noising the constraints
-    // prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    //prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
     prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
-    // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
+    //in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
     in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, 1e-2, 0.3, 0.3, 0.3).finished());
+    //in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 0.2, 0.2, 0.2, 1.0, 1.0, 1.0).finished());
 }
 
 void GTSAMWrapper::add_prior_constraint(Matrix4f &transform)
@@ -92,10 +93,10 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     {
         std::cout << print_prefix << "Scan matching converged for lc with indices: " << lc_indices.first << " | " << lc_indices.second << std::endl;
         std::cout << print_prefix << "ICP Fitness Score: " << fitness_score << std::endl;
-        std::cout << print_prefix << "Final transformation: " << std::endl
-                  << final_transformation << std::endl;
-        std::cout << "Final transformation readable: " << std::endl
-                  << Pose(final_transformation) << std::endl;
+        // std::cout << print_prefix << "Final transformation: " << std::endl
+        //           << final_transformation << std::endl;
+        // std::cout << "Final transformation readable: " << std::endl
+        //           << Pose(final_transformation) << std::endl;
 
         // check if the fitness score is above a certain upper boundary, if so scan matching was not good enough
         if (fitness_score > 0.5)
@@ -295,18 +296,18 @@ void GTSAMWrapper::perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr mode
     final_transformation.block<3, 3>(0, 0) = solution.rotation.cast<float>();
     final_transformation.block<3, 1>(0, 3) = solution.translation.cast<float>();
 
-    std::cout << "Final transformation from TEASER++:: (readable)" << std::endl
-              << Pose(final_transformation) << std::endl;
+    // std::cout << "Final transformation from TEASER++:: (readable)" << std::endl
+    //           << Pose(final_transformation) << std::endl;
 
     if (!solution.valid)
     {
         std::cout << "Solution not valid" << std::endl;
     }
 
-    std::cout << "Time taken for T++ (s): "
-              << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
-                     1000000.0
-              << std::endl;
+    // std::cout << "Time taken for T++ (s): "
+    //           << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
+    //                  1000000.0
+    //           << std::endl;
 }
 
 void GTSAMWrapper::perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
