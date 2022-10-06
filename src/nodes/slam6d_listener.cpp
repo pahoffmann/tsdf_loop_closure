@@ -42,6 +42,7 @@
 #include <loop_closure/util/eigen_vs_ros.h>
 #include <loop_closure/util/update_tsdf.h>
 #include <loop_closure/gtsam/gtsam_wrapper.h>
+#include <loop_closure/util/lc_evaluator.h>
 
 // transform between ros and eigen
 #include <tf2/convert.h>
@@ -77,6 +78,9 @@ Path *path;
 Path *optimized_path;
 int side_length_xy;
 int side_length_z;
+
+// evaluation
+//Evaluator evaluator();
 
 // vector to store found lc index pairs
 std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_index_pairs;

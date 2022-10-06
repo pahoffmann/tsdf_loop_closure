@@ -75,7 +75,8 @@
 [x] Fix LC with liosam information
 [x] update poses after optimizing the path with a found lc
 [x] Re-evaluate cleanup artifacts method from global map
-
+[x] read paper on loop closure, write down most important points
+[x] Preregister Poses with icp to get an initial estimate
 
 
 Intersection Data:
@@ -112,17 +113,16 @@ Intersection Data:
 [ ] instead of filtering outliers using the localmap interface, do it via the globalmap, this should be a lot faster
 [ ] write a raytracer routine, which removes artifacts not seen during the tracing process (aka keep going even once finished and mark hit cells to be
     removed)
-
-## TODO's ##
-
-[ ] read paper on loop closure, write down most important points
-[ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
-
 [ ] write a job, which removes the cells, which have not been covered during bresenham/raytracing (might be too runtime excessive)
+[ ] when updating the cells later on, possibly favor more recent positions over old ones (sinus/cosinus function)
 [ ] think of a way to include connectivity between cells in the update process, so that connecting cells wont be ripped apart as much
     -> somehow keep more of the connectivity
 [ ] as of now, in the map update, only poses are considered, which have been updated, though - what about the ones, which have not been updated, but
     may still be associated with the cell we want to move. because the pose itself has been practically unchanged, it also needs to be considered, when finding a new cell position.
+
+## TODO's ##
+
+
 
 ## ASAP ##
 
@@ -151,7 +151,10 @@ Intersection Data:
 
 
 
-
+[ ] Map fix: 2 possibilities:
+    [ ] 1. Identify map area (bounding box) which is affected by the loop closure and completely remove it from the gm
+        2.
+    [ ] Determine cut volume between the
 
 ## TODAY ##
 
@@ -165,6 +168,15 @@ Intersection Data:
 [ ] ICP: check, which filtering method works best
 
 [ ] Write about bond, usage in general
+
+
+# Ausblick
+
+[ ] Scan Matching:
+    [ ] Andere Algorithmen verwenden und testen
+    [ ] Model: Punktwolken voriger Posen verwenden um Model zu vergrößern
+               -> vermutlich problematisch bei großen Abständen zwischen den Posen
+    [ ]
 
 
 

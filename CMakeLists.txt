@@ -189,7 +189,8 @@ add_executable(slam6d_listener src/nodes/slam6d_listener.cpp
                         src/data_association/association.cpp
                         src/data_association/association_manager.cpp
                         src/path/path.cpp
-                        src/gtsam/gtsam_wrapper.cpp)
+                        src/gtsam/gtsam_wrapper.cpp
+                        src/util/lc_evaluator.cpp)
 
                   
 # currently only for the test node.
