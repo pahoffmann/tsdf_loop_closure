@@ -36,6 +36,10 @@ struct LoopClosureParams
     nh.param<int>("loop_closure/max_icp_iterations", loop_closure.max_icp_iterations, 100);
     // method on how to generate the path: 0 = from global map, 1 = path exploration
     nh.param<int>("loop_closure/path_method", loop_closure.path_method, 0);
+    // max icp fitness score for preregistration
+    nh.param<float>("loop_closure/max_prereg_icp_fitness", loop_closure.max_prereg_icp_fitness, 0.15f);
+    // max icp fitness score for loop closure
+    nh.param<float>("loop_closure/max_lc_icp_fitness", loop_closure.max_lc_icp_fitness, 0.4f);
     // json filename
     nh.param<std::string>("loop_closure/json_dirname", loop_closure.json_dirname, "/home/patrick/maps/generated/json");
   }
@@ -48,6 +52,8 @@ struct LoopClosureParams
     float dist_between_lcs;
     int path_method;
     std::string json_dirname;
+    float max_prereg_icp_fitness;
+    float max_lc_icp_fitness;
   } loop_closure;
 
   MapParams map;

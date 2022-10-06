@@ -105,7 +105,7 @@ public:
      * @param from_idx
      * @param to_idx
      */
-    void add_in_between_contraint(Eigen::Matrix4f transform, int from_idx, int to_idx);
+    void add_in_between_contraint(Eigen::Matrix4f transform, int from_idx, int to_idx, float input_fitness_noise = -1.0f);
 
     /**
      * @brief

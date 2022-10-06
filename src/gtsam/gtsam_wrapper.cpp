@@ -15,11 +15,11 @@ GTSAMWrapper::GTSAMWrapper(LoopClosureParams &input_params)
     // noise_vec << 0.5, 0.5, 0.5, 0.3, 0.3, 0.3;
 
     // initialize prior and in between noise with default values used for noising the constraints
-    //prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    // prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
     prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
-    //in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
+    // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
     in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, 1e-2, 0.3, 0.3, 0.3).finished());
-    //in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 0.2, 0.2, 0.2, 1.0, 1.0, 1.0).finished());
+    // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 0.2, 0.2, 0.2, 1.0, 1.0, 1.0).finished());
 }
 
 void GTSAMWrapper::add_prior_constraint(Matrix4f &transform)
@@ -36,7 +36,7 @@ void GTSAMWrapper::add_prior_constraint(Matrix4f &transform)
     graph->add(factor);
 }
 
-void GTSAMWrapper::add_in_between_contraint(Eigen::Matrix4f transform, int from_idx, int to_idx)
+void GTSAMWrapper::add_in_between_contraint(Eigen::Matrix4f transform, int from_idx, int to_idx, float input_fitness_noise)
 {
     // transform eigen matrix4f to gtsam pose3
     gtsam::Rot3 rot3(transform.block<3, 3>(0, 0).cast<double>());
@@ -44,10 +44,20 @@ void GTSAMWrapper::add_in_between_contraint(Eigen::Matrix4f transform, int from_
     gtsam::Point3 point3(pos_diff.x(), pos_diff.y(), pos_diff.z());
 
     // create between factor constraint for input transform
-    gtsam::BetweenFactor<gtsam::Pose3> factor(from_idx, to_idx, gtsam::Pose3(rot3, point3), in_between_noise);
-
-    // add constraint to graph
-    graph->add(factor);
+    if (input_fitness_noise != -1.0f)
+    {
+        // use input noise instead of default values
+        gtsam::noiseModel::Diagonal::shared_ptr in_between_noise_tmp = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << input_fitness_noise, input_fitness_noise, input_fitness_noise,
+                                                                                                               input_fitness_noise, input_fitness_noise, input_fitness_noise)
+                                                                                                                  .finished());
+        gtsam::BetweenFactor<gtsam::Pose3> factor(from_idx, to_idx, gtsam::Pose3(rot3, point3), in_between_noise);
+        graph->add(factor); // add constraint to graph
+    }
+    else
+    {
+        gtsam::BetweenFactor<gtsam::Pose3> factor(from_idx, to_idx, gtsam::Pose3(rot3, point3), in_between_noise);
+        graph->add(factor); // add constraint to graph
+    }
 }
 
 bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
@@ -81,7 +91,6 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     // std::cout << "Prev to cur transformation:: (readable)" << std::endl
     //           << Pose(prev_to_cur_initial) << std::endl;
 
-
     // this is basically the most important point. we just calculated the transformation
     // P_cur' -> P_cur (as icp is executed in the P_cur coordinate system)
     // to get the transformation P_prev -> P_cur', we need to apply P_prev -> P_cur and P_cur -> P_cur'
@@ -99,7 +108,7 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
         //           << Pose(final_transformation) << std::endl;
 
         // check if the fitness score is above a certain upper boundary, if so scan matching was not good enough
-        if (fitness_score > 0.5)
+        if (fitness_score > params.loop_closure.max_lc_icp_fitness)
         {
             std::cout << print_prefix << "Though scan matching converged, ICP doesn't seem to have found an appropriate transformation!" << std::endl;
             return false;
@@ -213,7 +222,7 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud,
     g_icp.setRANSACIterations(100);
     g_icp.setRANSACOutlierRejectionThreshold(1.0);
     g_icp.setUseReciprocalCorrespondences(false);
-    //g_icp.addCorrespondenceRejector(pcl::r)
+    // g_icp.addCorrespondenceRejector(pcl::r)
 
     g_icp.setInputSource(scan_cloud);
     g_icp.setInputTarget(model_cloud);

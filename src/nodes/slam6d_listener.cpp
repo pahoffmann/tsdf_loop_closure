@@ -78,14 +78,6 @@ Path *optimized_path;
 int side_length_xy;
 int side_length_z;
 
-// evaluation purpose:
-float mean_fitness_score = 0.0f;
-int num_loops = 0;
-float mean_loop_fitness_score;
-float min_fitness_score;
-float max_fitness_score;
-float max_loop_fitness_score;
-
 // vector to store found lc index pairs
 std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_index_pairs;
 
@@ -201,7 +193,7 @@ bool is_viable_lc(std::pair<int, int> candidate_pair)
         // }
 
         // testing purpose, using different indices
-        if (candidate_pair.second < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.second, candidate_pair.second) < params.loop_closure.dist_between_lcs)
+        if (candidate_pair.second < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.second, candidate_pair.second) < params.loop_closure.max_dist_lc)
         {
             return false;
         }
@@ -318,13 +310,18 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     pcl::fromROSMsg(*cloud_ptr.get(), *input_cloud.get());
 
-    // CREATE POINTCLOUD USED FOR TSDF UPDATE
-    pcl::VoxelGrid<PointType> sor;
+    // filter input cloud with a statistical outlier filter:
+    std::cout << "[SLAM6D_LISTENER] Start input cloud filtering: " << std::endl;
+    std::cout << "[SLAM6D_LISTENER] Size before filtering: " << input_cloud->size() << std::endl;
+    pcl::StatisticalOutlierRemoval<PointType> sor;
     sor.setInputCloud(input_cloud);
-    sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
-    sor.filter(*tsdf_cloud.get());
+    sor.setMeanK(50);
+    sor.setStddevMulThresh(1.0);
+    sor.filter(*input_cloud);
+    std::cout << "[SLAM6D_LISTENER] Size after filtering: " << input_cloud->size() << std::endl;
 
-    // save
+
+    // save cloud
     dataset_clouds.push_back(input_cloud);
 
     // create Pose from ros pose
@@ -335,13 +332,13 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_pose.quat = tmp_quat.cast<float>();
     input_pose.pos = tmp_point.cast<float>();
 
-    // pose after (possible) preregistration
-    Pose preregistered_input_pose;
-
     // add the delta between the initial poses to the last pose of the (maybe already updated) path
     auto initial_pose_delta = getTransformationMatrixBetween(last_initial_estimate, input_pose.getTransformationMatrix());
-
+    auto gtsam_pose_delta = initial_pose_delta;
     last_initial_estimate = input_pose.getTransformationMatrix();
+
+    // fitness score from preregistration (-1.0f = default)
+    float prereg_fitness_score = -1.0f;
 
     if (path->get_length() > 0)
     {
@@ -353,41 +350,50 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // This is achieved by using GICP/ICP and reevaluating the respective fitness scores
         if (path->get_length() > 1)
         {
-            pcl::PointCloud<PointType>::Ptr model_cloud = dataset_clouds.at(path->get_length() - 1); // last pose
-            pcl::PointCloud<PointType>::Ptr scan_cloud = input_cloud;
-            pcl::PointCloud<PointType>::Ptr result_cloud;
-            bool converged = false;
-            float fitness_score = -1.0f;
-            Matrix4f final_transformation = Matrix4f::Identity();
+            // pose after (possible) preregistration
+            Pose preregistered_input_pose;
 
+            pcl::PointCloud<PointType>::Ptr model_cloud = dataset_clouds.at(path->get_length() - 1); // last pose is model
+            pcl::PointCloud<PointType>::Ptr scan_cloud = input_cloud;
+            pcl::PointCloud<PointType>::Ptr result_cloud; // result of gicp
             result_cloud.reset(new pcl::PointCloud<PointType>());
 
-            auto last_pose = path->at(path->get_length() - 1);
-            auto initial_preregistration_mat = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), input_pose_transformed);
+            // gicp variables
+            bool converged = false;
+            Matrix4f final_transformation = Matrix4f::Identity();
 
-            // pretransform cloud with pose diff
-            pcl::transformPointCloud(*scan_cloud, *scan_cloud, initial_preregistration_mat);
+            auto last_pose = path->at(path->get_length() - 1); // obtain last pose
 
-            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, fitness_score);
+            // this is the transformation from the model coordinate system to the input poses.
+            // we transform the model cloud into the coordinate system of the scan cloud (the cloud of the incoming pose)
+            // afterwards we perform icp and combine the resulting transformations
+            auto model_to_scan_initial = getTransformationMatrixBetween(input_pose_transformed, last_pose->getTransformationMatrix());
 
-            if (converged && fitness_score < 0.1)
+            // pretransform model cloud into the system of the scan
+            pcl::transformPointCloud(*model_cloud, *model_cloud, model_to_scan_initial);
+
+            // try matching the clouds in the scan system -> we obtain P_scan' -> P_scan (final transformation of ICP)
+            // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
+            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+
+            // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
+            if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
             {
                 std::cout << "PREREGISTRATION SUCCESSFUL!!!" << std::endl;
-                std::cout << "Fitness score: " << fitness_score << std::endl;
+                std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
                 std::cout << "Final preregistration_matrix: " << std::endl
                           << Pose(final_transformation) << std::endl;
 
-                // transform: 1. scan->model, 2. model -> map ----> scan->map
-                final_transformation = input_pose_transformed * final_transformation;
-                preregistered_input_pose = Pose(final_transformation);
+                Matrix4f new_scan_to_model = model_to_scan_initial.inverse() * final_transformation;
+                Matrix4f new_scan_to_map = last_pose->getTransformationMatrix() * new_scan_to_model;
 
-                path->add_pose(Pose(preregistered_input_pose));
-                initial_pose_delta = getTransformationMatrixBetween(last_initial_estimate, preregistered_input_pose.getTransformationMatrix());
+                path->add_pose(new_scan_to_map);
+                gtsam_pose_delta = new_scan_to_model;
             }
-            else
+            else // if it is not converged we simply add the initial estimate.
             {
                 std::cout << "PREREGISTRATION FAILED!!!" << std::endl;
-                std::cout << "Fitness score: " << fitness_score << std::endl;
+                std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
 
                 path->add_pose(Pose(input_pose_transformed));
             }
@@ -404,17 +410,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         path->add_pose(input_pose);
     }
 
-    // std::cout << "Input pose: " << std::endl
-    //           << input_pose << std::endl;
-    // std::cout << "Last loop pose:" << std::endl
-    //           << last_loop_old_pose << std::endl;
-    // std::cout << "Transformed pose: " << std::endl
-    //           << Pose(input_pose_transformed) << std::endl;
-
+    // obtain newly inserted pose
     input_pose = *path->at(path->get_length() - 1);
-
-    // add the new pose to the path
-
     input_pose_mat = input_pose.getTransformationMatrix();
 
     // publish cloud and transform for robot coordinate system
@@ -429,6 +426,13 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 #pragma endregion
 
 #pragma region TSDF_UPDATE
+
+    // CREATE POINTCLOUD USED FOR TSDF UPDATE
+    pcl::VoxelGrid<PointType> grid;
+    grid.setInputCloud(input_cloud);
+    grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
+    grid.filter(*tsdf_cloud.get());
+
     std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
 
     // transform points to map coordinates
@@ -488,7 +492,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // gtsam_wrapper_ptr->add_in_between_contraint(transform_diff, from_idx, to_idx);
 
         // when a new pose is added, the between factor added to the graph is the same as the initial delta
-        gtsam_wrapper_ptr->add_in_between_contraint(initial_pose_delta, from_idx, to_idx);
+        gtsam_wrapper_ptr->add_in_between_contraint(gtsam_pose_delta, from_idx, to_idx, prereg_fitness_score);
     }
 #pragma endregion
 

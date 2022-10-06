@@ -221,6 +221,8 @@ std::vector<std::pair<int, int>> Path::find_loop_kd_min_dist_backwards(int idx, 
         {
             start_idx = id;
             lc_candidates.push_back(std::make_pair(start_idx, end_idx));
+
+            std::cout << "Distance for candidate: [" << start_idx << " | " << end_idx << "] : " << distance << std::endl; 
         }
 
         // TODO: limit number of pairs

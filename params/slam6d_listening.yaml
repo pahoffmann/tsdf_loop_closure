@@ -4,6 +4,9 @@ loop_closure:
   min_traveled_lc: 12.0 # in m
   dist_between_lcs: 2.0 # in m
 
+  max_prereg_icp_fitness: 0.2 # in m²
+  max_lc_icp_fitness: 0.45 # in m²
+
 map:
   # directory to save map in
   dir: "/home/patrick/maps/generated"
