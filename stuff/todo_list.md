@@ -126,6 +126,8 @@ Intersection Data:
 
 ## ASAP ##
 
+[ ] fix global map generation
+[ ] when doing a preregister, throw away z translation and x/y axis rotation (as a test)
 
 
 [ ] edge case: find bounding box (no axis aligned) of the tsdf volume, find overlap(s) with rest of the map

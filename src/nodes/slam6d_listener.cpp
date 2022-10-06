@@ -461,10 +461,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 #pragma endregion
 
 #pragma region CLOUD_GM_VIS
-    // auto gm_data = global_map_ptr->get_full_data();
-    // auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
-    // tsdf_pub.publish(marker);
+    auto gm_data = global_map_ptr->get_full_data();
+    auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    //auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    tsdf_pub.publish(marker);
 
     sensor_msgs::PointCloud2 filtered_ros_cloud;
     pcl::toROSMsg(*tsdf_cloud, filtered_ros_cloud);
