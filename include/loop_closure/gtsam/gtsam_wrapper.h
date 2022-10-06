@@ -140,7 +140,7 @@ public:
      */
     void reset();
 
-        /**
+    /**
      * @brief performs basic ICP between source and target, will return information about the performance of the icp
      *
      * @param source_cloud

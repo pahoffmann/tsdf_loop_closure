@@ -335,47 +335,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_pose.quat = tmp_quat.cast<float>();
     input_pose.pos = tmp_point.cast<float>();
 
-    // PREREGISTRATION
-    // ------------------
-    // This section is used to preregister poses following each other in order to get a better initial estimate
-    // This is achieved by using GICP/ICP and reevaluating the respective fitness scores
-    // if (path->get_length() > 1)
-    // {
-    //     pcl::PointCloud<PointType>::Ptr model_cloud = dataset_clouds.at(path->get_length() - 1); // last pose
-    //     pcl::PointCloud<PointType>::Ptr scan_cloud = input_cloud;
-    //     pcl::PointCloud<PointType>::Ptr result_cloud;
-    //     bool converged = false;
-    //     float fitness_score = -1.0f;
-    //     Matrix4f final_transformation = Matrix4f::Identity();
-
-    //     result_cloud.reset(new pcl::PointCloud<PointType>());
-
-    //     auto last_pose = path->at(path->get_length() - 1);
-    //     auto initial_preregistration_mat = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), input_pose.getTransformationMatrix());
-
-    //     // pretransform cloud with pose diff
-    //     pcl::transformPointCloud(*scan_cloud, *scan_cloud, initial_preregistration_mat);
-
-    //     gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, fitness_score);
-
-    //     if (converged && fitness_score < 0.15)
-    //     {
-    //         std::cout << "PREREGISTRATION SUCCESSFUL!!!" << std::endl;
-    //         std::cout << "Fitness score: " << fitness_score << std::endl;
-    //         std::cout << "Final preregistration_matrix: " << std::endl << Pose(final_transformation) << std::endl;
-
-    //         // transform: 1. scan->model, 2. model -> map ----> scan->map
-    //         final_transformation = input_pose.getTransformationMatrix() * final_transformation;
-    //         input_pose = Pose(final_transformation);
-    //     }
-    //     else
-    //     {
-    //         std::cout << "PREREGISTRATION FAILED!!!" << std::endl;
-    //         std::cout << "Fitness score: " << fitness_score << std::endl;
-    //     }
-    // }
-
-    // END PREREGISTRATION
+    // pose after (possible) preregistration
+    Pose preregistered_input_pose;
 
     // add the delta between the initial poses to the last pose of the (maybe already updated) path
     auto initial_pose_delta = getTransformationMatrixBetween(last_initial_estimate, input_pose.getTransformationMatrix());
@@ -385,7 +346,58 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     if (path->get_length() > 0)
     {
         input_pose_transformed = path->at(path->get_length() - 1)->getTransformationMatrix() * initial_pose_delta;
-        path->add_pose(Pose(input_pose_transformed));
+
+        // PREREGISTRATION
+        // ------------------
+        // This section is used to preregister poses following each other in order to get a better initial estimate
+        // This is achieved by using GICP/ICP and reevaluating the respective fitness scores
+        if (path->get_length() > 1)
+        {
+            pcl::PointCloud<PointType>::Ptr model_cloud = dataset_clouds.at(path->get_length() - 1); // last pose
+            pcl::PointCloud<PointType>::Ptr scan_cloud = input_cloud;
+            pcl::PointCloud<PointType>::Ptr result_cloud;
+            bool converged = false;
+            float fitness_score = -1.0f;
+            Matrix4f final_transformation = Matrix4f::Identity();
+
+            result_cloud.reset(new pcl::PointCloud<PointType>());
+
+            auto last_pose = path->at(path->get_length() - 1);
+            auto initial_preregistration_mat = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), input_pose_transformed);
+
+            // pretransform cloud with pose diff
+            pcl::transformPointCloud(*scan_cloud, *scan_cloud, initial_preregistration_mat);
+
+            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, fitness_score);
+
+            if (converged && fitness_score < 0.1)
+            {
+                std::cout << "PREREGISTRATION SUCCESSFUL!!!" << std::endl;
+                std::cout << "Fitness score: " << fitness_score << std::endl;
+                std::cout << "Final preregistration_matrix: " << std::endl
+                          << Pose(final_transformation) << std::endl;
+
+                // transform: 1. scan->model, 2. model -> map ----> scan->map
+                final_transformation = input_pose_transformed * final_transformation;
+                preregistered_input_pose = Pose(final_transformation);
+
+                path->add_pose(Pose(preregistered_input_pose));
+                initial_pose_delta = getTransformationMatrixBetween(last_initial_estimate, preregistered_input_pose.getTransformationMatrix());
+            }
+            else
+            {
+                std::cout << "PREREGISTRATION FAILED!!!" << std::endl;
+                std::cout << "Fitness score: " << fitness_score << std::endl;
+
+                path->add_pose(Pose(input_pose_transformed));
+            }
+        }
+        else
+        {
+            path->add_pose(Pose(input_pose_transformed));
+        }
+
+        // END PREREGISTRATION
     }
     else
     {
