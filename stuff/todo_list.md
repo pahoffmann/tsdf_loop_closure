@@ -154,7 +154,11 @@ Intersection Data:
 [ ] Map fix: 2 possibilities:
     [ ] 1. Identify map area (bounding box) which is affected by the loop closure and completely remove it from the gm
         2.
-    [ ] Determine cut volume between the
+    [ ] Determine cut volume between the area affected by the loop closure and the rest.
+
+[ ] Parameter optimization for lc:
+    [ ] Possible params: max_dist, distance_traveled, lc fitness score, prereg fitness score, ..?
+    [ ] Calculate time needed beforehand
 
 ## TODAY ##
 
@@ -163,6 +167,9 @@ Intersection Data:
 # What needs to be done? #
 
 # THESIS
+
+[ ] Genereller Aufbau festlegen
+
 
 [ ] ICP: display correlation between raytrace resolution when approximating and the icp fitness score (for different datasets)
 [ ] ICP: check, which filtering method works best
