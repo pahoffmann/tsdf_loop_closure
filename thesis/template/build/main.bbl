@@ -1,0 +1,9 @@
+\begin{thebibliography}{1}
+
+\bibitem{lorensen_marching_1987}
+W.~E. Lorensen and H.~E. Cline.
+\newblock Marching {Cubes}: {A} {High} {Resolution} 3d {Surface} {Construction}
+  {Algorithm}.
+\newblock In {\em {ACM} {SIGGRAPH} '87}, 1987.
+
+\end{thebibliography}

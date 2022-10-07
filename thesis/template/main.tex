@@ -1,0 +1,120 @@
+\documentclass[german, master, utf8]{base/thesis_KBS}
+
+\usepackage{units}    % \unit[23]{m}
+\usepackage{nicefrac} % \nicefrac{km}{h}
+\usepackage[justification=centering]{subcaption} % mehrere Bilder in einer figure
+\usepackage{pgfplots} % Plots für Benchmarks
+\usepackage{csquotes} % Anführungszeichen
+\usepackage{float} % figure platzieren
+\usepackage{listings} % Code einfügen
+\usepackage{tabto} % Einrückung zu einer festen Position
+\usepackage{pdfpages} % Einfügen der Erklärung am Ende
+\usepackage[shortlabels]{enumitem} % Mehr Optionen für enumerate
+\usepackage{xfrac} % Bessere Brüche
+\usepackage{booktabs} % Bessere Tabellen
+\usepackage[protrusion=false,spacing=true]{microtype} % Bessere Text Skalierung
+\usepackage{subfiles} % include
+\usepackage{silence} % Unterdrückung von Warnungen
+\usepackage[figuresright]{rotating} % Bilder rotieren
+\usepackage{amsmath}
+\usepackage{algorithm, algorithmic}  % for pseudo code (cf. documentation)
+\renewcommand{\algorithmiccomment}[1]{\qquad{\small // \textit{#1}}}
+
+\pgfplotsset{compat=1.16} % pgfplots config
+\setquotestyle{american} % csquotes config
+\raggedbottom % verhindert Lücken zwischen Überschriften und Text
+\hyphenpenalty=750 % macht Worttrennung seltener
+
+\WarningFilter*{microtype}{I cannot find}
+
+% verhindert (meistens) Zeilenumbrüche vor Verweisen
+%\NewCommandCopy{\oldref}{\ref}
+%\renewcommand{\ref}[1]{\nolinebreak \oldref{#1}}
+%\NewCommandCopy{\oldcite}{\cite}
+%\renewcommand{\cite}[1]{\nolinebreak \oldcite{#1}}
+
+\newcommand{\pleasedontaddwhorechildren}{\newpage}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    numberstyle=\footnotesize,
+    numbers=left,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    tabsize=2,
+    rulecolor=\color{black!30},
+    title=\lstname,
+    escapeinside={\%*}{*)},
+    breaklines=true,
+    breakatwhitespace=true,
+    framextopmargin=2pt,
+    framexbottommargin=2pt,
+    showstringspaces=false
+    inputencoding=utf8,
+    extendedchars=true,
+    literate={ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {ß}{{\ss}}1 {∆}{{$\Delta$}}1,
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{Loop Closure in TSDF basiertem SLAM} % Deckblatt
+\shorttitle{TODO:} % Für Titel am unteren Rand der Seiten
+
+\author{Patrick Hoffmann}
+\email{pahoffmann@uni-osnabrueck.de}
+\firstSupervisor{Prof. Dr. Mario Porrmann}
+\secondSupervisor{Alexander Mock}
+% \submitdate{August 2022}             % by default current month & year
+%signline{Osnabrück, 11. Dezember 2004} % by default "signcity, submitdate"
+
+\generatetitle
+
+\cleardoublepage
+
+\begin{prefacesection}{Zusammenfassung}
+
+Die vorliegende Arbeit beschäftigt sich mit der Implementierung und Konzeption einer Lösung zur Detektion von \textbf{Schleifenschlüssen} in einem auf \textbf{Truncated Signed Distance Funtion (TSDF)} basierenden \textbf{Simultaneaous Localization and Mapping (SLAM)} Ansatz und der nachfolgenden Optimierung der Robotertrajektorie und TSDF-Karte.
+Zur Optimierung der Trajektorie des Robters nach der Identifikation eines Schleifenschlusses kommt die Bibliothek \textbf{GTSAM} zum Einsatz.
+Es wird evaluiert ob und unter welchen Voraussetzungen eine Nachbearbeitung auf Basis einer fertigen TSDF Karte mit zugehöriger initialer Trajektorie möglich ist und zusätzlich der Einsatz in einem inkrementellen SLAM Ansatz geprüft.
+Darüber wird untersucht, inwiefern ein Teilupdate der TSDF basierten Karte möglich ist.
+
+\end{prefacesection}
+
+\vspace{5cm}
+
+\begin{prefacesection}{Abstract}
+
+This paper deals with the implementation and design of a solution for the detection of \textbf{loop closures} in a \textbf{Truncated Signed Distance Function (TSDF)} based \textbf{Simultaneaous Localization and Mapping (SLAM)} approach and the subsequent optimization of the robot trajectory and TSDF map.
+The \textbf{GTSAM} library is used to optimize the robot's trajectory after identifying a loop closure.
+It is evaluated whether and under which conditions a postprocessing based on a finished TSDF map with associated initial trajectory is possible and additionally the use in an incremental SLAM approach is examined.
+Furthermore, it will be investigated to what extent a partial update of the TSDF based map is possible.
+
+\end{prefacesection}
+
+
+\cleardoublepage
+\tableofcontents
+
+
+\startTextChapters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% motivation + state of the art
+\subfile{chapters/einleitung}
+
+% tsdf, slam, loop closure
+\subfile{chapters/grundlagen}
+
+% verwendete libraries
+\subfile{chapters/libraries}
+
+\subfile{chapters/loopclosure}
+
+
+\bibliography{papers.bib}                                                                                                                           
+
+\cleardoublepage
+\includepdf[pages=-]{pics/endpage.pdf} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

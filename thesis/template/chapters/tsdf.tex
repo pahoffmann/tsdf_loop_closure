@@ -1,0 +1,8 @@
+\section{TSDF}
+
+In modern SLAM approaches the mapping aspect is often times neglected in the sense that aligned point clouds are used as a map of the environment. Even in the case of subsampled point clouds, the memory requirements are far greater than generated meshes while preserving less detail than their mesh counterpart.
+
+Many robotics applications in large scale environments benefit from a closed surface representation of the surroundings, both for navigation and localization. One class of closed surface representations are Signed Distance Functions, an implicit surface representation where the signed distance is the orthogonal distance of point $x$ to the boundary of set $\Omega$ in metric space. The functions value decreases while approaching the intersection with set $\Omega$, where the signed distance value is zero, while the sign determines whether or not $x$ is positioned interior or exterior of $\Omega$. \textit{Truncated} Signed Distance functions take this concept further and set a maximum signed distance value, therefore truncating the function. 
+
+Typical neighborhood search in N-D space envolves specific data structures like KD-Trees that allow neighborhood search after construction, but never faster that O(nlogn). (Truncated) Signed Distance functions allow distance values between voxels to be interpolated easily based on voxel indices. This property results in a pseudo-continuous representation ideally suited for the extraction of polygonal models using the well-known Marching Cubes algorithm ~\cite{lorensen_marching_1987}
+

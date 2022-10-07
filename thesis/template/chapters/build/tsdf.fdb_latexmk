@@ -1,0 +1,13 @@
+# Fdb version 3
+["pdflatex"] 1665055578 "/home/julian/downloads/ma_template/chapters/tsdf.tex" "/home/julian/downloads/ma_template/chapters/build/tsdf.pdf" "tsdf" 1665055578
+  "/etc/texmf/web2c/texmf.cnf" 1659954795 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/home/julian/downloads/ma_template/chapters/build/tsdf.aux" 1665055578 8 a94a2480d3289e625eea47cd1b285758 ""
+  "/home/julian/downloads/ma_template/chapters/tsdf.tex" 1665055577 15 c726e313f59d80f2887df2d7b96d48c3 ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1664972144 8255566 8a4b8519b80e850aee3708fe29b4ef1f ""
+  "tsdf.tex" 1665055577 15 c726e313f59d80f2887df2d7b96d48c3 ""
+  (generated)
+  "build/tsdf.log"
+  "/home/julian/downloads/ma_template/chapters/build/tsdf.log"
+  "/home/julian/downloads/ma_template/chapters/build/tsdf.pdf"
