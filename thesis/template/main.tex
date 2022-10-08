@@ -2,6 +2,7 @@
 
 \usepackage{units}    % \unit[23]{m}
 \usepackage{nicefrac} % \nicefrac{km}{h}
+\usepackage{environ}
 \usepackage[justification=centering]{subcaption} % mehrere Bilder in einer figure
 \usepackage{pgfplots} % Plots für Benchmarks
 \usepackage{csquotes} % Anführungszeichen
@@ -17,6 +18,8 @@
 \usepackage{silence} % Unterdrückung von Warnungen
 \usepackage[figuresright]{rotating} % Bilder rotieren
 \usepackage{amsmath}
+\newcommand*\colvec[1]{\begin{pmatrix}#1\end{pmatrix}}
+
 \usepackage{algorithm, algorithmic}  % for pseudo code (cf. documentation)
 \renewcommand{\algorithmiccomment}[1]{\qquad{\small // \textit{#1}}}
 
@@ -24,6 +27,13 @@
 \setquotestyle{american} % csquotes config
 \raggedbottom % verhindert Lücken zwischen Überschriften und Text
 \hyphenpenalty=750 % macht Worttrennung seltener
+
+\NewEnviron{myequation}{	
+	\begin{equation}
+		\scalebox{1.2}{$\BODY$}
+	\end{equation}
+}
+	
 
 \WarningFilter*{microtype}{I cannot find}
 

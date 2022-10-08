@@ -48,22 +48,53 @@ Abbildung \ref{fig:robot_tf} zeigt ein Beispiel für einen Roboter mit mehreren 
 	\end{figure}
 
 Auch räumliche Daten wie zum Beispiel Punktenwolken aus Laserscannern können relativ zu verschiedenen Koordinatensystemen gesehen werden.
-So kann es nützlich sein die Punktwolke relativ zum Koordinatensystem des Scanners  
+So kann es nützlich sein die Punktwolke relativ zum Koordinatensystem des Scanners oder innerhalb des globalen Koordinatensystems zu betrachten. Um zwischen den Koordinatensystemen zu wechseln wird eine Koordinatensystemtransormation. Diese werden im folgenden Kapitel behandelt.
 
-Räumliche Daten werden dabei immer relativ zu verschiedenen Koordinatensystemen gesehen.
-Den Rahmen für diese relative, lokale Betrachtung von Daten liefert ein globales Koordinatensystem.
-Das globale Koordinatensystem ist dabei im Folgenden immer das Koordinatensystem der Umgebungskarte.
-Ein Beispiel für ein lokales Koordinatensystem ist die Position des aktuellen 
-
+ 
 \subsubsection{Transformationen}
 \label{section:transformationen}
 
-TODO:
+Eine Koordinatensystemtransformation ist ein Sonderfall einer mathematischen Transformation, die eine Menge $X$ auf sich selbst abbildet:
+\begin{myequation}
+f: X \rightarrow X
+\end{myequation}
 
-Schreiben über Transformationen
-Erlären unterschiedlicher Repräsentationen.
-KURZ auf Quaternions eingehen.
-Transformationen zwischen Koordinatensystemen
+Eine Koordinatensystemtransformation beschreibt die Differenz zwischen zwei unterschiedlichen Koordinatensystemen und enthält sowohl die Translationsdifferenz als auch die Rotationsdifferenz.
+Zur Berechnung dieser Transformation zwischen zwei beliebigen Koordinatensystem $C_1$ und $C_2$ wird die absolute Translation und Rotation beider Koordinatensysteme zum Ursrungskoordinatensystem, wie zum Beispiel den Urpsrung einer Umgebungskarte, benötigt.
+Durch diese Rotations und Translationskomponenten beschreibt sich die absolute Position und Rotation der Koordinatensysteme im Raum aus Sicht des Ursprungskoordinatensystems $C_{MAP}$. Diese absolute Position und Rotation ist die Transformation von den jeweiligen Koordinatensystemen ins Urpsrungskoordinatensystem.
+
+Es existieren diverse Darstellungsweisen für Koodinatensystemtransformationen. Die intuitivste Weise der Darstellung ist die Darstellung als Vektor. In folgendem ist die Transformation vom Koordinatensystem $C_X$ ins Koordinatensystem $C_{MAP}$ dargestellt. Die Variablen $t_i$ bezeichnen dabei die Translationskomponenten und die Variablen $r_i$ die Rotationskomponenten um die jeweiligen Achsen. 
+
+\begin{myequation}
+T_{C_X \rightarrow C_{MAP}} = \colvec{t_x\\t_y\\t_z\\r_x\\r_y\\r_z}
+\end{myequation}
+
+Neben der Vektordarstellung kann eine Transformation zusätzlich als eine $4x4$ Matrix dargstellt werden.
+Diese Darstellungsweise hat den Vorteil, dass die Transformation direkt per Matrixmultiplikation auf Daten wie um homogene Koordinaten erweiterte Punktdaten angewandt werden kann.
+Auch die direkt Kombination verschiedener Transformationen ist durch eine Matrixmultiplikation möglich. Hier gilt es zu beachten, dass Matrixmultiplikation nicht kommutativ ist und ein Vertauschen der Reihenfolge bei der Multiplikation zu unterschiedlichen Ergebnissen führen kann.
+Bei einer Verkettung von Transformationen durch Multiplikation wird die Matrix zuerst angewandt, welche am Ende der Multiplikation steht.
+
+In dieser Arbeit werden Transformationen zum Beispiel verwendet um zu bestimmen, wie sich ein Roboter zwischen zwei Messungen bewegt hat. Diese Transformationen beschreiben relative Differenzen zwischen Roboterpositionen im Raum. Diese Roboterpositionen werden auch \textbf{Posen} genannt.
+Eine Pose ist dabei eine meist absolute Beschreibung der Translation und Rotation eines Roboters zu einem gewissen Zeitpunkt $t$ aus Sicht des Ursprungskoordinatensystems wie zum Beispiel dem Map-Ursprung $C_{MAP}$.
+
+
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.25]
+			{transformation}
+		\caption
+			[Caption for LOF]{Schematische Darstellung der bestimmung einer Transformation zwischen zwei Roboter-Posen $P_1$ und $P_2$, hier zur Vereinfachung dargestellt in 2D. Gesucht ist die Transformation $\left( T_{P_2 \rightarrow P_1} \right)$. Diese kann implizit bestimmt werden durch eine Verkettung der Transformationen $T_{P_2 \rightarrow MAP}$ und $T_{MAP \rightarrow P1}$, hier dargestellt im rechten Teil der Abbildung in blau. Die Transformation $T_{MAP \rightarrow P1}$ ist dabei nicht explizit gegeben. Sie kann berechnet werden durch eine Inversion der Transformation $T_{P1 \rightarrow MAP}$. Die finale Gleichung zur Berechnung der relativen Transformation ist dargestellt in Gleichung \ref{equation:transformation}.}			                                                                                                                                     
+		\label{fig:transformation}
+	\end{figure}
+
+
+Abbildung \ref{fig:transformation} zeigt die Mathematik hinter der Berechnung der Posedifferenz exemplarisch. Es wird deutlich, dass eine gesuchte Transformation aus dem Koordinatensystem von Pose $P_2$ in das Koordinatensystem von Pose $P_1$  $\left( T_{P_2 \rightarrow P_1} \right)$ gegeben ist durch:
+
+\begin{myequation}
+\label{equation:transformation}
+\left( T_{P_2} \rightarrow T_{P_1} \right) = \left(T_{P_1 \rightarrow MAP} \right)^{-1} * T_{P_2 \rightarrow MAP}
+\end{myequation}
 
 \section{SLAM}
 

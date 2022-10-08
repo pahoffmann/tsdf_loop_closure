@@ -8,15 +8,18 @@
 \contentsline {section}{\numberline {2.1}Mathematische Grundlagen}{5}{section.2.1}%
 \contentsline {subsection}{\numberline {2.1.1}Koordinatensysteme}{5}{subsection.2.1.1}%
 \contentsline {subsubsection}{Transformationen}{6}{section*.4}%
-\contentsline {section}{\numberline {2.2}SLAM}{7}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Loop Closure}{7}{section.2.3}%
-\contentsline {section}{\numberline {2.4}TSDF}{7}{section.2.4}%
-\contentsline {chapter}{\numberline {3}Bibliotheken und Frameworks}{9}{chapter.3}%
-\contentsline {section}{\numberline {3.1}ROS Framework}{9}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}RViz}{9}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {3.1.2}Bondcpp}{9}{subsection.3.1.2}%
-\contentsline {section}{\numberline {3.2}Eigen}{9}{section.3.2}%
-\contentsline {section}{\numberline {3.3}HDF5}{9}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Pointcloud Library}{9}{section.3.4}%
-\contentsline {section}{\numberline {3.5}LVR2 Framework zur Oberflächenrekonstruktion}{9}{section.3.5}%
-\contentsline {chapter}{\numberline {4}Loop Closure}{11}{chapter.4}%
+\contentsline {section}{\numberline {2.2}SLAM}{9}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Loop Closure}{9}{section.2.3}%
+\contentsline {section}{\numberline {2.4}TSDF}{9}{section.2.4}%
+\contentsline {chapter}{\numberline {3}Bibliotheken und Frameworks}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}ROS Framework}{11}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}RViz}{11}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Bondcpp}{11}{subsection.3.1.2}%
+\contentsline {section}{\numberline {3.2}Eigen}{11}{section.3.2}%
+\contentsline {section}{\numberline {3.3}HDF5}{11}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Pointcloud Library}{11}{section.3.4}%
+\contentsline {section}{\numberline {3.5}LVR2 Framework zur Oberflächenrekonstruktion}{11}{section.3.5}%
+\contentsline {chapter}{\numberline {4}Loop Closure}{13}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Detektion}{13}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Graphenoptimierung}{13}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Optimierungen}{13}{section.4.3}%
