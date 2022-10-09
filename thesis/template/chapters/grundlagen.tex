@@ -43,7 +43,7 @@ Abbildung \ref{fig:robot_tf} zeigt ein Beispiel für einen Roboter mit mehreren 
 			{robot_tf}
 		\caption
 			[Caption for LOF]{Schematische Darstellung eines Roboters und dessen beweglicher Teile. Die Ausrichtung der jeweiligen Gelenke wird mit einem lokalen Koordinatensystem beschrieben. Die globale Position einzelner Teile kann durch eine Verkettung der relativen Transformation in Richtung der Wurzel des Baumes bestimmt werden.
-			Bild aus: TODO}			                                                                                                                                     
+			Bild aus: \cite{ros_tf_image}}			                                                                                                                                     
 		\label{fig:robot_tf}
 	\end{figure}
 
@@ -84,7 +84,7 @@ Eine Pose ist dabei eine meist absolute Beschreibung der Translation und Rotatio
 			[scale=0.25]
 			{transformation}
 		\caption
-			[Caption for LOF]{Schematische Darstellung der bestimmung einer Transformation zwischen zwei Roboter-Posen $P_1$ und $P_2$, hier zur Vereinfachung dargestellt in 2D. Gesucht ist die Transformation $\left( T_{P_2 \rightarrow P_1} \right)$. Diese kann implizit bestimmt werden durch eine Verkettung der Transformationen $T_{P_2 \rightarrow MAP}$ und $T_{MAP \rightarrow P1}$, hier dargestellt im rechten Teil der Abbildung in blau. Die Transformation $T_{MAP \rightarrow P1}$ ist dabei nicht explizit gegeben. Sie kann berechnet werden durch eine Inversion der Transformation $T_{P1 \rightarrow MAP}$. Die finale Gleichung zur Berechnung der relativen Transformation ist dargestellt in Gleichung \ref{equation:transformation}.}			                                                                                                                                     
+			[Caption for LOF]{Schematische Darstellung der bestimmung einer Transformation zwischen zwei Roboter-Posen $P_1$ und $P_2$, hier zur Vereinfachung dargestellt in 2D. Gesucht ist die Transformation $\left( T_{P_2 \rightarrow P_1} \right)$, dargestellt im linken Teil der Abbildung als roter Pfeil. Diese kann implizit bestimmt werden durch eine Verkettung der Transformationen $T_{P_2 \rightarrow MAP}$ und $T_{MAP \rightarrow P1}$, hier dargestellt im rechten Teil der Abbildung in blau. Die Transformation $T_{MAP \rightarrow P1}$ ist dabei nicht explizit gegeben. Sie kann berechnet werden durch eine Inversion der Transformation $T_{P1 \rightarrow MAP}$. Die finale Gleichung zur Berechnung der relativen Transformation ist dargestellt in Gleichung \ref{equation:transformation}.}			                                                                                                                                     
 		\label{fig:transformation}
 	\end{figure}
 
@@ -93,10 +93,50 @@ Abbildung \ref{fig:transformation} zeigt die Mathematik hinter der Berechnung de
 
 \begin{myequation}
 \label{equation:transformation}
-\left( T_{P_2} \rightarrow T_{P_1} \right) = \left(T_{P_1 \rightarrow MAP} \right)^{-1} * T_{P_2 \rightarrow MAP}
+\left( T_{P_2 \rightarrow P_1} \right) = \left(T_{P_1 \rightarrow MAP} \right)^{-1} * T_{P_2 \rightarrow MAP}
 \end{myequation}
 
+Basierend auf den erläuterten mathematischen Grundlagen wird in Kapitel \ref{section:slam} die Grundlagen von SLAM, insbesondere von TSDF basierten SLAM Verfahren, erörtert.
+Zuvor werden in nachfolgender Sektion die Eigenschaften und Anwendungsbereiche der TSDF beschrieben.
+
+\section{TSDF}
+\label{section:tsdf}
+
+
+
 \section{SLAM}
+\label{section:slam}
+
+Diese Sektion befasst sich mit den Grundlagen von SLAM, stellt heraus welche Varianten von SLAM Verfahren es gibt und wie sich TSDF basierte Verfahren, insbesondere der HATSDF-SLAM Ansatz von Eisoldt et al. \ref{TODO} von diesen unterscheidet.
+
+SLAM ist der Prozess der simultanen Generierung einer Karte einer unbekannten Umgebung und der Lokalisierung innerhalb dieser Karte beziehungsweise Umgebung.
+SLAM ist ein \textit{Henne-Ei-Problem}, da auf der einen Seite eine vollständige Karte benötigt um die Pose des Roboters akkurat zu bestimmen, auf der anderen Seite allerdings eine akkurate Posenhistorie benötigt wird um eine gute Karte der Umgebung aufbauen zu können.
+Eine grobe Übersicht über existierende SLAM Verfahren liefert der Stand der Forschung in Kapitel \ref{section:sdf}.
+Im Folgenden werden einige der genannten Verfahren erneut aufgegriffen und erläutert.
+Schlussendlich wird erklärt, welche der SLAM Verfahren für diese Masterarbeit von Interesse sind und wie sie genutzt werden.
+
+Der \textbf{Incremental Closest Points (ICP)} Algorithmus nach Besl und McKay \cite{Besl:1992} ist ein Algorithmus zur \textbf{Registrierung} von Punktwolken.
+Als \textbf{Registierung} wird der Prozess der Zusammenführung von Punktwolken bezeichnet, die von unterschiedlichen Orten aus aufgenommen werden. Um Punktwolken möglichst gut zusammenzuführen, wird versucht die aus den Laserscans entstandenen Punktwolken maximal zu überlappen. Dieser Prozess wird auch \textbf{Scan Matching} genannt.
+Beim Scan Matching wird zwischen dem \textbf{Model} und dem \textbf{Scan} unterschieden.
+Als Scan bezeichnet werden die Daten, die an das Model registiert werden sollen.
+Das Ergebnis des Scan Matching ist eine Approximation der Transformation $T_{Scan \rightarrow Model}$ zwischen den Posen von denen aus die Punktwolken aufgenommen wurden.
+Damit untersucht werden kann, wie gut diese Approximation ist, liefern ICP und verwandte Algorithmen wie zum Beispiel \textbf{Generalized Incremental Closest Points} \cite{segal2009generalized} ein Maß für die Genauigkeit der Approximation. Dies ist im Fall von ICP und GICP der sogenannte \textbf{Fitness-Score}. Er beschreibt die durchschnittliche quadrierte Distanz zwischen den \textbf{Nearest Neighbors (nächsten Nachbarn)} der Punktwolken nach Anwendung der approximierten Transformation $T_{Scan \rightarrow Model}$ der Scanpunktwolke in das Koordinatensystem der Modelpunktwolke.
+Er gibt dementsprechend an, wie groß die durschnittliche quadrierte Distanz eines Punktes aus der Modelpunktwolke zum euklidisch nächsten Punkt der transformierten Scanpunktwolke ist.
+
+Sowohl ICP, als auch GICP sind inkrementelle Algorithmen, dass heißt sie nähern sich inkrementell einem Optimum immer weiter an. Dabei wird die approximiert Transformation jeweils um ein $\delta T$ verändert. Fällt dieses $\delta T$ in einer Iteration unter einen vom Benutzer gewählten Schwellwert, oder wird eine maximale Anzahl an Iterationen erreicht,bricht der Algorithmus ab und gibt die finale Transformation zurück.
+Genanntes Optimum ist dabei im Regelfall allerdings kein globales, sondern lediglich ein lokales Optimum aus dem weder ICP noch GICP herauskommen, sobald sie hineingeraten.
+Aus diesem Grund gilt es die jeweiligen Ausgaben der Algorithmen zum Beispiel basierend auf dem resultierenden Fitness-Score zu analysieren. 
+
+Beide Algorithmen werden in Kapitel \ref{section:loop_closure_basics} und Kapitel \ref{chapter:loop_closure} in Bezug auf die Identifikation von Loop-Closures evaluiert.
+
+
+Varianten (auf die eingegangen wird): 
+
+ICP
+Graph-SLAM -> Global Relaxation
+
+
+ 
 
 1. Grundlagen von SLAM beschreiben
 -> Varianten des SLAM
@@ -108,6 +148,7 @@ Abbildung \ref{fig:transformation} zeigt die Mathematik hinter der Berechnung de
 		-> auf Vorteile von TSDF eingehen (z.B. einfache Integration in Marching Cubes Algorithmus)
 
 
+
 \section{Loop Closure}
 \label{section:loop_closure_basics}
 
@@ -115,5 +156,3 @@ Warum wird Loop Closure benötigt?
 Welchen Mehrwert gibt es?
 Wie wäre ein grundlegendes vorgehen?
 verweisen auf Loop-Closure Kapitel
-
-\section{TSDF}
