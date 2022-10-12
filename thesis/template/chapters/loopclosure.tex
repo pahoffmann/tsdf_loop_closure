@@ -5,7 +5,17 @@ Diese Sektion baut auf den Grundlagen aus Sektion \ref{section:loop_closure_basi
 
 \section{Detektion}
 
+Beschreibung der Detektion (bildhaft), Erklärung von Kandidaten und Filterung
+Beschreibung des optionalen Sichtbarkeitskriteriums
+
 \section{Graphenoptimierung}
+
+Bezug zu GTSAM Library Beschreibung aufnehmen.
+Wichtigste verwendete Funktionen bennen.
+Verweis auf GTSAM Paper.
+Erklärung von Faktorgraphen und Faktoren.
+Erklärung der Genutzten datenstrukturen und optimizer.
+Erklärung von noise constraints (Unsicherheiten)
 
 \section{Optimierungen}
 
@@ -18,4 +28,23 @@ Diese Sektion baut auf den Grundlagen aus Sektion \ref{section:loop_closure_basi
 	2. GICP
 	3. Kurz auf Teaser++ eingehen
 	4. VGICP
+	
+	-> Analyse des Scan Matchings bezogen auf 1. Vorregistrierung, 2. LC Detektion Matching
+	
+\section{Datensätze}
+
+Verwendete Datensätze und herausforderungen herausstellen
+
+\subsection{Hannover1}
+
+Herausforderungen:
+
+- Datensatz allgemein: falsches Koordindatensystem -> Transformation beschreiben
+
+- extrem fehlerbehaftete Rotation in zweitem Kreis (Lösung: Vorregistrierung ICP)
+(Scan-Matching bekommt extrem divergierte Wolken nicht mehr aufeinander)
+
+- problematisch: fehlerhafte LC Optimierung durch schlechtes Scan Matching (Grund: Feature-armer Flur) -> mögliche ( noch zu entwickelnde) Lösung: LC's auf Linien gesondert betrachten -> Identifikation eines LC auf Linien -> Betrachtung der Scan Matching Transformation - wenn aufGeraden kann die Transformation die beiden LC-Punkte nicht vollständig zusammen ziehen
+
+\subsection{Maps}
 

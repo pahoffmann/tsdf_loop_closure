@@ -106,9 +106,43 @@ Zuvor werden in nachfolgender Sektion die Eigenschaften und Anwendungsbereiche d
 \section{TSDF}
 \label{section:tsdf}
 
-Die Truncated Signed Distance Funtion ist eine Form der \textbf{impliziten Oberflächenbeschreibung}. Sie beschreibt die Oberfläche nicht direkt, sondern den Raum um die Oberfläche herum.
-Als Grundlage dient dazu eine diskrete Aufteilung des Raumes in \textbf{Voxel} zum Beispiel in Form einer \improvement{Einfügen, wie die entsprechenden Kartentypen heißen}.
-Die Seitenlänge $x$ der Voxel ist dabei frei wählbar.
+Zur Lösung des \textbf{Simulatneous Localization and Mapping (SLAM)} (siehe Kapitel \ref{section:slam}) Problems in unbekannten Umgebungen wird im Regelfall eine Form der Kartenrepräsentation und die Algorithmik benötigt sich auf Basis der Kartenrepräsentation zu lokalisieren und diese im Anschluss aktualisieren zu können.
+Bei vielen Lösungsansätzen wie zum Beispiel einer inkrementellen \textbf{Registrierung (siehe Kapitel \ref{section:slam})} mit dem \textbf{Iterative Closest Point (ICP)} \cite{Besl:1992} oder \textbf{Generalized Iterative Closest Point} \cite{segal2009generalized} Algorithmus werden als Kartenrepräsentation registrierte Punktwolken verwendet.
+Punktwolken stellen dabei keine geschlossenen Oberflächenrepräsentationen dar und benötigen viel Speicher im Gegensatz zu einigen geschlossenen Repräsentationen wie aus den Punktwolken generierten Dreiecksnetzen.
+Ein großer Nutzen einer solchen Repräsentation ist die vereinfachte Lokalisierung und Navigation auf Basis der Kartenrepräsentation. 
+
+Eine weitere Form der geschlossenen Oberflächenrepräsentation der Umgebung sind \textbf{Signed Distance Functions (SDF)}.
+Im Gegensatz zu Dreiecksnetzen sind die SDF implizite, volumetrische Beschreibung der Oberfläche \cite{werner2014truncated}. Sie beschreiben die Oberfläche nicht direkt, sondern den Raum um die Oberfläche herum.
+Die \textbf{Signed Distance} ist die orthogonale metrische Distanz eines beliebigen Punktes $p$ zur Oberfläche räumlicher Daten, wie zum Beispiel Punktwolken.
+Diese Distanz kann sowohl negativ, als auch positiv sein. Unterschieden wird zwischen dem Innenbereich und Außenbereich.
+Abbildung \ref{fig:tsdf} zeigt ein zweidimensionales, schematisches Beispiel für eine diskretisierte TSDF nach Abtasten der Oberfläche einer unbekannten Umgebung durch einen Laserscanner.
+
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.3]
+			{TSDF}
+		\caption
+			[Caption for LOF]{Schematische Darstellung einer diskretisierten 2D TSDF Karte. Abgebildet sind nur Voxel mit TSDF-Werten im Intervall $ \left] -\tau, \tau \right[$. In der Mitte der Karte befindet sich ein Roboter mit einem Laserscanner (hier dargestellt in rot). Der Roboter befindet sich zum Beispiel in einem Raum. Der Innenbereich (des Raumes) mit positiven TSDF-Werten ist hier dargestellt in grün, der Außenbereich mit negativen TSDF-Werten in rot. Die Oberfläche, in deren Umgebung die TSDF-Werte nahezu Null sind, ist abgebildet in schwarz.}			                                                                                                                                     
+		\label{fig:tsdf}
+\end{figure}
+
+Die \textbf{Truncated Signed Distance Funtion (TSDF)} ist eine Unterklasse der SDF. Sie betrachtet die Distanz zur Oberfläche nur bis zu einer maximalen Distanz $tsdf_{max}$, auch $tau \left(\tau)\right)$ gennant\cite{HATSDF}. Alle Werte die weiter von der Oberfäche entfernt oder unbekannt sind, erhalten als Wert $tau$ selbst.
+Dies spart Rechenaufwand, da nur die Werte in direkter Nähe zur Oberfläche angepasst werden müssen. In Gebieten, in denen der TSDF-Wert $tau$ entspricht, kann jedoch keine Aussage getroffen werden, wo die nächste Oberfläche ist, oder wie weit sie entfernt ist. Es ist lediglich bekannt, dass die betrachtete Position nicht in direkter Nähe zur Oberfläche befindlich und mindestens $tau$ entfernt ist.
+Das Intervall möglicher Werte der TSDF  ist:
+
+\begin{myequation}
+I = [-\tau, \tau]:= \lbrace x \in \mathbb{R} \rvert \tau > 0 \rbrace
+\end{myequation}
+
+Über SDF und TSDF können kontinuierliche Karten erstellt werden. Da kontinuierliche Karten aber unendlich viel Speicherplatz benötigen, wird der Raum diskretisiert. Die Diskretisierung erfolgt durch eine Aufteilung der Umgebung in \textbf{Voxel} mit definierbarer, fester Seitenlänge $v_{res}$ \cite{whelan2012kintinuous} \cite{HATSDF}. Jeder Voxel enthält einen approximierten (T)SDF-Wert. Diese Form der Darstellung kann auch als pseudo-kontinuierlich angesehen werden, da durch eine Approximation über benachbarte Zellen ein approximierter TSDF-Wert für jeden beliebigen Raumpunkt berechnet werden kann.
+Dadurch sind TSDF basierte Karten ideal, um mittels des \textbf{Marching Cubes Algorithmus} \cite{lorensen_marching_1987} eine polygonale Netz-Repräsentation, wie zum Beispiel ein Dreiecksnetz generieren zu können.
+Dieses kann zum Beispiel als optische Referenz für die Qualität der Karte verwendet werden.
+
+Eisoldt et al. \cite{HATSDF} basieren ihren SLAM Ansatz auf einer diskreten, inkrementell erweiterten TSDF Karte. Zur Registierung (vergleiche Kapitel \ref{section:slam}) verwenden sie ebenfalls die TSDF-Karte. Punktwolken werden dabei mit einer \textbf{Point-to-TSDF} Strategie an die TSDF Karte registiert \cite{HATSDF}.
+Diese Arbeit beschäftigt sich mit einer möglichen Integration von Schleifenschlüssen in einen auf einer TSDF Karte basierenden Ansatz wie vorgestellt von Eisoldt et al. \cite{HATSDF}. Ziel ist die Korrektur von Fehlern bei der Registrierung und der damit Verbundenen Korrektur der TSDF-Karte. Dies ist in Kapitel \ref{chapter:loop_closure} und \ref{chapter:map_update} beschrieben.
+
+Nachfolgende Sektion behandelt des Thema SLAM und gibt einen groben Überblick über einige SLAM Ansätze. 
 
 
 \section{SLAM}

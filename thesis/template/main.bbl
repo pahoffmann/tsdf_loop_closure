@@ -7,20 +7,26 @@
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\vspace*{4pt}\bibitem[1]{besl1992method}
+\vspace*{4pt}\bibitem[1]{Besl:1992}
+\textsc{Besl}, P.; \textsc{McKay}, N.:
+\newblock {A Method for Registration of 3-D Shapes}.
+\newblock {In: }\emph{IEEE Transactions on Pattern Analysis and Machine
+  Intelligence} 14 (1992), Februar, Nr. 2, S. 239--256
+
+\vspace*{4pt}\bibitem[2]{besl1992method}
 \textsc{Besl}, Paul~J.; \textsc{McKay}, Neil~D.:
 \newblock Method for registration of 3-D shapes.
 \newblock {In: }\emph{Sensor fusion IV: control paradigms and data structures}
   Bd. 1611 Spie, 1992
 
-\vspace*{4pt}\bibitem[2]{borrmann2008globally}
+\vspace*{4pt}\bibitem[3]{borrmann2008globally}
 \textsc{Borrmann}, Dorit; \textsc{Elseberg}, Jan; \textsc{Lingemann}, Kai;
   \textsc{N{\"u}chter}, Andreas; \textsc{Hertzberg}, Joachim:
 \newblock Globally consistent 3D mapping with scan matching.
 \newblock {In: }\emph{Robotics and Autonomous Systems} 56 (2008), Nr. 2, S.
   130--142
 
-\vspace*{4pt}\bibitem[3]{HATSDF}
+\vspace*{4pt}\bibitem[4]{HATSDF}
 \textsc{Eisoldt}, Marc; \textsc{Flottmann}, Marcel; \textsc{Gaal}, Julian;
   \textsc{Buschermöhle}, Pascal; \textsc{Hinderink}, Steffen;
   \textsc{Hillmann}, Malte; \textsc{Nitschmann}, Adrian; \textsc{Hoffmann},
@@ -29,7 +35,7 @@
   SoCs.
 \newblock {In: }\emph{2021 European Conference on Mobile Robots (ECMR)}, 2021
 
-\vspace*{4pt}\bibitem[4]{izadi2011kinectfusion}
+\vspace*{4pt}\bibitem[5]{izadi2011kinectfusion}
 \textsc{Izadi}, Shahram; \textsc{Kim}, David; \textsc{Hilliges}, Otmar;
   \textsc{Molyneaux}, David; \textsc{Newcombe}, Richard; \textsc{Kohli},
   Pushmeet; \textsc{Shotton}, Jamie; \textsc{Hodges}, Steve; \textsc{Freeman},
@@ -39,18 +45,24 @@
 \newblock {In: }\emph{Proceedings of the 24th annual ACM symposium on User
   interface software and technology}, 2011
 
-\vspace*{4pt}\bibitem[5]{ros_tf_image}
+\vspace*{4pt}\bibitem[6]{ros_tf_image}
 \textsc{Schultz}, Jarvis:
 \newblock \emph{{tf}}.
 \newblock \url{{http://wiki.ros.org/tf}}. --
 \newblock zuletzt abgerufen am: 09.10.2022
 
-\vspace*{4pt}\bibitem[6]{segal2009generalized}
+\vspace*{4pt}\bibitem[7]{segal2009generalized}
 \textsc{Segal}, Aleksandr; \textsc{Haehnel}, Dirk; \textsc{Thrun}, Sebastian:
 \newblock Generalized-icp.
 \newblock {In: }\emph{Robotics: science and systems} Bd.~2 Seattle, WA, 2009
 
-\vspace*{4pt}\bibitem[7]{whelan2012kintinuous}
+\vspace*{4pt}\bibitem[8]{werner2014truncated}
+\textsc{Werner}, Diana; \textsc{Al-Hamadi}, Ayoub; \textsc{Werner}, Philipp:
+\newblock Truncated signed distance function: experiments on voxel size.
+\newblock {In: }\emph{International Conference Image Analysis and Recognition}
+  Springer, 2014
+
+\vspace*{4pt}\bibitem[9]{whelan2012kintinuous}
 \textsc{Whelan}, Thomas; \textsc{Kaess}, Michael; \textsc{Fallon}, Maurice;
   \textsc{Johannsson}, Hordur; \textsc{Leonard}, John; \textsc{McDonald}, John:
 \newblock Kintinuous: Spatially extended kinectfusion.
