@@ -29,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   tf2
   bondcpp
+  fast_gicp
 )
 
 ################################################
@@ -52,6 +53,8 @@ generate_dynamic_reconfigure_options(
 # External interface for HDF5 (libhdf5) HighFive (https://github.com/BlueBrain/HighFive).
 set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
 set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
+set(Boost_USE_STATIC_LIBS ON)
+
 add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS CXX C HL)
@@ -69,7 +72,7 @@ link_libraries(${JSONCPP_LIBRARIES})
 find_package(PCL REQUIRED)
 
 #boost
-FIND_PACKAGE(Boost COMPONENTS program_options REQUIRED)
+FIND_PACKAGE(Boost REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 # openmp

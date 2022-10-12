@@ -1,9 +1,8 @@
 #include <loop_closure/util/lc_evaluator.h>
 
-Evaluator::Evaluator(std::shared_ptr<Path> path, std::shared_ptr<Path> ground_truth)
+Evaluator::Evaluator(Path *path)
 {
     path_ptr_ = path;
-    ground_truth_ptr_ = ground_truth;
 }
 
 void Evaluator::print_evaluation()
@@ -21,6 +20,6 @@ void Evaluator::print_evaluation()
     std::cout << "####################################################################################" << std::endl;
 }
 
-void Evaluator::evaluate_against_ground_truth()
+void Evaluator::evaluate_against_ground_truth(Path *ground_truth)
 {
 }

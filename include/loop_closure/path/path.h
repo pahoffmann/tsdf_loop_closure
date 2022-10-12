@@ -28,6 +28,9 @@ private:
     // vector holding the paths poses
     std::vector<Pose> poses;
 
+    // parameters
+    LoopClosureParams params;
+
     // ray tracer used for loop closure detection (visibility)
     RayTracer *ray_tracer;
 

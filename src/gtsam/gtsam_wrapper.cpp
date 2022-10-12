@@ -15,10 +15,10 @@ GTSAMWrapper::GTSAMWrapper(LoopClosureParams &input_params)
     // noise_vec << 0.5, 0.5, 0.5, 0.3, 0.3, 0.3;
 
     // initialize prior and in between noise with default values used for noising the constraints
-    // prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
-    prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
-    // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
-    in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, 1e-2, 0.3, 0.3, 0.3).finished());
+    prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    //prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
+    in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
+    //in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, 1e-2, 0.3, 0.3, 0.3).finished());
     // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 0.2, 0.2, 0.2, 1.0, 1.0, 1.0).finished());
 }
 
@@ -61,9 +61,21 @@ void GTSAMWrapper::add_in_between_contraint(Eigen::Matrix4f transform, int from_
 }
 
 bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                                               pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial)
+                                               pcl::PointCloud<PointType>::Ptr icp_cloud, float &fitness_score_ref, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial)
 {
     // variables for icp/gicp
+
+    // for the respective algorithms
+    float fitness_score_gicp;
+    bool converged_gicp;
+    Matrix4f final_transform_gicp;
+    pcl::PointCloud<PointType>::Ptr gicp_cloud(new pcl::PointCloud<PointType>());
+
+    float fitness_score_icp;
+    bool converged_icp;
+    Matrix4f final_transform_icp;
+
+    // total
     float fitness_score;
     bool converged;
     Eigen::Matrix4f teaser_transform;
@@ -80,7 +92,41 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     // pcl::transformPointCloud(*model_cloud, *model_cloud, teaser_transform.inverse());
 
     // perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
-    perform_pcl_gicp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
+    perform_pcl_gicp(model_cloud, scan_cloud, gicp_cloud, converged_gicp, final_transform_gicp, fitness_score_gicp);
+    // perform_vgicp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
+
+    final_transformation = final_transform_gicp;
+    fitness_score = fitness_score_gicp;
+    converged = converged_gicp;
+
+    // if gicp is good, but not good enough, check if icp does a better job instead
+    // if (converged_gicp && fitness_score_gicp > params.loop_closure.max_lc_icp_fitness)
+    // {
+    perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged_icp, final_transform_icp, fitness_score_icp);
+
+    // if icp is better, update this stuff
+    if (fitness_score_icp < fitness_score_gicp)
+    {
+        std::cout << "ICP IS BETTER: " << fitness_score_icp << std::endl;
+        fitness_score = fitness_score_icp;
+        final_transformation = final_transform_icp;
+        converged = converged_icp;
+    }
+    else
+    {
+        pcl::copyPointCloud(*gicp_cloud, *icp_cloud);
+    }
+    // }
+    // ignore z translation and x y achsis rotation, as this is faulty for this dataset
+    Pose final_transformation_pose(final_transformation);
+    final_transformation_pose.pos.z() = 0;
+    final_transformation_pose.quat.x() = 0;
+    final_transformation_pose.quat.y() = 0;
+
+    final_transformation = final_transformation_pose.getTransformationMatrix();
+
+    // return fitness score
+    fitness_score_ref = fitness_score;
 
     // std::cout << "Teaser++ transformation:: (readable)" << std::endl
     //           << Pose(teaser_transform) << std::endl;
@@ -232,6 +278,92 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud,
     fitness_score = g_icp.getFitnessScore();
     final_transformation = g_icp.getFinalTransformation();
     converged = g_icp.hasConverged();
+}
+
+void GTSAMWrapper::perform_vgicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                 pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
+{
+    // align the clouds using voxelized gicp and fill fitness score & co
+    final_transformation = VGICP::gicp_transform(scan_cloud, model_cloud, fitness_score, converged);
+
+    return;
+}
+
+void GTSAMWrapper::addNormal(pcl::PointCloud<PointType>::Ptr cloud,
+                             pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_with_normals)
+{
+    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+
+    pcl::search::KdTree<PointType>::Ptr searchTree(new pcl::search::KdTree<PointType>);
+    searchTree->setInputCloud(cloud);
+
+    pcl::NormalEstimation<PointType, pcl::Normal> normalEstimator;
+    normalEstimator.setInputCloud(cloud);
+    normalEstimator.setSearchMethod(searchTree);
+    normalEstimator.setKSearch(15);
+    normalEstimator.compute(*normals);
+
+    pcl::concatenateFields(*cloud, *normals, *cloud_with_normals);
+}
+
+void GTSAMWrapper::perform_pcl_normal_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                          pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
+{
+    pcl::PointCloud<PointType>::Ptr cloud_scan_trans(new pcl::PointCloud<PointType>());
+    cloud_scan_trans = scan_cloud;
+
+    // prepare could with normals
+    pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_scan_normals(new pcl::PointCloud<pcl::PointXYZINormal>());
+    pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_model_normals(new pcl::PointCloud<pcl::PointXYZINormal>());
+    pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_scan_trans_normals(new pcl::PointCloud<pcl::PointXYZINormal>());
+
+    addNormal(scan_cloud, cloud_scan_normals);
+    addNormal(model_cloud, cloud_model_normals);
+    addNormal(cloud_scan_trans, cloud_scan_trans_normals);
+
+    pcl::IterativeClosestPointWithNormals<pcl::PointXYZINormal, pcl::PointXYZINormal>::Ptr icp(new pcl::IterativeClosestPointWithNormals<pcl::PointXYZINormal, pcl::PointXYZINormal>());
+    icp->setMaximumIterations(params.loop_closure.max_icp_iterations);
+    icp->setInputSource(cloud_scan_trans_normals); // not cloud_source, but cloud_source_trans!
+    icp->setInputTarget(cloud_model_normals);
+
+    icp->align(*cloud_scan_trans_normals); // use cloud with normals for ICP
+
+    // fill data with icp results
+    fitness_score = icp->getFitnessScore();
+    final_transformation = icp->getFinalTransformation();
+    converged = icp->hasConverged();
+
+    return;
+
+    // // estimate normals for model and scan cloud
+    // pcl::NormalEstimation<PointType, pcl::Normal> normal_estimation;
+    // normal_estimation.setRadiusSearch(0.1); // 10 cm
+    // pcl::PointCloud<pcl::Normal>::Ptr model_normals(new pcl::PointCloud<pcl::Normal>());
+    // pcl::PointCloud<pcl::Normal>::Ptr scan_normals(new pcl::PointCloud<pcl::Normal>());
+
+    // normal_estimation.setInputCloud(model_cloud);
+    // normal_estimation.compute(*model_normals);
+
+    // normal_estimation.setInputCloud(scan_cloud);
+    // normal_estimation.compute(*scan_normals);
+    // // ICP Settings
+    // static pcl::IterativeClosestPointWithNormals<PointType, PointType> icp_normal;
+    // // icp_normal.setMaxCorrespondenceDistance(0.2f); // hardcoded for now
+    // icp_normal.setMaximumIterations(params.loop_closure.max_icp_iterations);
+    // // icp_normal.setTransformationEpsilon(1e-6);
+    // // icp_normal.setEuclideanFitnessEpsilon(1e-6);
+    // // icp_normal.setRANSACIterations(0);
+
+    // // Align clouds
+    // // icp_normal.setInputSource(pointcloud_cur_pretransformed);
+    // icp_normal.setInputSource(scan_cloud);
+    // icp_normal.setInputTarget(model_cloud);
+    // icp_normal.align(*result);
+
+    // // fill data with icp results
+    // fitness_score = icp_normal.getFitnessScore();
+    // final_transformation = icp_normal.getFinalTransformation();
+    // converged = icp_normal.hasConverged();
 }
 
 void GTSAMWrapper::perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,

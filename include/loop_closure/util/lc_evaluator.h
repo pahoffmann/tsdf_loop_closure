@@ -20,11 +20,11 @@ private:
     float average_prereg_fitness_score = 0.0f;
 
     // path and ground truth
-    std::shared_ptr<Path> path_ptr_;
-    std::shared_ptr<Path> ground_truth_ptr_;
+    Path* path_ptr_;
+    Path* ground_truth_ptr_;
 
 public:
-    Evaluator(std::shared_ptr<Path> path, std::shared_ptr<Path> ground_truth);
+    Evaluator(Path* path);
 
     ~Evaluator() = default;
 
@@ -40,7 +40,7 @@ public:
      * @param path 
      * @param ground_truth 
      */
-    void evaluate_against_ground_truth();
+    void evaluate_against_ground_truth(Path *ground_truth);
 
     /**
      * @brief saves the evaluation data to a csv

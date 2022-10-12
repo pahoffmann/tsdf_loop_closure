@@ -80,10 +80,11 @@ int side_length_xy;
 int side_length_z;
 
 // evaluation
-//Evaluator evaluator();
+std::unique_ptr<Evaluator> evaluator;
 
 // vector to store found lc index pairs
 std::vector<std::pair<Matrix4f, std::pair<int, int>>> lc_index_pairs;
+std::vector<float> lc_fitness_scores;
 
 // save a vector of pointclouds (which should be preprocessed)
 std::vector<pcl::PointCloud<PointType>::Ptr> dataset_clouds;
@@ -107,6 +108,7 @@ ros::Publisher approx_pcl_pub_icp;  // result of icp
 ros::Publisher input_cloud_pub;     // publishes the input cloud
 ros::Publisher tsdf_cloud_pub;
 ros::Publisher lc_candidate_publisher; // publishes loop closure candidates
+ros::Publisher normal_publisher;       // publishes loop closure candidates
 
 // Ros messages
 nav_msgs::Path ros_path;
@@ -136,6 +138,9 @@ void init_obj()
     // init path
     path = new Path();
     path->attach_raytracer(tracer);
+
+    // create evaluator
+    evaluator.reset(new Evaluator(path));
 
     ros_path.header.frame_id = "map";
     ros_path.header.stamp = ros::Time::now();
@@ -196,8 +201,8 @@ bool is_viable_lc(std::pair<int, int> candidate_pair)
         //     return false;
         // }
 
-        // testing purpose, using different indices
-        if (candidate_pair.second < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.second, candidate_pair.second) < params.loop_closure.max_dist_lc)
+        // check validity
+        if (candidate_pair.second < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.second, candidate_pair.second) < params.loop_closure.dist_between_lcs)
         {
             return false;
         }
@@ -226,6 +231,7 @@ void refill_graph()
     // readd a lc constraints?
     for (int i = 0; i < lc_index_pairs.size(); i++)
     {
+        // gtsam_wrapper_ptr->add_in_between_contraint(lc_index_pairs[i].first, lc_index_pairs[i].second.second, lc_index_pairs[i].second.first, lc_fitness_scores[i]);
         gtsam_wrapper_ptr->add_in_between_contraint(lc_index_pairs[i].first, lc_index_pairs[i].second.second, lc_index_pairs[i].second.first);
     }
 }
@@ -324,7 +330,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     sor.filter(*input_cloud);
     std::cout << "[SLAM6D_LISTENER] Size after filtering: " << input_cloud->size() << std::endl;
 
-
     // save cloud
     dataset_clouds.push_back(input_cloud);
 
@@ -357,10 +362,14 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             // pose after (possible) preregistration
             Pose preregistered_input_pose;
 
-            pcl::PointCloud<PointType>::Ptr model_cloud = dataset_clouds.at(path->get_length() - 1); // last pose is model
-            pcl::PointCloud<PointType>::Ptr scan_cloud = input_cloud;
-            pcl::PointCloud<PointType>::Ptr result_cloud; // result of gicp
-            result_cloud.reset(new pcl::PointCloud<PointType>());
+            pcl::PointCloud<PointType>::Ptr model_cloud(new pcl::PointCloud<PointType>());
+            pcl::PointCloud<PointType>::Ptr scan_cloud(new pcl::PointCloud<PointType>());
+            pcl::copyPointCloud(*dataset_clouds.at(path->get_length() - 1), *model_cloud);
+            pcl::copyPointCloud(*input_cloud, *scan_cloud);
+            // pcl::PointCloud<PointType>::Ptr model_cloud = dataset_clouds.at(path->get_length() - 1); // last pose is model
+            // pcl::PointCloud<PointType>::Ptr scan_cloud = input_cloud;
+            pcl::PointCloud<PointType>::Ptr result_cloud(new pcl::PointCloud<PointType>());
+            ; // result of scan matching
 
             // gicp variables
             bool converged = false;
@@ -373,12 +382,20 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             // afterwards we perform icp and combine the resulting transformations
             auto model_to_scan_initial = getTransformationMatrixBetween(input_pose_transformed, last_pose->getTransformationMatrix());
 
+            // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            // std::cout << "TEST FITNESS SCORE_______________________________: " << prereg_fitness_score << std::endl;
+
             // pretransform model cloud into the system of the scan
             pcl::transformPointCloud(*model_cloud, *model_cloud, model_to_scan_initial);
 
+            gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            std::cout << "TEST FITNESS SCORE_______________________________: " << prereg_fitness_score << std::endl;
+
             // try matching the clouds in the scan system -> we obtain P_scan' -> P_scan (final transformation of ICP)
             // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
-            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            // gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
 
             // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
             if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
@@ -388,10 +405,26 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
                 std::cout << "Final preregistration_matrix: " << std::endl
                           << Pose(final_transformation) << std::endl;
 
+                // auto projected_translation = final_transformation.block<3, 1>(0, 3);
+                // projected_translation.z() = 0; // ignore translation in z direction
+                // Eigen::Matrix3f projected_rotation = final_transformation.block<3, 3>(0, 0);
+                // Vector3f angles = projected_rotation.eulerAngles(0, 1, 2);
+                // final_transformation = poseFromEuler(projected_translation.x(), projected_translation.y(), projected_translation.z(), 0, 0, angles.z()).getTransformationMatrix();
+                // std::cout << "Final preregistration_matrix (projected): " << std::endl
+                //           << Pose(final_transformation) << std::endl;
+
                 Matrix4f new_scan_to_model = model_to_scan_initial.inverse() * final_transformation;
                 Matrix4f new_scan_to_map = last_pose->getTransformationMatrix() * new_scan_to_model;
 
-                path->add_pose(new_scan_to_map);
+                Pose new_scan_to_map_pose(new_scan_to_map);
+                new_scan_to_map_pose.pos.z() = 0;
+                new_scan_to_map_pose.quat.x() = 0;
+                new_scan_to_map_pose.quat.y() = 0;
+
+                new_scan_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), new_scan_to_map_pose.getTransformationMatrix());
+
+                path->add_pose(new_scan_to_map_pose);
+                // path->add_pose(new_scan_to_map);
                 gtsam_pose_delta = new_scan_to_model;
             }
             else // if it is not converged we simply add the initial estimate.
@@ -427,6 +460,11 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_cloud_tf.header.frame_id = "robot";
     input_cloud_pub.publish(input_cloud_tf);
 
+    // publish normals for the input cloud
+    auto normal_marker = ROSViewhelper::visualize_pcl_normals(input_cloud);
+    normal_marker.header.frame_id = "robot";
+    normal_publisher.publish(normal_marker);
+
 #pragma endregion
 
 #pragma region TSDF_UPDATE
@@ -435,7 +473,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     pcl::VoxelGrid<PointType> grid;
     grid.setInputCloud(input_cloud);
     grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
-    grid.filter(*tsdf_cloud.get());
+    grid.filter(*tsdf_cloud);
 
     std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
 
@@ -463,7 +501,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 #pragma region CLOUD_GM_VIS
     auto gm_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    //auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
     tsdf_pub.publish(marker);
 
     sensor_msgs::PointCloud2 filtered_ros_cloud;
@@ -506,7 +544,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // check for loops
     std::vector<std::pair<int, int>> lc_pairs;
-    if (path->get_length() > 231 && path->get_length() < 285)
+    if (path->get_length() > 231 && path->get_length() < 270)
     {
         lc_pairs = path->find_loop_kd_min_dist_backwards(path->get_length() - 1, 20, 4, false);
     }
@@ -527,6 +565,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         ready_flag_pub.publish(ready_msg);
 
         return;
+    }
+    else
+    {
+        std::cout << "Found " << lc_pairs.size() << " loop closure pairs" << std::endl;
     }
 
     for (auto lc_pair : lc_pairs)
@@ -625,14 +667,16 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         pcl::transformPointCloud(*model_cloud, *model_cloud, prev_to_cur_initial);
 
         Matrix4f final_transformation = Matrix4f::Identity();
+        float fitness_score = 10.0f;
         bool converged_unit = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair.second, model_cloud, scan_cloud,
-                                                                             icp_cloud, final_transformation, prev_to_cur_initial);
+                                                                             icp_cloud, fitness_score, final_transformation, prev_to_cur_initial);
 
         // add lc if unit converged, update converge flag for all found lcs for the current position
         if (converged_unit)
         {
             converged = true;
             lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
+            lc_fitness_scores.push_back(fitness_score);
             break;
         }
 
@@ -809,6 +853,7 @@ int main(int argc, char **argv)
     tsdf_pub = n.advertise<visualization_msgs::Marker>("/tsdf", 1);
     ready_flag_pub = n.advertise<std_msgs::String>("/slam6d_listener_ready", 1);
     lc_candidate_publisher = n.advertise<visualization_msgs::Marker>("/lc_candidates", 1);
+    normal_publisher = n.advertise<visualization_msgs::Marker>("/input_cloud_normals", 1);
 
     // bond
     std::string id = "42";

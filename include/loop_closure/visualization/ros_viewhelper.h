@@ -25,6 +25,7 @@
 #include <omp.h>
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/features/normal_3d.h>
 
 namespace ROSViewhelper
 {
@@ -850,5 +851,53 @@ namespace ROSViewhelper
         }
 
         return points_marker;
+    }
+
+    static visualization_msgs::Marker visualize_pcl_normals(pcl::PointCloud<PointType>::Ptr cloud_ptr, Colors::ColorNames color_name = Colors::ColorNames::red)
+    {
+        // estimate normals for model and scan cloud
+        pcl::NormalEstimation<PointType, pcl::Normal> normal_estimation;
+        normal_estimation.setRadiusSearch(0.1); // 10 cm
+        pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>());
+
+        normal_estimation.setInputCloud(cloud_ptr);
+        normal_estimation.compute(*normals);
+
+        // get color from name
+        std_msgs::ColorRGBA color = Colors::color_from_name(color_name);
+
+        // todo: check, wether the line marker needs two points or one point and scaljgnk
+        visualization_msgs::Marker line_marker;
+        line_marker.ns = "lc_detect";
+        line_marker.action = visualization_msgs::Marker::ADD;
+        line_marker.pose.position.x = 0;
+        line_marker.pose.position.y = 0;
+        line_marker.pose.position.z = 0;
+        line_marker.pose.orientation.x = 0.0;
+        line_marker.pose.orientation.y = 0.0;
+        line_marker.pose.orientation.z = 0.0;
+        line_marker.pose.orientation.w = 1.0;
+        line_marker.scale.x = 0.05;
+        line_marker.scale.y = 0.05;
+        line_marker.scale.z = 0.05;
+        line_marker.color = color;
+        line_marker.color.a = 0.85;
+        line_marker.type = visualization_msgs::Marker::LINE_LIST;
+        line_marker.header.frame_id = "map";
+        line_marker.header.stamp = ros::Time();
+        line_marker.id = 0;
+
+        for (int i = 0; i < cloud_ptr->size(); i++)
+        {
+            PointType current_point = cloud_ptr->at(i);
+            pcl::Normal current_normal = normals->at(i);
+
+            auto eigen_point = Eigen::Vector3f(current_point.x, current_point.y, current_point.z);
+            auto eigen_normal = Eigen::Vector3f(current_normal.normal_x, current_normal.normal_y, current_normal.normal_z);
+            line_marker.points.push_back(type_transform::eigen_point_to_ros_point(eigen_point));
+            line_marker.points.push_back(type_transform::eigen_point_to_ros_point(eigen_point + Vector3f(eigen_normal)));
+        }
+
+        return line_marker;
     }
 }

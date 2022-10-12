@@ -105,6 +105,7 @@ struct Pose
     friend std::ostream &operator<<(std::ostream &os, const Pose &pose)
     {
         auto euler = pose.quat.toRotationMatrix().eulerAngles(0, 1, 2);
+        euler *= (180.0f / M_PI);
         os << std::fixed << std::setprecision(2)
            << "Pos:    " << pose.pos.x() << " | " << pose.pos.y() << " | " << pose.pos.z() << std::endl
            << "Angles: " << euler.x() << " | " << euler.y() << " | " << euler.z() << std::endl;

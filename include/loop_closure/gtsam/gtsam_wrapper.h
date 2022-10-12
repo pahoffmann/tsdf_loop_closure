@@ -7,9 +7,11 @@
 
 #include <loop_closure/util/point.h>
 #include <loop_closure/params/loop_closure_params.h>
+#include <loop_closure/util/vgicp.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/registration/icp.h>
+#include <pcl/registration/icp_nl.h>
 #include <pcl/registration/gicp.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/filters/voxel_grid.h>
@@ -83,6 +85,15 @@ private:
      */
     void preprocess_scans(pcl::PointCloud<PointType>::Ptr cur_cloud, pcl::PointCloud<PointType>::Ptr prev_cloud, Eigen::Matrix4f &pretransform_mat);
 
+    /**
+     * @brief will calculate the normals for 'cloud' and add them to a new cloud 'cloud_with_normals'
+     *
+     * @param cloud
+     * @param cloud_with_normals
+     */
+    void addNormal(pcl::PointCloud<PointType>::Ptr cloud,
+                   pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_with_normals);
+
 public:
     /**
      * @brief Construct a new GTSAMWrapper, will intialize the noises(TODO: from parameters)
@@ -126,7 +137,7 @@ public:
      * @return false if not
      */
     bool add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                                     pcl::PointCloud<PointType>::Ptr icp_cloud, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial);
+                                     pcl::PointCloud<PointType>::Ptr icp_cloud, float &fitness_score_ref, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial);
 
     /**
      * @brief will optimize the gtsam factor graph
@@ -163,4 +174,28 @@ public:
      */
     void perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
                           pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
+
+    /**
+     * @brief performs generalized icp between the two pointclouds, will return information about the performance of the icp
+     *
+     * @param source_cloud
+     * @param target_cloud
+     * @param converged
+     * @param final_transformation
+     * @param fitness_score
+     */
+    void perform_vgicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                       pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
+
+    /**
+     * @brief performs generalized icp between the two pointclouds, will return information about the performance of the icp
+     *
+     * @param source_cloud
+     * @param target_cloud
+     * @param converged
+     * @param final_transformation
+     * @param fitness_score
+     */
+    void perform_pcl_normal_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
 };
