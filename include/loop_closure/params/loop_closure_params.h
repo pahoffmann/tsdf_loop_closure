@@ -42,6 +42,27 @@ struct LoopClosureParams
     nh.param<float>("loop_closure/max_lc_icp_fitness", loop_closure.max_lc_icp_fitness, 0.4f);
     // json filename
     nh.param<std::string>("loop_closure/json_dirname", loop_closure.json_dirname, "/home/patrick/maps/generated/json");
+
+    // NOISES (actual, not the variance)
+    // prior
+    nh.param<float>("loop_closure/prior_translation_noise_x", loop_closure.prior_translation_noise_x, 0.4f);
+    nh.param<float>("loop_closure/prior_translation_noise_y", loop_closure.prior_translation_noise_y, 0.4f);
+    nh.param<float>("loop_closure/prior_translation_noise_z", loop_closure.prior_translation_noise_z, 0.4f);
+
+    // rotation (in radiants)
+    nh.param<float>("loop_closure/prior_rotation_noise_x", loop_closure.prior_rotation_noise_x, 0.1f);
+    nh.param<float>("loop_closure/prior_rotation_noise_y", loop_closure.prior_rotation_noise_y, 0.1f);
+    nh.param<float>("loop_closure/prior_rotation_noise_z", loop_closure.prior_rotation_noise_z, M_PI);
+
+    // between
+    nh.param<float>("loop_closure/between_translation_noise_x", loop_closure.between_translation_noise_x, 0.1f);
+    nh.param<float>("loop_closure/between_translation_noise_y", loop_closure.between_translation_noise_y, 0.1f);
+    nh.param<float>("loop_closure/between_translation_noise_z", loop_closure.between_translation_noise_z, 0.1f);
+
+    // rotation (in radiants)
+    nh.param<float>("loop_closure/between_rotation_noise_x", loop_closure.between_rotation_noise_x, 0.01f);
+    nh.param<float>("loop_closure/between_rotation_noise_y", loop_closure.between_rotation_noise_y, 0.01f);
+    nh.param<float>("loop_closure/between_rotation_noise_z", loop_closure.between_rotation_noise_z, 0.01f);
   }
 
   struct LoopClosure
@@ -54,6 +75,21 @@ struct LoopClosureParams
     std::string json_dirname;
     float max_prereg_icp_fitness;
     float max_lc_icp_fitness;
+
+    // gtsam noise params
+    float prior_rotation_noise_x;
+    float prior_rotation_noise_y;
+    float prior_rotation_noise_z;
+    float prior_translation_noise_x;
+    float prior_translation_noise_y;
+    float prior_translation_noise_z;
+
+    float between_rotation_noise_x;
+    float between_rotation_noise_y;
+    float between_rotation_noise_z;
+    float between_translation_noise_x;
+    float between_translation_noise_y;
+    float between_translation_noise_z;
   } loop_closure;
 
   MapParams map;

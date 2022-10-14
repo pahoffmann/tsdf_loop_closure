@@ -15,11 +15,27 @@ GTSAMWrapper::GTSAMWrapper(LoopClosureParams &input_params)
     // noise_vec << 0.5, 0.5, 0.5, 0.3, 0.3, 0.3;
 
     // initialize prior and in between noise with default values used for noising the constraints
-    prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
-    //prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 0.2, 0.2, 0.2).finished()); // rad*rad, meter*meter
-    in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2).finished());
-    //in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, 1e-2, 0.3, 0.3, 0.3).finished());
+    // prior_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, M_PI * M_PI, 1e8, 1e8, 1e8).finished()); // rad*rad, meter*meter
+    // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 1e-2, 1e-2, 1e-2, 0.3, 0.3, 0.3).finished());
     // in_between_noise = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << 0.2, 0.2, 0.2, 1.0, 1.0, 1.0).finished());
+
+    prior_noise = gtsam::noiseModel::Diagonal::Variances(
+        (gtsam::Vector(6) << std::pow(params.loop_closure.prior_rotation_noise_x, 2),
+         std::pow(params.loop_closure.prior_rotation_noise_y, 2),
+         std::pow(params.loop_closure.prior_rotation_noise_z, 2),
+         std::pow(params.loop_closure.prior_translation_noise_x, 2),
+         std::pow(params.loop_closure.prior_translation_noise_y, 2),
+         std::pow(params.loop_closure.prior_translation_noise_z, 2))
+            .finished()); // rad*rad, meter*meter
+            
+    in_between_noise = gtsam::noiseModel::Diagonal::Variances(
+        (gtsam::Vector(6) << std::pow(params.loop_closure.between_rotation_noise_x, 2),
+         std::pow(params.loop_closure.between_rotation_noise_y, 2),
+         std::pow(params.loop_closure.between_rotation_noise_z, 2),
+         std::pow(params.loop_closure.between_translation_noise_x, 2),
+         std::pow(params.loop_closure.between_translation_noise_y, 2),
+         std::pow(params.loop_closure.between_translation_noise_z, 2))
+            .finished()); // rad*rad, meter*meter
 }
 
 void GTSAMWrapper::add_prior_constraint(Matrix4f &transform)
@@ -50,7 +66,7 @@ void GTSAMWrapper::add_in_between_contraint(Eigen::Matrix4f transform, int from_
         gtsam::noiseModel::Diagonal::shared_ptr in_between_noise_tmp = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << input_fitness_noise, input_fitness_noise, input_fitness_noise,
                                                                                                                input_fitness_noise, input_fitness_noise, input_fitness_noise)
                                                                                                                   .finished());
-        gtsam::BetweenFactor<gtsam::Pose3> factor(from_idx, to_idx, gtsam::Pose3(rot3, point3), in_between_noise);
+        gtsam::BetweenFactor<gtsam::Pose3> factor(from_idx, to_idx, gtsam::Pose3(rot3, point3), in_between_noise_tmp);
         graph->add(factor); // add constraint to graph
     }
     else
@@ -61,7 +77,7 @@ void GTSAMWrapper::add_in_between_contraint(Eigen::Matrix4f transform, int from_
 }
 
 bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                                               pcl::PointCloud<PointType>::Ptr icp_cloud, float &fitness_score_ref, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial)
+                                               pcl::PointCloud<PointType>::Ptr icp_cloud, float &fitness_score_ref, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial, Path *path)
 {
     // variables for icp/gicp
 
@@ -102,26 +118,26 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     // if gicp is good, but not good enough, check if icp does a better job instead
     // if (converged_gicp && fitness_score_gicp > params.loop_closure.max_lc_icp_fitness)
     // {
-    perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged_icp, final_transform_icp, fitness_score_icp);
+    // perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged_icp, final_transform_icp, fitness_score_icp);
 
     // if icp is better, update this stuff
-    if (fitness_score_icp < fitness_score_gicp)
-    {
-        std::cout << "ICP IS BETTER: " << fitness_score_icp << std::endl;
-        fitness_score = fitness_score_icp;
-        final_transformation = final_transform_icp;
-        converged = converged_icp;
-    }
-    else
-    {
-        pcl::copyPointCloud(*gicp_cloud, *icp_cloud);
-    }
+    // if (fitness_score_icp < fitness_score_gicp)
+    // {
+    //     std::cout << "ICP IS BETTER: " << fitness_score_icp << std::endl;
+    //     fitness_score = fitness_score_icp;
+    //     final_transformation = final_transform_icp;
+    //     converged = converged_icp;
+    // }
+    // else
+    // {
+    pcl::copyPointCloud(*gicp_cloud, *icp_cloud);
+    // }
     // }
     // ignore z translation and x y achsis rotation, as this is faulty for this dataset
     Pose final_transformation_pose(final_transformation);
-    final_transformation_pose.pos.z() = 0;
-    final_transformation_pose.quat.x() = 0;
-    final_transformation_pose.quat.y() = 0;
+    // final_transformation_pose.pos.z() = 0;
+    // final_transformation_pose.quat.x() = 0;
+    // final_transformation_pose.quat.y() = 0;
 
     final_transformation = final_transformation_pose.getTransformationMatrix();
 
@@ -163,6 +179,13 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     else
     {
         std::cout << print_prefix << "ICP did not converge" << std::endl;
+        return false;
+    }
+
+    // REJECTORS:
+    if (LCRejectors::reject_line_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation))
+    {
+        std::cout << print_prefix << "LC Rejected (LINE)" << std::endl;
         return false;
     }
 

@@ -6,8 +6,12 @@
 #include <gtsam/nonlinear/GaussNewtonOptimizer.h>
 
 #include <loop_closure/util/point.h>
+#include <loop_closure/path/path.h>
 #include <loop_closure/params/loop_closure_params.h>
 #include <loop_closure/util/vgicp.h>
+
+// rejectors
+#include <loop_closure/loop_closure/lc_line_rejector.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/registration/icp.h>
@@ -137,7 +141,7 @@ public:
      * @return false if not
      */
     bool add_loop_closure_constraint(std::pair<int, int> lc_indices, pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                                     pcl::PointCloud<PointType>::Ptr icp_cloud, float &fitness_score_ref, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial);
+                                     pcl::PointCloud<PointType>::Ptr icp_cloud, float &fitness_score_ref, Matrix4f &final_transformation, Matrix4f prev_to_cur_initial, Path *path);
 
     /**
      * @brief will optimize the gtsam factor graph

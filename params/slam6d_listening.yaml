@@ -1,11 +1,11 @@
 loop_closure:
   max_icp_iterations: 200
-  max_dist_lc: 15.0     # in m
-  min_traveled_lc: 13.0 # in m
-  dist_between_lcs: 4.0 # in m
+  max_dist_lc: 20.0     # in m
+  min_traveled_lc: 4.0 # in m
+  dist_between_lcs: 2.0 # in m
 
-  max_prereg_icp_fitness: 0.1 # in m²
-  max_lc_icp_fitness: 0.4 # in m²
+  max_prereg_icp_fitness: 0.2 # in m²
+  max_lc_icp_fitness: 0.45 # in m²
 
 map:
   # directory to save map in

@@ -215,6 +215,9 @@ target_compile_definitions(test_localmap PRIVATE DEBUG)
 target_compile_definitions(test_map_cleanup PRIVATE DEBUG)
 target_compile_definitions(slam6d_listener PRIVATE DEBUG)
 
+# compile definition for debug in testing environment
+add_compile_definitions(TEST_DEBUG=1)
+
 
 # globally available data path
 add_compile_definitions(DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data")
@@ -324,5 +327,26 @@ target_link_libraries(slam6d_listener
   OpenMP::OpenMP_CXX
   gtsam
 )
+
+## Tests ##
+
+catkin_add_gtest(${PROJECT_NAME}-test test/test_lc_rejectors.cpp)
+
+if(TARGET ${PROJECT_NAME}-test)
+  target_link_libraries(${PROJECT_NAME}-test 
+    ${catkin_LIBRARIES}
+    ${HDF5_LIBRARIES}
+    ${HDF5_HL_LIBRARIES}
+    Eigen3::Eigen
+    ${JSONCPP_LIBRARIES}
+    teaserpp::teaser_registration
+    teaserpp::teaser_features
+    teaserpp::teaser_io
+    ${PCL_LIBRARIES}
+    ${Boost_LIBRARIES}
+    OpenMP::OpenMP_CXX
+    gtsam
+  )
+endif()
 
 

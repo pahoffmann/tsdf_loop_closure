@@ -174,7 +174,7 @@ void bond_broken_callback()
 {
     std::cout << "[TransformCoordSys] Done publishing.." << std::endl;
 
-    bond_ptr.release();
+    bond_ptr.reset();
     exit(EXIT_SUCCESS);
 }
 
