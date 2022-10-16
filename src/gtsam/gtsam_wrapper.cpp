@@ -27,7 +27,7 @@ GTSAMWrapper::GTSAMWrapper(LoopClosureParams &input_params)
          std::pow(params.loop_closure.prior_translation_noise_y, 2),
          std::pow(params.loop_closure.prior_translation_noise_z, 2))
             .finished()); // rad*rad, meter*meter
-            
+
     in_between_noise = gtsam::noiseModel::Diagonal::Variances(
         (gtsam::Vector(6) << std::pow(params.loop_closure.between_rotation_noise_x, 2),
          std::pow(params.loop_closure.between_rotation_noise_y, 2),
@@ -186,6 +186,11 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     if (LCRejectors::reject_line_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation))
     {
         std::cout << print_prefix << "LC Rejected (LINE)" << std::endl;
+        return false;
+    }
+    else if (LCRejectors::reject_range_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation, params))
+    {
+        std::cout << print_prefix << "LC Rejected (RANGE)" << std::endl;
         return false;
     }
 

@@ -12,6 +12,7 @@
 
 // rejectors
 #include <loop_closure/loop_closure/lc_line_rejector.h>
+#include <loop_closure/loop_closure/lc_range_rejector.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/registration/icp.h>

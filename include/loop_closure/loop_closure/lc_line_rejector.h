@@ -125,13 +125,13 @@ namespace LCRejectors
         int num_between_poses = (end_idx - start_idx);
         Vector3f acc_noise_vector = Vector3f::Ones() * (between_transl_noise * num_between_poses);
 
-        Vector3f range_from = previous_transl + acc_noise_vector;
-        Vector3f range_to = previous_transl - acc_noise_vector;
+        Vector3f range_from = previous_transl - acc_noise_vector;
+        Vector3f range_to = previous_transl + acc_noise_vector;
 
         std::cout << "Allowed range: " << std::endl
-                  << previous_transl + acc_noise_vector << std::endl
+                  << range_from << std::endl
                   << "-------------------------------" << std::endl
-                  << previous_transl - acc_noise_vector << std::endl;
+                  << range_to << std::endl;
 
         auto diff_vector = previous_transl - new_transl;
         auto diff_vector_abs = diff_vector.cwiseAbs();
