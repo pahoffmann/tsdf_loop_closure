@@ -61,9 +61,14 @@ namespace CoordSysTransform
             rPos[1] = -rPosInitial[0] / 100.0f;
             rPos[2] = rPosInitial[1] / 100.0f;
 
-            float x_axis_angle = 360.0f - rPosTheta[2];
-            float y_axis_angle = 360.0f - rPosTheta[0]; // oder : rPosTheta[0];
-            float z_axis_angle = 360.0f - rPosTheta[1];
+            // float x_axis_angle = 360.0f - rPosTheta[2];
+            // float y_axis_angle = 360.0f - rPosTheta[0]; // oder : rPosTheta[0];
+            // float z_axis_angle = 360.0f - rPosTheta[1];
+
+            // in interval [-180, 180]
+            float x_axis_angle = - rPosTheta[2];
+            float y_axis_angle = - rPosTheta[0]; // oder : rPosTheta[0];
+            float z_axis_angle = - rPosTheta[1];
 
             // rPosTheta[0] *= 0.0174533;
             // rPosTheta[1] *= 0.0174533;
@@ -72,7 +77,6 @@ namespace CoordSysTransform
             rPosTheta[0] = x_axis_angle * 0.0174533;
             rPosTheta[1] = y_axis_angle * 0.0174533;
             rPosTheta[2] = z_axis_angle * 0.0174533;
-
 
             float sx = sin(rPosTheta[0]);
             float cx = cos(rPosTheta[0]);
@@ -134,15 +138,15 @@ namespace CoordSysTransform
 
     /**
      * @brief will transform a pcl cloud to a hdf5 compatible 1d vector
-     * 
-     * @param cloud 
-     * @return std::vector<float> 
+     *
+     * @param cloud
+     * @return std::vector<float>
      */
     static std::vector<float> cloud_to_hdf5_compatible_vector(pcl::PointCloud<PointType>::Ptr cloud)
     {
         std::vector<float> hdf5_scan_vec(cloud->size() * 3);
 
-        for(auto point : cloud->points)
+        for (auto point : cloud->points)
         {
             hdf5_scan_vec.push_back(point.x);
             hdf5_scan_vec.push_back(point.y);
@@ -154,9 +158,9 @@ namespace CoordSysTransform
 
     /**
      * @brief reads a scan file and instantly transforms the points to a right hand sided coordinate system
-     * 
-     * @param path 
-     * @return pcl::PointCloud<PointType>::Ptr 
+     *
+     * @param path
+     * @return pcl::PointCloud<PointType>::Ptr
      */
     static pcl::PointCloud<PointType>::Ptr read_scan_file_and_transform(boost::filesystem::path &path)
     {
@@ -189,9 +193,9 @@ namespace CoordSysTransform
 
     /**
      * @brief reads a scan file and instantly transforms the points to a right hand sided coordinate system
-     * 
-     * @param path 
-     * @return pcl::PointCloud<PointType>::Ptr 
+     *
+     * @param path
+     * @return pcl::PointCloud<PointType>::Ptr
      */
     static pcl::PointCloud<PointType>::Ptr read_scan_file(boost::filesystem::path &path)
     {

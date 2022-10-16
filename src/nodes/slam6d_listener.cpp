@@ -336,10 +336,17 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // create Pose from ros pose
     Eigen::Vector3d tmp_point;
     Eigen::Quaterniond tmp_quat;
+    Eigen::Affine3d tmp_pose;
     tf::pointMsgToEigen(pose_ptr->pose.position, tmp_point);
     tf::quaternionMsgToEigen(pose_ptr->pose.orientation, tmp_quat);
-    input_pose.quat = tmp_quat.cast<float>();
-    input_pose.pos = tmp_point.cast<float>();
+    tf::poseMsgToEigen(pose_ptr->pose, tmp_pose);
+
+    input_pose = Pose(tmp_pose.matrix().cast<float>());
+    // input_pose.quat = tmp_quat.cast<float>();
+    // input_pose.pos = tmp_point.cast<float>();
+
+    std::cout << "New Pose with index: " << path->get_length() + 1 << ":" << std::endl
+              << input_pose << std::endl;
 
     // add the delta between the initial poses to the last pose of the (maybe already updated) path
     auto initial_pose_delta = getTransformationMatrixBetween(last_initial_estimate, input_pose.getTransformationMatrix());
@@ -395,7 +402,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
             gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            //gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            // gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
 
             // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
             if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
@@ -417,9 +424,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
                 Matrix4f new_scan_to_map = last_pose->getTransformationMatrix() * new_scan_to_model;
 
                 Pose new_scan_to_map_pose(new_scan_to_map);
-                new_scan_to_map_pose.pos.z() = 0;
-                new_scan_to_map_pose.quat.x() = 0;
-                new_scan_to_map_pose.quat.y() = 0;
+                // new_scan_to_map_pose.pos.z() = 0;
+                // new_scan_to_map_pose.quat.x() = 0;
+                // new_scan_to_map_pose.quat.y() = 0;
 
                 new_scan_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), new_scan_to_map_pose.getTransformationMatrix());
 
