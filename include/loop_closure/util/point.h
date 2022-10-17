@@ -335,12 +335,12 @@ static Eigen::Matrix4f getTransformationMatrixBetween(Eigen::Matrix4f mat1, Eige
 }
 
 /// THE FOLLOWING IS USED TO PREPARE DATA FOR TSDF UPDATE ///
-inline Eigen::Matrix4i to_int_mat(const Eigen::Matrix4f &mat)
+static Eigen::Matrix4i to_int_mat(const Eigen::Matrix4f &mat)
 {
     return (mat * MATRIX_RESOLUTION).cast<int>();
 }
 
-inline Eigen::Vector3i transform_point(const Eigen::Vector3i &input, const Eigen::Matrix4i &mat)
+static Eigen::Vector3i transform_point(const Eigen::Vector3i &input, const Eigen::Matrix4i &mat)
 {
     Eigen::Vector4i v;
     v << input, 1;

@@ -548,6 +548,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
     grid.filter(*tsdf_cloud);
 
+    pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, input_pose_mat);
+
     std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
 
     // transform points to map coordinates
