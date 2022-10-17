@@ -441,10 +441,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             pcl::PointCloud<PointType>::Ptr scan_cloud(new pcl::PointCloud<PointType>());
             pcl::copyPointCloud(*dataset_clouds.at(path->get_length() - 1), *model_cloud);
             pcl::copyPointCloud(*input_cloud, *scan_cloud);
-            // pcl::PointCloud<PointType>::Ptr model_cloud = dataset_clouds.at(path->get_length() - 1); // last pose is model
-            // pcl::PointCloud<PointType>::Ptr scan_cloud = input_cloud;
             pcl::PointCloud<PointType>::Ptr result_cloud(new pcl::PointCloud<PointType>());
-            ; // result of scan matching
 
             // gicp variables
             bool converged = false;
@@ -457,20 +454,19 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             // afterwards we perform icp and combine the resulting transformations
             auto model_to_scan_initial = getTransformationMatrixBetween(input_pose_transformed, last_pose->getTransformationMatrix());
 
-            // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // std::cout << "TEST FITNESS SCORE_______________________________: " << prereg_fitness_score << std::endl;
 
             // pretransform model cloud into the system of the scan
             pcl::transformPointCloud(*model_cloud, *model_cloud, model_to_scan_initial);
 
-            // gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // std::cout << "TEST FITNESS SCORE_______________________________: " << prereg_fitness_score << std::endl;
+
 
             // try matching the clouds in the scan system -> we obtain P_scan' -> P_scan (final transformation of ICP)
             // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
             gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             // gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            // gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
 
             // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
             if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
