@@ -114,9 +114,9 @@ namespace ROSViewhelper
         path_marker.id = 0;
         path_marker.type = visualization_msgs::Marker::CUBE_LIST;
         path_marker.action = visualization_msgs::Marker::ADD;
-        path_marker.scale.x = 0.3;
-        path_marker.scale.y = 0.3;
-        path_marker.scale.z = 0.3;
+        path_marker.scale.x = 0.5;
+        path_marker.scale.y = 0.5;
+        path_marker.scale.z = 0.5;
         path_marker.color.a = 1; // Don't forget to set the alpha!
         path_marker.color = color;
 
