@@ -357,6 +357,7 @@ void clear_and_update_tsdf()
 
     if (bond_ptr->isBroken())
     {
+        std::cout << "Bond is broken, Node ist stopped..." << std::endl;
         bond_ptr.reset();
         exit(EXIT_SUCCESS);
     }
