@@ -717,9 +717,9 @@ namespace ROSViewhelper
         line_marker.pose.orientation.y = 0.0;
         line_marker.pose.orientation.z = 0.0;
         line_marker.pose.orientation.w = 1.0;
-        line_marker.scale.x = 0.5;
-        line_marker.scale.y = 0.5;
-        line_marker.scale.z = 0.5;
+        line_marker.scale.x = 0.2;
+        line_marker.scale.y = 0.2;
+        line_marker.scale.z = 0.2;
         line_marker.color = color;
         line_marker.color.a = 0.85;
         line_marker.type = visualization_msgs::Marker::LINE_LIST;

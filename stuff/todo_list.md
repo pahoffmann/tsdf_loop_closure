@@ -77,6 +77,7 @@
 [x] Re-evaluate cleanup artifacts method from global map
 [x] read paper on loop closure, write down most important points
 [x] Preregister Poses with icp to get an initial estimate
+[x] DONE, MAY BE INCLUDED when doing a preregister, throw away z translation and x/y axis rotation (as a test)
 
 
 Intersection Data:
@@ -127,7 +128,6 @@ Intersection Data:
 ## ASAP ##
 
 [ ] fix global map generation
-[ ] when doing a preregister, throw away z translation and x/y axis rotation (as a test)
 
 
 [ ] edge case: find bounding box (no axis aligned) of the tsdf volume, find overlap(s) with rest of the map

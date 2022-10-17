@@ -206,7 +206,7 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
 
     // LIOSAM
     // transform from world origin to wrong pose
-    // Eigen::Affine3f tWrong(path->at(loop_key_cur)->getTransformationMatrix());
+    // Eigen::Affine3f tWrong(path->at(lc_indices.second)->getTransformationMatrix());
 
     // // transform from world origin to corrected pose
     // Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
@@ -220,7 +220,7 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
 
     // ME
     // transform to gtsam pose3
-    Eigen::Affine3f tCorrect = correctionLidarFrame; // * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+    Eigen::Affine3f tCorrect = correctionLidarFrame; // the correction lidar frame is the transformation prev -> cur' (corrected pose)
     pcl::getTranslationAndEulerAngles(tCorrect, x, y, z, roll, pitch, yaw);
     gtsam::Pose3 between_trans = gtsam::Pose3(gtsam::Rot3::RzRyRx(roll, pitch, yaw), gtsam::Point3(x, y, z));
 

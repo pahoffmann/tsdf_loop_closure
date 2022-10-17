@@ -115,16 +115,16 @@ namespace LCRejectors
 
 #ifdef TEST_DEBUG
         std::cout << "Previous rotation: " << std::endl
-                  << initial_rot_vec * (180 / M_PI) << std::endl;
+                  << initial_rot_vec * (180.0f / M_PI) << std::endl;
 
         std::cout << "New rotation: " << std::endl
-                  << new_rot_vec * (180 / M_PI) << std::endl;
+                  << new_rot_vec * (180.0f / M_PI) << std::endl;
 
         std::cout << "Rotation diff: " << std::endl
-                  << rotation_diff * (180 / M_PI) << std::endl;
+                  << rotation_diff * (180.0f / M_PI) << std::endl;
 
         std::cout << "In between noise: " << std::endl
-                  << rotation_noise * (180 / M_PI) << std::endl;
+                  << rotation_noise * (180.0f / M_PI) << std::endl;
 
         std::cout << "In between noise: " << std::endl
                   << acc_rot_noise << std::endl;
@@ -132,9 +132,9 @@ namespace LCRejectors
 
         std::cout
             << "Allowed range: " << std::endl
-            << range_from_rot * (180 / M_PI) << std::endl
+            << range_from_rot * (180.0f / M_PI) << std::endl
             << "-------------------------------" << std::endl
-            << range_to_rot * (180 / M_PI) << std::endl;
+            << range_to_rot * (180.0f / M_PI) << std::endl;
 
         if (rotation_diff_abs.x() > acc_rot_noise.x() || rotation_diff_abs.y() > acc_rot_noise.y() || rotation_diff_abs.z() > acc_rot_noise.z())
         {

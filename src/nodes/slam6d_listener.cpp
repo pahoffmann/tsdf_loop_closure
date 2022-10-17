@@ -122,7 +122,7 @@ std::unique_ptr<bond::Bond> bond_ptr;
 #pragma endregion
 
 /**
- * @brief method used to initiate all the objects associated with this test case
+ * @brief method used to initiate all the objects associated with this node
  *
  */
 void init_obj()
@@ -604,7 +604,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
-    // MATHE BIS HIERHER OK!
 
 #pragma region LOOP_EXAMINATION
 
@@ -684,7 +683,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             converged = true;
             lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
             lc_fitness_scores.push_back(fitness_score);
-            break;
+            //break;
         }
 
         else
@@ -731,13 +730,14 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         initial.insert(i, gtsam::Pose3(rot3, point3));
     }
 
+    // VERY IMPORTANT: perform graph optimization using the last initial estimate
     auto new_values = gtsam_wrapper_ptr->perform_optimization(initial);
 
     fill_optimized_path(new_values);
 
     optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
 
-    // copy values
+    // copy values from optimized path back to the path
     path = new Path(*optimized_path);
 
     // publish loops again to be consistant
@@ -817,7 +817,7 @@ void clear_and_update_tsdf()
 
     local_map_ptr->write_back();
 
-    bond_ptr.release();
+    bond_ptr.reset();
     exit(EXIT_SUCCESS);
 }
 
