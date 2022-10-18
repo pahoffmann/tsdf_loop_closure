@@ -1,7 +1,7 @@
 loop_closure:
   max_icp_iterations: 200
-  max_dist_lc: 12.0     # in m
-  min_traveled_lc: 12.0 # in m
+  max_dist_lc: 20.0     # in m
+  min_traveled_lc: 4.0 # in m
   dist_between_lcs: 4.0 # in m
 
   max_prereg_icp_fitness: 0.1 # in m²
