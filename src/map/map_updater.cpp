@@ -25,7 +25,7 @@ namespace Map_Updater
             auto transl_diff = (old_transl - new_transl).cwiseAbs();
 
             // indicates, wether the pose needs an update
-            if(transl_diff.x() > transl_delta || transl_diff.z() > transl_delta || transl_diff.y() > transl_delta)
+            if (transl_diff.x() > transl_delta || transl_diff.z() > transl_delta || transl_diff.y() > transl_delta)
             {
                 update_incidences[i] = true;
             }
@@ -46,7 +46,8 @@ namespace Map_Updater
 
         // delete old
         boost::filesystem::remove(previous_filename_path);
-        // std::this_thread::sleep_for(std::chrono::seconds(5));
+
+        // reset pointers
         global_map_ptr.reset(new GlobalMap(params.map));
         local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
@@ -90,11 +91,14 @@ namespace Map_Updater
 
             // create TSDF Volume
             update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution);
+
+            // write data back
+            local_map_ptr->write_back();
         }
 
         std::cout << print_prefix << "Done updating global and local map" << std::endl;
+        auto num_cells = global_map_ptr->get_full_data().size();
 
-        // write data back
-        local_map_ptr->write_back();
+        std::cout << print_prefix << "Num cells in map updater: " << num_cells << std::endl;
     }
 }

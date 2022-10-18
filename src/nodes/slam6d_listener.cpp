@@ -325,6 +325,7 @@ void clear_and_update_tsdf()
     }
 }
 
+
 /**
  * @brief handles incoming pointcloud2
  *
@@ -766,6 +767,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // copy values from optimized path back to the path
     path = new Path(*optimized_path);
+    path->attach_raytracer(tracer);
 
     // publish loops again to be consistant
     lc_marker = ROSViewhelper::init_loop_detected_marker_multiple(path, lc_index_pairs);
@@ -780,7 +782,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // clear and update the tsdf
     map_update_counter++;
-    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr, local_map_ptr, params, std::to_string(map_update_counter));
+    Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr, local_map_ptr, params, std::to_string(map_update_counter));
 
     gm_data = global_map_ptr->get_full_data();
 
