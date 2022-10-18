@@ -11,53 +11,52 @@
 #include <loop_closure/map/global_map.h>
 
 GlobalMap::GlobalMap(const MapParams &input_params)
-    : file_{std::string(input_params.filename.c_str()), HighFive::File::OpenOrCreate | HighFive::File::Truncate}, // Truncate clears already existing file
-      initial_tsdf_value_{static_cast<TSDFEntry::ValueType>(input_params.tau), static_cast<TSDFEntry::WeightType>(input_params.initial_weight)},
+    : initial_tsdf_value_{static_cast<TSDFEntry::ValueType>(input_params.tau), static_cast<TSDFEntry::WeightType>(input_params.initial_weight)},
       active_chunks_{},
       num_poses_{0}
 {
-    if (!file_.exist(hdf5_constants::MAP_GROUP_NAME))
+    // Truncate clears already existing file
+    file_.reset(new HighFive::File(std::string(input_params.filename.c_str()), HighFive::File::OpenOrCreate | HighFive::File::Truncate));
+    if (!file_->exist(hdf5_constants::MAP_GROUP_NAME))
     {
-        file_.createGroup(hdf5_constants::MAP_GROUP_NAME);
+        file_->createGroup(hdf5_constants::MAP_GROUP_NAME);
     }
 
-    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
+    if (!file_->exist(hdf5_constants::POSES_GROUP_NAME))
     {
-      file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
+        file_->createGroup(hdf5_constants::POSES_GROUP_NAME);
     }
 
     params = input_params;
 
-    
     write_meta(params);
 }
 
-
 GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight, bool use_attributes)
-    : file_{name, HighFive::File::OpenOrCreate}, // Truncate clears already existing file
-      initial_tsdf_value_{initial_tsdf_value, initial_weight},
+    : initial_tsdf_value_{initial_tsdf_value, initial_weight},
       active_chunks_{},
       num_poses_{0}
 {
-    if (!file_.exist(hdf5_constants::MAP_GROUP_NAME))
+    file_.reset(new HighFive::File(name, HighFive::File::OpenOrCreate));
+    if (!file_->exist(hdf5_constants::MAP_GROUP_NAME))
     {
-        file_.createGroup(hdf5_constants::MAP_GROUP_NAME);
+        file_->createGroup(hdf5_constants::MAP_GROUP_NAME);
     }
     else
     {
         std::cout << "[GLOBAL_MAP] Using existing HDF5 Parameter [/map]" << std::endl;
     }
 
-    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
+    if (!file_->exist(hdf5_constants::POSES_GROUP_NAME))
     {
-        file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
+        file_->createGroup(hdf5_constants::POSES_GROUP_NAME);
     }
     else
     {
         std::cout << "[GLOBAL_MAP] Using existing HDF5 Parameter [/poses]" << std::endl;
     }
 
-    auto map_group = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+    auto map_group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
     // check if attribute data should be considered, if so:
     // 1. check if the number of attributes fit the definition
@@ -108,6 +107,29 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
     default_chunk_data = std::vector<TSDFEntry::RawType>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, initial_tsdf_value_.raw());
 }
 
+GlobalMap::~GlobalMap()
+{
+    // file_->flush();
+    // H5Fclose(file_->getId());
+    // std::cout << "Removing file with 1 name: " << file_->getName() << std::endl;
+    // boost::filesystem::remove(file_->getName());
+
+    // file_.reset();
+}
+
+void GlobalMap::clear()
+{
+    // std::cout << "Removing file with name: " << file_->getName() << std::endl;
+    // H5Fclose(file_->getId());
+    // boost::filesystem::remove(file_->getName());
+    // file_->flush();
+    // H5Fclose(file_->getId());
+    // // std::cout << "Removing file with name: " << file_->getName() << std::endl;
+    // // boost::filesystem::remove(file_->getName());
+
+    // file_.reset();
+}
+
 std::string GlobalMap::tag_from_chunk_pos(const Vector3i &pos)
 {
     std::stringstream ss;
@@ -152,15 +174,15 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         newChunk.pos = chunkPos;
         newChunk.age = 0;
 
-        HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+        HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
         // create group if not exists
-        if (!file_.exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
+        if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
         {
-            file_.createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+            file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
         }
 
-        HighFive::Group g_int = file_.getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+        HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
 
         auto tag = tag_from_chunk_pos(chunkPos);
 
@@ -293,15 +315,15 @@ void GlobalMap::set_value(const Vector3i &pos, const TSDFEntry &value)
 
 void GlobalMap::write_back()
 {
-    HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+    HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
     // create intersections group, if not exists.
-    if (!file_.exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
+    if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
     {
-        file_.createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+        file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
     }
 
-    HighFive::Group g_int = file_.getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+    HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
 
     for (auto &chunk : active_chunks_)
     {
@@ -328,12 +350,12 @@ void GlobalMap::write_back()
             g_int.createDataSet(tag, chunk.intersect_data);
         }
     }
-    file_.flush();
+    file_->flush();
 }
 
 bool GlobalMap::chunk_exists(const Vector3i &chunk_pos)
 {
-    HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+    HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
     auto tag = tag_from_chunk_pos(chunk_pos);
 
@@ -398,7 +420,7 @@ std::vector<Vector3i> GlobalMap::get_26_neighborhood(Vector3i chunk_pos)
  */
 std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
 {
-    HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+    HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
     auto object_names = g.listObjectNames();
     std::vector<Vector3i> poses;
 
@@ -464,7 +486,7 @@ Vector3i GlobalMap::chunk_pos_from_tag(std::string tag) const
 
 int GlobalMap::num_chunks()
 {
-    HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+    HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
     auto object_names = g.listObjectNames();
 
     return object_names.size();
@@ -505,12 +527,12 @@ bool GlobalMap::is_fully_occupied(Eigen::Vector3i &pos, Eigen::Vector3i &localma
 
 std::vector<Pose> GlobalMap::get_path()
 {
-    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
+    if (!file_->exist(hdf5_constants::POSES_GROUP_NAME))
     {
         throw std::logic_error("There are no poses in the delivered global map... aborting...");
     }
 
-    HighFive::Group g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
+    HighFive::Group g = file_->getGroup(hdf5_constants::POSES_GROUP_NAME);
     auto object_names = g.listObjectNames();
 
     // as the identifier sorting in hdf5 is a string sorting, we need to sort the array based on the integer values behind the string
@@ -570,12 +592,12 @@ std::vector<Pose> GlobalMap::get_path()
 
 void GlobalMap::write_path(std::vector<Pose> &poses)
 {
-    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
+    if (!file_->exist(hdf5_constants::POSES_GROUP_NAME))
     {
-        file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
+        file_->createGroup(hdf5_constants::POSES_GROUP_NAME);
     }
 
-    HighFive::Group g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
+    HighFive::Group g = file_->getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     // if there are poses in the globalmap, we abort
     if (g.listObjectNames().size() != 0)
@@ -608,17 +630,17 @@ void GlobalMap::write_path(std::vector<Pose> &poses)
         identifier++;
     }
 
-    file_.flush();
+    file_->flush();
 }
 
 void GlobalMap::write_path_node(Pose &pose)
 {
-    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
+    if (!file_->exist(hdf5_constants::POSES_GROUP_NAME))
     {
-        file_.createGroup(hdf5_constants::POSES_GROUP_NAME);
+        file_->createGroup(hdf5_constants::POSES_GROUP_NAME);
     }
 
-    HighFive::Group g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
+    HighFive::Group g = file_->getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     size_t identfier = g.listObjectNames().size();
 
@@ -638,7 +660,7 @@ void GlobalMap::write_path_node(Pose &pose)
 
     sub_g.createDataSet(hdf5_constants::POSE_DATASET_NAME, values);
 
-    file_.flush();
+    file_->flush();
 }
 
 /**
@@ -648,7 +670,7 @@ void GlobalMap::write_path_node(Pose &pose)
  */
 std::vector<Vector3i> GlobalMap::cleanup_artifacts()
 {
-    auto map = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+    auto map = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
     // check, if the map already is cleaned in terms of artifacts.
     if (map.hasAttribute("cleaned"))
@@ -761,12 +783,12 @@ void GlobalMap::write_association_data(std::vector<int> &association_data, int p
     std::cout << "[GlobalMap] Start writing associaton data for " << association_data.size() << " objects." << std::endl;
 
     // when there is no poses, we dont do nothing
-    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME))
+    if (!file_->exist(hdf5_constants::POSES_GROUP_NAME))
     {
         return;
     }
 
-    auto g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
+    auto g = file_->getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     // if there aren't any poses or the one specified by the function call doesn't exist
     if (g.listObjectNames().size() == 0 || !g.exist(std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + std::to_string(pose_number)))
@@ -785,7 +807,7 @@ void GlobalMap::write_association_data(std::vector<int> &association_data, int p
 
     sub_g.createDataSet(hdf5_constants::ASSOCIATION_DATASET_NAME, association_data);
 
-    file_.flush();
+    file_->flush();
 
     std::cout << "[GlobalMap] Done writing association data" << std::endl;
 }
@@ -793,12 +815,12 @@ void GlobalMap::write_association_data(std::vector<int> &association_data, int p
 std::vector<int> GlobalMap::read_association_data(int pose_number)
 {
     // when there is no poses, we dont do nothing
-    if (!file_.exist(hdf5_constants::POSES_GROUP_NAME) || file_.getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() == 0)
+    if (!file_->exist(hdf5_constants::POSES_GROUP_NAME) || file_->getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() == 0)
     {
         std::vector<int>();
     }
 
-    auto g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
+    auto g = file_->getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     // when the passed number (pose) does not exist, we also return
     if (!g.exist(std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + std::to_string(pose_number)))
@@ -825,7 +847,7 @@ std::vector<int> GlobalMap::read_association_data(int pose_number)
 
 void GlobalMap::clear_association_data()
 {
-    auto g = file_.getGroup(hdf5_constants::POSES_GROUP_NAME);
+    auto g = file_->getGroup(hdf5_constants::POSES_GROUP_NAME);
 
     auto object_names = g.listObjectNames();
 
@@ -842,22 +864,22 @@ void GlobalMap::clear_association_data()
         std::string channel_name = std::string(hdf5_constants::POSES_GROUP_NAME) + "/" + name + "/" + hdf5_constants::ASSOCIATION_DATASET_NAME;
 
         // delete the dataset
-        int status = H5Ldelete(file_.getId(), channel_name.data(), H5P_DEFAULT);
+        int status = H5Ldelete(file_->getId(), channel_name.data(), H5P_DEFAULT);
     }
 
-    file_.flush();
+    file_->flush();
 }
 
 void GlobalMap::clear_intersection_data()
 {
     // delete any intersection data associated with the current hdf5
 
-    if (!file_.exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
+    if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
     {
         return;
     }
 
-    auto g = file_.getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+    auto g = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
 
     auto object_names = g.listObjectNames();
 
@@ -866,12 +888,12 @@ void GlobalMap::clear_intersection_data()
         std::string channel_name = std::string(hdf5_constants::INTERSECTIONS_GROUP_NAME) + "/" + name;
 
         // delete the dataset
-        int status = H5Ldelete(file_.getId(), channel_name.data(), H5P_DEFAULT);
+        int status = H5Ldelete(file_->getId(), channel_name.data(), H5P_DEFAULT);
     }
 
     std::cout << "[GlobalMap - clear_intersection_data] Cleared" << std::endl;
 
-    file_.flush();
+    file_->flush();
 }
 
 std::vector<bool> GlobalMap::chunks_empty()
@@ -888,7 +910,7 @@ std::vector<bool> GlobalMap::chunks_empty()
 
         auto tag = tag_from_chunk_pos(chunk);
 
-        auto g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+        auto g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
         auto ds = g.getDataSet(tag);
 
@@ -915,7 +937,7 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
 
     auto chunks = all_chunk_poses();
 
-    auto group = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+    auto group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
     for (int i = 0; i < chunks.size(); i++)
     {
@@ -980,16 +1002,15 @@ Vector3i GlobalMap::pos_from_index(int i)
 
 void GlobalMap::write_meta(const MapParams &params)
 {
-  HighFive::Group g = file_.getGroup(hdf5_constants::MAP_GROUP_NAME);
+    HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
-  g.createAttribute("tau", params.tau);
-  g.createAttribute("map_size_x", params.size.x());
-  g.createAttribute("map_size_y", params.size.y());
-  g.createAttribute("map_size_z", params.size.z());
-  g.createAttribute("max_distance", params.max_distance);
-  g.createAttribute("map_resolution", params.resolution);
-  g.createAttribute("max_weight", params.max_weight);
+    g.createAttribute("tau", params.tau);
+    g.createAttribute("map_size_x", params.size.x());
+    g.createAttribute("map_size_y", params.size.y());
+    g.createAttribute("map_size_z", params.size.z());
+    g.createAttribute("max_distance", params.max_distance);
+    g.createAttribute("map_resolution", params.resolution);
+    g.createAttribute("max_weight", params.max_weight);
 
-  file_.flush();
+    file_->flush();
 }
-

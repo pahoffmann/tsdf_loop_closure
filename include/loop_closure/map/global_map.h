@@ -65,7 +65,7 @@ private:
      * | |
      * | |
      */
-    HighFive::File file_;
+    std::unique_ptr<HighFive::File> file_;
 
     /// Initial default tsdf value.
     TSDFEntry initial_tsdf_value_;
@@ -130,6 +130,17 @@ public:
      * @param params 
      */
     GlobalMap(const MapParams &input_params);
+
+    /**
+     * @brief Destroy the Global Map object
+     * 
+     */
+    ~GlobalMap();
+
+    /**
+     * @brief clears the global map file and data 
+     */
+    void clear();
 
     /**
      * Returns a value pair consisting of a tsdf value and a weight from the map.
@@ -242,7 +253,7 @@ public:
      */
     inline bool has_path()
     {
-        if (file_.exist(hdf5_constants::POSES_GROUP_NAME) && file_.getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() > 0)
+        if (file_->exist(hdf5_constants::POSES_GROUP_NAME) && file_->getGroup(hdf5_constants::POSES_GROUP_NAME).listObjectNames().size() > 0)
         {
             return true;
         }

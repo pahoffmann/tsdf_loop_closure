@@ -43,6 +43,7 @@
 #include <loop_closure/util/update_tsdf.h>
 #include <loop_closure/gtsam/gtsam_wrapper.h>
 #include <loop_closure/util/lc_evaluator.h>
+#include <loop_closure/map/map_updater.h>
 
 // transform between ros and eigen
 #include <tf2/convert.h>
@@ -78,6 +79,9 @@ Path *path;
 Path *optimized_path;
 int side_length_xy;
 int side_length_z;
+
+// map update counter
+int map_update_counter = 0;
 
 // evaluation
 std::unique_ptr<Evaluator> evaluator;
@@ -311,49 +315,7 @@ void clear_and_update_tsdf()
     params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + "updated").string() + previous_filename_path.extension().string());
 
     std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
-
-    // reset global and localmap
-    global_map_ptr.reset(new GlobalMap(params.map));
-    local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
-
-    // refill tsdf map
-    for (int i = 0; i < path->get_length(); i++)
-    {
-        auto current_pose_ptr = path->at(i);
-        auto pose_mat = current_pose_ptr->getTransformationMatrix();
-        auto cloud_ptr = dataset_clouds.at(i);
-
-        // CREATE POINTCLOUD USED FOR TSDF UPDATE
-        pcl::PointCloud<PointType>::Ptr tsdf_cloud;
-
-        pcl::VoxelGrid<PointType> sor;
-        sor.setInputCloud(cloud_ptr);
-        sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
-        sor.filter(*tsdf_cloud.get());
-
-        std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
-
-        // transform points to map coordinates
-#pragma omp parallel for schedule(static) default(shared)
-        for (int i = 0; i < tsdf_cloud->size(); ++i)
-        {
-            const auto &cp = (*tsdf_cloud)[i];
-            points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
-        }
-
-        // Shift
-        Vector3i input_3d_pos = real_to_map(pose_mat.block<3, 1>(0, 3));
-        local_map_ptr->shift(input_3d_pos);
-
-        Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
-        rot.block<3, 3>(0, 0) = to_int_mat(pose_mat).block<3, 3>(0, 0);
-        Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
-
-        // create TSDF Volume
-        update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution);
-    }
-
-    local_map_ptr->write_back();
+    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr, local_map_ptr, params, "final");
 
     if (bond_ptr->isBroken())
     {
@@ -455,11 +417,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             // afterwards we perform icp and combine the resulting transformations
             auto model_to_scan_initial = getTransformationMatrixBetween(input_pose_transformed, last_pose->getTransformationMatrix());
 
-
             // pretransform model cloud into the system of the scan
             pcl::transformPointCloud(*model_cloud, *model_cloud, model_to_scan_initial);
-
-
 
             // try matching the clouds in the scan system -> we obtain P_scan' -> P_scan (final transformation of ICP)
             // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
@@ -564,8 +523,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // Shift
     Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
 
-    std::cout << "SHIFT_POSITION" << std::endl
-              << input_3d_pos << std::endl;
     local_map_ptr->shift(input_3d_pos);
 
     Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
@@ -819,8 +776,19 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
+    std::cout << "Cells previous: " << gm_data.size() << std::endl;
+
     // clear and update the tsdf
-    clear_and_update_tsdf();
+    map_update_counter++;
+    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr, local_map_ptr, params, std::to_string(map_update_counter));
+
+    gm_data = global_map_ptr->get_full_data();
+
+    std::cout << "Cells after: " << gm_data.size() << std::endl;
+
+    marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    tsdf_pub.publish(marker);
 
     ready_flag_pub.publish(ready_msg);
 }
