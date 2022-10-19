@@ -18,6 +18,11 @@
 #include <loop_closure/util/algorithm.h>
 
 #include <pcl/point_types.h>
+#include <pcl/registration/icp.h>
+#include <pcl/registration/gicp.h>
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 using Eigen::Matrix4f;
 using Eigen::Matrix4i;
@@ -44,18 +49,18 @@ struct Pose
     Eigen::MatrixXf covariance;
 
     // gets the rotation matrix from the quat
-    Eigen::Matrix3f rotationMatrixFromQuaternion()
+    Eigen::Matrix3f rotationMatrixFromQuaternion() const
     {
         return quat.matrix();
     }
 
-    Eigen::Matrix4f getTransformationMatrix()
+    Eigen::Matrix4f getTransformationMatrix() const
     {
         //  identity so bottom right corner is filled
         Eigen::Matrix4f tmp = Eigen::Matrix4f::Identity();
         tmp.block<3, 3>(0, 0) = rotationMatrixFromQuaternion();
         tmp.block<3, 1>(0, 3) = pos;
-        
+
         return tmp;
     }
 
@@ -105,7 +110,14 @@ struct Pose
     friend std::ostream &operator<<(std::ostream &os, const Pose &pose)
     {
         // -180 - 180
-        Vector3f euler = pose.quat.toRotationMatrix().eulerAngles(0, 1, 2);
+        Eigen::Affine3f affine_trans;
+        affine_trans = pose.getTransformationMatrix();
+
+        float roll, pitch, yaw;
+        pcl::getEulerAngles(affine_trans, roll, pitch, yaw);
+        Vector3f euler;
+        euler << roll, pitch, yaw;
+        
         euler *= (180.0f / M_PI);
         os << std::fixed << std::setprecision(2)
            << "Pos:    " << pose.pos.x() << " | " << pose.pos.y() << " | " << pose.pos.z() << std::endl
@@ -347,3 +359,31 @@ static Eigen::Vector3i transform_point(const Eigen::Vector3i &input, const Eigen
     return (mat * v).block<3, 1>(0, 0) / MATRIX_RESOLUTION;
 }
 /// THE PREVIOUS IS USED TO PREPARE DATA FOR TSDF UPDATE ///
+
+/**
+ * @brief Will calculate the rotational difference between two transformation matrices for each of the dimensions individually
+ *        Assumes, that the two input transforms are transformations from coordinate systems (poses) into the map coordinate system
+ *        Returns the euler angles in range [-pi,pi]
+ *
+ * @param tf1
+ * @param tf2
+ * @return Eigen::Vector3f
+ */
+static Eigen::Vector3f get_rotation_diff(Matrix4f tf1, Matrix4f tf2)
+{
+    // obtain tf diff (tf2 -> tf1) (assuming, that tf1 and tf2 are both transformations from one coordinate system into the map coord sys)
+    auto tf_diff = tf1.inverse() * tf2;
+
+    // obtain rotation matrices
+    Eigen::Affine3f difference;
+    difference = tf_diff;
+
+    float roll, pitch, yaw;
+
+    pcl::getEulerAngles(difference, roll, pitch, yaw);
+
+    Vector3f euler_vec;
+    euler_vec << roll, pitch, yaw;
+
+    return euler_vec;
+}

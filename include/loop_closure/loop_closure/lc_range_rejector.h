@@ -144,4 +144,61 @@ namespace LCRejectors
 
         return false;
     }
+
+    /**
+     * @brief identifies wether the found lc might be rejected, because it is a line lc, that has been smushed
+     *
+     * @param path
+     * @param start_idx
+     * @param end_idx
+     * @param final_transform
+     * @return true
+     * @return false
+     */
+    static bool reject_range_loop_closure_new(Path *path, int start_idx, int end_idx, Matrix4f final_transform, LoopClosureParams params)
+    {
+        // calculate new and old end pos according to icp transformation
+        Matrix4f old_end_pos_to_map = path->at(end_idx)->getTransformationMatrix();
+        Matrix4f new_end_pos_to_map = old_end_pos_to_map * final_transform.inverse();
+
+        std::cout << "Old end Pos: " << Pose(old_end_pos_to_map) << std::endl;
+        std::cout << "New end Pos: " << Pose(new_end_pos_to_map) << std::endl;
+
+        Matrix4f start_pose_to_map = path->at(start_idx)->getTransformationMatrix();
+
+        // check wether the new end pos is in an sufficient area around the old end pose
+        // checking translation, as well as rotation
+        auto new_end_to_old_end = getTransformationMatrixBetween(old_end_pos_to_map, new_end_pos_to_map);
+
+        // calculate translation and rotation diff
+        auto translation_diff = new_end_to_old_end.block<3, 1>(0, 3);
+        auto rotation_diff = get_rotation_diff(old_end_pos_to_map, new_end_pos_to_map);
+
+        std::cout << "Translation diff: " << std::endl
+                  << translation_diff << std::endl;
+        std::cout << "Rotation diff: " << std::endl
+                  << rotation_diff * 180 / M_PI << std::endl;
+
+        // calculate the ranges according to the noises (basically allowing all transl./rot. in a specific confidence interval around the old pos)
+        Vector3f translation_noise;
+        translation_noise << params.loop_closure.between_translation_noise_x, params.loop_closure.between_translation_noise_y, params.loop_closure.between_translation_noise_z;
+        Vector3f rotation_noise;
+        rotation_noise << params.loop_closure.between_rotation_noise_x, params.loop_closure.between_rotation_noise_y, params.loop_closure.between_rotation_noise_z;
+
+        Vector3f acc_transl_noise = translation_noise * (end_idx - start_idx);
+        Vector3f acc_rot_noise = rotation_noise * (end_idx - start_idx);
+
+        // make sure the maximum value allowed is M_PI for each of the rotations
+        acc_rot_noise.x() = std::min(acc_rot_noise.x(), M_PI);
+        acc_rot_noise.y() = std::min(acc_rot_noise.y(), M_PI);
+        acc_rot_noise.z() = std::min(acc_rot_noise.z(), M_PI);
+
+        std::cout << "Accumulated rotation noise: " << std::endl << acc_rot_noise << std::endl;
+        std::cout << "Accumulated translation noise: " << std::endl << acc_transl_noise << std::endl;
+
+        
+
+        return false;
+    }
+
 }

@@ -312,10 +312,21 @@ void clear_and_update_tsdf()
 
     // update filename
     auto previous_filename_path = params.map.filename;
-    params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + "updated").string() + previous_filename_path.extension().string());
+    params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + "final").string() + previous_filename_path.extension().string());
+
+    boost::filesystem::remove(previous_filename_path);
+
+    // reset pointers
+    global_map_ptr.reset(new GlobalMap(params.map));
+    local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
     std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
-    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr, local_map_ptr, params, "final");
+    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final");
+
+    auto marker_data = global_map_ptr->get_full_data();
+    auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
+
+    tsdf_pub.publish(marker);
 
     if (bond_ptr->isBroken())
     {
@@ -324,7 +335,6 @@ void clear_and_update_tsdf()
         exit(EXIT_SUCCESS);
     }
 }
-
 
 /**
  * @brief handles incoming pointcloud2
@@ -778,19 +788,30 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
-    std::cout << "Cells previous: " << gm_data.size() << std::endl;
+    // std::cout << "Cells previous: " << gm_data.size() << std::endl;
 
-    // clear and update the tsdf
-    map_update_counter++;
-    Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr, local_map_ptr, params, std::to_string(map_update_counter));
+    // // clear and update the tsdf
+    // map_update_counter++;
 
-    gm_data = global_map_ptr->get_full_data();
+    // auto previous_filename_path = params.map.filename;
+    // // create new map
+    // params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + std::to_string(map_update_counter)).string() + previous_filename_path.extension().string());
 
-    std::cout << "Cells after: " << gm_data.size() << std::endl;
+    // // delete old map
+    // boost::filesystem::remove(previous_filename_path);
 
-    marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
-    tsdf_pub.publish(marker);
+    // reset pointers
+    // global_map_ptr.reset(new GlobalMap(params.map));
+    // local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+    // Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter));
+
+    // gm_data = global_map_ptr->get_full_data();
+
+    // std::cout << "Cells after: " << gm_data.size() << std::endl;
+
+    // marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    // // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    // tsdf_pub.publish(marker);
 
     ready_flag_pub.publish(ready_msg);
 }
