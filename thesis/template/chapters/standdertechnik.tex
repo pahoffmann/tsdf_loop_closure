@@ -1,0 +1,52 @@
+\chapter{Stand der Forschung}\label{label:sdf}
+
+
+
+\textit{Simulataneous Localization and Mapping (SLAM)} ist eines der größten Forschungsgebiete in der mobilen Robotik.
+Die Forschungen zu diesem Problem reichen zurück bis vor die Jahrtausendwende.
+Einer der bekanntesten Lösungen zur Registierung dreidimensionaler Daten ist der ICP Algorithmus nach Besl \& McKay \cite{besl1992method}, der in einer Abwandlung ebenfalls von Borrmann et al. im GraphSLAM \cite{borrmann2008globally} verwendet wird.
+Bis heute gibt es zahlreiche Implementationen dieses Algorithmus.
+
+Erste Forschungen mit TSDF basiertem SLAM stammen aus dem letzten Jahrzehnt.
+Izadi et al. \cite{izadi2011kinectfusion} nutzen ein TSDF-Voxelgrid und eine Kinect-Tiefenkamera, um Umbegungen zu kartieren, während ein Nutzer die Kinect Kamera durch die Umbebung schwenkt.
+Whelan et al. \cite{whelan2012kintinuous} optimieren diesen Ansatz durch Nutzung eines Ringbuffers zur Kartierung großer Umgebungen.
+Im Gegensatz zu genannten TSDF Verfahren, nutzen Eisoldt et al. \cite{HATSDF} einen Hardware beschleunigten TSDF basierten SLAM Ansatz, sowie einen 3D-Laserscanner anstelle einer Tiefenkamera.
+
+Borrmann et al. \citep{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird.
+
+\improvement{Insert more tsdf based approaches from \cite{werner2014truncated}}
+
+Ziel und Zweck dieser Arbeit ist die Lösung des Schleifenschluss Problems für TSDF basierte SLAM Verfahren.
+Als Basis dient der Ansatz von Eislodt et al. \cite{HATSDF}, der - obgleich performant und funktional - wie die meisten SLAM Verfahren bei der Kartierung großer Umgebungen stark anfällig für Drift ist. Um diesem Problem entgegen zu wirken, soll durch die Integration von Schleifenschlüssen in TSDF-Karten die Kartierung größerer Umgebungen ermöglicht werden.
+Um dieses Ziel zu erreichen, gilt es Datenassoziationen zwischen Posen und Zellen in der diskretisierten TSDF Karte herzustellen.
+In einer ersten Implementation soll dazu mittels Ray-Tracing eines simulierten Laserscans und der Detektion von Schnittpunkten mit der TSDF-Karte eine passende Indizierung der Zellen ermöglicht werden.
+
+Diese Arbeit soll als Proof-of-concept für weitere Arbeiten auf diesem Gebiet dienen. Dazu werden die entwickelten Ansätze in einem Post-Processing Schritt auf die vom Eisoldt et al. \cite{HATSDF} erstellte Karte, so wie den Pfad, den es noch zu extrahieren gilt, angewandt.
+
+
+In einem Ausblick gilt es zu analysieren, ob die Implementationen sinnvoll beschleunigt werden können, um sie in ein Live Karierungssystem, wie HATSDF-Slam einbauen zu können, um zur Laufzeit Schleifen zu erkennen und die Karte zu optimieren.
+
+Die Implementation dieses Prototyps wird ausschließlich in Software realisiert, allerdings erfolgt eine Untersuchung des Software-Prototyps auf Potenziale zur Hardware-Beschleunigung um Raum für Optimierungen im Rahmen zukünftiger Arbeiten zu eröffnen.
+
+TODO: Update der Motivation? 
+Untersuchung, ob das Loop Closing als Post-Processing angewandt werden kann, gegebenenfalls Integration in inkrementellen SLAM
+Möglichkeit schaffen mit beliebigen SLAM Verfahren koexistieren zu können (LC)
+Schaffen einer API?
+Untersuchen welche Art des Kartenupdates sinnvoll ist und welches nicht
+Untersuchen, ob der Aufwand die Karte im Teil zu updaten gerechtfertigt ist, Untersuchung von Fallstricken
+
+\section{Ansatz}
+
+Beschreiben, wie der initiale Aufbau dieser Arbeit ist:
+
+1. Herangehensweise, wie soll das Problem gelöst werden?
+2. Offenheit des Themas klar herausstellen
+3. Mögliche Fallback's aufzeigen, falls sich herausstellt, dass das Thema so in der Bearbeitungszeit nicht möglich ist
+4. Deutlich machen, dass die erste Herangehensweise dokumentiert wird
+5. Erklären, dass Fallstricke und Probleme erläutert werden
+6. Lösungsansätze für zukünftige Arbeiten definieren
+7. Kenntlich machen, warum das Problem "inkrementelles Map Update" nicht in der Zeit lösbar gewesen wäre
+
+\section{Fallback}
+
+

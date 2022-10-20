@@ -10,8 +10,13 @@ Panels:
         - /Marker2
         - /Marker3
         - /Marker4
+        - /PointCloud23
+        - /PointCloud24
+        - /PointCloud25
         - /Marker6
         - /TF1
+        - /PointCloud27
+        - /PointCloud28
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz/Selection
@@ -32,7 +37,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -151,7 +156,7 @@ Visualization Manager:
       Marker Topic: /path
       Name: Marker
       Namespaces:
-        {}
+        path: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -173,7 +178,7 @@ Visualization Manager:
       Class: rviz/PointCloud2
       Color: 239; 41; 41
       Color Transformer: FlatColor
-      Decay Time: 0
+      Decay Time: 5
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -201,7 +206,7 @@ Visualization Manager:
       Class: rviz/PointCloud2
       Color: 115; 210; 22
       Color Transformer: FlatColor
-      Decay Time: 0
+      Decay Time: 5
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -259,7 +264,7 @@ Visualization Manager:
       Marker Topic: /lc_candidates
       Name: Marker
       Namespaces:
-        {}
+        lc_detect: true
       Queue Size: 100
       Value: true
     - Class: rviz/TF
@@ -267,6 +272,110 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        map:
+          Value: true
+        pose_0:
+          Value: true
+        pose_1:
+          Value: true
+        pose_10:
+          Value: true
+        pose_11:
+          Value: true
+        pose_12:
+          Value: true
+        pose_13:
+          Value: true
+        pose_14:
+          Value: true
+        pose_15:
+          Value: true
+        pose_16:
+          Value: true
+        pose_17:
+          Value: true
+        pose_18:
+          Value: true
+        pose_19:
+          Value: true
+        pose_2:
+          Value: true
+        pose_20:
+          Value: true
+        pose_21:
+          Value: true
+        pose_22:
+          Value: true
+        pose_23:
+          Value: true
+        pose_24:
+          Value: true
+        pose_25:
+          Value: true
+        pose_26:
+          Value: true
+        pose_27:
+          Value: true
+        pose_28:
+          Value: true
+        pose_29:
+          Value: true
+        pose_3:
+          Value: true
+        pose_30:
+          Value: true
+        pose_31:
+          Value: true
+        pose_32:
+          Value: true
+        pose_33:
+          Value: true
+        pose_34:
+          Value: true
+        pose_35:
+          Value: true
+        pose_36:
+          Value: true
+        pose_37:
+          Value: true
+        pose_38:
+          Value: true
+        pose_39:
+          Value: true
+        pose_4:
+          Value: true
+        pose_40:
+          Value: true
+        pose_41:
+          Value: true
+        pose_42:
+          Value: true
+        pose_43:
+          Value: true
+        pose_44:
+          Value: true
+        pose_45:
+          Value: true
+        pose_46:
+          Value: true
+        pose_47:
+          Value: true
+        pose_48:
+          Value: true
+        pose_49:
+          Value: true
+        pose_5:
+          Value: true
+        pose_6:
+          Value: true
+        pose_7:
+          Value: true
+        pose_8:
+          Value: true
+        pose_9:
+          Value: true
+        robot:
+          Value: true
       Marker Alpha: 1
       Marker Scale: 10
       Name: TF
@@ -274,7 +383,109 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        map:
+          pose_0:
+            {}
+          pose_1:
+            {}
+          pose_10:
+            {}
+          pose_11:
+            {}
+          pose_12:
+            {}
+          pose_13:
+            {}
+          pose_14:
+            {}
+          pose_15:
+            {}
+          pose_16:
+            {}
+          pose_17:
+            {}
+          pose_18:
+            {}
+          pose_19:
+            {}
+          pose_2:
+            {}
+          pose_20:
+            {}
+          pose_21:
+            {}
+          pose_22:
+            {}
+          pose_23:
+            {}
+          pose_24:
+            {}
+          pose_25:
+            {}
+          pose_26:
+            {}
+          pose_27:
+            {}
+          pose_28:
+            {}
+          pose_29:
+            {}
+          pose_3:
+            {}
+          pose_30:
+            {}
+          pose_31:
+            {}
+          pose_32:
+            {}
+          pose_33:
+            {}
+          pose_34:
+            {}
+          pose_35:
+            {}
+          pose_36:
+            {}
+          pose_37:
+            {}
+          pose_38:
+            {}
+          pose_39:
+            {}
+          pose_4:
+            {}
+          pose_40:
+            {}
+          pose_41:
+            {}
+          pose_42:
+            {}
+          pose_43:
+            {}
+          pose_44:
+            {}
+          pose_45:
+            {}
+          pose_46:
+            {}
+          pose_47:
+            {}
+          pose_48:
+            {}
+          pose_49:
+            {}
+          pose_5:
+            {}
+          pose_6:
+            {}
+          pose_7:
+            {}
+          pose_8:
+            {}
+          pose_9:
+            {}
+          robot:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -305,6 +516,62 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 52; 101; 164
+      Color Transformer: FlatColor
+      Decay Time: 5
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.07999999821186066
+      Style: Flat Squares
+      Topic: /global_model_pub
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 114; 159; 207
+      Color Transformer: FlatColor
+      Decay Time: 5
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.07999999821186066
+      Style: Flat Squares
+      Topic: /global_scan_pub
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 211; 215; 207
@@ -333,7 +600,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 191.51907348632812
+      Distance: 73.90428161621094
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -341,17 +608,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -5.630744934082031
-        Y: -3.559608221054077
-        Z: -23.96434211730957
+        X: 1.8125205039978027
+        Y: 18.16010284423828
+        Z: -1.3454736471176147
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.3947964906692505
+      Pitch: 1.1797960996627808
       Target Frame: <Fixed Frame>
-      Yaw: 4.45847225189209
+      Yaw: 4.278475284576416
     Saved: ~
 Window Geometry:
   Displays:

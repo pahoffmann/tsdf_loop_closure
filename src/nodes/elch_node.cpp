@@ -56,7 +56,7 @@ using PointType = pcl::PointXYZ;
 using Cloud = pcl::PointCloud<PointType>;
 using CloudConstPtr = Cloud::ConstPtr;
 using CloudPtr = Cloud::Ptr;
-using CloudPair = std::pair<std::string, CloudPtr>;
+using CloudPair = std::pair<Matrix4f, CloudPtr>;
 using CloudVector = std::vector<CloudPair>;
 
 LoopClosureParams params;
@@ -124,7 +124,7 @@ bool loopDetection(int end, const CloudVector &clouds, double dist, int &first, 
     return false;
 }
 
-void handle_data_callback()
+void handle_data_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_ptr, const geometry_msgs::PoseStampedConstPtr &pose_ptr)
 {
     double dist = 0.1;
 

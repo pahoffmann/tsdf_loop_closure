@@ -591,8 +591,7 @@ void RayTracer::perform3DBresenham()
         }
         else
         {
-          cur_association->addAssociation(bresenham_start, tsdf);
-          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT);
+          tmp_cells.push_back(bresenham_start);
         }
       }
       else if (lines_finished[i] == RayStatus::ZERO_CROSSED)

@@ -107,6 +107,7 @@ Intersection Data:
 [?] Map update: calculate the new cell pos for one pose change, not for all associated ones. this simplifys stuff. Do multiple functions for all this.
 [ ] Because icp does not yield good results, it might be a good idea to use a different scanmatching approach. e.g.: teaser++ combined with FFPFH features 
     (e.g. from pcl)
+[ ] Build a generalized approach for reading data for this lc method (being able to read arbitrary file formats)
 
 [|] maybe actually use the fastsense prototype and introduce the findings there
 [|] like that it is actually possible to save pointclouds, that have been optimized and reduced and later on use the approach of LIOSAM

@@ -40,6 +40,10 @@ struct LoopClosureParams
     nh.param<float>("loop_closure/max_prereg_icp_fitness", loop_closure.max_prereg_icp_fitness, 0.15f);
     // max icp fitness score for loop closure
     nh.param<float>("loop_closure/max_lc_icp_fitness", loop_closure.max_lc_icp_fitness, 0.4f);
+
+    // indicates whether a preregistration is done or not
+    nh.param<bool>("loop_closure/do_preregistration", loop_closure.do_preregistration, true);
+
     // json filename
     nh.param<std::string>("loop_closure/json_dirname", loop_closure.json_dirname, "/home/patrick/maps/generated/json");
 
@@ -75,6 +79,7 @@ struct LoopClosureParams
     std::string json_dirname;
     float max_prereg_icp_fitness;
     float max_lc_icp_fitness;
+    bool do_preregistration;
 
     // gtsam noise params
     float prior_rotation_noise_x;

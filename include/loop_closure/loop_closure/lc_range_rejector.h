@@ -8,6 +8,7 @@ namespace LCRejectors
     /**
      * @brief identifies wether the found lc might be rejected, because it is a line lc, that has been smushed
      *
+     * @deprecated This function has issues, do not use
      * @param path
      * @param start_idx
      * @param end_idx

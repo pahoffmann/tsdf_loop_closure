@@ -582,6 +582,8 @@ std::vector<Pose> GlobalMap::get_path()
         pose.quat.z() = values[5];
         pose.quat.w() = values[6];
 
+        pose.quat.normalize();
+
         path.push_back(pose);
     }
 

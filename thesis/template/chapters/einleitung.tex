@@ -5,7 +5,7 @@ Diese Arbeit setzt auf den Implementationen und Konzepten von Eisoldt et al. \ci
 
 Unter SLAM versteht man den Prozess der Erstellung einer Karte einer unbekannten Umgebung, bei gleichzeitiger Positionsbestimmung innerhalb dieser unbekannten Umgebung.
 Das SLAM Problem ist ein \textit{Henne-Ei-Problem}, da eine vollständige Karte benötigt wird, um die Pose eines Roboters akkurat bestimmen zu könnnen, während auf der anderen Seite eine akkurate Pose benötigt wird, um eine vollständige Karte aufbauen zu können.
-Für die Lösung dieses Problems gibt es sowohl in 2D als auch 3D verschiedene Lösungsansätze, die in Abschnitt \ref{label:sdf} grob dargestellt sind.
+Für die Lösung dieses Problems gibt es sowohl in 2D als auch 3D verschiedene Lösungsansätze, die in Kapitel \ref{label:sdf} grob eruiert werden.
 Die in diesem Exposé vorgestellte Arbeit beschränkt sich auf 6D SLAM.
 Unter einem Schleifenschluss versteht man in der mobilen Robotik den Prozess, geschlossene Kreise in abgelaufen Pfaden durch die im SLAM-Prozess erschlossene, zunächst unbekannte Umgebung, zu identifizieren.
 Nach der Identifikation dieser Kreise können Fehler, die sich im Kartierungsprozess akkumuliert haben, nachträglich berichtigt werden. Dies sorgt für eine konsistenteren Pfad und damit verbunden für eine akkuratere Karte.
@@ -13,24 +13,6 @@ Als Basis für dieses Problem dient der GraphSLAM Ansatz von Borrmann et al. \ci
 Wichtige Voraussetzung für die Optimierung der Posen im Graphen ist eine Assoziation der Posen mit den zugehörigen Umgebungsdaten. Im Falle von Borrmann et al. sind dies jeweils die zum Zeitpunkt aufgenommenen Punktwolken. Diese Assozation ist bei TSDF basiertem SLAM, das eine diskretisierte TSDF-Karte verwendet, nicht möglich, solange nicht zusätzlich die entsprechenden Punktdaten abgespeichert werden.
 Wird ein Schleifenschluss detektiert, müsste dann jedoch die gesamte Karte neu erstellt werden. Dies ist speicher- und zeitaufwändig.
 Dieses Problem markiert den Hauptbeitrag dieser Arbeit. Es gilt zu bestimmen, welcher Teil der TSDF Karte mit welcher Pose im Graph assoziiert werden kann, um anschließend die bereits existierende Karte zu modifizieren und zu optimieren.
-
-
-\section{Stand der Forschung} \label{label:sdf}
-
-\textit{Simulataneous Localization and Mapping (SLAM)} ist eines der größten Forschungsgebiete in der mobilen Robotik.
-Die Forschungen zu diesem Problem reichen zurück bis vor die Jahrtausendwende.
-Einer der bekanntesten Lösungen zur Registierung dreidimensionaler Daten ist der ICP Algorithmus nach Besl \& McKay \cite{besl1992method}, der in einer Abwandlung ebenfalls von Borrmann et al. im GraphSLAM \cite{borrmann2008globally} verwendet wird.
-Bis heute gibt es zahlreiche Implementationen dieses Algorithmus.
-
-Erste Forschungen mit TSDF basiertem SLAM stammen aus dem letzten Jahrzehnt.
-Izadi et al. \cite{izadi2011kinectfusion} nutzen ein TSDF-Voxelgrid und eine Kinect-Tiefenkamera, um Umbegungen zu kartieren, während ein Nutzer die Kinect Kamera durch die Umbebung schwenkt.
-Whelan et al. \cite{whelan2012kintinuous} optimieren diesen Ansatz durch Nutzung eines Ringbuffers zur Kartierung großer Umgebungen.
-Im Gegensatz zu genannten TSDF Verfahren, nutzen Eisoldt et al. \cite{HATSDF} einen Hardware beschleunigten TSDF basierten SLAM Ansatz, sowie einen 3D-Laserscanner anstelle einer Tiefenkamera.
-
-Borrmann et al. \citep{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird.
-
-\improvement{Insert more tsdf based approaches from \cite{werner2014truncated}}
-
 
 \section{Motivation}
 

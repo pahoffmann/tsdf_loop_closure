@@ -182,6 +182,14 @@ add_executable(transform_coord_sys src/nodes/transform_coord_sys.cpp
                         src/ray_tracer/ray_tracer.cpp
                         src/path/path.cpp)
 
+add_executable(pcd_hdf5_publisher src/nodes/data_publishers/pcd_hdf5_publisher.cpp 
+                        src/util/runtime_evaluator.cpp
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp 
+                        src/map/attribute_data_model.cpp
+                        src/ray_tracer/ray_tracer.cpp
+                        src/path/path.cpp)
+
 add_executable(slam6d_listener src/nodes/slam6d_listener.cpp 
                         src/util/runtime_evaluator.cpp
                         src/map/global_map.cpp 
@@ -305,6 +313,16 @@ target_link_libraries(pcd2tsdf PUBLIC
 )
 
 target_link_libraries(transform_coord_sys PUBLIC
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${PCL_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX 
+)
+
+target_link_libraries(pcd_hdf5_publisher PUBLIC
   ${catkin_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}
