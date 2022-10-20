@@ -250,7 +250,7 @@ void bond_broken_callback()
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "transform_coord_sys");
+    ros::init(argc, argv, "pcd_hdf5_publisher");
     ros::NodeHandle n;
     ros::NodeHandle nh("~");
 
@@ -280,7 +280,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         initial_path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::red));
-        broadcast_robot_path(path);
+        //broadcast_robot_path(path);
 
         ros::spinOnce();
         r.sleep();
