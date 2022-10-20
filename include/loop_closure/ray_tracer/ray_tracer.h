@@ -194,6 +194,13 @@ public:
      * 
      */
     void start_bresenham();
+    
+    /**
+     * @brief will remove all associated cells around the passed pose from the localmap
+     * 
+     * @param pose 
+     */
+    void local_removal(Pose *pose);
 
     /**
      * @brief Get the ros marker for the current ray trace

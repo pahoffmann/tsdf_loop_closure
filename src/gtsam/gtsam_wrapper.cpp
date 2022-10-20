@@ -164,10 +164,6 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     {
         std::cout << print_prefix << "Scan matching converged for lc with indices: " << lc_indices.first << " | " << lc_indices.second << std::endl;
         std::cout << print_prefix << "ICP Fitness Score: " << fitness_score << std::endl;
-        // std::cout << print_prefix << "Final transformation: " << std::endl
-        //           << final_transformation << std::endl;
-        // std::cout << "Final transformation readable: " << std::endl
-        //           << Pose(final_transformation) << std::endl;
 
         // check if the fitness score is above a certain upper boundary, if so scan matching was not good enough
         if (fitness_score > params.loop_closure.max_lc_icp_fitness)
@@ -188,11 +184,16 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
         std::cout << print_prefix << "LC Rejected (LINE)" << std::endl;
         return false;
     }
-    else if (LCRejectors::reject_range_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation, params))
+    else if (LCRejectors::reject_range_loop_closure_new(path, lc_indices.first, lc_indices.second, final_transformation, params))
     {
-        std::cout << print_prefix << "LC Rejected (RANGE)" << std::endl;
+        std::cout << print_prefix << "LC Rejected (RANGE New)" << std::endl;
         return false;
     }
+    // else if (LCRejectors::reject_range_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation, params))
+    // {
+    //     std::cout << print_prefix << "LC Rejected (RANGE)" << std::endl;
+    //     return false;
+    // }
 
     // create loop closure noise from scan matching fitness score
     gtsam::Vector Vector6(6);
@@ -362,36 +363,6 @@ void GTSAMWrapper::perform_pcl_normal_icp(pcl::PointCloud<PointType>::Ptr model_
     converged = icp->hasConverged();
 
     return;
-
-    // // estimate normals for model and scan cloud
-    // pcl::NormalEstimation<PointType, pcl::Normal> normal_estimation;
-    // normal_estimation.setRadiusSearch(0.1); // 10 cm
-    // pcl::PointCloud<pcl::Normal>::Ptr model_normals(new pcl::PointCloud<pcl::Normal>());
-    // pcl::PointCloud<pcl::Normal>::Ptr scan_normals(new pcl::PointCloud<pcl::Normal>());
-
-    // normal_estimation.setInputCloud(model_cloud);
-    // normal_estimation.compute(*model_normals);
-
-    // normal_estimation.setInputCloud(scan_cloud);
-    // normal_estimation.compute(*scan_normals);
-    // // ICP Settings
-    // static pcl::IterativeClosestPointWithNormals<PointType, PointType> icp_normal;
-    // // icp_normal.setMaxCorrespondenceDistance(0.2f); // hardcoded for now
-    // icp_normal.setMaximumIterations(params.loop_closure.max_icp_iterations);
-    // // icp_normal.setTransformationEpsilon(1e-6);
-    // // icp_normal.setEuclideanFitnessEpsilon(1e-6);
-    // // icp_normal.setRANSACIterations(0);
-
-    // // Align clouds
-    // // icp_normal.setInputSource(pointcloud_cur_pretransformed);
-    // icp_normal.setInputSource(scan_cloud);
-    // icp_normal.setInputTarget(model_cloud);
-    // icp_normal.align(*result);
-
-    // // fill data with icp results
-    // fitness_score = icp_normal.getFitnessScore();
-    // final_transformation = icp_normal.getFinalTransformation();
-    // converged = icp_normal.hasConverged();
 }
 
 void GTSAMWrapper::perform_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,

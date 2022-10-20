@@ -159,12 +159,13 @@ namespace LCRejectors
     {
         // calculate new and old end pos according to icp transformation
         Matrix4f old_end_pos_to_map = path->at(end_idx)->getTransformationMatrix();
-        Matrix4f new_end_pos_to_map = old_end_pos_to_map * final_transform.inverse();
-
-        std::cout << "Old end Pos: " << Pose(old_end_pos_to_map) << std::endl;
-        std::cout << "New end Pos: " << Pose(new_end_pos_to_map) << std::endl;
-
         Matrix4f start_pose_to_map = path->at(start_idx)->getTransformationMatrix();
+        Matrix4f new_end_pos_to_map = start_pose_to_map * final_transform.inverse();
+
+        std::cout << "Old end Pos: " << std::endl
+                  << Pose(old_end_pos_to_map) << std::endl;
+        std::cout << "New end Pos: " << std::endl
+                  << Pose(new_end_pos_to_map) << std::endl;
 
         // check wether the new end pos is in an sufficient area around the old end pose
         // checking translation, as well as rotation
@@ -172,7 +173,9 @@ namespace LCRejectors
 
         // calculate translation and rotation diff
         auto translation_diff = new_end_to_old_end.block<3, 1>(0, 3);
+        auto translation_diff_abs = translation_diff.cwiseAbs();
         auto rotation_diff = get_rotation_diff(old_end_pos_to_map, new_end_pos_to_map);
+        auto rotation_diff_abs = rotation_diff.cwiseAbs();
 
         std::cout << "Translation diff: " << std::endl
                   << translation_diff << std::endl;
@@ -189,14 +192,25 @@ namespace LCRejectors
         Vector3f acc_rot_noise = rotation_noise * (end_idx - start_idx);
 
         // make sure the maximum value allowed is M_PI for each of the rotations
-        acc_rot_noise.x() = std::min(acc_rot_noise.x(), M_PI);
-        acc_rot_noise.y() = std::min(acc_rot_noise.y(), M_PI);
-        acc_rot_noise.z() = std::min(acc_rot_noise.z(), M_PI);
+        acc_rot_noise.x() = std::min((double)acc_rot_noise.x(), M_PI);
+        acc_rot_noise.y() = std::min((double)acc_rot_noise.y(), M_PI);
+        acc_rot_noise.z() = std::min((double)acc_rot_noise.z(), M_PI);
 
-        std::cout << "Accumulated rotation noise: " << std::endl << acc_rot_noise << std::endl;
-        std::cout << "Accumulated translation noise: " << std::endl << acc_transl_noise << std::endl;
+        std::cout << "Accumulated rotation noise: " << std::endl
+                  << acc_rot_noise << std::endl;
+        std::cout << "Accumulated translation noise: " << std::endl
+                  << acc_transl_noise << std::endl;
 
-        
+        // check rotation and translation diff (absolutely) against diff
+        if (translation_diff_abs.x() > acc_transl_noise.x() || translation_diff_abs.y() > acc_transl_noise.y() || translation_diff_abs.z() > acc_transl_noise.z())
+        {
+            return true;
+        }
+
+        if (rotation_diff_abs.x() > acc_rot_noise.x() || rotation_diff_abs.y() > acc_rot_noise.y() || rotation_diff_abs.z() > acc_rot_noise.z())
+        {
+            return true;
+        }
 
         return false;
     }

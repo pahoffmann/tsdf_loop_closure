@@ -406,82 +406,75 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // ------------------
         // This section is used to preregister poses following each other in order to get a better initial estimate
         // This is achieved by using GICP/ICP and reevaluating the respective fitness scores
-        if (path->get_length() > 1)
+
+        // pose after (possible) preregistration
+        Pose preregistered_input_pose;
+
+        pcl::PointCloud<PointType>::Ptr model_cloud(new pcl::PointCloud<PointType>());
+        pcl::PointCloud<PointType>::Ptr scan_cloud(new pcl::PointCloud<PointType>());
+        pcl::copyPointCloud(*dataset_clouds.at(path->get_length() - 1), *model_cloud);
+        pcl::copyPointCloud(*input_cloud, *scan_cloud);
+        pcl::PointCloud<PointType>::Ptr result_cloud(new pcl::PointCloud<PointType>());
+
+        // gicp variables
+        bool converged = false;
+        Matrix4f final_transformation = Matrix4f::Identity();
+
+        auto last_pose = path->at(path->get_length() - 1); // obtain last pose
+
+        // this is the transformation from the model coordinate system to the input poses.
+        // we transform the model cloud into the coordinate system of the scan cloud (the cloud of the incoming pose)
+        // afterwards we perform icp and combine the resulting transformations
+        auto model_to_scan_initial = getTransformationMatrixBetween(input_pose_transformed, last_pose->getTransformationMatrix());
+
+        // pretransform model cloud into the system of the scan
+        pcl::transformPointCloud(*model_cloud, *model_cloud, model_to_scan_initial);
+
+        // try matching the clouds in the scan system -> we obtain P_scan' -> P_scan (final transformation of ICP)
+        // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
+        gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+        // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+        // gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+        // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+        // gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+
+        // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
+        if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
         {
-            // pose after (possible) preregistration
-            Pose preregistered_input_pose;
+            std::cout << "PREREGISTRATION SUCCESSFUL!!!" << std::endl;
+            std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
+            std::cout << "Final preregistration_matrix: " << std::endl
+                      << Pose(final_transformation) << std::endl;
 
-            pcl::PointCloud<PointType>::Ptr model_cloud(new pcl::PointCloud<PointType>());
-            pcl::PointCloud<PointType>::Ptr scan_cloud(new pcl::PointCloud<PointType>());
-            pcl::copyPointCloud(*dataset_clouds.at(path->get_length() - 1), *model_cloud);
-            pcl::copyPointCloud(*input_cloud, *scan_cloud);
-            pcl::PointCloud<PointType>::Ptr result_cloud(new pcl::PointCloud<PointType>());
+            // auto projected_translation = final_transformation.block<3, 1>(0, 3);
+            // projected_translation.z() = 0; // ignore translation in z direction
+            // Eigen::Matrix3f projected_rotation = final_transformation.block<3, 3>(0, 0);
+            // Vector3f angles = projected_rotation.eulerAngles(0, 1, 2);
+            // final_transformation = poseFromEuler(projected_translation.x(), projected_translation.y(), projected_translation.z(), 0, 0, angles.z()).getTransformationMatrix();
+            // std::cout << "Final preregistration_matrix (projected): " << std::endl
+            //           << Pose(final_transformation) << std::endl;
 
-            // gicp variables
-            bool converged = false;
-            Matrix4f final_transformation = Matrix4f::Identity();
+            Matrix4f new_scan_to_model = model_to_scan_initial.inverse() * final_transformation;
+            Matrix4f new_scan_to_map = last_pose->getTransformationMatrix() * new_scan_to_model;
 
-            auto last_pose = path->at(path->get_length() - 1); // obtain last pose
+            Pose new_scan_to_map_pose(new_scan_to_map);
+            // new_scan_to_map_pose.pos.z() = 0;
+            // new_scan_to_map_pose.quat.x() = 0;
+            // new_scan_to_map_pose.quat.y() = 0;
 
-            // this is the transformation from the model coordinate system to the input poses.
-            // we transform the model cloud into the coordinate system of the scan cloud (the cloud of the incoming pose)
-            // afterwards we perform icp and combine the resulting transformations
-            auto model_to_scan_initial = getTransformationMatrixBetween(input_pose_transformed, last_pose->getTransformationMatrix());
+            new_scan_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), new_scan_to_map_pose.getTransformationMatrix());
 
-            // pretransform model cloud into the system of the scan
-            pcl::transformPointCloud(*model_cloud, *model_cloud, model_to_scan_initial);
-
-            // try matching the clouds in the scan system -> we obtain P_scan' -> P_scan (final transformation of ICP)
-            // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
-            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-
-            // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
-            if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
-            {
-                std::cout << "PREREGISTRATION SUCCESSFUL!!!" << std::endl;
-                std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
-                std::cout << "Final preregistration_matrix: " << std::endl
-                          << Pose(final_transformation) << std::endl;
-
-                // auto projected_translation = final_transformation.block<3, 1>(0, 3);
-                // projected_translation.z() = 0; // ignore translation in z direction
-                // Eigen::Matrix3f projected_rotation = final_transformation.block<3, 3>(0, 0);
-                // Vector3f angles = projected_rotation.eulerAngles(0, 1, 2);
-                // final_transformation = poseFromEuler(projected_translation.x(), projected_translation.y(), projected_translation.z(), 0, 0, angles.z()).getTransformationMatrix();
-                // std::cout << "Final preregistration_matrix (projected): " << std::endl
-                //           << Pose(final_transformation) << std::endl;
-
-                Matrix4f new_scan_to_model = model_to_scan_initial.inverse() * final_transformation;
-                Matrix4f new_scan_to_map = last_pose->getTransformationMatrix() * new_scan_to_model;
-
-                Pose new_scan_to_map_pose(new_scan_to_map);
-                // new_scan_to_map_pose.pos.z() = 0;
-                // new_scan_to_map_pose.quat.x() = 0;
-                // new_scan_to_map_pose.quat.y() = 0;
-
-                new_scan_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), new_scan_to_map_pose.getTransformationMatrix());
-
-                path->add_pose(new_scan_to_map_pose);
-                // path->add_pose(new_scan_to_map);
-                gtsam_pose_delta = new_scan_to_model;
-            }
-            else // if it is not converged we simply add the initial estimate.
-            {
-                std::cout << "PREREGISTRATION FAILED!!!" << std::endl;
-                std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
-
-                path->add_pose(Pose(input_pose_transformed));
-            }
+            path->add_pose(new_scan_to_map_pose);
+            // path->add_pose(new_scan_to_map);
+            gtsam_pose_delta = new_scan_to_model;
         }
-        else
+        else // if it is not converged we simply add the initial estimate.
         {
+            std::cout << "PREREGISTRATION FAILED!!!" << std::endl;
+            std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
+
             path->add_pose(Pose(input_pose_transformed));
         }
-
         // END PREREGISTRATION
     }
     else
@@ -790,28 +783,26 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // std::cout << "Cells previous: " << gm_data.size() << std::endl;
 
-    // // clear and update the tsdf
-    // map_update_counter++;
+    // clear and update the tsdf
+    map_update_counter++;
 
-    // auto previous_filename_path = params.map.filename;
-    // // create new map
-    // params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + std::to_string(map_update_counter)).string() + previous_filename_path.extension().string());
+    auto previous_filename_path = params.map.filename;
+    // create new map
+    params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + std::to_string(map_update_counter)).string() + previous_filename_path.extension().string());
 
-    // // delete old map
-    // boost::filesystem::remove(previous_filename_path);
+    // delete old map
+    boost::filesystem::remove(previous_filename_path);
 
     // reset pointers
-    // global_map_ptr.reset(new GlobalMap(params.map));
-    // local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
-    // Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter));
+    global_map_ptr.reset(new GlobalMap(params.map));
+    local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+    Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter));
 
-    // gm_data = global_map_ptr->get_full_data();
+    gm_data = global_map_ptr->get_full_data();
 
-    // std::cout << "Cells after: " << gm_data.size() << std::endl;
-
-    // marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
-    // tsdf_pub.publish(marker);
+    marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    tsdf_pub.publish(marker);
 
     ready_flag_pub.publish(ready_msg);
 }
