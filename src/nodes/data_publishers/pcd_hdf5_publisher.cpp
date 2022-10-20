@@ -17,6 +17,9 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <bondcpp/bond.h>
 
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+
 namespace fs = boost::filesystem;
 
 LoopClosureParams params;
@@ -108,6 +111,33 @@ std::vector<boost::filesystem::path> get_pcd_filenames(boost::filesystem::path &
     std::cout << print_prefix << "Obtained " << scan_files.size() << " clouds from the delivered location" << std::endl;
 
     return scan_files;
+}
+
+void broadcast_robot_path(Path *path)
+{
+    // std::cout << "Broadcasting transform.. " << std::endl;
+
+    static tf2_ros::StaticTransformBroadcaster initial_path_br;
+
+    for (int idx = 0; idx < path->get_length(); idx++)
+    {
+        Pose *current = path->at(idx);
+        geometry_msgs::TransformStamped transformStamped;
+
+        transformStamped.header.stamp = ros::Time::now();
+        transformStamped.header.frame_id = "map";
+        transformStamped.child_frame_id = "pose_" + std::to_string(idx);
+        transformStamped.transform.translation.x = current->pos.x();
+        transformStamped.transform.translation.y = current->pos.y();
+        transformStamped.transform.translation.z = current->pos.z();
+
+        transformStamped.transform.rotation.x = current->quat.x();
+        transformStamped.transform.rotation.y = current->quat.y();
+        transformStamped.transform.rotation.z = current->quat.z();
+        transformStamped.transform.rotation.w = current->quat.w();
+
+        initial_path_br.sendTransform(transformStamped);
+    }
 }
 
 /**
@@ -250,6 +280,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         initial_path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::red));
+        broadcast_robot_path(path);
 
         ros::spinOnce();
         r.sleep();

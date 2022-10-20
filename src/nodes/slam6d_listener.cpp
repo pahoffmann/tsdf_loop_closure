@@ -498,9 +498,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_cloud_tf.header.frame_id = "robot";
     input_cloud_pub.publish(input_cloud_tf);
 
-    ready_flag_pub.publish(ready_msg);
+    // ready_flag_pub.publish(ready_msg);
 
-    return;
+    // return;
 
     // publish normals for the input cloud
     // auto normal_marker = ROSViewhelper::visualize_pcl_normals(input_cloud);
