@@ -18,18 +18,18 @@
 \contentsline {chapter}{\numberline {4}Datenassoziationen}{15}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Ansatz}{15}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Serialisierung}{16}{section.4.2}%
-\contentsline {section}{\numberline {4.3}RayTracing}{16}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Bresenham}{16}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Loop Closure}{17}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Kartenupdate}{17}{section.4.6}%
-\contentsline {section}{\numberline {4.7}Transformationen}{17}{section.4.7}%
-\contentsline {section}{\numberline {4.8}Evaluation}{17}{section.4.8}%
-\contentsline {chapter}{\numberline {5}Loop Closure}{19}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Detektion}{19}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Graphenoptimierung}{19}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Optimierungen}{19}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Datensätze}{20}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Hannover1}{20}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}Maps}{20}{subsection.5.4.2}%
-\contentsline {chapter}{\numberline {6}Map Update}{21}{chapter.6}%
-\contentsline {chapter}{\numberline {7}Ausblick}{23}{chapter.7}%
+\contentsline {section}{\numberline {4.3}RayTracing}{17}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Bresenham}{19}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Loop Closure}{19}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Kartenupdate}{19}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Transformationen}{19}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Evaluation}{19}{section.4.8}%
+\contentsline {chapter}{\numberline {5}Loop Closure}{21}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Detektion}{21}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Graphenoptimierung}{21}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Optimierungen}{21}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Datensätze}{22}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Hannover1}{22}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Maps}{22}{subsection.5.4.2}%
+\contentsline {chapter}{\numberline {6}Map Update}{23}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Ausblick}{25}{chapter.7}%
