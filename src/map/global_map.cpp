@@ -177,12 +177,12 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
         HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
         // create group if not exists
-        if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
-        {
-            file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
-        }
+        // if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
+        // {
+        //     file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+        // }
 
-        HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+        // HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
 
         auto tag = tag_from_chunk_pos(chunkPos);
 
@@ -192,16 +192,16 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             HighFive::DataSet d = g.getDataSet(tag);
             d.read(newChunk.data);
 
-            if (g_int.exist(tag))
-            {
-                // read chunk from file
-                HighFive::DataSet d = g_int.getDataSet(tag);
-                d.read(newChunk.intersect_data);
-            }
-            else
-            {
-                newChunk.intersect_data = std::vector<int>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, TSDFEntry::IntersectStatus::NO_INT);
-            }
+            // if (g_int.exist(tag))
+            // {
+            //     // read chunk from file
+            //     HighFive::DataSet d = g_int.getDataSet(tag);
+            //     d.read(newChunk.intersect_data);
+            // }
+            // else
+            // {
+            //     newChunk.intersect_data = std::vector<int>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, TSDFEntry::IntersectStatus::NO_INT);
+            // }
         }
         else
         {
@@ -249,17 +249,17 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             }
 
             // now write the intersection data accordingly
-            if (g_int.exist(tag))
-            {
-                // std::cout << "[GlobalMap::::::::::: activate_chunk] - WRITE" << std::endl;
-                auto d = g_int.getDataSet(tag);
-                d.write(active_chunks_[index].intersect_data);
-            }
-            else
-            {
-                // std::cout << "[GlobalMap::::::::::: activate_chunk] - CREATE" << std::endl;
-                g_int.createDataSet(tag, active_chunks_[index].intersect_data);
-            }
+            // if (g_int.exist(tag))
+            // {
+            //     // std::cout << "[GlobalMap::::::::::: activate_chunk] - WRITE" << std::endl;
+            //     auto d = g_int.getDataSet(tag);
+            //     d.write(active_chunks_[index].intersect_data);
+            // }
+            // else
+            // {
+            //     std::cout << "[GlobalMap::::::::::: activate_chunk] - CREATE" << std::endl;
+            //     g_int.createDataSet(tag, active_chunks_[index].intersect_data);
+            // }
 
             // overwrite with new chunk
             active_chunks_[index] = newChunk;
@@ -318,12 +318,12 @@ void GlobalMap::write_back()
     HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
     // create intersections group, if not exists.
-    if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
-    {
-        file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
-    }
+    // if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
+    // {
+    //     file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+    // }
 
-    HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+    //HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
 
     for (auto &chunk : active_chunks_)
     {
@@ -340,15 +340,15 @@ void GlobalMap::write_back()
         }
 
         // if intersection data is already written, get the dataset and override, else just create a new ds
-        if (g_int.exist(tag))
-        {
-            auto d = g_int.getDataSet(tag);
-            d.write(chunk.intersect_data);
-        }
-        else
-        {
-            g_int.createDataSet(tag, chunk.intersect_data);
-        }
+        // if (g_int.exist(tag))
+        // {
+        //     auto d = g_int.getDataSet(tag);
+        //     d.write(chunk.intersect_data);
+        // }
+        // else
+        // {
+        //     g_int.createDataSet(tag, chunk.intersect_data);
+        // }
     }
     file_->flush();
 }

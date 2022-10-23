@@ -415,6 +415,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     if (path->get_length() > 0)
     {
+        // obtain the new input pose by adding the input delta to the last pose of the path
         input_pose_transformed = path->at(path->get_length() - 1)->getTransformationMatrix() * initial_pose_delta;
 
         if (params.loop_closure.do_preregistration)
