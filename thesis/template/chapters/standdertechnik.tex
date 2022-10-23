@@ -25,7 +25,7 @@ McCormac et al. \cite{mccormac2018fusion++} schlagen ein Online-SLAM System, wel
 Prisacariu et al. \cite{prisacariu2017infinitam} unterteilen den 3D-Raum in starre TSDF-Teilkarten und optimieren die relativen Positionen zwischen diesen. Nach \cite{prisacariu2017infinitam} ist eine anschließende Generation der globalen Karte durch ein Zusammenführen der Teilkarten möglich. \cite{prisacariu2017infinitam} verwendet für jede Pose des Graphen eine eigene Teilkarte, die in sich konsistent ist. \cite{prisacariu2017infinitam} erreichen eine globale Konsistenz durch eine Graph-Optimierung, die zusätzlich Schleifenschlüsse berücksichtigt. Optimiert werden die zu den Teilkarten zugehörigen Posen. Die TSDF-Teilkarten selbst werden durch die Graph-Optimierung nicht angepasst.
 Ähnlich wie \cite{borrmann2008globally} nutzen Shan et al. \cite{shan2020lio} in ihrem Feature basierten SLAM Ansatz die euklidische Distanz zur Bestimmung von Kandidaten für Schleifenschlüsse, die durch eine Evaluation des \textbf{Fitness-Scores} von ICP nach Registrierung der zugehörigen Punktwolken der beiden Posen der jeweiligen Kandidaten verifiziert werden.
 
-An dieser Stelle setzt diese Arbeit nun an und integriert auf Basis der zuvor genannten Ansätze, Schleifenschlüsse in einen TSDF basierten SLAM Ansatz zu integrieren und die TSDF Karte entsprechend der Änderungen anzupassen.
+An dieser Stelle setzt diese Arbeit nun an und integriert auf Basis der zuvor genannten Ansätze, Schleifenschlüsse in einen TSDF basierten SLAM Ansatz und die TSDF Karte entsprechend der Änderungen an der Roboter-Trajektorie zu optimieren.
 
 
 

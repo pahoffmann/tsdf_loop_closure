@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  23 OCT 2022 18:32
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  23 OCT 2022 23:01
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1373,96 +1373,81 @@ Kapitel 2.
 [5]) (./chapters/grundlagen.tex [6]
 Kapitel 3.
 Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
-ine 9.
+ine 3.
 <pics/ros_coordinate_sys.png, id=294, 606.265pt x 465.74pt>
 File: pics/ros_coordinate_sys.png Graphic file (type png)
 <use pics/ros_coordinate_sys.png>
-Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 35.
+Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 37.
 (pdftex.def)             Requested size: 212.19592pt x 163.01143pt.
 [7
 
 ]
-<pics/robot_tf.png, id=309, 909.3975pt x 788.9475pt>
+<pics/robot_tf.png, id=310, 909.3975pt x 788.9475pt>
 File: pics/robot_tf.png Graphic file (type png)
 <use pics/robot_tf.png>
-Package pdftex.def Info: pics/robot_tf.png  used on input line 56.
+Package pdftex.def Info: pics/robot_tf.png  used on input line 58.
 (pdftex.def)             Requested size: 318.2939pt x 276.13576pt.
  [8 <./pics/ros_coordinate_sys.png>] [9 <./pics/robot_tf.png>]
-<pics/transformation.png, id=330, 1726.45pt x 562.1pt>
+<pics/transformation.png, id=331, 1726.45pt x 562.1pt>
 File: pics/transformation.png Graphic file (type png)
 <use pics/transformation.png>
-Package pdftex.def Info: pics/transformation.png  used on input line 98.
+Package pdftex.def Info: pics/transformation.png  used on input line 100.
 (pdftex.def)             Requested size: 431.61145pt x 140.52466pt.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 100.
+(Font)              <10> on input line 102.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 100.
+(Font)              <7> on input line 102.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 100.
+(Font)              <5> on input line 102.
  [10]
-<pics/TSDF.png, id=351, 1087.06125pt x 1004.75375pt>
+<pics/TSDF.png, id=352, 1087.06125pt x 1004.75375pt>
 File: pics/TSDF.png Graphic file (type png)
 <use pics/TSDF.png>
-Package pdftex.def Info: pics/TSDF.png  used on input line 133.
+Package pdftex.def Info: pics/TSDF.png  used on input line 135.
 (pdftex.def)             Requested size: 326.1209pt x 301.42845pt.
  [11 <./pics/transformation.png>]
 
-LaTeX Warning: Reference `' on page 12 undefined on input line 154.
+LaTeX Warning: Reference `' on page 12 undefined on input line 156.
 
 [12 <./pics/TSDF.png>]
 
 LaTeX Warning: Marginpar on page 13 moved.
 
 
-LaTeX Warning: Reference `TODO' on page 13 undefined on input line 166.
+LaTeX Warning: Reference `TODO' on page 13 undefined on input line 168.
 
 
-LaTeX Warning: Reference `section:sdf' on page 13 undefined on input line 170.
+LaTeX Warning: Reference `section:sdf' on page 13 undefined on input line 172.
 
 [13]) (./chapters/daten_assoziationen.tex [14]
 Kapitel 4.
 [15
 
 ]
-<pics/HDF5new.png, id=409, 943.525pt x 461.725pt>
+<pics/HDF5new.png, id=410, 943.525pt x 461.725pt>
 File: pics/HDF5new.png Graphic file (type png)
 <use pics/HDF5new.png>
 Package pdftex.def Info: pics/HDF5new.png  used on input line 33.
 (pdftex.def)             Requested size: 377.4033pt x 184.68672pt.
- [16]
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <9> on input line 52.
 
-LaTeX Warning: Reference `table:' on page 17 undefined on input line 45.
 
+LaTeX Warning: Command \textdegree invalid in math mode on input line 54.
 
-LaTeX Warning: Command \textdegree invalid in math mode on input line 49.
-
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 4
-9.
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 5
+4.
 (/usr/share/texmf/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 
-LaTeX Warning: Command \textdegree invalid in math mode on input line 49.
-
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 49.
-
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 49.
-
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 52.
-
 LaTeX Warning: Command \textdegree invalid in math mode on input line 54.
 
-
-LaTeX Warning: Command \textdegree invalid in math mode on input line 54.
-
-[17 <./pics/HDF5new.png>] [18]) (./chapters/loopclosure.tex [19] [20
-
-]
+[16] [17 <./pics/HDF5new.png>] [18] [19]) (./chapters/loopclosure.tex [20]
 Kapitel 5.
-[21]) (./chapters/map_update.tex [22]
+[21
+
+]) (./chapters/map_update.tex [22]
 Kapitel 6.
 ) (./chapters/ausblick.tex [23
 
@@ -1495,11 +1480,11 @@ LaTeX Warning: There were undefined references.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 153.
  ) 
 Here is how much of TeX's memory you used:
- 41147 strings out of 483016
- 883398 string characters out of 5961286
- 1305139 words of memory out of 5000000
- 55164 multiletter control sequences out of 15000+600000
- 620147 words of font info for 155 fonts, out of 8000000 for 9000
+ 41160 strings out of 483016
+ 883690 string characters out of 5961286
+ 1310542 words of memory out of 5000000
+ 55170 multiletter control sequences out of 15000+600000
+ 619782 words of font info for 154 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
  73i,18n,127p,973b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
@@ -1521,10 +1506,10 @@ lic/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.pfb></usr/shar
 e/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm
 /lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texli
 ve/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (35 pages, 732221 bytes).
+Output written on main.pdf (35 pages, 740382 bytes).
 PDF statistics:
- 585 PDF objects out of 1000 (max. 8388607)
- 490 compressed objects within 5 object streams
- 106 named destinations out of 1000 (max. 500000)
+ 597 PDF objects out of 1000 (max. 8388607)
+ 501 compressed objects within 6 object streams
+ 113 named destinations out of 1000 (max. 500000)
  14715 words of extra memory for PDF output out of 17280 (max. 10000000)
 

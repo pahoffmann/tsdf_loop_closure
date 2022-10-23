@@ -26,7 +26,7 @@ Der HDF5 interne Pfad eines dieser Pose-Datensets ist \textit{/poses/[index]}, w
 An dieser Stelle wird nun einer Erweiterung vorgenommen um die generierten Assoziationen zu serialisieren. Anstelle der Datensets wird für jede Pose eine eigene Gruppe erstellt. Diese Gruppe erhält als Namen ebenfalls den Pfadindex der Pose. Innerhalb dieser Gruppe wird ein Datenset für die Pose und optional ein weiteres Datenset für die Datenassoziationen angelegt, sofern erforderlich.
 Abbildung \ref{fig:hdf5new} zeigt die neue interne HDF5 Struktur nach dieser Änderung.
 
-\begin{figure}[H]
+\begin{figure}
 		\centering
 		\includegraphics
 			[scale=0.4]
@@ -42,11 +42,11 @@ Auf Basis dieser Änderungen wird im Folgenden erläutert, wie die zu speichernd
 
 Eine Möglichkeit der Ermittlung der mit einzelnen Posen assoziierten Teilbereiche der TSDF Karte ist die die Erstellung eines künstlichen Laserscans innerhalb der TSDF Karte, ausgehend von der entsprechenden Pose.
 Entsprechend wurde im Zuge dieser Arbeit ein \textbf{Ray-Tracer} entwickelt, der künstliche Laserstrahlen innerhalb der TSDF-Karte aussendet und die Schnittpunkte mit der TSDF Karte überprüft. Der Ray-Tracer ist beliebig konfigurierbar ist und kann an die Parameter verschiedenster Laserscanner angepasst werden.
-Die wesentlichen Parameter und deren Bedeutung sind Tabelle \ref{table:} zu entnehmen.
+Die wesentlichen Parameter und deren Bedeutung sind Tabelle \ref{table:raytracer_params} zu entnehmen.
 	
-	\begin{table}[H]
+	\begin{table}
 		\centering
-		\caption{Parameter des in dieser Arbeit entwickelten Ray-Tracers zur Bestimmung des mit einer beliebigen Pose assoziierten Teilbereichs der TSDF-Karte. Der horizontale Öffnungswinkel wird an dieser Stelle als $360°$ angenommen}
+		\caption{Parameter des in dieser Arbeit entwickelten Ray-Tracers zur Bestimmung des mit einer beliebigen Pose assoziierten Teilbereichs der TSDF-Karte. Der horizontale Öffnungswinkel wird an dieser Stelle als $360$ Grad angenommen.}
 		\begin{tabular}{| p{3cm} | p{8cm} | p{2cm} |}
 			\hline
 			\thead{Parameter}   & \thead{Funktionsweise}  & \thead{Default-\\Wert}\\
@@ -62,6 +62,7 @@ Die wesentlichen Parameter und deren Bedeutung sind Tabelle \ref{table:} zu entn
 			$ray\_size$   & Definiert die Dicke des Strahls in der Visualisierung. Dieser Parameter dient lediglich zur erleichterten Visualisierung des Laserscans bei unterschiedlicher Konfiguration. Der Wert ist in Metern anzugeben. & $0,01$ \\
 			\hline
 		\end{tabular}
+		\label{table:raytracer_params}
 	\end{table}	
 	
 Zur Emulation das Laserscans wird zunächst ein Array erstellt, in dem die aktuellen Endpunkte der jeweiligen Rays gespeichert werden. Die Anzahl an Endpunkten $n$ ist definiert durch die konfigurierte Auflösung. Sie beträgt:
@@ -70,7 +71,47 @@ Zur Emulation das Laserscans wird zunächst ein Array erstellt, in dem die aktue
 n = vert\_res \cdot hor\_res
 \end{myequation}
 
- Der Startpunkt jedes Rays ist die Pose $P_i$, von der aus der Laserscan ausgesendet wird. Ziel ist in jeder Iteration alle Rays um $step\_size$ zu verlängern und die TSDF-Zellen zu evaluieren, die derzeit von den einzelnen Rays getroffen werden. Für diese Verlängerung der Rays müssen diese zunächst initialisiert werden. Diese Initialisierung erfolgt auf Basis der parametrisierten Öffnungswinkel des Laserscanners $opening\_degree\_hor$ und $opening\_degree\_hor$, sowie der konfigurierten vertikalen und horizontalen Auflösung $vert\_res$ und $hor\_res$. 
+ Der Startpunkt jedes Rays ist die Pose $P_i$, von der aus der Laserscan ausgesendet wird. Ziel ist in jeder Iteration alle Rays um $step\_size$ zu verlängern und die TSDF-Zellen zu evaluieren, die derzeit von den einzelnen Rays getroffen werden. Für diese Verlängerung der Rays müssen diese zunächst initialisiert werden. Diese Initialisierung erfolgt auf Basis der parametrisierten Öffnungswinkel des Laserscanners $opening\_degree\_vert$ und $opening\_degree\_hor$, sowie der konfigurierten vertikalen und horizontalen Auflösung $vert\_res$ und $hor\_res$.
+Zunächst werden die Winkelbereiche definiert, in den der Ray-Tracer operiert. Diese setzten sich aus den Öffnungswinkeln zusammen. Der Winkelbereich in horizontaler Richtung beträgt:
+
+\begin{myequation}
+I_{hor} = \left[-opening\_degree\_hor, opening\_degree\_hor \right]
+\end{myequation}
+
+Der Winkelbereich in vertikaler Richtung beträgt:
+
+\begin{myequation}
+I_{vert} = \left[-opening\_degree\_vert, opening\_degree\_vert \right]
+\end{myequation}
+
+Die jeweiligen Winkelbereiche werden durch die konfigurierte Auflösung diskretisiert.
+Die horizontale Schrittweite des Laserscanners beträgt:
+
+\begin{myequation}
+\Delta_{hor} = \frac{opening\_degree\_hor}{hor\_res}
+\end{myequation}
+
+Die vertikale Schrittweite des Laserscanners beträgt:
+
+\begin{myequation}
+\Delta_{vert} = \frac{opening\_degree\_vert}{vert\_res}
+\end{myequation}
+
+Basierend auf den unteren und oberen Winkelschranken und der berechneten Schrittweite zwischen diesen Schranken kann nun das Array initialisiert werden. Dazu wird in zwei Schleifen über die beiden Winkelintervalle $I_{vert}$ und $I_{hor}$ iteriert und der aktuelle Wert jeweils um die berechneten Delta $\Delta_{vert}$ und  $\Delta_{hor}$ inkrementiert. Aus den beiden Winkeln $\alpha$ und $\beta$ der aktuellen Iteration der Schleifen, sowie einer beliebigen Distanz initialen Länge des Rays, wie zum Beispiel der Schrittweite $step\_size$ können nun für jeden Punkt die initialen Ray-Punkte berechnet werden, die den Richtungsvektor des Rays definieren.
+Hierzu ist eine Umwandlung von Kugelkoordinaten in das Kartesische Koordinatensystem notwendig. Mit $alpha$, $beta$ und $step\_size$ wird in Kugelkoordinaten genau ein Punkt im dreidimensionalen Raum beschrieben. Um diese in kartesische Koordinaten im ROS Koordinatensystem umzuwandeln wird folgende Formel verwendet ($\alpha$ und $\beta$ gegeben in Radianten, $\alpha$ beschreibt den aktuellen Winkel um die z-Achse, $\beta$ die aktuelle Rotation um die y-Achse):
+
+\begin{myequation}
+\colvec{x_{P_i}\\y_{P_i}\\z_{P_i}} = step\_size \cdot \colvec{\cos\left(\alpha \right) \cdot \cos\left(\beta \right) \\ \sin\left(\alpha \right) \cdot \cos\left(\beta \right) \\ \sin\left(\beta \right)}
+\end{myequation}
+
+Der Punkt $\colvec{x_{P_i}\\y_{P_i}\\z_{P_i}}$ beschreibt hier zunächst nur den Ray-Punkt aus Sicht des lokalen Map-Koordinatensystems, das durch ${P_i}$ beschrieben ist. Um diesen aus Sicht des globalen Koordinatensystems $\mathbb{M}$ zu betrachten, muss dieser Punkt dorthin transformiert werden. Grundlagen zur Transformation werden in Kapitel \ref{section:transformationen} behandelt. Es ist essentiell, dass an dieser Stelle nicht nur die Translation, sondern auch die Rotation berücksichtigt wird um den Scan von Pose $P_i$ bestmöglich replizieren zu können. Die Transformation des Vektors $\colvec{x_{P_i}\\y_{P_i}\\z_{P_i}}$ vom Koordinatensystem beschrieben durch Pose $P_I$ in das globale Koordinatensystem $\mathbb{M}$ mit der Transformationsmatrix $T_{P_i \rightarrow \mathbb{M}}$ ist gegeben durch:
+
+\begin{myequation}
+\colvec{x_{\mathbb{M}}\\y_{\mathbb{M}}\\z_{\mathbb{M}}} = T_{P_i \rightarrow \mathbb{M}} \cdot \colvec{x_{P_i}\\y_{P_i}\\z_{P_i}}
+\end{myequation}
+
+Auf diese Weise werden alle initialen Endpunkte des emulierten Laserscans berechnet. Auf Basis der berechenten initialen Endpunkte und des bekannten Anfangspunktes gegeben durch den Translationsanteil von $P_i$ kann das inkrementelle Ray-Tracing beginnen.
+
 
 
 Laserscanner emulieren: von den entsprechenden Posen aus werden künstliche Laserscans emuliert, die in Auflösung, Öffnungswinkeln mit dem verwendeten Laserscanner übereinstimmen
