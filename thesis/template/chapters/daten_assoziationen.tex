@@ -148,6 +148,24 @@ Anschaulich erklären, wo es zu Problemen kommen kann (wenn benachbarte Zellen v
 
 \section{Transformationen}
 
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+ 		 \centering
+  		 \includegraphics[width=.95\linewidth]{sp_bresenham_91_74_}
+  		 \centering \caption{Assoziationen identifiziert mit Bresenham.}
+  		 \label{fig:surfaceNoFlip}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=.95\linewidth]{sp_raytrace_91_97_}
+  		\centering \caption{Assoziationen identifiziert mit Ray-Tracing.}
+  		\label{fig:surfaceFlip}
+	\end{subfigure}
+	\caption{Gegenüberstellung der generierten Assoziationen. Die durch Bresenham gefunden Assoziationen auf der linken Seite, die durch Ray-Tracing auf der rechten. In diesem Fall wurden von Bresenham $91,74$ Prozent der Zellen assoziiert, während vom Ray-Tracing $91,97$ Prozent der Zellen assoziiert wurden. Zellen in gelb: assoziierte TSDF Zellen mit $value < 0$, Zellen in pink: assoziierte TSDF Zellen mit $value > 0$, Zellen in türkis: approximierter Nulldurchgang (Wechsel von positivem zu negativem Wert), Rest: nicht assoziierte Zellen. \improvement{Graph mit Prozenten Bresenham vs. Ray-Tracing bezüglich assoziierter Zellen, ggf. auch mit chemitz datenset}}
+	\label{fig:edgeFlipSurface}
+\end{figure}
+
 Zum Test der ermittelten wurden auf den gegeben Pfad diverse Transformationen, wie das Verwischen \textbf{(Blur)} des Pfades, die Transformation oder Rotation des Pfades beziehungsweise eine Kombination mehrere Transformationen angewandt und auf Basis der Posedifferenzen ein Kartenupdate durchgeführt. Dies führte ebenfalls zu mehreren Problemen, insbesondere bei Rotationen.
 Bilder für Translation, Blur, Rotation, Information loss (nicht getroffene Zellen) herausstellen, definieren wie dieser Information loss zustande kommt
 
