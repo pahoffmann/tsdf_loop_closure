@@ -104,7 +104,7 @@ void AssociationManager::calculate_pose_differences(Path *new_path)
     }
 }
 
-void AssociationManager::generate_level_one_data(int start_idx, int end_idx)
+void AssociationManager::generate_level_one_data(int start_idx, int end_idx, Path* new_path)
 {
     for (int i = start_idx; i < end_idx; i++)
     {
@@ -128,7 +128,7 @@ void AssociationManager::generate_level_one_data(int start_idx, int end_idx)
             auto old_cell = data.first;
             auto tsdf = data.second;
 
-            auto new_cell = calculate_new_cell_position(old_cell, pose_differences[i], associations[i].getPose());
+            auto new_cell = calculate_new_cell_position(old_cell, pose_differences[i], new_path->at(i));
 
             auto cell_diff = new_cell - old_cell;
 
@@ -171,18 +171,18 @@ void AssociationManager::generate_level_two_data(UpdateMethod method)
         level_two_marker.points.push_back(type_transform::eigen_point_to_ros_point(map_to_real(new_cell_avg)));
         level_two_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::navy));
 
-// #ifdef DEBUG
-//         if (cell_diff.x() != cell_diff.y() || cell_diff.y() != cell_diff.z() || cell_diff.x() != cell_diff.z() || cell_diff.x() != 46)
-//         {
-//             std::cout << "Cell diff after meaning: " << std::endl
-//                       << cell_diff << std::endl
-//                       << "Old:" << std::endl
-//                       << old_cell << std::endl
-//                       << "New:" << std::endl
-//                       << new_cell_avg << std::endl;
-//         }
+        // #ifdef DEBUG
+        //         if (cell_diff.x() != cell_diff.y() || cell_diff.y() != cell_diff.z() || cell_diff.x() != cell_diff.z() || cell_diff.x() != 46)
+        //         {
+        //             std::cout << "Cell diff after meaning: " << std::endl
+        //                       << cell_diff << std::endl
+        //                       << "Old:" << std::endl
+        //                       << old_cell << std::endl
+        //                       << "New:" << std::endl
+        //                       << new_cell_avg << std::endl;
+        //         }
 
-// #endif
+        // #endif
 
         size_t old_hash = pair.first;
         size_t new_hash = hash_from_vec(new_cell_avg);
@@ -418,20 +418,25 @@ void AssociationManager::update_localmap_level_three()
     }
 }
 
-Vector3i AssociationManager::calculate_new_cell_position(Vector3i &old_cell, Eigen::Matrix4f &transform, Pose *old_pose)
+Vector3i AssociationManager::calculate_new_cell_position(Vector3i &old_cell, Eigen::Matrix4f &transform, Pose *new_pose)
 {
     Vector3i new_cell;
     Vector3f old_cell_real = map_to_real(old_cell);
 
+    Eigen::Vector4f test;
+    test << old_cell_real, 1;
+
+    // because the cells are in global coordinate poses, we actually just need to apply the inverse transform of the new pose to obtain this shit
+    auto final_transformation = new_pose->getTransformationMatrix().inverse();
+
     // extract rotation and translation matrix from the pose difference
     // the start index needs to be substacted here, which is important, as we want the correct pose transform
-    Eigen::Matrix3f rot_mat = transform.block<3, 3>(0, 0);
-    Vector3f transl_vec = transform.block<3, 1>(0, 3);
+    // Eigen::Matrix3f rot_mat = transform.block<3, 3>(0, 0);
+    // Vector3f transl_vec = transform.block<3, 1>(0, 3);
 
     // transform vector by difference between old pose and new pose
-    Vector3f transformed_3d = rot_mat * (old_cell_real - old_pose->pos) + old_pose->pos + transl_vec;
-    new_cell = real_to_map(transformed_3d);
-    Vector3f new_cell_f = real_to_map_float(transformed_3d);
+    Eigen::Vector4f transformed_3d = transform * test;
+    new_cell = real_to_map(transformed_3d.block<3, 1>(0, 0));
 
     return new_cell;
 }
@@ -495,7 +500,7 @@ visualization_msgs::Marker AssociationManager::update_localmap(Path *new_path, i
 
     std::cout << "There are " << pose_differences.size() << " pose differences, that have been calculated" << std::endl;
 
-    generate_level_one_data(start_idx, end_idx);
+    generate_level_one_data(start_idx, end_idx, new_path);
 
     std::cout << "In the level one data, there are " << level_one_data.size() << " entries" << std::endl;
 

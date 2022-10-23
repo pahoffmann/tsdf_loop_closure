@@ -191,7 +191,7 @@ private:
    * @param start_idx
    * @param end_idx
    */
-  void generate_level_one_data(int start_idx, int end_idx);
+  void generate_level_one_data(int start_idx, int end_idx, Path *new_path);
 
   /**
    * @brief generates data of LEVEL 2 as described above
@@ -237,5 +237,5 @@ private:
    * @param old_pose 
    * @return Vector3i 
    */
-  Vector3i calculate_new_cell_position(Vector3i &old_cell, Eigen::Matrix4f &transform, Pose *old_pose);
+  Vector3i calculate_new_cell_position(Vector3i &old_cell, Eigen::Matrix4f &transform, Pose *new_pose);
 };

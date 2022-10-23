@@ -155,13 +155,21 @@ Intersection Data:
 
 
 [ ] Map fix: 2 possibilities:
-    [ ] 1. Identify map area (bounding box) which is affected by the loop closure and completely remove it from the gm
+    [-] 1. Identify map area (bounding box) which is affected by the loop closure and completely remove it from the gm
         2.
-    [ ] Determine cut volume between the area affected by the loop closure and the rest.
+    [-] Determine cut volume between the area affected by the loop closure and the rest.
 
 [ ] Parameter optimization for lc:
     [ ] Possible params: max_dist, distance_traveled, lc fitness score, prereg fitness score, ..?
     [ ] Calculate time needed beforehand
+
+!!!!!!
+––––––––––––––
+[ ] Adaptive Maximum Correspondence Distance GICP
+[ ] Use not only model pointcloud itself, but get a more dense cloud by using the x previous and next clouds to form a bigger cloud.
+[ ] GTSAM: do not input the preregistered pose, but just the odometry into the graph, do a graph update every single time, update TSDF afterwards
+–––––––––––––––
+!!!!!!
 
 ## TODAY ##
 

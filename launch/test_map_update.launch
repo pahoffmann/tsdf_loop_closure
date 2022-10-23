@@ -1,0 +1,5 @@
+<launch>
+    <node name="test_map_update" type="test_map_update" pkg="loop_closure" output="screen" clear_params="true">
+        <rosparam command="load" file="$(find loop_closure)/params/test_map_update.yaml"/>
+    </node>
+</launch>

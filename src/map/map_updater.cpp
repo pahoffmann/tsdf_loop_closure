@@ -24,6 +24,7 @@ namespace Map_Updater
 
             auto transl_diff = (old_transl - new_transl).cwiseAbs();
             auto rotation_diff = get_rotation_diff(old_tf_mat, new_tf_mat) * (180 / M_PI); // rot diff in range [-180, 180]
+            auto rotation_diff_abs = rotation_diff.cwiseAbs(); // check the absolute rotation
 
             std::cout << "Got rotation difference: " << std::endl
                       << rotation_diff << std::endl;
@@ -33,7 +34,7 @@ namespace Map_Updater
             {
                 update_incidences[i] = true;
             }
-            else if (rotation_diff.x() > rotation_delta || rotation_diff.y() > rotation_delta || rotation_diff.z() > rotation_delta)
+            else if (rotation_diff_abs.x() > rotation_delta || rotation_diff_abs.y() > rotation_delta || rotation_diff_abs.z() > rotation_delta)
             {
                 update_incidences[i] = true;
             }

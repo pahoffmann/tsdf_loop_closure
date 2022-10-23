@@ -844,7 +844,7 @@ namespace ROSViewhelper
             {
                 points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::maroon));
             }
-            else
+            else //if(tsdf.value() >= 0 && tsdf.value() < 600)
             {
                 points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::green));
             }

@@ -292,6 +292,27 @@ void broadcast_robot_path(Path *path)
     }
 }
 
+void partial_update()
+{
+    // make sure, the data ist consistant
+    local_map_ptr->write_back();
+
+    // updateeee
+    Map_Updater::partial_map_update(path, optimized_path, 0.064, 2, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, tracer);
+
+    auto marker_data = global_map_ptr->get_full_data();
+    auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
+
+    tsdf_pub.publish(marker);
+
+    if (bond_ptr->isBroken())
+    {
+        std::cout << "Bond is broken, Node ist stopped..." << std::endl;
+        bond_ptr.reset();
+        exit(EXIT_SUCCESS);
+    }
+}
+
 /**
  * @brief callback if the bond from data publisher to the current node is broken
  *
@@ -818,6 +839,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     marker = ROSViewhelper::marker_from_gm_read(gm_data);
     // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
     tsdf_pub.publish(marker);
+    // partial_update();
 
     ready_flag_pub.publish(ready_msg);
 }

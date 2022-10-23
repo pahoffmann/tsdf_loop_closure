@@ -7,7 +7,7 @@ loop_closure:
   max_prereg_icp_fitness: 0.1 # in m²
   max_lc_icp_fitness: 0.40 # in m²
 
-  do_preregistration: false
+  do_preregistration: true
 
   prior_rotation_noise_x: 0.001
   prior_rotation_noise_y: 0.001
@@ -33,7 +33,7 @@ map:
   max_distance: 0.6
 
   # Size of one grid cell in the discretised map (in m per cell)
-  resolution: 128 #0.1 #0.03
+  resolution: 64 #0.1 #0.03
 
   # localmap size for every dimension (in m)
   size:

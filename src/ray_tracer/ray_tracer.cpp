@@ -216,7 +216,7 @@ void RayTracer::updateRaysNew(int mode)
           // we just skip here, cause this case is not interesting to us
           continue;
         }
-        else if (tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0)
+        else if (tsdf.value() < params.map.tau && tsdf.weight() > 0)
         {
           // now that the ray hit it's first positvely valued cell, we update it's status
           lines_finished[i] = RayStatus::HIT;
@@ -257,7 +257,7 @@ void RayTracer::updateRaysNew(int mode)
             tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
           }
         }
-        else if (!(tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0))
+        else if (!(tsdf.value() < params.map.tau && tsdf.weight() > 0))
         {
           // if we are currently in hit mode, but the ray suddenly hits a meaningless cell, the status is
           // set back to the init state, as we just passed through empty space, but not hit any kind of zero crossing doing it
@@ -542,7 +542,7 @@ void RayTracer::perform3DBresenham()
           lines_finished[i] = RayStatus::FINISHED;
           continue;
         }
-        else if (tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0)
+        else if (tsdf.value() < params.map.tau && tsdf.weight() > 0)
         {
           // now that the ray hit it's first positvely valued cell, we update it's status
           lines_finished[i] = RayStatus::HIT;
@@ -579,7 +579,7 @@ void RayTracer::perform3DBresenham()
           cur_association->addAssociation(bresenham_start, tsdf);
           tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
         }
-        else if (!(tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0))
+        else if (!(tsdf.value() < params.map.tau && tsdf.weight() > 0))
         {
           // if we are currently in hit mode, but the ray suddenly hits a meaningless cell, the status is
           // set back to the init state, as we just passed through empty space, but not hit any kind of zero crossing doing it
@@ -743,7 +743,7 @@ void RayTracer::local_removal(Pose *pose)
           // we just skip here, cause this case is not interesting to us
           continue;
         }
-        else if (tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0)
+        else if (tsdf.value() < params.map.tau && tsdf.weight() > 0)
         {
           // now that the ray hit it's first positvely valued cell, we update it's status
           lines_finished[i] = RayStatus::HIT;
@@ -774,7 +774,7 @@ void RayTracer::local_removal(Pose *pose)
           // now clear
           current_ray_associations[i].clear();
         }
-        else if (!(tsdf.value() < global_map_ptr_->get_attribute_data().get_tau() && tsdf.weight() > 0))
+        else if (!(tsdf.value() < params.map.tau && tsdf.weight() > 0))
         {
           // if we are currently in hit mode, but the ray suddenly hits a meaningless cell, the status is
           // set back to the init state, as we just passed through empty space, but not hit any kind of zero crossing doing it
