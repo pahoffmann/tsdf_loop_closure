@@ -8,45 +8,55 @@ Das SLAM Problem ist ein \textit{Henne-Ei-Problem}, da eine vollständige Karte 
 Für die Lösung dieses Problems gibt es sowohl in 2D als auch 3D verschiedene Lösungsansätze, die in Kapitel \ref{label:sdf} grob eruiert werden.
 Die in diesem Exposé vorgestellte Arbeit beschränkt sich auf 6D SLAM.
 Unter einem Schleifenschluss versteht man in der mobilen Robotik den Prozess, geschlossene Kreise in abgelaufen Pfaden durch die im SLAM-Prozess erschlossene, zunächst unbekannte Umgebung, zu identifizieren.
-Nach der Identifikation dieser Kreise können Fehler, die sich im Kartierungsprozess akkumuliert haben, nachträglich berichtigt werden. Dies sorgt für eine konsistenteren Pfad und damit verbunden für eine akkuratere Karte.
-Als Basis für dieses Problem dient der GraphSLAM Ansatz von Borrmann et al. \cite{borrmann2008globally}, die einen Pose-Graphen erstellen, in den aufeinanderfolgende Positionen während der Kartierung nacheinander eingefügt werden. Zur Registierung aufeinanderfolgender Datenscans verwenden Borrmann et al. den \textit{Pairwise Iterative Closest Point Algorithm} (Pairwise ICP). Zur Detektion eines Schleifenschlusses wird eine einfache Distanz-Heuristik verwendet.
-Wichtige Voraussetzung für die Optimierung der Posen im Graphen ist eine Assoziation der Posen mit den zugehörigen Umgebungsdaten. Im Falle von Borrmann et al. sind dies jeweils die zum Zeitpunkt aufgenommenen Punktwolken. Diese Assozation ist bei TSDF basiertem SLAM, das eine diskretisierte TSDF-Karte verwendet, nicht möglich, solange nicht zusätzlich die entsprechenden Punktdaten abgespeichert werden.
-Wird ein Schleifenschluss detektiert, müsste dann jedoch die gesamte Karte neu erstellt werden. Dies ist speicher- und zeitaufwändig.
-Dieses Problem markiert den Hauptbeitrag dieser Arbeit. Es gilt zu bestimmen, welcher Teil der TSDF Karte mit welcher Pose im Graph assoziiert werden kann, um anschließend die bereits existierende Karte zu modifizieren und zu optimieren.
+Nach der Identifikation dieser Schleifen können Fehler, die sich im Kartierungsprozess akkumuliert haben, nachträglich berichtigt werden. Dies sorgt für eine konsistenteren Pfad und damit verbunden für eine akkuratere Karte.
+Als Basis für dieses Problem dient der GraphSLAM Ansatz von Borrmann et al. \cite{borrmann2008globally}, die einen Pose-Graphen erstellen, in den aufeinanderfolgende Positionen während der Kartierung nacheinander eingefügt werden. Zur Registierung aufeinanderfolgender Datenscans verwenden Borrmann et al. \cite{borrmann2008globally} den \textit{Pairwise Iterative Closest Point Algorithm} (Pairwise ICP). Zur Detektion eines Schleifenschlusses wird eine einfache Distanz-Heuristik verwendet.
+Die Detektion von Schleifenschlüssen über eine euklidische Distanz-Heuristik findet sich ebenfalls in neuartigen SLAM-Verfahren, wie Lio-sam nach Shang et al. \cite{shan2020lio} wieder, welcher als eine zusätzliche Basis zur Identifikation von Schleifenschlüssen und der Optimierung der Trajektorie bildet.
+Wichtige Voraussetzung für die Optimierung der Posen im Graphen ist eine Assoziation der Posen mit den zugehörigen Umgebungsdaten. Im Falle von Borrmann et al. \cite{borrmann2008globally} sind dies jeweils die zum Zeitpunkt aufgenommenen Punktwolken. Diese Assozation ist bei TSDF basiertem SLAM, das eine diskretisierte TSDF-Karte verwendet, nicht möglich, solange nicht zusätzlich die entsprechenden Punktdaten abgespeichert werden.
+Wird ein Schleifenschluss detektiert, muss dann die gesamte Karte auf Basis der abgespeicherten Punktdaten neu erstellt werden. Dies ist speicher- und zeitaufwändig.
+Dieses Problem markiert den Hauptbeitrag dieser Arbeit. Es gilt zu untersuchen, welcher Teil der TSDF Karte mit welcher Pose im Graph assoziiert werden kann, um anschließend die bereits existierende Karte zu modifizieren und zu optimieren.
+Dieses Problem wird im Folgenden untersucht und verschiedene Herangehensweisen erden eruiert.
+
 
 \section{Motivation}
 
 Ziel und Zweck dieser Arbeit ist die Lösung des Schleifenschluss Problems für TSDF basierte SLAM Verfahren.
 Als Basis dient der Ansatz von Eislodt et al. \cite{HATSDF}, der - obgleich performant und funktional - wie die meisten SLAM Verfahren bei der Kartierung großer Umgebungen stark anfällig für Drift ist. Um diesem Problem entgegen zu wirken, soll durch die Integration von Schleifenschlüssen in TSDF-Karten die Kartierung größerer Umgebungen ermöglicht werden.
-Um dieses Ziel zu erreichen, gilt es Datenassoziationen zwischen Posen und Zellen in der diskretisierten TSDF Karte herzustellen.
-In einer ersten Implementation soll dazu mittels Ray-Tracing eines simulierten Laserscans und der Detektion von Schnittpunkten mit der TSDF-Karte eine passende Indizierung der Zellen ermöglicht werden.
+Um dieses Ziel zu erreichen, soll in einem ersten Ansatz untersucht werden, ob eine bereits generierte Karte mit bekannter Posehistorie durch die Integration von Schleifenschlüssen zur Optimierung der Trajektorie verbessert werden kann.
+Es gilt zu untersuchen welche Voraussetzungen für eine solche Optimierung gegeben sein müssen und ob diese Voraussetzungen in diesem ersten Szenario erfüllt werden können.
+Auf Basis dieser Untersuchung soll eine Einschätzung zur Nutzung von Schleifenschlüssen in einem TSDF basierten SLAM Ansatz als Nachbehandlungs-/Post-Processing-Schritt geben werden.
+Diese Einschätzung markiert einen wesentlichen Meilenstein dieser Arbeit, bei dem entschieden wird das beschriebene Szenario weiter zu verfolgen, oder eine Integration in einen SLAM Ansatz anzustreben und zur Laufzeit Optimierungen an der Trajektorie und Karte basierend auf identifizierten Schleifenschlüssen vorzunehmen.
 
-Diese Arbeit soll als Proof-of-concept für weitere Arbeiten auf diesem Gebiet dienen. Dazu werden die entwickelten Ansätze in einem Post-Processing Schritt auf die vom Eisoldt et al. \cite{HATSDF} erstellte Karte, so wie den Pfad, den es noch zu extrahieren gilt, angewandt.
+Grundlegende Voraussetzung für die Optimierung von Pfad und Karte ist eine Assoziation zwischen den einzelnen Posen des Pfades mit den jeweiligen zugehörigen Umgebungsdaten.
+Erstes Ziel des genannten ersten Szenarios ist dementsprechend die Ermittlung von Datenassoziationen zwischen den Posen und den zugehörigen Teilen der diskretisierten TSDF-Karte.
+Diese Assoziationen dienen als Ersatz zu den von von Borrmann et al. \cite{borrmann2008globally} und Shang et al. \cite{shan2020lio} genutzten vorgefilterten Punktwolken beziehungsweise \textbf{Key-Frames}, die mit den zugehörigen Posen assoziiert werden.
+In einer ersten Implementation soll dazu mittels Ray-Tracing eines simulierten Laserscans und der Detektion von Schnittpunkten mit der TSDF-Karte eine passende Indizierung und Zuordnung der Zellen ermöglicht werden.
+Kapitel \ref{chapter:datenassozationen} erörtert und evaluiert diesen Ansatz, beschreibt mögliche Probleme und Fallstricke und definiert, wie im weiteren Verlauf der Arbeit vorgegangen wird.
 
-
+Diese Arbeit soll als Proof-of-concept für weitere Arbeiten auf diesem Gebiet dienen und Herausforderungen und Fallstricke aufzeigen. Es soll geklärt werden wie und auf welche Weise Schleifenschlüsse in einen TSDF basierten SLAM-Ansatz integriert werden können, ob eine Nachbehandlung möglich ist, sowie ob und wie ein partielles Update der Karte möglich ist.
 In einem Ausblick gilt es zu analysieren, ob die Implementationen sinnvoll beschleunigt werden können, um sie in ein Live Karierungssystem, wie HATSDF-Slam einbauen zu können, um zur Laufzeit Schleifen zu erkennen und die Karte zu optimieren.
-
 Die Implementation dieses Prototyps wird ausschließlich in Software realisiert, allerdings erfolgt eine Untersuchung des Software-Prototyps auf Potenziale zur Hardware-Beschleunigung um Raum für Optimierungen im Rahmen zukünftiger Arbeiten zu eröffnen.
 
-TODO: Update der Motivation? 
-Untersuchung, ob das Loop Closing als Post-Processing angewandt werden kann, gegebenenfalls Integration in inkrementellen SLAM
-Möglichkeit schaffen mit beliebigen SLAM Verfahren koexistieren zu können (LC)
-Schaffen einer API?
-Untersuchen welche Art des Kartenupdates sinnvoll ist und welches nicht
-Untersuchen, ob der Aufwand die Karte im Teil zu updaten gerechtfertigt ist, Untersuchung von Fallstricken
+Nachfolgende Sektion nimmt erneut Bezug auf den gegebenen Ansatz, stellt die Offenheit des Themas heraus und definiert mögliche Fallbacks zum Post-Processing Szenario auf Basis der ermittelten Datenassoziationen.
 
-\section{Ansatz}
+\section{Herangehensweise}
+\label{section:herangehensweise}
 
-Beschreiben, wie der initiale Aufbau dieser Arbeit ist:
+Wie bereits in der vorigen Sektion definiert, ist das genaue Ziel dieser Arbeit offen, da die Ermittlung von Datenassoziationen aus einer generierten TSDF Map, um diese für Schleifenschlüsse zu verwenden, ein rein experimenteller Ansatz ist.
+Hier gilt es herauszustellen ob dieser Ansatz erfolgreich ist oder - im anderen Fall - Hürden und Probleme aufzuzeigen, sowie mögliche Lösungsansätze für zukünftige Arbeiten zu skizzieren, die nicht in den Zeitrahmen dieser Arbeit passen.
+Das grundlegende Ziel der Integration von Schleifenschlüssen allerdings bleibt.
 
-1. Herangehensweise, wie soll das Problem gelöst werden?
-2. Offenheit des Themas klar herausstellen
-3. Mögliche Fallback's aufzeigen, falls sich herausstellt, dass das Thema so in der Bearbeitungszeit nicht möglich ist
-4. Deutlich machen, dass die erste Herangehensweise dokumentiert wird
-5. Erklären, dass Fallstricke und Probleme erläutert werden
-6. Lösungsansätze für zukünftige Arbeiten definieren
-7. Kenntlich machen, warum das Problem "inkrementelles Map Update" nicht in der Zeit lösbar gewesen wäre
+Zunächst werden in Kapitel \ref{chapter:datenassoziation} Lösungsansätze dokumentiert, mit deren Hilfe Datenassozationen zwischen der TSDF-Karte und der Posehistorie generiert werden können. Dies wird evaluiert und die weitere Vorgehensweise disktuiert.
 
-\section{Fallback}
+Folgende Untersektion definiert mögliche Fallbacks zur Generation von Datenassoziationen aus der TSDF Karte und alternative Möglichkeiten zum (partiellen) Update der TSDF Karte.
+
+\subsection{Fallback}
+\label{section:fallback}
+
+Sollte sich im Laufe dieser Arbeit herausstellen, dass die Generation von Datenassozationen und das Update der TSDF Karte auf Basis dieser Assoziationen entweder nicht möglich ist oder Lösungsansätze nicht mit dem zeitlichen Rahmen dieser Arbeit vereinbar sind, sollen alternative Möglichkeiten zum Update der Karte definiert und entwickelt werden.
+
+Zunächst wird dabei ein globales Update der gesamten TSDF Karte auf Basis der zu den Posen gehörigen Punktwolken angestrebt.
+Dieses soll zusätzlich um ein partielles Update der betroffenen Kartenbereiche erweitert werden.
+
+In diesem Fall wird in einem Ausblick zusätzlich Bezug zu zukünftigen Arbeiten und Lösungsmöglichkeiten für die Generation und Nutzung von TSDF-Pose-Datenassoziationen genommen werden.
 
 

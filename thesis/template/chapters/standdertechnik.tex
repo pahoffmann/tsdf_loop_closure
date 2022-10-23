@@ -1,52 +1,33 @@
-\chapter{Stand der Forschung}\label{label:sdf}
-
+\chapter{Stand der Forschung}\label{chapter:sdf}
 
 
 \textit{Simulataneous Localization and Mapping (SLAM)} ist eines der größten Forschungsgebiete in der mobilen Robotik.
 Die Forschungen zu diesem Problem reichen zurück bis vor die Jahrtausendwende.
-Einer der bekanntesten Lösungen zur Registierung dreidimensionaler Daten ist der ICP Algorithmus nach Besl \& McKay \cite{besl1992method}, der in einer Abwandlung ebenfalls von Borrmann et al. im GraphSLAM \cite{borrmann2008globally} verwendet wird.
-Bis heute gibt es zahlreiche Implementationen dieses Algorithmus.
+Hauptbestandteil vieler SLAM Ansätze sind 3D Punktwolken als Repräsentation der Umgebung, die mit Sensoren wie Laserscannern und Tiefenbildkameras aufgenommen werden können.
+Dabei werden von verschiedenen Positionen im dreidmensionalen Ort \textbf{(Posen)} Punktwolken aufgnommen. Um diese Punktwolken nahtlos aneinander anknüpfen zu können, müssen diese miteinander \textbf{registriert} werden. Die Registrierung bestimmt die 3D Transformation \ref{section:transformationen} zwischen zwei Punktwolken, wobei die \textbf{Scan-Punktwolke} an die \textbf{Model-Punktwolke} registriert wird.
+Einer der bekanntesten Lösungen zur Registierung dreidimensionaler Punktdaten ist der \textbf{Iterative Closest Points (ICP)} Algorithmus nach Besl \& McKay \cite{besl1992method}, der in einer Abwandlung ebenfalls von Borrmann et al. im GraphSLAM \cite{borrmann2008globally} verwendet wird.
+Besl \& McKay \cite{besl1992method} bestimmen die gesuchte 3D Transformation zwischen zwei Punktwolken durch eine Minimierung der Summe der quadrierten Distannzen der nächsten Punkte zwischen den beiden Punktwolken durch eine \textbf{Singular Value Decomposition (SVD)}
+Die Konvergenz des ICP Algorithmus ist stark gekoppelt an die initiale Schätzung zwischen den beiden Laserscans. Ist diese nicht gut gewählt, konvergiert ICP häufig in lokale Minima, was zu ungewünschten Ergebnissen führt \cite{he2017iterative}. 
+Bis heute gibt es zahlreiche Varitationen und Verbesserungen des ICP Algorithmus.
+Chen \& Medioni \cite{chen1992object} erweitern ICP durch die Nutzung von Oberflächen-Normalen des Models und erweitern so die Kostenfunktion von ICP. Sie minimiert nun die Summe der quadrierten Distanzen zwischen einem Scanpunkt und der durch den Modelpunkt und die Oberflächennormale am Modelpunkt beschriebenen Ebene. Dieser Algorithmus wird auch \textbf{Normal ICP (NICP)} genannt. 
+Nach \cite{he2017iterative} reduziert NICP die Anzahl Iterationen und konvergiert schneller  gegen eine gewisse Grenze als ICP.
+Segal et al. \cite{segal2009generalized} erweitern die Ideen aus \cite{chen1992object} um eine \textbf{Plane-to-Plane} Metrik.
+Neben genannten Methoden existieren zahlreiche weitere Variationen von ICP, die jeweils kleine Anpassungen vornehmen wie Chetverikov et al. \cite{chetverikov2005robust}, die einen \textbf{Least Trimmed Squares} Ansatz zur Fehlerminimierung verwenden und so auch für Punktwolken anwendbar ist, die sich weniger als 50\% überlappen.
 
 Erste Forschungen mit TSDF basiertem SLAM stammen aus dem letzten Jahrzehnt.
 Izadi et al. \cite{izadi2011kinectfusion} nutzen ein TSDF-Voxelgrid und eine Kinect-Tiefenkamera, um Umbegungen zu kartieren, während ein Nutzer die Kinect Kamera durch die Umbebung schwenkt.
 Whelan et al. \cite{whelan2012kintinuous} optimieren diesen Ansatz durch Nutzung eines Ringbuffers zur Kartierung großer Umgebungen.
-Im Gegensatz zu genannten TSDF Verfahren, nutzen Eisoldt et al. \cite{HATSDF} einen Hardware beschleunigten TSDF basierten SLAM Ansatz, sowie einen 3D-Laserscanner anstelle einer Tiefenkamera.
+Im Gegensatz zu genannten TSDF Verfahren, nutzen Eisoldt et al. \cite{HATSDF} einen Hardware beschleunigten TSDF basierten SLAM Ansatz, sowie einen 3D-Laserscanner anstelle einer Tiefenkamera. Eisoldt et. al \cite{HATSDF} nutzen zur Registierung neuer Punktwolken an die TSDF Karte einen \textbf{Point-to-TSDF} Ansatz, der die Distanzen von Punkten zur durch die TSDF implizit beschriebenen Oberfläche entlang des Gradienten innerhalb der TSDF minimiert.
 
-Borrmann et al. \citep{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird.
+Borrmann et al. \cite{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird.
+Darauf aufbauend optimieren Sprickerhof et al. \cite{sprickerhof2011heuristic} den Schleifenschluss-Ansatz durch Nutzung einer heuristischen Schleifenschluss-Technik, die im Gegensatz zu bisherigen Methoden einen dünn besetzten SLAM-Graphen nutzen.
+McCormac et al. \cite{mccormac2018fusion++} schlagen ein Online-SLAM System, welches eine dauerhafte und genaue 3D Karte beliebiger rekonstruierter Objekte darstellt \cite{mccormac2018fusion++}. Die Rekonstruktionen sind als TSDF realisiert. \cite{mccormac2018fusion++} schlägt ebenfalls eine Integration von Schleifenschlüssen vor, diese verändert allerdings lediglich die relativen Poseschätzungen, aber führt zu keiner Verformung der durch die TSDF beschriebenen Objekte. An dieser Stelle wird also kein Update der TSDF durch Schleifenschlüsse vorgenommen.
+Prisacariu et al. \cite{prisacariu2017infinitam} unterteilen den 3D-Raum in starre TSDF-Teilkarten und optimieren die relativen Positionen zwischen diesen. Nach \cite{prisacariu2017infinitam} ist eine anschließende Generation der globalen Karte durch ein Zusammenführen der Teilkarten möglich. \cite{prisacariu2017infinitam} verwendet für jede Pose des Graphen eine eigene Teilkarte, die in sich konsistent ist. \cite{prisacariu2017infinitam} erreichen eine globale Konsistenz durch eine Graph-Optimierung, die zusätzlich Schleifenschlüsse berücksichtigt. Optimiert werden die zu den Teilkarten zugehörigen Posen. Die TSDF-Teilkarten selbst werden durch die Graph-Optimierung nicht angepasst.
+Ähnlich wie \cite{borrmann2008globally} nutzen Shan et al. \cite{shan2020lio} in ihrem Feature basierten SLAM Ansatz die euklidische Distanz zur Bestimmung von Kandidaten für Schleifenschlüsse, die durch eine Evaluation des \textbf{Fitness-Scores} von ICP nach Registrierung der zugehörigen Punktwolken der beiden Posen der jeweiligen Kandidaten verifiziert werden.
 
-\improvement{Insert more tsdf based approaches from \cite{werner2014truncated}}
-
-Ziel und Zweck dieser Arbeit ist die Lösung des Schleifenschluss Problems für TSDF basierte SLAM Verfahren.
-Als Basis dient der Ansatz von Eislodt et al. \cite{HATSDF}, der - obgleich performant und funktional - wie die meisten SLAM Verfahren bei der Kartierung großer Umgebungen stark anfällig für Drift ist. Um diesem Problem entgegen zu wirken, soll durch die Integration von Schleifenschlüssen in TSDF-Karten die Kartierung größerer Umgebungen ermöglicht werden.
-Um dieses Ziel zu erreichen, gilt es Datenassoziationen zwischen Posen und Zellen in der diskretisierten TSDF Karte herzustellen.
-In einer ersten Implementation soll dazu mittels Ray-Tracing eines simulierten Laserscans und der Detektion von Schnittpunkten mit der TSDF-Karte eine passende Indizierung der Zellen ermöglicht werden.
-
-Diese Arbeit soll als Proof-of-concept für weitere Arbeiten auf diesem Gebiet dienen. Dazu werden die entwickelten Ansätze in einem Post-Processing Schritt auf die vom Eisoldt et al. \cite{HATSDF} erstellte Karte, so wie den Pfad, den es noch zu extrahieren gilt, angewandt.
+An dieser Stelle setzt diese Arbeit nun an und integriert auf Basis der zuvor genannten Ansätze, Schleifenschlüsse in einen TSDF basierten SLAM Ansatz zu integrieren und die TSDF Karte entsprechend der Änderungen anzupassen.
 
 
-In einem Ausblick gilt es zu analysieren, ob die Implementationen sinnvoll beschleunigt werden können, um sie in ein Live Karierungssystem, wie HATSDF-Slam einbauen zu können, um zur Laufzeit Schleifen zu erkennen und die Karte zu optimieren.
 
-Die Implementation dieses Prototyps wird ausschließlich in Software realisiert, allerdings erfolgt eine Untersuchung des Software-Prototyps auf Potenziale zur Hardware-Beschleunigung um Raum für Optimierungen im Rahmen zukünftiger Arbeiten zu eröffnen.
-
-TODO: Update der Motivation? 
-Untersuchung, ob das Loop Closing als Post-Processing angewandt werden kann, gegebenenfalls Integration in inkrementellen SLAM
-Möglichkeit schaffen mit beliebigen SLAM Verfahren koexistieren zu können (LC)
-Schaffen einer API?
-Untersuchen welche Art des Kartenupdates sinnvoll ist und welches nicht
-Untersuchen, ob der Aufwand die Karte im Teil zu updaten gerechtfertigt ist, Untersuchung von Fallstricken
-
-\section{Ansatz}
-
-Beschreiben, wie der initiale Aufbau dieser Arbeit ist:
-
-1. Herangehensweise, wie soll das Problem gelöst werden?
-2. Offenheit des Themas klar herausstellen
-3. Mögliche Fallback's aufzeigen, falls sich herausstellt, dass das Thema so in der Bearbeitungszeit nicht möglich ist
-4. Deutlich machen, dass die erste Herangehensweise dokumentiert wird
-5. Erklären, dass Fallstricke und Probleme erläutert werden
-6. Lösungsansätze für zukünftige Arbeiten definieren
-7. Kenntlich machen, warum das Problem "inkrementelles Map Update" nicht in der Zeit lösbar gewesen wäre
-
-\section{Fallback}
 
 

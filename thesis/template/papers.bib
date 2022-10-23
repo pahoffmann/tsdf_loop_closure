@@ -5,16 +5,6 @@
 	year = {1987}
 }
 
-@article{Besl:1992,
-  author    = "P. Besl and N. McKay",
-  title     = "{A Method for Registration of 3-D Shapes}",
-  journal   = "IEEE Transactions on Pattern Analysis and Machine Intelligence",
-  month     = Feb,
-  year      = "1992",
-  volume    = "14",
-  number    = "2",
-  pages     = "239--256"
-}
 
 @inproceedings{Thrun:2000,
   author    = "S. Thrun and D. Fox and W. Burgard",
@@ -32,15 +22,6 @@
   note = {\url{http://www.robocup.org}},
 }
 
-@INPROCEEDINGS{HATSDF,  
-author={Eisoldt, Marc and Flottmann, Marcel and Gaal, Julian and Buschermöhle, Pascal and Hinderink, Steffen and Hillmann, Malte and Nitschmann, Adrian and Hoffmann, Patrick and Wiemann, Thomas and Porrmann, Mario},  
-booktitle={2021 European Conference on Mobile Robots (ECMR)},   title={HATSDF SLAM – Hardware-accelerated TSDF SLAM for Reconfigurable SoCs},   
-year={2021},  
-volume={},  
-number={},  
-pages={1-7},  
-doi={10.1109/ECMR50962.2021.9568815
-}}
 
 @article{borrmann2008globally,
   title={Globally consistent 3D mapping with scan matching},
@@ -98,16 +79,7 @@ doi={10.1109/ECMR50962.2021.9568815
   year={2012}
 }
 
-@inproceedings{segal2009generalized,
-  title={Generalized-icp.},
-  author={Segal, Aleksandr and Haehnel, Dirk and Thrun, Sebastian},
-  booktitle={Robotics: science and systems},
-  volume={2},
-  number={4},
-  pages={435},
-  year={2009},
-  organization={Seattle, WA}
-}
+
 
 @inproceedings{werner2014truncated,
   title={Truncated signed distance function: experiments on voxel size},
@@ -127,6 +99,117 @@ doi={10.1109/ECMR50962.2021.9568815
   year={2013}
 }
 
+% SLAM Variations %
+
+% ICP %
+@article{Besl:1992,
+  author    = "P. Besl and N. McKay",
+  title     = "{A Method for Registration of 3-D Shapes}",
+  journal   = "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+  month     = Feb,
+  year      = "1992",
+  volume    = "14",
+  number    = "2",
+  pages     = "239--256"
+}
+
+% about icp
+@article{he2017iterative,
+  title={An iterative closest points algorithm for registration of 3D laser scanner point clouds with geometric features},
+  author={He, Ying and Liang, Bin and Yang, Jun and Li, Shunzhi and He, Jin},
+  journal={Sensors},
+  volume={17},
+  number={8},
+  pages={1862},
+  year={2017},
+  publisher={MDPI}
+}
+
+% normal icp %
+@article{chen1992object,
+  title={Object modelling by registration of multiple range images},
+  author={Chen, Yang and Medioni, G{\'e}rard},
+  journal={Image and vision computing},
+  volume={10},
+  number={3},
+  pages={145--155},
+  year={1992},
+  publisher={Elsevier}
+}
+
+
+
+% Trimmed icp %
+@article{chetverikov2005robust,
+  title={Robust Euclidean alignment of 3D point sets: the trimmed iterative closest point algorithm},
+  author={Chetverikov, Dmitry and Stepanov, Dmitry and Krsek, Pavel},
+  journal={Image and vision computing},
+  volume={23},
+  number={3},
+  pages={299--309},
+  year={2005},
+  publisher={Elsevier}
+}
+
+% GICP %
+@inproceedings{segal2009generalized,
+  title={Generalized-icp.},
+  author={Segal, Aleksandr and Haehnel, Dirk and Thrun, Sebastian},
+  booktitle={Robotics: science and systems},
+  volume={2},
+  number={4},
+  pages={435},
+  year={2009},
+  organization={Seattle, WA}
+}
+
+% ICP registration using invariant features
+@ARTICLE{icpinvariantfeatures,
+  author={Sharp, G.C. and Lee, S.W. and Wehe, D.K.},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
+  title={ICP registration using invariant features}, 
+  year={2002},
+  volume={24},
+  number={1},
+  pages={90-102},
+  doi={10.1109/34.982886}
+  }
+
+
+% Lio-sam %
+@inproceedings{shan2020lio,
+  title={Lio-sam: Tightly-coupled lidar inertial odometry via smoothing and mapping},
+  author={Shan, Tixiao and Englot, Brendan and Meyers, Drew and Wang, Wei and Ratti, Carlo and Rus, Daniela},
+  booktitle={2020 IEEE/RSJ international conference on intelligent robots and systems (IROS)},
+  pages={5135--5142},
+  year={2020},
+  organization={IEEE}
+}
+
+% Hatsdf slam %
+@INPROCEEDINGS{HATSDF,  
+author={Eisoldt, Marc and Flottmann, Marcel and Gaal, Julian and Buschermöhle, Pascal and Hinderink, Steffen and Hillmann, Malte and Nitschmann, Adrian and Hoffmann, Patrick and Wiemann, Thomas and Porrmann, Mario},  
+booktitle={2021 European Conference on Mobile Robots (ECMR)},   title={HATSDF SLAM – Hardware-accelerated TSDF SLAM for Reconfigurable SoCs},   
+year={2021},  
+volume={},  
+number={},  
+pages={1-7},  
+doi={10.1109/ECMR50962.2021.9568815
+}}
+
+% TSDF Stuff %
+@inproceedings{newcombe2011kinectfusion,
+  title={Kinectfusion: Real-time dense surface mapping and tracking},
+  author={Newcombe, Richard A and Izadi, Shahram and Hilliges, Otmar and Molyneaux, David and Kim, David and Davison, Andrew J and Kohi, Pushmeet and Shotton, Jamie and Hodges, Steve and Fitzgibbon, Andrew},
+  booktitle={2011 10th IEEE international symposium on mixed and augmented reality},
+  pages={127--136},
+  year={2011},
+  organization={Ieee}
+}
+
+
+
+
 
 % LOOP CLOSURE PAPERS %
 @article{sprickerhof2011heuristic,
@@ -139,6 +222,32 @@ doi={10.1109/ECMR50962.2021.9568815
   year={2011},
   publisher={Taylor \& Francis}
 }
+
+% objektbasiert, kein tsdf update, zusammenführung von tsdf zu globaler Karte
+@inproceedings{mccormac2018fusion++,
+  title={Fusion++: Volumetric object-level slam},
+  author={McCormac, John and Clark, Ronald and Bloesch, Michael and Davison, Andrew and Leutenegger, Stefan},
+  booktitle={2018 international conference on 3D vision (3DV)},
+  pages={32--41},
+  year={2018},
+  organization={IEEE}
+}
+
+% globally consistant tsdf slam
+% benutzt Teilkarten mit unterliegendem Graph-Slam "globale" karte existiert nicht, kann 
+% aber aus Teilkarten zusammengesetzt werden
+% globale Karte kann durch Zusammenfügen der Teilkarte und Mittelung der TSDF Werte generiert werden
+@article{prisacariu2017infinitam,
+  title={Infinitam v3: A framework for large-scale 3d reconstruction with loop closure},
+  author={Prisacariu, Victor Adrian and K{\"a}hler, Olaf and Golodetz, Stuart and Sapienza, Michael and Cavallari, Tommaso and Torr, Philip HS and Murray, David W},
+  journal={arXiv preprint arXiv:1708.00783},
+  year={2017}
+}
+
+
+
+
+
 
 
 

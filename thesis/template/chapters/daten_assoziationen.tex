@@ -1,0 +1,69 @@
+\chapter{Datenassoziationen}\label{chapter:association}
+
+Wie in der Einleitung beschrieben, soll in einem ersten Ansatz analysiert werden, ob eine TSDF Karte mit gegebenem initialen Pfad durch die Optimierung des initalen Pfades mittels Schleifenschlüssen verbessert werden kann. Die Grundlage für die Optimierung der Karte ist zu identifizieren, welcher Teil der Karte bei einer Veränderung der Trajektorie mit transformiert werden muss. Dies Kapitel befasst sich mit der Generation von Datenassoziationen zwischen den Posen des Pfades und der TSDF-Karte.
+
+\section{Ansatz}
+
+Wie bereits in Kapitel \ref{section:tsdf} beschrieben, wird die TSDF Karte in \cite{HATSDF} inkrementell erweitert, sobald eine definierte minimale Distanz zurückgelegt wurde. Dabei werden nicht nur neue Zellen beschrieben, sondern auch die Werte bereits beschriebener Zellen gewichtet verändert. Dementsprechend kann die Information in einer Zelle eine Akkumulation beliebig vieler Updates sein, also beliebig vielen Posen zugeordnet werden. Diese Information gilt es zu berücksichtigen, wenn auf Basis einer gegebenen TSDF Karte Datenassoziationen identifiziert werden sollen.
+Eine Möglichkeit der Generation dieser Assoziation wäre eine \textbf{1:1} Beziehung zwischen den Zellen und Posen aufzubauen. Dann würde eine Zelle maximal einer Pose zugeordnet werden. Da bereits bekannt ist, dass eine Zelle von mehreren Posen angepasst werden kann, ist diese Art der Beziehung zwischen Posen und TSDF-Zellen allerdings von einem großen Informationsverlust geprägt. Die Alternative zur \textbf{1:1} Beziehung ist eine \textbf{1:N} Beziehung zwischen einer Zelle und $N$ Posen. Diese Beziehung ist aufgrund der genannten Eigenschaften des TSDF-Karten Updates der \textbf{1:1} Beziehung zu bevorzugen.
+
+Die Informationen darüber, welche Position welche TSDF Zelle beschrieben lässt sich allerdings nicht ohne Weiteres aus der TSDF Karte herauslesen.
+Um dies zu ermöglichen könnte \cite{HATSDF} um die Funktion erweitert werden an jeder Zelle zusätzlich ein Array zu speichern, in dem die Posen enthalten sind, die die betroffene Zelle modifiziert haben. Dieses Array muss in einem eigenen Datenset gespeichert sein, da die Anzahl Posen, die auf diese Weise einer Zelle zugeordnet werden können, dynamisch ist. Das bedeutet, dass für jede einzelne TSDF Zelle ein eigenes Datenset gespeichert werden muss, in dem die zugehörigen Posen enthalten sind. Je nach Auflösung der diskretisierten Karte müssten nach diesem Ansatz mehrere Millionen separate Datensets gespeichert werden. Ein solches Vorgehen erfordert nicht nur viel Speicher, sondern ist auch aus hierarchischer Betrachtungsweise keine sinnvolle Herangehensweise.
+\improvement{TODO: anhand mehrerer Datensätze Assozationen bilden und schauen, von wie vielen Posen eine Zelle im Durchschnitt angepasst wurde und hochrechnen, was das für den Speicher bedeutet}
+%Eine andere Möglichkeit wäre \cite{HATSDF} so zu erweitern, dass für jede Pose $P_t$ die Koordinaten der TSDF Zellen gespeichert werden, die im Zeitschritt beziehunsweise Inkrement $t$ angepasst wurden.
+Eine Möglichkeit, die gewünschten Daten auf Basis einer gegebenen TSDF Karte zu generieren ist diese über die Methode, mit der die Daten generiert wurden, zu regenerieren. In \cite{HATSDF} wird die TSDF-Karte über ein \textbf{Ray-Marching} generiert. Eine alternative zum Ray-Marching stellt der Bresenham Algorithmus dar, der die Diskretisierung der Karte ausnutzt.
+Beide Varianten werden im Folgenden beschrieben, evaluiert und miteinander verglichen.
+
+Zunächst beschreibt die folgende Sektion die Speicherung der Datenassoziation in der HDF5-Datenstruktur.
+
+\section{Serialisierung}
+
+Beschreibung der HDF5 Struktur der Karte (ggf. schon in Einleitung), Beschreibung wie Assoziationen abgespeichert werden und geladen werden können, Bezug zu HighFive Bibliothek mit Referenz.
+
+\section{RayTracing}
+
+Laserscanner emulieren: von den entsprechenden Posen aus werden künstliche Laserscans emuliert, die in Auflösung, Öffnungswinkeln mit dem verwendeten Laserscanner übereinstimmen
+Implementation, die in der Lage ist, zu bestimmen wann eine TSDF Zelle getroffen wurde und wann eine Datenassozation erstellt wird.
+Beschreibung von RayTrace States und Bedinungen für einen Wechsel der States, Beschreibung von Türen, Beschreibung von Problem wie Verdeckung durch Diskretisierung
+
+Beschreibung von Fallstricken: Nicht getroffene Zellen, Information loss
+
+\section{Bresenham}
+
+alternative Möglichkeit zur Identifikation von Assoziationen
+gut nutzbar, da eine diskrete Karte vorliegt
+Beschleunigung gegenüber RayTracing in reiner Software Variante erklären
+Algorithmus erklären
+Varianten der Bestimmung von start/endzelle bestimmen: Schnittpunkt zwischen Ray und lokaler Karte, über vektor und abfrage
+
+
+\section{Loop Closure}
+
+Problem Loop Closure als Post-Processing Schritt ohne passende Punktwolke erklären:
+einzige Repräsentation der Umgebung ist Karte
+scan-matching erfordert Punktdaten, Möglichkeit: Approximation von punktwolken, funktioniert auch sehr gut (Beispielbild), aber: Punktwolken einer falsch generierten Karte aufeinander matchen ergibt nicht besonders viel sinn.
+
+\section{Kartenupdate}
+
+Beschreibung des Updates des ersten Ansatzes:
+Beschreibung der drei Stufen und wie diese ermittelt wurden.
+Beschreibung Hindernisse und Lösungen (Hashmaps)
+Bezug zu Performanz der Hashmaps für diesen Fall (string, int, Vector3i)
+-> kleines Benchmark
+
+Beschreibung von Problemen:
+Anschaulich erklären, wo es zu Problemen kommen kann (wenn benachbarte Zellen von unterschiedlichen Anzahl Posen "gesehen" wurden)
+
+\section{Transformationen}
+
+Zum Test der ermittelten wurden auf den gegeben Pfad diverse Transformationen, wie das Verwischen \textbf{(Blur)} des Pfades, die Transformation oder Rotation des Pfades beziehungsweise eine Kombination mehrere Transformationen angewandt und auf Basis der Posedifferenzen ein Kartenupdate durchgeführt. Dies führte ebenfalls zu mehreren Problemen, insbesondere bei Rotationen.
+Bilder für Translation, Blur, Rotation, Information loss (nicht getroffene Zellen) herausstellen, definieren wie dieser Information loss zustande kommt
+
+\section{Evaluation}
+
+Auf basis der vorigen sektionen erläutern, welche probleme es gibt, welche möglichen lösungsansätze es gibt und erklären, warum diese nicht weiter verfolgt wurden,
+Überleitung in nächstes Kapitel (Loop Closures)
+-> überlegen ob als nächstes kapiteö gegebenfalls das Kapitel über das map-update folgen sollte, damit die Überleitung sinnvoller ist
+
+
+

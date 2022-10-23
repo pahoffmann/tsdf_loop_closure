@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  13 OCT 2022 17:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  22 OCT 2022 18:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1263,7 +1263,7 @@ Package microtype Info: No adjustment of character kerning.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-<base/unilogo.pdf, id=147, 597.23125pt x 845.1575pt>
+<base/unilogo.pdf, id=151, 597.23125pt x 845.1575pt>
 File: base/unilogo.pdf Graphic file (type pdf)
 <use base/unilogo.pdf>
 Package pdftex.def Info: base/unilogo.pdf  used on input line 93.
@@ -1327,128 +1327,161 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 
  [6] (./chapters/einleitung.tex
 Kapitel 1.
+
+LaTeX Warning: Reference `label:sdf' on page 1 undefined on input line 8.
+
 [1
 
 
 ]
-Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
-ine 32.
- [2]) (./chapters/libraries.tex [3] [4
+
+LaTeX Warning: Reference `chapter:datenassozationen' on page 2 undefined on inp
+ut line 33.
+
+[2]
+
+LaTeX Warning: Reference `chapter:datenassoziation' on page 3 undefined on inpu
+t line 48.
+
+
+Overfull \hbox (32.47273pt too wide) in paragraph at lines 60--61
+[]\OT1/lmr/m/n/10.95 (-20) In die-sem Fall wird in ei-nem Aus-blick zus[]atzlic
+h Be-zug zu zuk[]unftigen Ar-bei-ten und L[]osungsm[]oglichkeiten
+ []
+
+) (./chapters/standdertechnik.tex [3] [4
 
 ]
 Kapitel 2.
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 8
-.
-(/usr/share/texmf/tex/latex/lm/ts1lmr.fd
-File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)) (./chapters/grundlagen.tex [5]
-[6
-
-]
+[5]) (./chapters/grundlagen.tex [6]
 Kapitel 3.
-<pics/ros_coordinate_sys.png, id=264, 606.265pt x 465.74pt>
+Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
+ine 9.
+<pics/ros_coordinate_sys.png, id=294, 606.265pt x 465.74pt>
 File: pics/ros_coordinate_sys.png Graphic file (type png)
 <use pics/ros_coordinate_sys.png>
-Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 26.
+Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 35.
 (pdftex.def)             Requested size: 212.19592pt x 163.01143pt.
-[7]
-<pics/robot_tf.png, id=275, 909.3975pt x 788.9475pt>
+[7
+
+]
+<pics/robot_tf.png, id=308, 909.3975pt x 788.9475pt>
 File: pics/robot_tf.png Graphic file (type png)
 <use pics/robot_tf.png>
-Package pdftex.def Info: pics/robot_tf.png  used on input line 47.
+Package pdftex.def Info: pics/robot_tf.png  used on input line 56.
 (pdftex.def)             Requested size: 318.2939pt x 276.13576pt.
  [8 <./pics/ros_coordinate_sys.png>] [9 <./pics/robot_tf.png>]
-<pics/transformation.png, id=296, 1726.45pt x 562.1pt>
+<pics/transformation.png, id=332, 1726.45pt x 562.1pt>
 File: pics/transformation.png Graphic file (type png)
 <use pics/transformation.png>
-Package pdftex.def Info: pics/transformation.png  used on input line 89.
+Package pdftex.def Info: pics/transformation.png  used on input line 98.
 (pdftex.def)             Requested size: 431.61145pt x 140.52466pt.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 91.
+(Font)              <10> on input line 100.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 91.
+(Font)              <7> on input line 100.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 91.
- [10 <./pics/transformation.png>]
-<pics/TSDF.png, id=322, 1087.06125pt x 1004.75375pt>
+(Font)              <5> on input line 100.
+ [10]
+<pics/TSDF.png, id=352, 1087.06125pt x 1004.75375pt>
 File: pics/TSDF.png Graphic file (type png)
 <use pics/TSDF.png>
-Package pdftex.def Info: pics/TSDF.png  used on input line 124.
+Package pdftex.def Info: pics/TSDF.png  used on input line 133.
 (pdftex.def)             Requested size: 326.1209pt x 301.42845pt.
- [11] [12 <./pics/TSDF.png>]
+ [11 <./pics/transformation.png>]
 
-LaTeX Warning: Reference `TODO' on page 13 undefined on input line 151.
+LaTeX Warning: Reference `' on page 12 undefined on input line 154.
+
+[12 <./pics/TSDF.png>]
+
+LaTeX Warning: Marginpar on page 13 moved.
 
 
-LaTeX Warning: Reference `section:sdf' on page 13 undefined on input line 155.
+LaTeX Warning: Reference `TODO' on page 13 undefined on input line 166.
 
-[13]) (./chapters/loopclosure.tex [14]
+
+LaTeX Warning: Reference `section:sdf' on page 13 undefined on input line 170.
+
+[13]) (./chapters/daten_assoziationen.tex [14]
 Kapitel 4.
 [15
 
-]) (./chapters/map_update.tex [16]
+] [16]) (./chapters/loopclosure.tex [17] [18
+
+]
 Kapitel 5.
-) (./chapters/ausblick.tex [17
-
-] [18
-
-]
+[19]) (./chapters/map_update.tex [20]
 Kapitel 6.
-) (./main.bbl [19] [20
+) (./chapters/ausblick.tex [21
+
+] [22
 
 ]
+Kapitel 7.
+) (./main.bbl [23] [24
+
+] [25]
 LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 
-57.
+90.
  (/usr/share/texmf/tex/latex/lm/ot1lmtt.fd
 File: ot1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [21])
-[22] [23
+))
+[26] [27
 
 ]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 147.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 147.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 152.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 152.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 147.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 147.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 152.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 152.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: E5E814A878061B5AACB34F3EE0858AAD;3367.
+(rerunfilecheck)             Checksum: C98227D4E2CF4E372D7DB8F5BEE248EF;3358.
 
 
 LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 147.
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 152.
  ) 
 Here is how much of TeX's memory you used:
- 40793 strings out of 483016
- 878377 string characters out of 5961286
- 1296533 words of memory out of 5000000
- 54866 multiletter control sequences out of 15000+600000
- 610475 words of font info for 137 fonts, out of 8000000 for 9000
+ 40844 strings out of 483016
+ 879330 string characters out of 5961286
+ 1299913 words of memory out of 5000000
+ 54896 multiletter control sequences out of 15000+600000
+ 610256 words of font info for 138 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
- 73i,12n,127p,963b,1067s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
-dvips/lm/lm-mathex.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr
-/share/texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips
-/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/share/texmf
-/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texmf/fonts/type1/public/lm/lmbx10.
-pfb></usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/
-type1/public/lm/lmcsc10.pfb></usr/share/texmf/fonts/type1/public/lm/lmex10.pfb>
-</usr/share/texmf/fonts/type1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type
-1/public/lm/lmmi6.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi7.pfb></usr/s
-hare/texmf/fonts/type1/public/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public
-/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/tex
-mf/fonts/type1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lmr5
-.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts/t
-ype1/public/lm/lmr7.pfb></usr/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/
-share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf/fonts/type1/publ
-ic/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.pfb></usr/share
-/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm/
-lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (29 pages, 623005 bytes).
+ 73i,12n,127p,963b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
+pdfTeX warning (dest): name{figure.caption.4} has been referenced but does no
+t exist, replaced by a fixed one
+
+pdfTeX warning (dest): name{figure.caption.3} has been referenced but does not 
+exist, replaced by a fixed one
+
+{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/dv
+ips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share
+/texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm
+-mathex.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texmf/
+fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx12
+.pfb></usr/share/texmf/fonts/type1/public/lm/lmcsc10.pfb></usr/share/texmf/font
+s/type1/public/lm/lmex10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi10.pfb
+></usr/share/texmf/fonts/type1/public/lm/lmmi6.pfb></usr/share/texmf/fonts/type
+1/public/lm/lmmi7.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi8.pfb></usr/s
+hare/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public
+/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr17.pfb></usr/share/tex
+mf/fonts/type1/public/lm/lmr5.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.
+pfb></usr/share/texmf/fonts/type1/public/lm/lmr7.pfb></usr/share/texmf/fonts/ty
+pe1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr
+/share/texmf/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/pub
+lic/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share
+/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/
+lmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/m
+sbm10.pfb>
+Output written on main.pdf (33 pages, 650404 bytes).
 PDF statistics:
- 503 PDF objects out of 1000 (max. 8388607)
- 417 compressed objects within 5 object streams
- 83 named destinations out of 1000 (max. 500000)
- 10606 words of extra memory for PDF output out of 12000 (max. 10000000)
+ 564 PDF objects out of 1000 (max. 8388607)
+ 475 compressed objects within 5 object streams
+ 102 named destinations out of 1000 (max. 500000)
+ 10614 words of extra memory for PDF output out of 12000 (max. 10000000)
 

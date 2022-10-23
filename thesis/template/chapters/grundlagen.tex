@@ -8,6 +8,15 @@ Diese Sektion beschreibt die wesentlichen mathematischen Konzepte, die in dieser
 
 Transformationen werden im Folgenden folgendermaßen betitelt: \improvement{Konventionen einfügen}
 
+\subsubsection{Karte}
+
+Die Bezeichnung (TSDF-)Karte beziehungsweise \textbf{Map} wird im Folgenden für die implizite TSDF Repräsentation der Umgebung verwendet.
+Sie bezeichnet zusätzlich das Weltkoordinatensystem.
+
+\subsubsection{Pfad}
+
+\improvement{Schreiben über Pfad (indizierung, grobe Mathe), Posen, relative und absolute Transformationen}
+
 \subsection{Koordinatensysteme}
 
 Ein wesentliches Konzept bei der Verarbeitung räumlicher Daten ist die Verwendung von Koordinatensystemen.
@@ -140,6 +149,12 @@ Dadurch sind TSDF basierte Karten ideal, um mittels des \textbf{Marching Cubes A
 Dieses kann zum Beispiel als optische Referenz für die Qualität der Karte verwendet werden.
 
 Eisoldt et al. \cite{HATSDF} basieren ihren SLAM Ansatz auf einer diskreten, inkrementell erweiterten TSDF Karte. Zur Registierung (vergleiche Kapitel \ref{section:slam}) verwenden sie ebenfalls die TSDF-Karte. Punktwolken werden dabei mit einer \textbf{Point-to-TSDF} Strategie an die TSDF Karte registiert \cite{HATSDF}.
+In \cite{HATSDF} werden neue Punktdaten nicht an die globale TSDF Karte registriert sondern an eine lokale TSDF Karte fester Größe. Lediglich die lokale Karte befindet sich im Arbeitsspeicher und lädt Daten aus der globalen Karte, die in einer HDF5 Datei repräsentiert wird und auf der Festplatte liegt, nach, sofern eine Repositionierung der Karte notwendig ist.
+Dies sorgt dafür, dass \cite{HATSDF} auch für große Umgebungen \textbf{(Large-Scale)} geeignet ist, da der Arbeitsspeicher nicht überläuft.
+Abbildung \ref{} zeigt den internen Aufbau einer HDF5 Datei, in der die globale Karte abgespeichert ist.
+\improvement{Abbildung einfügen, HDF5 näher beschreiben, Vorteile erklären, referenzieren}
+\improvement{TSDF-Update} erklären.
+
 Diese Arbeit beschäftigt sich mit einer möglichen Integration von Schleifenschlüssen in einen auf einer TSDF Karte basierenden Ansatz wie vorgestellt von Eisoldt et al. \cite{HATSDF}. Ziel ist die Korrektur von Fehlern bei der Registrierung und der damit Verbundenen Korrektur der TSDF-Karte. Dies ist in Kapitel \ref{chapter:loop_closure} und \ref{chapter:map_update} beschrieben.
 
 Nachfolgende Sektion behandelt des Thema SLAM und gibt einen groben Überblick über einige SLAM Ansätze. 
@@ -170,6 +185,7 @@ Aus diesem Grund gilt es die jeweiligen Ausgaben der Algorithmen zum Beispiel ba
 
 Beide Algorithmen werden in Kapitel \ref{section:loop_closure_basics} und Kapitel \ref{chapter:loop_closure} in Bezug auf die Identifikation von Loop-Closures evaluiert.
 
+\improvement{Einzelne Verfahren näher beschreiben, erklären welche Bibiloheken verwendet werden}
 
 Varianten (auf die eingegangen wird): 
 
