@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  24 OCT 2022 00:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.10.12)  24 OCT 2022 17:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1178,26 +1178,26 @@ Package csquotes Info: Redefining alias 'default' -> 'american'.
 (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 82.
-LaTeX Font Info:    ... okay on input line 82.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 84.
+LaTeX Font Info:    ... okay on input line 84.
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 8
-2.
+4.
  (/usr/share/texmf/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
@@ -1227,7 +1227,7 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 \AtBeginShipoutBox=\box73
-Package hyperref Info: Link coloring OFF on input line 82.
+Package hyperref Info: Link coloring OFF on input line 84.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2019/09/16 v2.46 Cross-referencing by name of section
@@ -1240,9 +1240,9 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count366
 )
-LaTeX Info: Redefining \ref on input line 82.
-LaTeX Info: Redefining \pageref on input line 82.
-LaTeX Info: Redefining \nameref on input line 82.
+LaTeX Info: Redefining \ref on input line 84.
+LaTeX Info: Redefining \pageref on input line 84.
+LaTeX Info: Redefining \nameref on input line 84.
 
 (./main.out) (./main.out)
 \@outlinefile=\write4
@@ -1264,13 +1264,13 @@ Package: pdflscape 2019/12/05 v0.12 Display of landscape pages in PDF (HO)
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/lscape.sty
 Package: lscape 2000/10/22 v3.01 Landscape Pages (DPC)
 ))
-LaTeX Info: Redefining \microtypecontext on input line 82.
+LaTeX Info: Redefining \microtypecontext on input line 84.
 Package microtype Info: Generating PDF output.
 Package microtype Info: No character protrusion.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using default expansion set `basictext'.
-LaTeX Info: Redefining \showhyphens on input line 82.
+LaTeX Info: Redefining \showhyphens on input line 84.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: Adjustment of interword spacing enabled.
 Package microtype Info: Using default spacing set `basictext'.
@@ -1280,36 +1280,36 @@ Package microtype Info: No adjustment of character kerning.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-<base/unilogo.pdf, id=151, 597.23125pt x 845.1575pt>
+<base/unilogo.pdf, id=167, 597.23125pt x 845.1575pt>
 File: base/unilogo.pdf Graphic file (type pdf)
 <use base/unilogo.pdf>
-Package pdftex.def Info: base/unilogo.pdf  used on input line 94.
+Package pdftex.def Info: base/unilogo.pdf  used on input line 96.
 (pdftex.def)             Requested size: 136.5746pt x 193.27307pt.
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 9
-4.
+6.
 
 (/usr/share/texmf/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-94.
+96.
 
 (/usr/share/texmf/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-94.
+96.
 
 (/usr/share/texmf/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 94.
+(Font)              <12> on input line 96.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 94.
+(Font)              <8> on input line 96.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 94.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 94.
+(Font)              <6> on input line 96.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 96.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
@@ -1318,7 +1318,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 94.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 96.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -1374,156 +1374,171 @@ Kapitel 2.
 Kapitel 3.
 Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
 ine 3.
-<pics/ros_coordinate_sys.png, id=294, 606.265pt x 465.74pt>
+<pics/ros_coordinate_sys.png, id=314, 606.265pt x 465.74pt>
 File: pics/ros_coordinate_sys.png Graphic file (type png)
 <use pics/ros_coordinate_sys.png>
-Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 37.
+Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 32.
 (pdftex.def)             Requested size: 212.19592pt x 163.01143pt.
 [7
 
 ]
-<pics/robot_tf.png, id=310, 909.3975pt x 788.9475pt>
+<pics/robot_tf.png, id=330, 909.3975pt x 788.9475pt>
 File: pics/robot_tf.png Graphic file (type png)
 <use pics/robot_tf.png>
-Package pdftex.def Info: pics/robot_tf.png  used on input line 58.
+Package pdftex.def Info: pics/robot_tf.png  used on input line 53.
 (pdftex.def)             Requested size: 318.2939pt x 276.13576pt.
  [8 <./pics/ros_coordinate_sys.png>] [9 <./pics/robot_tf.png>]
-<pics/transformation.png, id=331, 1726.45pt x 562.1pt>
+<pics/transformation.png, id=350, 1726.45pt x 562.1pt>
 File: pics/transformation.png Graphic file (type png)
 <use pics/transformation.png>
-Package pdftex.def Info: pics/transformation.png  used on input line 100.
+Package pdftex.def Info: pics/transformation.png  used on input line 95.
 (pdftex.def)             Requested size: 431.61145pt x 140.52466pt.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 102.
+(Font)              <10> on input line 97.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 102.
+(Font)              <7> on input line 97.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 102.
- [10]
-<pics/TSDF.png, id=352, 1087.06125pt x 1004.75375pt>
+(Font)              <5> on input line 97.
+ [10 <./pics/transformation.png>]
+<pics/TSDF.png, id=376, 1087.06125pt x 1004.75375pt>
 File: pics/TSDF.png Graphic file (type png)
 <use pics/TSDF.png>
-Package pdftex.def Info: pics/TSDF.png  used on input line 135.
+Package pdftex.def Info: pics/TSDF.png  used on input line 130.
 (pdftex.def)             Requested size: 326.1209pt x 301.42845pt.
- [11 <./pics/transformation.png>]
+ [11]
 
-LaTeX Warning: Reference `' on page 12 undefined on input line 156.
+LaTeX Warning: Reference `' on page 12 undefined on input line 151.
 
 [12 <./pics/TSDF.png>]
 
 LaTeX Warning: Marginpar on page 13 moved.
 
 
-LaTeX Warning: Reference `TODO' on page 13 undefined on input line 168.
+LaTeX Warning: Reference `TODO' on page 13 undefined on input line 171.
 
 
-LaTeX Warning: Reference `section:sdf' on page 13 undefined on input line 172.
+LaTeX Warning: Reference `section:sdf' on page 13 undefined on input line 175.
 
 [13]) (./chapters/daten_assoziationen.tex [14]
 Kapitel 4.
 [15
 
 ]
-<pics/HDF5new.png, id=410, 943.525pt x 461.725pt>
+<pics/HDF5new.png, id=432, 943.525pt x 461.725pt>
 File: pics/HDF5new.png Graphic file (type png)
 <use pics/HDF5new.png>
 Package pdftex.def Info: pics/HDF5new.png  used on input line 33.
 (pdftex.def)             Requested size: 377.4033pt x 184.68672pt.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 52.
+(Font)              <9> on input line 56.
+ [16] [17 <./pics/HDF5new.png>] [18] [19]
+<pics/RayTracingBig.png, id=470, 1447.4075pt x 682.55pt>
+File: pics/RayTracingBig.png Graphic file (type png)
+<use pics/RayTracingBig.png>
+Package pdftex.def Info: pics/RayTracingBig.png  used on input line 130.
+(pdftex.def)             Requested size: 434.2256pt x 204.76657pt.
+<pics/Ray-Trace-Zustandsdiagramm.png, id=475, 1039.885pt x 1162.3425pt>
+File: pics/Ray-Trace-Zustandsdiagramm.png Graphic file (type png)
+<use pics/Ray-Trace-Zustandsdiagramm.png>
+Package pdftex.def Info: pics/Ray-Trace-Zustandsdiagramm.png  used on input lin
+e 140.
+(pdftex.def)             Requested size: 259.97061pt x 290.58492pt.
 
 
-LaTeX Warning: Command \textdegree invalid in math mode on input line 54.
+LaTeX Warning: Marginpar on page 20 moved.
 
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 5
-4.
-(/usr/share/texmf/tex/latex/lm/ts1lmr.fd
-File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
 
-LaTeX Warning: Command \textdegree invalid in math mode on input line 54.
+LaTeX Warning: Marginpar on page 20 moved.
 
-[16] [17 <./pics/HDF5new.png>] [18] [19]
-<pics/sp_bresenham_91_74_.png, id=444, 857.45343pt x 645.91313pt>
+
+LaTeX Warning: Marginpar on page 20 moved.
+
+<pics/sp_bresenham_91_74_.png, id=479, 857.45343pt x 645.91313pt>
 File: pics/sp_bresenham_91_74_.png Graphic file (type png)
 <use pics/sp_bresenham_91_74_.png>
-Package pdftex.def Info: pics/sp_bresenham_91_74_.png  used on input line 155.
+Package pdftex.def Info: pics/sp_bresenham_91_74_.png  used on input line 173.
 (pdftex.def)             Requested size: 216.24023pt x 162.88727pt.
-<pics/sp_raytrace_91_97_.png, id=445, 857.45343pt x 645.91313pt>
+<pics/sp_raytrace_91_97_.png, id=480, 857.45343pt x 645.91313pt>
 File: pics/sp_raytrace_91_97_.png Graphic file (type png)
 <use pics/sp_raytrace_91_97_.png>
-Package pdftex.def Info: pics/sp_raytrace_91_97_.png  used on input line 161.
+Package pdftex.def Info: pics/sp_raytrace_91_97_.png  used on input line 179.
 (pdftex.def)             Requested size: 216.24023pt x 162.88727pt.
- [20 <./pics/sp_bresenham_91_74_.png (PNG copy)> <./pics/sp_raytrace_91_97_.png
- (PNG copy)>])
-(./chapters/loopclosure.tex [21] [22
+[20] [21 <./pics/RayTracingBig.png>]) (./chapters/loopclosure.tex [22 <./pics/R
+ay-Trace-Zustandsdiagramm.png>] [23 <./pics/sp_bresenham_91_74_.png (PNG copy)>
+ <./pics/sp_raytrace_91_97_.png (PNG copy)>] [24
 
 ]
 Kapitel 5.
-[23]) (./chapters/map_update.tex [24]
+[25]) (./chapters/map_update.tex [26]
 Kapitel 6.
-) (./chapters/ausblick.tex [25
+) (./chapters/ausblick.tex [27
 
-] [26
+] [28
 
 ]
 Kapitel 7.
-) (./main.bbl [27] [28
+) (./main.bbl [29] [30
 
-] [29]
+] [31]
 LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 
-90.
+95.
  (/usr/share/texmf/tex/latex/lm/ot1lmtt.fd
 File: ot1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ))
-[30] [31
+[32] [33
 
 ]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 153.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 153.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 155.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 155.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 153.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 153.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 155.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 155.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: C98227D4E2CF4E372D7DB8F5BEE248EF;3358.
+(rerunfilecheck)             Checksum: 16EDA0DB89E1D5303B96B2F12CC9CA04;3823.
 
 
 LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 153.
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 155.
  ) 
 Here is how much of TeX's memory you used:
- 41192 strings out of 483016
- 884391 string characters out of 5961286
- 1311420 words of memory out of 5000000
- 55198 multiletter control sequences out of 15000+600000
- 622726 words of font info for 155 fonts, out of 8000000 for 9000
+ 41270 strings out of 483016
+ 885826 string characters out of 5961285
+ 1328010 words of memory out of 5000000
+ 55244 multiletter control sequences out of 15000+600000
+ 623235 words of font info for 164 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
- 73i,18n,127p,973b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
-dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/sha
-re/texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/
-lm-mathex.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texm
-f/fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx
-12.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx9.pfb></usr/share/texmf/font
-s/type1/public/lm/lmcsc10.pfb></usr/share/texmf/fonts/type1/public/lm/lmex10.pf
-b></usr/share/texmf/fonts/type1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/ty
-pe1/public/lm/lmmi6.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi7.pfb></usr
-/share/texmf/fonts/type1/public/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/publ
-ic/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/t
-exmf/fonts/type1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lm
-r5.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts
-/type1/public/lm/lmr7.pfb></usr/share/texmf/fonts/type1/public/lm/lmr8.pfb></us
-r/share/texmf/fonts/type1/public/lm/lmr9.pfb></usr/share/texmf/fonts/type1/publ
-ic/lm/lmri10.pfb></usr/share/texmf/fonts/type1/public/lm/lmri12.pfb></usr/share
-/texmf/fonts/type1/public/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm
-/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/
-fonts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
-lic/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (37 pages, 1378576 bytes).
+ 73i,18n,127p,1728b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
+pdfTeX warning (dest): name{figure.caption.23} has been referenced but does n
+ot exist, replaced by a fixed one
+
+{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/dv
+ips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/share
+/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm
+-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texmf/
+fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx12
+.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx9.pfb></usr/share/texmf/fonts/
+type1/public/lm/lmcsc10.pfb></usr/share/texmf/fonts/type1/public/lm/lmex10.pfb>
+</usr/share/texmf/fonts/type1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type
+1/public/lm/lmmi6.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi7.pfb></usr/s
+hare/texmf/fonts/type1/public/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public
+/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/tex
+mf/fonts/type1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lmr5
+.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts/t
+ype1/public/lm/lmr7.pfb></usr/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/
+share/texmf/fonts/type1/public/lm/lmr9.pfb></usr/share/texmf/fonts/type1/public
+/lm/lmri10.pfb></usr/share/texmf/fonts/type1/public/lm/lmri12.pfb></usr/share/t
+exmf/fonts/type1/public/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/l
+msy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fo
+nts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
+c/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (39 pages, 1498817 bytes).
 PDF statistics:
- 616 PDF objects out of 1000 (max. 8388607)
- 515 compressed objects within 6 object streams
- 116 named destinations out of 1000 (max. 500000)
- 14725 words of extra memory for PDF output out of 17280 (max. 10000000)
+ 671 PDF objects out of 1000 (max. 8388607)
+ 561 compressed objects within 6 object streams
+ 132 named destinations out of 1000 (max. 500000)
+ 14767 words of extra memory for PDF output out of 17280 (max. 10000000)
 

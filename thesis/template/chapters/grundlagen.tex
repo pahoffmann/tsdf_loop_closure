@@ -10,11 +10,6 @@ Diese Sektion beschreibt die wesentlichen mathematischen Konzepte, die in dieser
 
 Transformationen werden im Folgenden folgendermaßen betitelt: \improvement{Konventionen einfügen}
 
-\subsubsection{Karte}
-
-Die Bezeichnung (TSDF-)Karte beziehungsweise \textbf{Map} wird im Folgenden für die implizite TSDF Repräsentation der Umgebung verwendet.
-Sie bezeichnet zusätzlich das Weltkoordinatensystem.
-
 \subsubsection{Pfad}
 
 \improvement{Schreiben über Pfad (indizierung, grobe Mathe), Posen, relative und absolute Transformationen}
@@ -160,6 +155,14 @@ Abbildung \ref{} zeigt den internen Aufbau einer HDF5 Datei, in der die globale 
 Diese Arbeit beschäftigt sich mit einer möglichen Integration von Schleifenschlüssen in einen auf einer TSDF Karte basierenden Ansatz wie vorgestellt von Eisoldt et al. \cite{HATSDF}. Ziel ist die Korrektur von Fehlern bei der Registrierung und der damit Verbundenen Korrektur der TSDF-Karte. Dies ist in Kapitel \ref{chapter:loop_closure} und \ref{chapter:map_update} beschrieben.
 
 Nachfolgende Sektion behandelt des Thema SLAM und gibt einen groben Überblick über einige SLAM Ansätze. 
+
+\section{TSDF-Karte}
+\label{section:tsdf_map}
+
+Die Bezeichnung (TSDF-)Karte beziehungsweise \textbf{Map} wird im Folgenden für die implizite TSDF Repräsentation der Umgebung verwendet.
+Sie bezeichnet zusätzlich das Weltkoordinatensystem.
+
+\improvement{Informationen über lokale und globale Karte niederschreiben, Verweisen auf \cite{HATSDF}}
 
 
 \section{SLAM}

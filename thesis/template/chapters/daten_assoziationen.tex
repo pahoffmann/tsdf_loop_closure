@@ -38,7 +38,11 @@ Abbildung \ref{fig:hdf5new} zeigt die neue interne HDF5 Struktur nach dieser Än
 
 Auf Basis dieser Änderungen wird im Folgenden erläutert, wie die zu speichernden Zellen für jede Pose ermittelt werden.
 
-\section{RayTracing}
+\section{Algorithmen}
+
+Diese Sektion stellt die Algorithmen heraus, mit denen beschriebene Assoziationen identifiziert werden können. Die Ergebnisse der Algorithmen werden miteiander verglichen und evaluiert.
+
+\subsection{Ray-Tracing}
 
 Eine Möglichkeit der Ermittlung der mit einzelnen Posen assoziierten Teilbereiche der TSDF Karte ist die die Erstellung eines künstlichen Laserscans innerhalb der TSDF Karte, ausgehend von der entsprechenden Pose.
 Entsprechend wurde im Zuge dieser Arbeit ein \textbf{Ray-Tracer} entwickelt, der künstliche Laserstrahlen innerhalb der TSDF-Karte aussendet und die Schnittpunkte mit der TSDF Karte überprüft. Der Ray-Tracer ist beliebig konfigurierbar ist und kann an die Parameter verschiedenster Laserscanner angepasst werden.
@@ -51,15 +55,15 @@ Die wesentlichen Parameter und deren Bedeutung sind Tabelle \ref{table:raytracer
 			\hline
 			\thead{Parameter}   & \thead{Funktionsweise}  & \thead{Default-\\Wert}\\
 			\hline
-			$opening\_degree$   & Definiert den vertikalen Öffnungswinkel des Ray-Tracers. Anzugeben in Grad. & $45°$ \\
+			$opening\_degree$   & Definiert den vertikalen Öffnungswinkel des Ray-Tracers. Anzugeben in Grad. & $45$ \\
 			\hline
 			$hor\_res$     & Definiert die horizontale Auflösung des Laserscanners. Der gegebene Wert  entspricht der Anzahl \textit{Rays} pro Scanebene. & $1024$\\
 			\hline			
 			$vert\_res$    & Definiert die vertikale Auflösung des Laserscanners. Der gegebene Wert entspricht der Anzahl an Scanebenen im Laserscan. & $128$\\
 			\hline			
-			$step\_size$      & Definiert, wie groß die Schrittweite beim Aussenden der einzelnen Rays ist. Der Wert ist in Metern anzugeben. Der Default-Wert ist direkt an die Zellgröße der diskreten TSDF-Karte $map_{res}$ gekoppelt und beträgt $\frac{map_{res}}{2}$. & $0,032$ \\
+			$step\_size$      & Definiert, wie groß die Schrittweite beim Aussenden der einzelnen Rays ist. Der Wert ist in Metern anzugeben. Der Default-Wert ist direkt an die Zellgröße der diskreten TSDF-Karte $map_{res}$ gekoppelt und beträgt $\frac{map_{res}}{2}$. & $0.032$ \\
 			\hline			
-			$ray\_size$   & Definiert die Dicke des Strahls in der Visualisierung. Dieser Parameter dient lediglich zur erleichterten Visualisierung des Laserscans bei unterschiedlicher Konfiguration. Der Wert ist in Metern anzugeben. & $0,01$ \\
+			$ray\_size$   & Definiert die Dicke des Strahls in der Visualisierung. Dieser Parameter dient lediglich zur erleichterten Visualisierung des Laserscans bei unterschiedlicher Konfiguration. Der Wert ist in Metern anzugeben. & $0.01$ \\
 			\hline
 		\end{tabular}
 		\label{table:raytracer_params}
@@ -111,22 +115,77 @@ Der Punkt $\colvec{x_{P_i}\\y_{P_i}\\z_{P_i}}$ beschreibt hier zunächst nur den
 \end{myequation}
 
 Auf diese Weise werden alle initialen Endpunkte des emulierten Laserscans berechnet. Auf Basis der berechenten initialen Endpunkte und des bekannten Anfangspunktes gegeben durch den Translationsanteil von $P_i$ kann das inkrementelle Ray-Tracing beginnen.
+In jeder Iteration des Ray-Tracing werden alle Rays um $step\_size$ verlängert und die entsprechend getroffenen Zellen evaluiert. Um einen Vektor $\vec{v}$ gegeben durch den Translationsanteil $\vec{t_i}$ und den aktuellen Endpunkt des betrachteten Rays $\vec{r_i}$ um $step\_size$ zu verlängern und daraus den neuen Endpunkt des Rays $\hat{\vec{r_{i}}}$ zu berechnen wird folgende Formel verwendet:
+
+\begin{myequation}
+\hat{\vec{r_{i}}} = \frac{\norm{\vec{r_i} - \vec{t_i}} + step\_size}{\norm{\vec{r_i} - \vec{t_i}}} \cdot \left( \vec{r_i} - \vec{t_i} \right) + \vec{t_i} 
+\end{myequation}
+
+Nach der Verlängerung eines Rays $\vec{r_i}$ wird die inder aktuellen Iteration $j$ getroffene TSDF-Zelle $C_i^j$ evaluiert. Je nach Schrittweite $step\_size$ und Auflösung des Ray-Tracers ist es möglich, dass $C_i^j$ bereits evaluiert wurde und schon eine Assoziation mit der Pose $P_i$ hergestellt ist. Um diesen Fall zu überprüfen und zu verhindern, dass duplizierte Assoziationen gespeichert werden, wird eine Hash-Map genutzt, deren Hash auf Basis der Koordinaten der TSDF-Zelle berechnet wird. Ist $C_i^j$ bereits in der Hash-Map gespeichert, ist der aktuell betrachtete Ray $\vec{r_i}$ für diese Iteration fertig evaluiert und der nächste Ray kann betrachtet werden. Um zu entscheiden ob eine nicht assoziierte Zelle $C_i^j$ als Assoziation in Frage kommt müssen mehrere Zustände des Rays definiert werden. Abbildung \ref{fig:RayTracingBig} zeigt die benötigten Zustände und die Bedinungen für einen Wechsel des Status gegeben den aktuellen Status und die betrachtete Zelle $C_i^j$, sowie dieren TSDF-Wert und TSDF-Gewicht. Ein Ray ist beschränkt durch die lokale Karte um $P_i$ \ref{section:tsdf_map}, sowie die Struktur der TSDF-Karte. Detektiert ein Ray einen einen Wechsel von positive auf negative TSDF-Werte (\textbf{Nulldurchgang}) in der TSDF, stoppt der Ray-Tracer, sobald er erneut positive Werte detektiert. Diese Herangehensweise sorgt dafür, dass mit der Pose $P_i$ keine Zellen assoziiert werden, die von dieser Pose aufgrund der Begrenzungen der lokalen Karte nicht gesehen werden konnten oder hinter Wänden befindlich sind.
+
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.3]
+			{RayTracingBig}
+		\caption
+			[Caption for LOF]{Schematische Darstellung 2D Darstellung der verschiedenen Zustände eines einzelnen Rays des Ray-Tracers innerhalb einer TSDF-Darstellung. Negative TSDF-Werte dargestellt in rot, positive in grün. Der approximierte Nulldurchgang in der TSDF ist hier gräulich dargestellt, die umgebende lokale Karte in gelb. Ausgehend von Pose $P_i$ sind zwei Rays $r_{i1}$ und $r_{i2}$ dargestellt, die die verschiedenen Fälle abdecken, die es zu berücksichtigen gilt. Eine genaue Beschreibung der Zustandsänderungen der Rays im Zustandsdisgramm \ref{fig:Ray-Trace-Zustandsdiagramm} zu entnehmen. Die entsprechenden Zustände sind dargestellt als blaue Kreise, die die jeweilige Zustandsnummer enthalten. Die entsprechenden Definitionen der Zustände sind ebenfalls im Zustandsdiagramm \ref{fig:Ray-Trace-Zustandsdiagramm} zu entnehmen. Die mit einem Blitz markierten Zellen werden zwar von dem ausgesandten Ray $r_{i1}$ getroffen, dürfen allerdings aufgrund der Evidenz im aktuellen Ray nicht mit der Pose assoziiert werden, da im Anschluss an diese Zellen kein Nulldurchgang, sondern Freiraum folgt. Der Freiraum ist hier in weiß dargestellt und setzt sich aus den TSDF-Zellen zusammen, die Default-Werte enthalten und entsprechend außer der minimalen Entfernung $tau \left(\tau\right)$ zur Oberfläche, keine räumlichen Informationen besitzen. Gleicher Ausnahmefall tritt ein, wenn der Ray lediglich negative TSDF-Zellen trifft. Diese werden ebenfalls nicht aufgrund der Evidenz des betrachteten Rays mit der Pose assoziiert.}		                                                                                                                                     
+		\label{fig:RayTracingBig}
+\end{figure}
+
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.25]
+			{Ray-Trace-Zustandsdiagramm}
+		\caption
+			[Caption for LOF]{Zustandsdiagramm der internen Zustände eines Rays. Zustandsübergänge sind beschrieben durch einen initialen Zustand und den TSDF-Wert der aktuellen Zelle (\textit{value}). In Zustand 1 werden gefundene Assoziationen zunächst nicht abgespeichert, da noch nicht bekannt ist, ob diese Zellen zu einem Nulldurchgang gehören oder ob der Ray nur Zellen kreuzt, die von einer anderen Pose aus befüllt wurden. Je nach TSDF-Wert der aktuellen Zelle werden die zwischengespeicherten Assoziationen aus Zustand 1 entweder verworfen oder in der HDF5 gespeichert.}		                                                                                                                                     
+		\label{fig:Ray-Trace-Zustandsdiagramm}
+\end{figure}
+
+Die Ergebnisse dieses Ansatz sind in Abbildung \ref{fig:bresenham_vs_raytrace}im Vergleich mit den Ergebnisses des Bresenham Algorithmus dargestellt, der in der nachfolgenden Sektion behandelt wird. In dem genutzten Datensatz können nur etwa $91\%$ der Zellen assoziiert werden. Diese Zahl ähnelt auch der von Bresenham. \improvement{Für mehrere Datensätze zahlen bilden, graphlich darstellen}. Sektion \ref{section:association_evaluation} evaluiert die Ergebnisse von Ray-Tracing und Bresenham und vergleicht diese miteinander. Zudem wird Bezug zum Informationsverlust bei der Assoziationsidentifikation genommen.
 
 
+\improvement{Beschreibung von Türen, Beschreibung von Problem wie Verdeckung durch Diskretisierung, ggf. Ray-Trace Bild, Beschreibung von Fallstricken: Nicht getroffene Zellen, Information loss}
 
-Laserscanner emulieren: von den entsprechenden Posen aus werden künstliche Laserscans emuliert, die in Auflösung, Öffnungswinkeln mit dem verwendeten Laserscanner übereinstimmen
-Implementation, die in der Lage ist, zu bestimmen wann eine TSDF Zelle getroffen wurde und wann eine Datenassozation erstellt wird.
-Beschreibung von RayTrace States und Bedinungen für einen Wechsel der States, Beschreibung von Türen, Beschreibung von Problem wie Verdeckung durch Diskretisierung
+\improvement{ggf. RVIZ-Bild des Ray-Tracing Markers}
 
-Beschreibung von Fallstricken: Nicht getroffene Zellen, Information loss
+\subsection{Bresenham}
 
-\section{Bresenham}
+Eine alternative algorithmische Herangehensweise an das beschriebene Problem der Assoziationsidentifikation ist die Nutzung des Bresenham-Algorithmus nach Bresenham \cite{bresenham1965algorithm}.
+
+\improvement{Alles weiter unten ignorieren}
+
 
 alternative Möglichkeit zur Identifikation von Assoziationen
 gut nutzbar, da eine diskrete Karte vorliegt
 Beschleunigung gegenüber RayTracing in reiner Software Variante erklären
 Algorithmus erklären
 Varianten der Bestimmung von start/endzelle bestimmen: Schnittpunkt zwischen Ray und lokaler Karte, über vektor und abfrage
+
+\subsection{Ergebnisse}
+\label{section:association_results}
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+ 		 \centering
+  		 \includegraphics[width=.95\linewidth]{sp_bresenham_91_74_}
+  		 \centering \caption{Assoziationen identifiziert mit Bresenham.}
+  		 \label{fig:sp_bresenham}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=.95\linewidth]{sp_raytrace_91_97_}
+  		\centering \caption{Assoziationen identifiziert mit Ray-Tracing.}
+  		\label{fig:sp_raytrace}
+	\end{subfigure}
+	\caption{Gegenüberstellung der generierten Assoziationen für einen Beispieldatensatz. Die durch Bresenham gefunden Assoziationen sind auf der linken Seite, die durch Ray-Tracing auf der rechten dargestellt. In diesem Fall wurden von Bresenham $91,74$ Prozent der Zellen assoziiert, während vom Ray-Tracing $91,97$ Prozent der Zellen assoziiert wurden. Zellen in gelb: assoziierte TSDF Zellen mit $value < 0$, Zellen in pink: assoziierte TSDF Zellen mit $value > 0$, Zellen in türkis: approximierter Nulldurchgang (Wechsel von positivem zu negativem Wert), Rest: nicht assoziierte Zellen. Zellen die nicht assoziiert werden, sind in diesem Fall in der Regel Teil von Verdeckungen oder Reflektionen des Laserscans.}
+	\label{fig:bresenham_vs_raytrace}
+\end{figure}
+
+\subsection{Evaluation}
+\label{section:association_evaluation}
 
 
 \section{Loop Closure}
@@ -146,25 +205,11 @@ Bezug zu Performanz der Hashmaps für diesen Fall (string, int, Vector3i)
 Beschreibung von Problemen:
 Anschaulich erklären, wo es zu Problemen kommen kann (wenn benachbarte Zellen von unterschiedlichen Anzahl Posen "gesehen" wurden)
 
-\section{Transformationen}
+\subsection{Transformationen}
 
-\begin{figure}[H]
-	\centering
-	\begin{subfigure}{.5\textwidth}
- 		 \centering
-  		 \includegraphics[width=.95\linewidth]{sp_bresenham_91_74_}
-  		 \centering \caption{Assoziationen identifiziert mit Bresenham.}
-  		 \label{fig:surfaceNoFlip}
-	\end{subfigure}%
-	\begin{subfigure}{.5\textwidth}
-    	\centering
-  		\includegraphics[width=.95\linewidth]{sp_raytrace_91_97_}
-  		\centering \caption{Assoziationen identifiziert mit Ray-Tracing.}
-  		\label{fig:surfaceFlip}
-	\end{subfigure}
-	\caption{Gegenüberstellung der generierten Assoziationen. Die durch Bresenham gefunden Assoziationen auf der linken Seite, die durch Ray-Tracing auf der rechten. In diesem Fall wurden von Bresenham $91,74$ Prozent der Zellen assoziiert, während vom Ray-Tracing $91,97$ Prozent der Zellen assoziiert wurden. Zellen in gelb: assoziierte TSDF Zellen mit $value < 0$, Zellen in pink: assoziierte TSDF Zellen mit $value > 0$, Zellen in türkis: approximierter Nulldurchgang (Wechsel von positivem zu negativem Wert), Rest: nicht assoziierte Zellen. \improvement{Graph mit Prozenten Bresenham vs. Ray-Tracing bezüglich assoziierter Zellen, ggf. auch mit chemitz datenset}}
-	\label{fig:edgeFlipSurface}
-\end{figure}
+
+
+\improvement{Graph mit Prozenten Bresenham vs. Ray-Tracing bezüglich assoziierter Zellen, ggf. auch mit chemitz datenset}
 
 Zum Test der ermittelten wurden auf den gegeben Pfad diverse Transformationen, wie das Verwischen \textbf{(Blur)} des Pfades, die Transformation oder Rotation des Pfades beziehungsweise eine Kombination mehrere Transformationen angewandt und auf Basis der Posedifferenzen ein Kartenupdate durchgeführt. Dies führte ebenfalls zu mehreren Problemen, insbesondere bei Rotationen.
 Bilder für Translation, Blur, Rotation, Information loss (nicht getroffene Zellen) herausstellen, definieren wie dieser Information loss zustande kommt
