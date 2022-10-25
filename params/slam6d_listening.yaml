@@ -4,7 +4,7 @@ loop_closure:
   min_traveled_lc: 12.0 # in m
   dist_between_lcs: 4.0 # in m
 
-  max_prereg_icp_fitness: 0.1 # in m²
+  max_prereg_icp_fitness: 0.5 # in m²
   max_lc_icp_fitness: 0.40 # in m²
 
   do_preregistration: true
@@ -21,7 +21,7 @@ loop_closure:
   between_rotation_noise_z: 0.2
   between_translation_noise_x: 0.2
   between_translation_noise_y: 0.2
-  between_translation_noise_z: 0.05
+  between_translation_noise_z: 0.2
 
 map:
   # directory to save map in

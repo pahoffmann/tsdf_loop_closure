@@ -376,7 +376,8 @@ void enrich_pointcloud(pcl::PointCloud<PointType>::Ptr cloud_ptr, int pose_index
 
     for (int i = start_idx; i <= end_idx; i++)
     {
-        if(i == pose_index) continue;
+        if (i == pose_index)
+            continue;
 
         pcl::PointCloud<PointType> tmp_cloud;
         Pose *index_pose = path->at(i);
@@ -458,7 +459,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // obtain the new input pose by adding the input delta to the last pose of the path
         input_pose_transformed = path->at(path->get_length() - 1)->getTransformationMatrix() * initial_pose_delta;
 
-        if (params.loop_closure.do_preregistration)
+        if (path->get_length() > 1)
         {
             // PREREGISTRATION
             // ------------------
@@ -504,14 +505,15 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
             // try matching the clouds in the scan system -> we obtain P_scan' -> P_scan (final transformation of ICP)
             // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
-            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            // gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score, 0.2);
+            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score, 2.5f);
             // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             // gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             // gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
 
             // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
-            if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
+            if (converged  && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
             {
                 std::cout << "PREREGISTRATION SUCCESSFUL!!!" << std::endl;
                 std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
@@ -574,10 +576,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     pcl::toROSMsg(*input_cloud, input_cloud_tf);
     input_cloud_tf.header.frame_id = "robot";
     input_cloud_pub.publish(input_cloud_tf);
-
-    // ready_flag_pub.publish(ready_msg);
-
-    // return;
 
     // publish normals for the input cloud
     // auto normal_marker = ROSViewhelper::visualize_pcl_normals(input_cloud);
@@ -658,7 +656,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
         // when a new pose is added, the between factor added to the graph is the same as the initial delta
         // gtsam_wrapper_ptr->add_in_between_contraint(gtsam_pose_delta, from_idx, to_idx, prereg_fitness_score);
-        gtsam_wrapper_ptr->add_in_between_contraint(initial_pose_delta, from_idx, to_idx, prereg_fitness_score);
+        gtsam_wrapper_ptr->add_in_between_contraint(gtsam_pose_delta, from_idx, to_idx, prereg_fitness_score);
     }
 #pragma endregion
 
@@ -761,6 +759,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
         global_model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
         global_scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
+
+        // enrich clouds
+        enrich_pointcloud(model_cloud, lc_pair.second.first, 1, 1);
+        enrich_pointcloud(global_model_cloud, lc_pair.second.first, 1, 1);
 
         // transform into the global coord system and display them there.
         pcl::transformPointCloud(*global_model_cloud, *global_model_cloud, prev_to_map);

@@ -110,6 +110,7 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
 
     // perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
     perform_pcl_gicp(model_cloud, scan_cloud, gicp_cloud, converged_gicp, final_transform_gicp, fitness_score_gicp);
+    //perform_adaptive_pcl_gicp(model_cloud, scan_cloud, gicp_cloud, converged_gicp, final_transform_gicp, fitness_score_gicp);
     // perform_vgicp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
 
     final_transformation = final_transform_gicp;
@@ -329,19 +330,18 @@ void GTSAMWrapper::perform_adaptive_pcl_gicp(pcl::PointCloud<PointType>::Ptr mod
     scan_copy.reset(new pcl::PointCloud<PointType>());
 
     // align the clouds using generalized icp
-    static pcl::GeneralizedIterativeClosestPoint<PointType, PointType> g_icp;
+    pcl::GeneralizedIterativeClosestPoint<PointType, PointType> g_icp;
     g_icp.setMaximumIterations(1);
-    g_icp.setMaximumOptimizerIterations(1);
-    g_icp.setTransformationEpsilon(0.01);
+    g_icp.setTransformationEpsilon(0.001);
     g_icp.setMaxCorrespondenceDistance(max_corr_dist);
-    g_icp.setRANSACIterations(1);
-    g_icp.setRANSACOutlierRejectionThreshold(max_corr_dist);
+    // g_icp.setRANSACIterations(1);
+    // g_icp.setRANSACOutlierRejectionThreshold(max_corr_dist);
     // g_icp.setUseReciprocalCorrespondences(false); // wechselseitig, also A=B und B=A
 
     int iterations = 0;
-    float factor = 0.9f;
+    float factor = 0.95f;
 
-    while (!g_icp.hasConverged() && iterations < params.loop_closure.max_icp_iterations)
+    while (iterations < 40)//params.loop_closure.max_icp_iterations)
     {
         iterations++;
         factor = std::pow(factor, (float)iterations);
@@ -357,8 +357,15 @@ void GTSAMWrapper::perform_adaptive_pcl_gicp(pcl::PointCloud<PointType>::Ptr mod
         final_transformation = g_icp.getFinalTransformation();
         converged = g_icp.hasConverged();
 
-        g_icp.setMaxCorrespondenceDistance(g_icp.getMaxCorrespondenceDistance() * factor);
+        g_icp.setMaxCorrespondenceDistance(std::max(0.1, g_icp.getMaxCorrespondenceDistance() * factor));
+
+        // std::cout << "Current corr dist: " << g_icp.getMaxCorrespondenceDistance() << std::endl;
+        std::cout << "Current fitness score: " << g_icp.getFitnessScore() << std::endl;
+        // std::cout << "GICP converged: " << g_icp.hasConverged() << std::endl;
     }
+
+    std::cout << "AdaptiveGICP: Needed " << iterations << " Iterations" << std::endl;
+    std::cout << "Final fitness score: " << g_icp.getFitnessScore() << std::endl;
 }
 
 void GTSAMWrapper::perform_vgicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
