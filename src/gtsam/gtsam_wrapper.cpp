@@ -333,11 +333,10 @@ void GTSAMWrapper::perform_adaptive_pcl_gicp(pcl::PointCloud<PointType>::Ptr mod
     g_icp.setMaximumIterations(1);
     g_icp.setMaximumOptimizerIterations(1);
     g_icp.setTransformationEpsilon(0.01);
-    g_icp.setMaxCorrespondenceDistance(params.loop_closure.max_dist_lc * 2);
+    g_icp.setMaxCorrespondenceDistance(max_corr_dist);
     g_icp.setRANSACIterations(1);
-    g_icp.setRANSACOutlierRejectionThreshold(params.loop_closure.max_dist_lc * 2);
-    // g_icp.setUseReciprocalCorrespondences(false);
-    // g_icp.addCorrespondenceRejector(pcl::r)
+    g_icp.setRANSACOutlierRejectionThreshold(max_corr_dist);
+    // g_icp.setUseReciprocalCorrespondences(false); // wechselseitig, also A=B und B=A
 
     int iterations = 0;
     float factor = 0.9f;
