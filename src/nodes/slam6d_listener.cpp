@@ -356,41 +356,39 @@ void clear_and_update_tsdf()
  *
  * @param cloud_ptr
  */
-void enrich_pointcloud(pcl::PointCloud<PointType>::Ptr cloud_ptr, int previous = 1, int next = 1)
+void enrich_pointcloud(pcl::PointCloud<PointType>::Ptr cloud_ptr, int pose_index, int num_previous = 1, int num_next = 1)
 {
-    // Pose *second_to_last;
-    // Pose *third_to_last;
-    // pcl::PointCloud<PointType> tmp_cloud_1;
-    // pcl::PointCloud<PointType> tmp_cloud_2;
+    Pose *current = path->at(pose_index);
 
-    // if (path->get_length() == 2)
-    // {
-    //     second_to_last = path->at(path->get_length() - 2);
-    //     auto second_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), second_to_last->getTransformationMatrix());
-    //     pcl::transformPointCloud(*dataset_clouds[path->get_length() - 2], tmp_cloud_1, second_last_to_model);
+    int start_idx = pose_index - num_previous;
+    int end_idx = pose_index + num_next;
 
-    //     std::cout << "Cloud size before enlargement: " << model_cloud->size() << std::endl;
-    //     *model_cloud = *model_cloud + tmp_cloud_1;
-    //     std::cout << "Cloud size after enlargement: " << model_cloud->size() << std::endl;
-    // }
-    // else if (path->get_length() > 2)
-    // {
-    //     second_to_last = path->at(path->get_length() - 2);
-    //     third_to_last = path->at(path->get_length() - 3);
+    // check window
+    if (start_idx < 0)
+    {
+        start_idx = 0;
+    }
 
-    //     auto second_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), second_to_last->getTransformationMatrix());
-    //     pcl::transformPointCloud(*dataset_clouds[path->get_length() - 2], tmp_cloud_1, second_last_to_model);
+    if (end_idx > path->get_length() - 1)
+    {
+        end_idx = path->get_length() - 1;
+    }
 
-    //     auto third_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), third_to_last->getTransformationMatrix());
-    //     pcl::transformPointCloud(*dataset_clouds[path->get_length() - 3], tmp_cloud_2, third_last_to_model);
+    for (int i = start_idx; i <= end_idx; i++)
+    {
+        if(i == pose_index) continue;
 
-    //     std::cout << "Cloud size before enlargement: " << model_cloud->size() << std::endl;
+        pcl::PointCloud<PointType> tmp_cloud;
+        Pose *index_pose = path->at(i);
 
-    //     *model_cloud = *model_cloud + tmp_cloud_1;
-    //     *model_cloud = *model_cloud + tmp_cloud_2;
+        auto index_pose_to_model = getTransformationMatrixBetween(current->getTransformationMatrix(), index_pose->getTransformationMatrix());
+        pcl::transformPointCloud(*dataset_clouds[i], tmp_cloud, index_pose_to_model);
+        // enrich
 
-    //     std::cout << "Cloud size after enlargement: " << model_cloud->size() << std::endl;
-    // }
+        std::cout << "Cloud size before enlargement: " << cloud_ptr->size() << std::endl;
+        *cloud_ptr = *cloud_ptr + tmp_cloud;
+        std::cout << "Cloud size after enlargement: " << cloud_ptr->size() << std::endl;
+    }
 }
 
 /**
@@ -486,33 +484,14 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             pcl::PointCloud<PointType> tmp_cloud_1;
             pcl::PointCloud<PointType> tmp_cloud_2;
 
+            // add clouds :)
             if (path->get_length() == 2)
             {
-                second_to_last = path->at(path->get_length() - 2);
-                auto second_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), second_to_last->getTransformationMatrix());
-                pcl::transformPointCloud(*dataset_clouds[path->get_length() - 2], tmp_cloud_1, second_last_to_model);
-
-                std::cout << "Cloud size before enlargement: " << model_cloud->size() << std::endl;
-                *model_cloud = *model_cloud + tmp_cloud_1;
-                std::cout << "Cloud size after enlargement: " << model_cloud->size() << std::endl;
+                enrich_pointcloud(model_cloud, path->get_length() - 1, 1, 0);
             }
             else if (path->get_length() > 2)
             {
-                second_to_last = path->at(path->get_length() - 2);
-                third_to_last = path->at(path->get_length() - 3);
-
-                auto second_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), second_to_last->getTransformationMatrix());
-                pcl::transformPointCloud(*dataset_clouds[path->get_length() - 2], tmp_cloud_1, second_last_to_model);
-
-                auto third_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), third_to_last->getTransformationMatrix());
-                pcl::transformPointCloud(*dataset_clouds[path->get_length() - 3], tmp_cloud_2, third_last_to_model);
-
-                std::cout << "Cloud size before enlargement: " << model_cloud->size() << std::endl;
-
-                *model_cloud = *model_cloud + tmp_cloud_1;
-                *model_cloud = *model_cloud + tmp_cloud_2;
-
-                std::cout << "Cloud size after enlargement: " << model_cloud->size() << std::endl;
+                enrich_pointcloud(model_cloud, path->get_length() - 1, 2, 0);
             }
 
             // this is the transformation from the model coordinate system to the input poses.
@@ -678,7 +657,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // gtsam_wrapper_ptr->add_in_between_contraint(transform_diff, from_idx, to_idx);
 
         // when a new pose is added, the between factor added to the graph is the same as the initial delta
-        //gtsam_wrapper_ptr->add_in_between_contraint(gtsam_pose_delta, from_idx, to_idx, prereg_fitness_score);
+        // gtsam_wrapper_ptr->add_in_between_contraint(gtsam_pose_delta, from_idx, to_idx, prereg_fitness_score);
         gtsam_wrapper_ptr->add_in_between_contraint(initial_pose_delta, from_idx, to_idx, prereg_fitness_score);
     }
 #pragma endregion
@@ -697,7 +676,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // when no pair is returned, go to the next pose
     if (lc_pairs.size() == 0)
     {
-        std::cout << "No loop found when inserting Pose" << path->get_length() << ":" << std::endl
+        std::cout << "No loop found when inserting Pose with index" << path->get_length() - 1 << ":" << std::endl
                   << *path->at(path->get_length() - 1) << std::endl;
 
         ready_flag_pub.publish(ready_msg);

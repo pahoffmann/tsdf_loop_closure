@@ -287,8 +287,13 @@ void GTSAMWrapper::perform_pcl_icp(pcl::PointCloud<PointType>::Ptr model_cloud, 
 }
 
 void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                                    pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
+                                    pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score, float max_corr_dist)
 {
+    if (max_corr_dist == -1.0f)
+    {
+        max_corr_dist = params.loop_closure.max_dist_lc * 2;
+    }
+
     // align the clouds using generalized icp
     static pcl::GeneralizedIterativeClosestPoint<PointType, PointType> g_icp;
     g_icp.setMaximumIterations(params.loop_closure.max_icp_iterations);
@@ -308,6 +313,53 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud,
     fitness_score = g_icp.getFitnessScore();
     final_transformation = g_icp.getFinalTransformation();
     converged = g_icp.hasConverged();
+}
+
+void GTSAMWrapper::perform_adaptive_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                                             pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score, float max_corr_dist)
+{
+
+    if (max_corr_dist == -1.0f)
+    {
+        max_corr_dist = params.loop_closure.max_dist_lc * 2;
+    }
+
+    Matrix4f current_transform = Matrix4f::Identity();
+    pcl::PointCloud<PointType>::Ptr scan_copy;
+    scan_copy.reset(new pcl::PointCloud<PointType>());
+
+    // align the clouds using generalized icp
+    static pcl::GeneralizedIterativeClosestPoint<PointType, PointType> g_icp;
+    g_icp.setMaximumIterations(1);
+    g_icp.setMaximumOptimizerIterations(1);
+    g_icp.setTransformationEpsilon(0.01);
+    g_icp.setMaxCorrespondenceDistance(params.loop_closure.max_dist_lc * 2);
+    g_icp.setRANSACIterations(1);
+    g_icp.setRANSACOutlierRejectionThreshold(params.loop_closure.max_dist_lc * 2);
+    // g_icp.setUseReciprocalCorrespondences(false);
+    // g_icp.addCorrespondenceRejector(pcl::r)
+
+    int iterations = 0;
+    float factor = 0.9f;
+
+    while (!g_icp.hasConverged() && iterations < params.loop_closure.max_icp_iterations)
+    {
+        iterations++;
+        factor = std::pow(factor, (float)iterations);
+
+        pcl::transformPointCloud(*scan_cloud, *scan_copy, current_transform);
+
+        g_icp.setInputSource(scan_copy);
+        g_icp.setInputTarget(model_cloud);
+        g_icp.align(*result);
+
+        // fill data with g_icp results
+        fitness_score = g_icp.getFitnessScore();
+        final_transformation = g_icp.getFinalTransformation();
+        converged = g_icp.hasConverged();
+
+        g_icp.setMaxCorrespondenceDistance(g_icp.getMaxCorrespondenceDistance() * factor);
+    }
 }
 
 void GTSAMWrapper::perform_vgicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
