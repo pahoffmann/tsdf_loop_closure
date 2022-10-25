@@ -352,6 +352,48 @@ void clear_and_update_tsdf()
 }
 
 /**
+ * @brief enriches the input cloud by merging it with the surrounding clouds to get better gicp results
+ *
+ * @param cloud_ptr
+ */
+void enrich_pointcloud(pcl::PointCloud<PointType>::Ptr cloud_ptr, int previous = 1, int next = 1)
+{
+    // Pose *second_to_last;
+    // Pose *third_to_last;
+    // pcl::PointCloud<PointType> tmp_cloud_1;
+    // pcl::PointCloud<PointType> tmp_cloud_2;
+
+    // if (path->get_length() == 2)
+    // {
+    //     second_to_last = path->at(path->get_length() - 2);
+    //     auto second_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), second_to_last->getTransformationMatrix());
+    //     pcl::transformPointCloud(*dataset_clouds[path->get_length() - 2], tmp_cloud_1, second_last_to_model);
+
+    //     std::cout << "Cloud size before enlargement: " << model_cloud->size() << std::endl;
+    //     *model_cloud = *model_cloud + tmp_cloud_1;
+    //     std::cout << "Cloud size after enlargement: " << model_cloud->size() << std::endl;
+    // }
+    // else if (path->get_length() > 2)
+    // {
+    //     second_to_last = path->at(path->get_length() - 2);
+    //     third_to_last = path->at(path->get_length() - 3);
+
+    //     auto second_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), second_to_last->getTransformationMatrix());
+    //     pcl::transformPointCloud(*dataset_clouds[path->get_length() - 2], tmp_cloud_1, second_last_to_model);
+
+    //     auto third_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), third_to_last->getTransformationMatrix());
+    //     pcl::transformPointCloud(*dataset_clouds[path->get_length() - 3], tmp_cloud_2, third_last_to_model);
+
+    //     std::cout << "Cloud size before enlargement: " << model_cloud->size() << std::endl;
+
+    //     *model_cloud = *model_cloud + tmp_cloud_1;
+    //     *model_cloud = *model_cloud + tmp_cloud_2;
+
+    //     std::cout << "Cloud size after enlargement: " << model_cloud->size() << std::endl;
+    // }
+}
+
+/**
  * @brief handles incoming pointcloud2
  *
  * @param cloud_ptr
@@ -438,7 +480,40 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             bool converged = false;
             Matrix4f final_transformation = Matrix4f::Identity();
 
-            auto last_pose = path->at(path->get_length() - 1); // obtain last pose
+            Pose *last_pose = path->at(path->get_length() - 1); // obtain last pose
+            Pose *second_to_last;
+            Pose *third_to_last;
+            pcl::PointCloud<PointType> tmp_cloud_1;
+            pcl::PointCloud<PointType> tmp_cloud_2;
+
+            if (path->get_length() == 2)
+            {
+                second_to_last = path->at(path->get_length() - 2);
+                auto second_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), second_to_last->getTransformationMatrix());
+                pcl::transformPointCloud(*dataset_clouds[path->get_length() - 2], tmp_cloud_1, second_last_to_model);
+
+                std::cout << "Cloud size before enlargement: " << model_cloud->size() << std::endl;
+                *model_cloud = *model_cloud + tmp_cloud_1;
+                std::cout << "Cloud size after enlargement: " << model_cloud->size() << std::endl;
+            }
+            else if (path->get_length() > 2)
+            {
+                second_to_last = path->at(path->get_length() - 2);
+                third_to_last = path->at(path->get_length() - 3);
+
+                auto second_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), second_to_last->getTransformationMatrix());
+                pcl::transformPointCloud(*dataset_clouds[path->get_length() - 2], tmp_cloud_1, second_last_to_model);
+
+                auto third_last_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), third_to_last->getTransformationMatrix());
+                pcl::transformPointCloud(*dataset_clouds[path->get_length() - 3], tmp_cloud_2, third_last_to_model);
+
+                std::cout << "Cloud size before enlargement: " << model_cloud->size() << std::endl;
+
+                *model_cloud = *model_cloud + tmp_cloud_1;
+                *model_cloud = *model_cloud + tmp_cloud_2;
+
+                std::cout << "Cloud size after enlargement: " << model_cloud->size() << std::endl;
+            }
 
             // this is the transformation from the model coordinate system to the input poses.
             // we transform the model cloud into the coordinate system of the scan cloud (the cloud of the incoming pose)
@@ -490,6 +565,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             {
                 std::cout << "PREREGISTRATION FAILED!!!" << std::endl;
                 std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
+                prereg_fitness_score = -1.0f;
 
                 path->add_pose(Pose(input_pose_transformed));
             }
@@ -602,7 +678,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // gtsam_wrapper_ptr->add_in_between_contraint(transform_diff, from_idx, to_idx);
 
         // when a new pose is added, the between factor added to the graph is the same as the initial delta
-        gtsam_wrapper_ptr->add_in_between_contraint(gtsam_pose_delta, from_idx, to_idx, prereg_fitness_score);
+        //gtsam_wrapper_ptr->add_in_between_contraint(gtsam_pose_delta, from_idx, to_idx, prereg_fitness_score);
+        gtsam_wrapper_ptr->add_in_between_contraint(initial_pose_delta, from_idx, to_idx, prereg_fitness_score);
     }
 #pragma endregion
 
@@ -695,24 +772,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
         // transform from the current pose (aka the scan) to the previous pose (aka the model) (aka.: switching from current coordinate system to the previous)
         // this has to be added to the final transformation!!!!
-        // auto cur_to_prev_initial = getTransformationMatrixBetween(prev_to_map, cur_to_map);
         auto prev_to_cur_initial = getTransformationMatrixBetween(cur_to_map, prev_to_map);
-
-        // TODO: evaluate the performance of gicp based on this
-        // if ((cur_to_map.block<3, 1>(0, 3) - prev_to_map.block<3, 1>(0, 3)).norm() > params.loop_closure.max_dist_lc / 2.0f)
-        // {
-        //     Matrix4f tmp = Matrix4f::Identity();
-
-        //     tmp.block<3, 3>(0, 0) = prev_to_cur_initial.block<3, 3>(0, 0);
-
-        //     std::cout << "It's far... !!!" << std::endl;
-        //     std::cout << "PrevToCur:" << std::endl
-        //               << Pose(prev_to_cur_initial) << std::endl;
-        //     std::cout << "OnlyRot:" << std::endl
-        //               << Pose(tmp) << std::endl;
-
-        //     prev_to_cur_initial = tmp;
-        // }
 
         pcl::PointCloud<PointType>::Ptr model_cloud;
         pcl::PointCloud<PointType>::Ptr global_model_cloud;

@@ -62,6 +62,7 @@ void GTSAMWrapper::add_in_between_contraint(Eigen::Matrix4f transform, int from_
     // create between factor constraint for input transform
     if (input_fitness_noise != -1.0f)
     {
+        std::cout << print_prefix << " Input fitness score: " << input_fitness_noise << std::endl;
         // use input noise instead of default values
         gtsam::noiseModel::Diagonal::shared_ptr in_between_noise_tmp = gtsam::noiseModel::Diagonal::Variances((gtsam::Vector(6) << input_fitness_noise, input_fitness_noise, input_fitness_noise,
                                                                                                                input_fitness_noise, input_fitness_noise, input_fitness_noise)

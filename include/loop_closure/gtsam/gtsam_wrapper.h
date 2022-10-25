@@ -181,7 +181,19 @@ public:
                           pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
 
     /**
-     * @brief performs generalized icp between the two pointclouds, will return information about the performance of the icp
+     * @brief performs adaptive generalized icp between the two pointclouds, will return information about the performance of the gicp
+     *
+     * @param source_cloud
+     * @param target_cloud
+     * @param converged
+     * @param final_transformation
+     * @param fitness_score
+     */
+    void perform_adaptive_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
+                          pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
+
+    /**
+     * @brief performs generalized icp between the two pointclouds, will return information about the performance of the gicp
      *
      * @param source_cloud
      * @param target_cloud

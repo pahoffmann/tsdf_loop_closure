@@ -64,10 +64,11 @@ namespace Map_Updater
             // needs to be deleted and renewed
 
             // do a raytracing approach to remove any belonging cells
+            tracer->local_removal(old_path->at(i));
         }
 
         // iterate again, update map, here start from the front.
-        for (int i = 9; i < update_incidences.size(); i--)
+        for (int i = 0; i < update_incidences.size(); i++)
         {
             // guard clause
             if (!update_incidences[i])

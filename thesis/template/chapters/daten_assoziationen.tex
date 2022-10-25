@@ -180,7 +180,7 @@ Varianten der Bestimmung von start/endzelle bestimmen: Schnittpunkt zwischen Ray
   		\centering \caption{Assoziationen identifiziert mit Ray-Tracing.}
   		\label{fig:sp_raytrace}
 	\end{subfigure}
-	\caption{Gegenüberstellung der generierten Assoziationen für einen Beispieldatensatz. Die durch Bresenham gefunden Assoziationen sind auf der linken Seite, die durch Ray-Tracing auf der rechten dargestellt. In diesem Fall wurden von Bresenham $91,74$ Prozent der Zellen assoziiert, während vom Ray-Tracing $91,97$ Prozent der Zellen assoziiert wurden. Zellen in gelb: assoziierte TSDF Zellen mit $value < 0$, Zellen in pink: assoziierte TSDF Zellen mit $value > 0$, Zellen in türkis: approximierter Nulldurchgang (Wechsel von positivem zu negativem Wert), Rest: nicht assoziierte Zellen. Zellen die nicht assoziiert werden, sind in diesem Fall in der Regel Teil von Verdeckungen oder Reflektionen des Laserscans.}
+	\caption{Gegenüberstellung der generierten Assoziationen für einen Beispieldatensatz. Die durch Bresenham gefunden Assoziationen sind auf der linken Seite, die durch Ray-Tracing auf der rechten dargestellt. In diesem Fall wurden von Bresenham $91,74$ Prozent der Zellen assoziiert, während vom Ray-Tracing $91,97$ Prozent der Zellen assoziiert wurden. Zellen in gelb: assoziierte TSDF Zellen mit $value < 0$, Zellen in pink: assoziierte TSDF Zellen mit $value > 0$, Zellen in türkis: approximierter Nulldurchgang (Wechsel von positivem zu negativem Wert), Rest: nicht assoziierte Zellen. Zellen die nicht assoziiert werden, sind in diesem Fall größtenteils Teil von Verdeckungen oder Reflektionen des Laserscans und können als Outlier identifiziert werden.}
 	\label{fig:bresenham_vs_raytrace}
 \end{figure}
 
