@@ -15,9 +15,9 @@ class attribute_data_model
 {
 private:
     int map_resolution;
-    float map_size_x;
-    float map_size_y;
-    float map_size_z;
+    int map_size_x;
+    int map_size_y;
+    int map_size_z;
     float max_distance;
     int max_weight;
     int tau;

@@ -77,6 +77,7 @@ std::shared_ptr<GlobalMap> global_map_ptr;
 std::unique_ptr<GTSAMWrapper> gtsam_wrapper_ptr;
 Path *path;
 Path *optimized_path;
+Path *gicp_path;
 int side_length_xy;
 int side_length_z;
 
@@ -102,6 +103,7 @@ Matrix4f last_loop_transform_diff;
 
 // ROS //
 ros::Publisher path_pub;
+ros::Publisher gicp_path_pub;
 ros::Publisher optimized_path_pub;
 ros::Publisher loop_pub;
 ros::Publisher tsdf_pub;
@@ -144,6 +146,9 @@ void init_obj()
     // init path
     path = new Path();
     path->attach_raytracer(tracer);
+
+    gicp_path = new Path();
+    gicp_path->attach_raytracer(tracer);
 
     // create evaluator
     evaluator.reset(new Evaluator(path));
@@ -250,6 +255,8 @@ void broadcast_robot_pose(Pose &pose)
 
     geometry_msgs::TransformStamped transformStamped;
 
+    pose.quat.normalize();
+
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "map";
     transformStamped.child_frame_id = "robot";
@@ -274,6 +281,7 @@ void broadcast_robot_path(Path *path)
     for (int idx = 0; idx < path->get_length(); idx++)
     {
         Pose *current = path->at(idx);
+        current->quat.normalize();
         geometry_msgs::TransformStamped transformStamped;
 
         transformStamped.header.stamp = ros::Time::now();
@@ -513,7 +521,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             // gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
 
             // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
-            if (converged  && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
+            if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
             {
                 std::cout << "PREREGISTRATION SUCCESSFUL!!!" << std::endl;
                 std::cout << "Fitness score: " << prereg_fitness_score << std::endl;
@@ -540,6 +548,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
                 path->add_pose(new_scan_to_map_pose);
                 // path->add_pose(new_scan_to_map);
+
+                gicp_path->add_pose(new_scan_to_map_pose);
+
                 gtsam_pose_delta = new_scan_to_model;
             }
             else // if it is not converged we simply add the initial estimate.
@@ -549,17 +560,20 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
                 prereg_fitness_score = -1.0f;
 
                 path->add_pose(Pose(input_pose_transformed));
+                gicp_path->add_pose(Pose(input_pose_transformed));
             }
             // END PREREGISTRATION
         }
         else // if no preregistration is happening, just add the pose
         {
             path->add_pose(Pose(input_pose_transformed));
+            gicp_path->add_pose(Pose(input_pose_transformed));
         }
     }
     else
     {
         path->add_pose(input_pose);
+        gicp_path->add_pose(input_pose);
     }
 
     // obtain newly inserted pose
@@ -630,6 +644,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     tsdf_cloud_pub.publish(filtered_ros_cloud);
 
     path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::lime));
+    gicp_path_pub.publish(ROSViewhelper::initPathMarker(gicp_path, Colors::ColorNames::teal));
 
 #pragma endregion
 
@@ -761,8 +776,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         global_scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
 
         // enrich clouds
-        enrich_pointcloud(model_cloud, lc_pair.second.first, 1, 1);
-        enrich_pointcloud(global_model_cloud, lc_pair.second.first, 1, 1);
+        enrich_pointcloud(model_cloud, lc_pair.second.first, 2, 2);
+        enrich_pointcloud(global_model_cloud, lc_pair.second.first, 2, 2);
 
         // transform into the global coord system and display them there.
         pcl::transformPointCloud(*global_model_cloud, *global_model_cloud, prev_to_map);
@@ -778,20 +793,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         float fitness_score = 10.0f;
         bool converged_unit = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair.second, model_cloud, scan_cloud,
                                                                              icp_cloud, fitness_score, final_transformation, prev_to_cur_initial, path);
-
-        // add lc if unit converged, update converge flag for all found lcs for the current position
-        if (converged_unit)
-        {
-            converged = true;
-            lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
-            lc_fitness_scores.push_back(fitness_score);
-            // break;
-        }
-
-        else
-        {
-            // std::cout << "Unit not converged" << std::endl;
-        }
 
         cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(scan_cloud, "robot");
         prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(model_cloud, "robot");
@@ -809,6 +810,15 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         approx_pcl_pub_icp.publish(icp_pcl_msg);
         global_model_pub.publish(global_model_msg);
         global_scan_pub.publish(global_scan_msg);
+
+        // add lc if unit converged, update converge flag for all found lcs for the current position
+        if (converged_unit)
+        {
+            converged = true;
+            lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
+            lc_fitness_scores.push_back(fitness_score);
+            //break;
+        }
     }
 
     // if the lc found did not converge, we skip everything else
@@ -866,7 +876,17 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     auto previous_filename_path = params.map.filename;
     // create new map
-    params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + std::to_string(map_update_counter)).string() + previous_filename_path.extension().string());
+    std::string new_stem = previous_filename_path.stem().string();
+    if(map_update_counter == 1)
+    {
+        new_stem += "_" + std::to_string(map_update_counter);
+    }
+    else
+    {
+        new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
+    }
+
+    params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
 
     // delete old map
     boost::filesystem::remove(previous_filename_path);
@@ -916,6 +936,7 @@ int main(int argc, char **argv)
 
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
+    gicp_path_pub = n.advertise<visualization_msgs::Marker>("/gicp_path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
     approx_pcl_pub_cur = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_cur", 1);
     approx_pcl_pub_prev = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_prev", 1);

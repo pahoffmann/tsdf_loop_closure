@@ -204,6 +204,20 @@ add_executable(slam6d_listener src/nodes/slam6d_listener.cpp
                         src/util/lc_evaluator.cpp
                         src/map/map_updater.cpp)
 
+add_executable(test_partial_update src/nodes/test_partial_update.cpp 
+                        src/util/runtime_evaluator.cpp
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp
+                        src/util/update_tsdf.cpp
+                        src/map/attribute_data_model.cpp
+                        src/ray_tracer/ray_tracer.cpp
+                        src/data_association/association.cpp
+                        src/data_association/association_manager.cpp
+                        src/path/path.cpp
+                        src/gtsam/gtsam_wrapper.cpp
+                        src/util/lc_evaluator.cpp
+                        src/map/map_updater.cpp)
+
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -223,6 +237,7 @@ target_compile_definitions(test_map_update PRIVATE DEBUG)
 target_compile_definitions(test_localmap PRIVATE DEBUG)
 target_compile_definitions(test_map_cleanup PRIVATE DEBUG)
 target_compile_definitions(slam6d_listener PRIVATE DEBUG)
+target_compile_definitions(test_partial_update PRIVATE DEBUG)
 
 # compile definition for debug in testing environment
 add_compile_definitions(TEST_DEBUG=1)
@@ -338,6 +353,20 @@ target_link_libraries(slam6d_listener
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
   ${JSONCPP_LIBRARIES}
+  teaserpp::teaser_registration
+  teaserpp::teaser_features
+  teaserpp::teaser_io
+  ${PCL_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
+  gtsam
+)
+
+target_link_libraries(test_partial_update
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
   teaserpp::teaser_registration
   teaserpp::teaser_features
   teaserpp::teaser_io

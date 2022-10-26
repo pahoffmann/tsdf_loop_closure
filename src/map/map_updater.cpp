@@ -24,7 +24,7 @@ namespace Map_Updater
 
             auto transl_diff = (old_transl - new_transl).cwiseAbs();
             auto rotation_diff = get_rotation_diff(old_tf_mat, new_tf_mat) * (180 / M_PI); // rot diff in range [-180, 180]
-            auto rotation_diff_abs = rotation_diff.cwiseAbs(); // check the absolute rotation
+            auto rotation_diff_abs = rotation_diff.cwiseAbs();                             // check the absolute rotation
 
             std::cout << "Got rotation difference: " << std::endl
                       << rotation_diff << std::endl;
@@ -131,6 +131,8 @@ namespace Map_Updater
         // refill tsdf map
         for (int i = 0; i < new_path->get_length(); i++)
         {
+            std::cout << "Update process: (" << i + 1 << "/" << new_path->get_length() << ")" << std::endl;
+            
             auto current_pose_ptr = new_path->at(i);
             auto pose_mat = current_pose_ptr->getTransformationMatrix();
 

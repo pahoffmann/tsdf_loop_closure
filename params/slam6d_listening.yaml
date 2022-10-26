@@ -2,10 +2,10 @@ loop_closure:
   max_icp_iterations: 200
   max_dist_lc: 12.0     # in m
   min_traveled_lc: 12.0 # in m
-  dist_between_lcs: 4.0 # in m
+  dist_between_lcs: 0.0 # in m
 
   max_prereg_icp_fitness: 0.5 # in m²
-  max_lc_icp_fitness: 0.40 # in m²
+  max_lc_icp_fitness: 0.3 # in m²
 
   do_preregistration: true
 
@@ -27,13 +27,13 @@ map:
   # directory to save map in
   dir: "/home/patrick/maps/generated"
 
-  comment: "slam6d_listening"
+  comment: ""
 
   # Truncation distance for the TSDF values (in m)
   max_distance: 0.6
 
   # Size of one grid cell in the discretised map (in m per cell)
-  resolution: 64 #0.1 #0.03
+  resolution: 128 #0.1 #0.03
 
   # localmap size for every dimension (in m)
   size:

@@ -45,9 +45,6 @@ struct Pose
     Eigen::Quaternionf quat;
     Eigen::Vector3f pos;
 
-    // TODO: use covariance
-    Eigen::MatrixXf covariance;
-
     // gets the rotation matrix from the quat
     Eigen::Matrix3f rotationMatrixFromQuaternion() const
     {
@@ -73,6 +70,7 @@ struct Pose
     Pose(const Matrix4f &mat)
     {
         quat = Eigen::Quaternionf(mat.block<3, 3>(0, 0));
+        quat.normalize();
         pos = mat.block<3, 1>(0, 3);
     }
 
@@ -80,6 +78,7 @@ struct Pose
     Pose(const Pose &other)
     {
         quat = other.quat;
+        quat.normalize();
         pos = other.pos;
     }
 
@@ -93,6 +92,7 @@ struct Pose
     {
         Pose tmp;
         tmp.quat = this->quat * other.quat;
+        tmp.quat.normalize();
         tmp.pos = this->pos + other.pos;
         return tmp;
     }
@@ -182,7 +182,7 @@ static Pose poseFromEuler(float x, float y, float z, float roll, float pitch, fl
     Eigen::Vector3f point(x, y, z);
 
     // merge into pose msg
-    pose.quat = q;
+    pose.quat.normalize();
     pose.pos = point;
 
     return pose;

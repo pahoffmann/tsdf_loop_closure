@@ -123,6 +123,7 @@ namespace ROSViewhelper
         for (Pose pose : path->getPoses())
         {
             path_marker.points.push_back(type_transform::eigen_point_to_ros_point(pose.pos));
+            path_marker.colors.push_back(color);
         }
 
         return path_marker;

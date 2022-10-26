@@ -656,7 +656,9 @@ void RayTracer::local_removal(Pose *pose)
   // initialize the rays
   initRays();
 
-  TSDFEntry default_entry = TSDFEntry(params.map.tau, 0); // default tsdf entry used to "reset" old cell locations
+  std::cout << "Tracing over " << rays.size() << " rays" << std::endl;
+
+  TSDFEntry default_entry(params.map.tau, 0); // default tsdf entry used to "reset" old cell locations
 
   // why would we update, when there are no rays? This is more of a fatal thing here.
   if (rays.size() == 0)
@@ -712,6 +714,7 @@ void RayTracer::local_removal(Pose *pose)
       // if the current ray surpasses the border of the bounding box, the ray is finished
       if (needs_resize)
       {
+        std::cout << " ????? " << std::endl;
         // determine biggest adaption
         float min_xy = std::min(fac_x, fac_y);
 
@@ -766,9 +769,11 @@ void RayTracer::local_removal(Pose *pose)
           // add association and visualization for every saved cell of the current ray.
           for (Vector3i saved_cell : current_ray_associations[i])
           {
-            auto &tsdf_tmp = local_map_ptr_->value(saved_cell);
+            // auto &tsdf_tmp = local_map_ptr_->value(saved_cell);
 
-            tsdf_tmp = default_entry;
+            // tsdf_tmp = default_entry;
+            std::cout << "set default entry" << std::endl;
+            local_map_ptr_->value(saved_cell) = default_entry;
           }
 
           // now clear
@@ -803,7 +808,9 @@ void RayTracer::local_removal(Pose *pose)
         }
         else
         {
-          tsdf = default_entry;
+          std::cout << "set default entry" << std::endl;
+          local_map_ptr_->value(real_to_map(p1)) = default_entry;
+          // tsdf = default_entry;
         }
       }
     }
