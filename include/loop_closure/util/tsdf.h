@@ -20,13 +20,15 @@ public:
     using RawType = uint32_t;
     using ValueType = TSDFEntryHW::ValueType;
     using WeightType = TSDFEntryHW::WeightType;
+    using IntersectionType = TSDFEntryHW::IntersectionType;
+    using IndexType = TSDFEntryHW::IntersectionType;
 
         // currently used to store information on the type of intersection
     enum IntersectStatus {
-        NO_INT,
-        INT,
-        INT_NEG,
-        INT_ZERO
+        NO_INT, // 0
+        INT, // 1
+        INT_NEG, // 2
+        INT_ZERO // 3
     };
 
 private:

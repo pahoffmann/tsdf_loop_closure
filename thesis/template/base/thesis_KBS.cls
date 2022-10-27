@@ -23,7 +23,7 @@
 
 \DeclareOption{german}{
   \setcounter{sprache}{1}
-  \def\@dept{Institut f\"ur Informatik\\AG Autonome Robotik}
+  \def\@dept{Institut f\"ur Informatik\\AG Technische Informatik}
   \def\@type{Masterarbeit}
 }
 \DeclareOption{english}{

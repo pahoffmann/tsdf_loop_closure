@@ -323,7 +323,7 @@ void GlobalMap::write_back()
     //     file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
     // }
 
-    //HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
+    // HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
 
     for (auto &chunk : active_chunks_)
     {
@@ -932,12 +932,13 @@ std::vector<bool> GlobalMap::chunks_empty()
 
 std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
 {
-    // TODO: implement
     std::vector<std::pair<Vector3i, TSDFEntry>> ret;
 
     auto chunks = all_chunk_poses();
 
     auto group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    int default_counter = 0;
 
     for (int i = 0; i < chunks.size(); i++)
     {
@@ -963,6 +964,7 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
             // skip default values
             if (tmp_tsdf.value() == params.tau || tmp_tsdf.weight() == 0)
             {
+                default_counter++;
                 continue;
             }
 
@@ -979,6 +981,7 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
     }
 
     std::cout << "[GlobalMap - get_full_data()] Read " << ret.size() << " values from the whole globalmap" << std::endl;
+    std::cout << "[GlobalMap - get_full_data()] Read " << default_counter << " default values from the whole globalmap" << std::endl;
 
     return ret;
 }

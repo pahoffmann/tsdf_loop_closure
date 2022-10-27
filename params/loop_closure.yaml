@@ -31,8 +31,8 @@ map:
 
 ray_tracer:
   #general ray_tracer stuff
-  hor_res: 1024
-  vert_res: 128
+  hor_res: 128 #1024
+  vert_res: 32 #128
   opening_degree: 45
   step_size: 0.032
   ray_size: 0.01

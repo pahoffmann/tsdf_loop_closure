@@ -42,4 +42,4 @@ Eigen::Vector3i to_point(const Vector3f &vec);
  * @param max_weight Maximum weight for every TSDF cell in the map
  */
 void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::Vector3i &scanner_pos, const Eigen::Vector3i &up,
-                 LocalMap &buffer, int tau, int max_weight, int map_resolution);
+                 LocalMap &buffer, int tau, int max_weight, int map_resolution, int pose_index = -1);

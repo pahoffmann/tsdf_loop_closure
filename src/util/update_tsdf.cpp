@@ -6,7 +6,7 @@
 
 
 void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::Vector3i &scanner_pos, const Eigen::Vector3i &up,
-                 LocalMap &buffer, int tau, int max_weight, int map_resolution)
+                 LocalMap &buffer, int tau, int max_weight, int map_resolution, int pose_index)
 {
   float angle = 45.f / 128.f; // TODO: Scanner FoV as Parameter
   int dz_per_distance = std::tan(angle / 180 * M_PI) / 2.0 * MATRIX_RESOLUTION;

@@ -17,7 +17,11 @@ struct TSDFEntryHW
 {
     using ValueType = int16_t;
     using WeightType = int16_t;
+    using IndexType = int16_t;
+    using IntersectionType = int16_t;
 
     ValueType value;
     WeightType weight;
+    // IndexType pose_index;
+    // IntersectionType intersection;
 };

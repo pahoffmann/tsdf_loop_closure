@@ -648,16 +648,21 @@ void RayTracer::perform3DBresenham()
 
 void RayTracer::local_removal(Pose *pose)
 {
+  std::cout << "Updating the pose to " << std::endl
+            << *pose << std::endl;
   update_pose(pose);
 
+  std::cout << "Cleaning data from previous runs" << std::endl;
   // cleanup everything from previous runs
   cleanup();
 
+  std::cout << "initializing rays... " << std::endl;
   // initialize the rays
   initRays();
 
   std::cout << "Tracing over " << rays.size() << " rays" << std::endl;
 
+  std::cout << "Default entry: [" << params.map.tau << " | " << 0 << "]" << std::endl;
   TSDFEntry default_entry(params.map.tau, 0); // default tsdf entry used to "reset" old cell locations
 
   // why would we update, when there are no rays? This is more of a fatal thing here.
@@ -668,163 +673,194 @@ void RayTracer::local_removal(Pose *pose)
 
   // iterate over every 'line'
 
-  for (int i = 0; i < rays.size(); i++)
+  bool first_iteration = true;
+  int delete_counter = 0;
+
+  while (finished_counter != lines_finished.size())
   {
-    // if the current ray is finished ( reached bounding box or sign switch in tsdf), skip it
-    if (lines_finished[i] == RayStatus::FINISHED)
+    if (!first_iteration)
     {
-      continue;
+      std::cout << "\033[A\33[2K\r";
+    }
+    else
+    {
+      first_iteration = false;
     }
 
-    // get the two ray-points and calculate the current rays length
-    auto &p1 = rays[i];
-    auto &p2 = current_pose->pos;
-    float length = (p1 - p2).norm();
-    float factor = (length + params.ray_tracer.step_size) / length; // vector enlargement
+    float percent = ((float)finished_counter / (float)lines_finished.size()) * 100.0f;
 
-    // enlarge "vector"
-    p1 = (p1 - current_pose->pos) * factor + current_pose->pos; // translate to (0,0,0), enlarge, translate back
-
-    // if we are out of the bounds of the local map, we want to set the the point directly on the bounding box. (calc relative enlargement factor)
-    float fac_x = 10.0f, fac_y = 10.0f, fac_z = 10.0f; // set to 10, as we calc the min of these
-    bool needs_resize = false;
-
-    // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
-    // this is useful for visualization, but might not be useful for a production environment, at least in terms of the resizing which is done.
-    if (p1.x() > current_pose->pos.x() + side_length_x / 2.0f || p1.x() < current_pose->pos.x() - side_length_x / 2.0f)
+    std::cout << std::fixed;
+    std::cout << std::setprecision(2);
+    std::cout << "[Finished]: " << percent << " \% of the rays in this iteration" << std::endl;
+    //#pragma omp parallel for schedule(static) default(shared)
+    for (int i = 0; i < rays.size(); i++)
     {
-      fac_x = abs((side_length_x / 2.0f) / (p1.x() - current_pose->pos.x()));
-      needs_resize = true;
-    }
-
-    if (p1.y() > current_pose->pos.y() + side_length_y / 2.0f || p1.y() < current_pose->pos.y() - side_length_y / 2.0f)
-    {
-      fac_y = abs((side_length_y / 2.0f) / (p1.y() - current_pose->pos.y()));
-      needs_resize = true;
-    }
-
-    if (p1.z() > current_pose->pos.z() + side_length_z / 2.0f || p1.z() < current_pose->pos.z() - side_length_z / 2.0f)
-    {
-      fac_z = abs((side_length_z / 2.0f) / (p1.z() - current_pose->pos.z()));
-      needs_resize = true;
-    }
-
-    try
-    {
-      // if the current ray surpasses the border of the bounding box, the ray is finished
-      if (needs_resize)
+      // if the current ray is finished ( reached bounding box or sign switch in tsdf), skip it
+      if (lines_finished[i] == RayStatus::FINISHED)
       {
-        std::cout << " ????? " << std::endl;
-        // determine biggest adaption
-        float min_xy = std::min(fac_x, fac_y);
-
-        float min_xyz = std::min(min_xy, fac_z);
-
-        // resize to bb size
-        p1 = (p1 - current_pose->pos) * min_xyz + current_pose->pos;
-
-        lines_finished[i] = RayStatus::FINISHED;
-        finished_counter++;
-
-        // no need to proceed further
         continue;
       }
 
-      // now we can obtain the current tsdf value, as we are sure the ray is inbounds the bounding box (local map)
-      auto &tsdf = local_map_ptr_.get()->value(real_to_map(p1));
+      // get the two ray-points and calculate the current rays length
+      auto &p1 = rays[i];
+      auto p2 = current_pose->pos;
+      float length = (p1 - p2).norm();
+      float factor = (length + params.ray_tracer.step_size) / length; // vector enlargement
 
-      // now check if a status change is necessary.
-      // this logic is kindof complicated, as many factors are involved. it is necassary to save (positive valued) tsdf cells
-      // which might be associated to the current pose (with the current ray)
-      // this logic should be able to let the ray tracer see through tight passages
-      if (lines_finished[i] == RayStatus::INIT)
+      // enlarge "vector"
+      p1 = (p1 - current_pose->pos) * factor + current_pose->pos; // translate to (0,0,0), enlarge, translate back
+
+      // if we are out of the bounds of the local map, we want to set the the point directly on the bounding box. (calc relative enlargement factor)
+      float fac_x = 10.0f, fac_y = 10.0f, fac_z = 10.0f; // set to 10, as we calc the min of these
+      bool needs_resize = false;
+
+      // we need to do this 3 times and find the smalles factor (the biggest adatpion) needed to get the ray back to the bounding box.
+      // this is useful for visualization, but might not be useful for a production environment, at least in terms of the resizing which is done.
+      if (p1.x() > current_pose->pos.x() + side_length_x / 2.0f || p1.x() < current_pose->pos.x() - side_length_x / 2.0f)
       {
-        // interesting case: if the ray directly hits a negative valued tsdf cell, the ray is finished, as
-        // this cell cannot have been seen from the current position.
-        if (tsdf.value() < 0 && tsdf.weight() > 0)
-        {
-          // we just skip here, cause this case is not interesting to us
-          continue;
-        }
-        else if (tsdf.value() < params.map.tau && tsdf.weight() > 0)
-        {
-          // now that the ray hit it's first positvely valued cell, we update it's status
-          lines_finished[i] = RayStatus::HIT;
-
-          // save the tsdf cell, as we are not sure, if the cell is to be associated with the current pose
-          current_ray_associations[i].push_back(real_to_map(p1));
-
-          continue;
-        }
+        fac_x = abs((side_length_x / 2.0f) / (p1.x() - current_pose->pos.x()));
+        needs_resize = true;
       }
-      else if (lines_finished[i] == RayStatus::HIT)
+
+      if (p1.y() > current_pose->pos.y() + side_length_y / 2.0f || p1.y() < current_pose->pos.y() - side_length_y / 2.0f)
       {
-        if (tsdf.value() < 0 && tsdf.weight() > 0)
-        {
-          // if we detect a negative valued cell with a weight in this mode, we switch the mode
-          lines_finished[i] = RayStatus::ZERO_CROSSED;
-
-          // associations and visualization
-
-          // add association and visualization for every saved cell of the current ray.
-          for (Vector3i saved_cell : current_ray_associations[i])
-          {
-            // auto &tsdf_tmp = local_map_ptr_->value(saved_cell);
-
-            // tsdf_tmp = default_entry;
-            std::cout << "set default entry" << std::endl;
-            local_map_ptr_->value(saved_cell) = default_entry;
-          }
-
-          // now clear
-          current_ray_associations[i].clear();
-        }
-        else if (!(tsdf.value() < params.map.tau && tsdf.weight() > 0))
-        {
-          // if we are currently in hit mode, but the ray suddenly hits a meaningless cell, the status is
-          // set back to the init state, as we just passed through empty space, but not hit any kind of zero crossing doing it
-          // meaning: the data should ne be associated with the current pose
-          lines_finished[i] = RayStatus::INIT;
-
-          // clear the stored tsdf cells, as we now know those aren't supposed to be referenced to this scan (at least for now)
-          current_ray_associations[i].clear();
-
-          // continue with next ray
-          continue;
-        }
-        else
-        {
-          current_ray_associations[i].push_back(real_to_map(p1));
-        }
+        fac_y = abs((side_length_y / 2.0f) / (p1.y() - current_pose->pos.y()));
+        needs_resize = true;
       }
-      else if (lines_finished[i] == RayStatus::ZERO_CROSSED)
+
+      if (p1.z() > current_pose->pos.z() + side_length_z / 2.0f || p1.z() < current_pose->pos.z() - side_length_z / 2.0f)
       {
-        // if we have already had a sign change in tsdf and the value gets positive again, we are done.
-        // else, we are still in the negative value range and therefore, we add the association and mark the intersection in the local map
-        if (!(tsdf.value() < 0 && tsdf.weight() > 0))
+        fac_z = abs((side_length_z / 2.0f) / (p1.z() - current_pose->pos.z()));
+        needs_resize = true;
+      }
+
+      try
+      {
+        // if the current ray surpasses the border of the bounding box, the ray is finished
+        if (needs_resize)
         {
+          // determine biggest adaption
+          float min_xy = std::min(fac_x, fac_y);
+
+          float min_xyz = std::min(min_xy, fac_z);
+
+          // resize to bb size
+          p1 = (p1 - current_pose->pos) * min_xyz + current_pose->pos;
+
           lines_finished[i] = RayStatus::FINISHED;
           finished_counter++;
+
+          // no need to proceed further
+          continue;
         }
-        else
+
+        // now we can obtain the current tsdf value, as we are sure the ray is inbounds the bounding box (local map)
+        auto &tsdf = local_map_ptr_.get()->value(real_to_map(p1));
+
+        // now check if a status change is necessary.
+        // this logic is kindof complicated, as many factors are involved. it is necassary to save (positive valued) tsdf cells
+        // which might be associated to the current pose (with the current ray)
+        // this logic should be able to let the ray tracer see through tight passages
+        if (lines_finished[i] == RayStatus::INIT)
         {
-          std::cout << "set default entry" << std::endl;
-          local_map_ptr_->value(real_to_map(p1)) = default_entry;
-          // tsdf = default_entry;
+          // interesting case: if the ray directly hits a negative valued tsdf cell, the ray is finished, as
+          // this cell cannot have been seen from the current position.
+          if (tsdf.value() < 0 && tsdf.weight() > 0)
+          {
+            // we just skip here, cause this case is not interesting to us
+            continue;
+          }
+          else if (tsdf.value() < params.map.tau && tsdf.weight() > 0)
+          {
+            // now that the ray hit it's first positvely valued cell, we update it's status
+            lines_finished[i] = RayStatus::HIT;
+
+            // save the tsdf cell, as we are not sure, if the cell is to be associated with the current pose
+            current_ray_associations[i].push_back(real_to_map(p1));
+
+            continue;
+          }
+        }
+        else if (lines_finished[i] == RayStatus::HIT)
+        {
+          if (tsdf.value() < 0 && tsdf.weight() > 0)
+          {
+            // if we detect a negative valued cell with a weight in this mode, we switch the mode
+            lines_finished[i] = RayStatus::ZERO_CROSSED;
+
+            // associations and visualization
+
+            // add association and visualization for every saved cell of the current ray.
+            for (Vector3i saved_cell : current_ray_associations[i])
+            {
+              TSDFEntry &tsdf_tmp = local_map_ptr_->value(saved_cell);
+              // std::cout << "Before1: " << tsdf_tmp.value() << " | " << tsdf_tmp.weight() << std::endl;
+              // tsdf_tmp.value(default_entry.value());
+              // tsdf_tmp.weight(default_entry.weight());
+              // std::cout << "After1: " << tsdf_tmp.value() << " | " << tsdf_tmp.weight() << std::endl;
+
+              // local_map_ptr_->value(saved_cell) = default_entry;
+            }
+
+            // tsdf.value(default_entry.value());
+            // tsdf.weight(default_entry.weight());
+
+            // now clear
+            current_ray_associations[i].clear();
+          }
+          else if (!(tsdf.value() < params.map.tau && tsdf.weight() > 0))
+          {
+            // if we are currently in hit mode, but the ray suddenly hits a meaningless cell, the status is
+            // set back to the init state, as we just passed through empty space, but not hit any kind of zero crossing doing it
+            // meaning: the data should ne be associated with the current pose
+            lines_finished[i] = RayStatus::INIT;
+
+            // clear the stored tsdf cells, as we now know those aren't supposed to be referenced to this scan (at least for now)
+            current_ray_associations[i].clear();
+
+            // continue with next ray
+            continue;
+          }
+          else
+          {
+            current_ray_associations[i].push_back(real_to_map(p1));
+          }
+        }
+        else if (lines_finished[i] == RayStatus::ZERO_CROSSED)
+        {
+          // if we have already had a sign change in tsdf and the value gets positive again, we are done.
+          // else, we are still in the negative value range and therefore, we add the association and mark the intersection in the local map
+          if (!(tsdf.value() < 0 && tsdf.weight() > 0))
+          {
+            lines_finished[i] = RayStatus::FINISHED;
+            finished_counter++;
+          }
+          else
+          {
+            // local_map_ptr_->value(real_to_map(p1)) = default_entry;
+            // std::cout << "Before: " << tsdf.value() << " | " << tsdf.weight() << std::endl;
+            // tsdf.value(default_entry.value());
+            // tsdf.weight(default_entry.weight());
+            // std::cout << "After: " << tsdf.value() << " | " << tsdf.weight() << std::endl;
+          }
         }
       }
-    }
-    catch (...)
-    {
-      Eigen::Vector3f globalMapPos = local_map_ptr_->get_pos().cast<float>();
-      globalMapPos *= MAP_RESOLUTION / 1000.0f;
-      std::cout << "[RayTracer] Error while checking the local map values for local-map with global pose " << globalMapPos << std::endl
-                << "Pos checked: " << p1 << std::endl
-                << "Distanze between center and checked pos: " << (p1 - globalMapPos).norm() << std::endl;
+      catch (...)
+      {
+        Eigen::Vector3f globalMapPos = local_map_ptr_->get_pos().cast<float>();
+        globalMapPos *= MAP_RESOLUTION / 1000.0f;
+        std::cout << "[RayTracer] Error while checking the local map values for local-map with global pose " << globalMapPos << std::endl
+                  << "Pos checked: " << p1 << std::endl
+                  << "Distanze between center and checked pos: " << (p1 - globalMapPos).norm() << std::endl;
 
-      throw std::logic_error("[RAY_TRACER] If this fires, there is a huge bug in your code m8.");
+        throw std::logic_error("[RAY_TRACER] If this fires, there is a huge bug in your code m8.");
+      }
     }
   }
+
+  local_map_ptr_->write_back();
+
+  std::cout << "After small update size: " << global_map_ptr_->get_full_data().size() << std::endl;
 }
 
 pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)

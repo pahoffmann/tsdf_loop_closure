@@ -599,7 +599,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 #pragma endregion
 
 #pragma region TSDF_UPDATE
-
     // CREATE POINTCLOUD USED FOR TSDF UPDATE
     pcl::VoxelGrid<PointType> grid;
     grid.setInputCloud(input_cloud);
@@ -730,6 +729,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 #pragma region LOOP_EXAMINATION
 
     bool converged = false;
+    int num_converged = 0;
 
     for (auto lc_pair : lc_candidate_pairs)
     {
@@ -814,10 +814,15 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         // add lc if unit converged, update converge flag for all found lcs for the current position
         if (converged_unit)
         {
+            num_converged++;
             converged = true;
             lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
             lc_fitness_scores.push_back(fitness_score);
-            //break;
+
+            if(num_converged >= 2)
+            {
+                break;
+            }
         }
     }
 
@@ -874,33 +879,36 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // clear and update the tsdf
     map_update_counter++;
 
-    auto previous_filename_path = params.map.filename;
-    // create new map
-    std::string new_stem = previous_filename_path.stem().string();
-    if(map_update_counter == 1)
+    if ((map_update_counter - 1) % 10 == 0)
     {
-        new_stem += "_" + std::to_string(map_update_counter);
+        auto previous_filename_path = params.map.filename;
+        // create new map
+        std::string new_stem = previous_filename_path.stem().string();
+        if (map_update_counter == 1)
+        {
+            new_stem += "_" + std::to_string(map_update_counter);
+        }
+        else
+        {
+            new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
+        }
+
+        params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
+
+        // delete old map
+        boost::filesystem::remove(previous_filename_path);
+
+        // reset pointers
+        global_map_ptr.reset(new GlobalMap(params.map));
+        local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+        Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter));
+        gm_data = global_map_ptr->get_full_data();
+
+        marker = ROSViewhelper::marker_from_gm_read(gm_data);
+        // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+        tsdf_pub.publish(marker);
     }
-    else
-    {
-        new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
-    }
 
-    params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
-
-    // delete old map
-    boost::filesystem::remove(previous_filename_path);
-
-    // reset pointers
-    global_map_ptr.reset(new GlobalMap(params.map));
-    local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
-    Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter));
-
-    gm_data = global_map_ptr->get_full_data();
-
-    marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
-    tsdf_pub.publish(marker);
     // partial_update();
 
     ready_flag_pub.publish(ready_msg);
