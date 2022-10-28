@@ -22,7 +22,6 @@
 struct ActiveChunk
 {
     std::vector<TSDFEntry::RawType> data;
-    std::vector<int32_t> intersect_data;
     Vector3i pos;
     int age;
 };
@@ -166,7 +165,7 @@ public:
      * @param chunk position of the chunk that gets activated
      * @return reference to the activated chunk
      */
-    std::vector<TSDFEntry::RawType> &activate_chunk(const Vector3i &chunk, std::vector<int> *&intersections);
+    std::vector<TSDFEntry::RawType> &activate_chunk(const Vector3i &chunk);
 
     /**
      * Writes all active chunks into the HDF5 file.
@@ -288,12 +287,6 @@ public:
      *
      */
     void clear_association_data();
-
-    /**
-     * @brief Clears the map from the intersection data which might have been written to it in a previous run
-     *
-     */
-    void clear_intersection_data();
 
     /**
      * @brief gets the attribute data of the local map

@@ -183,7 +183,7 @@ namespace ROSViewhelper
                     auto tsdf = local_map->value(x, y, z);
                     auto value = tsdf.value();
                     auto weight = tsdf.weight();
-                    auto intersect = tsdf.getIntersect();
+                    auto intersect = tsdf.intersect();
 
                     // if there is an intersect...
                     if (intersect != TSDFEntry::IntersectStatus::NO_INT)
@@ -318,7 +318,7 @@ namespace ROSViewhelper
                         auto tsdf = local_map->value(x, y, z);
                         auto value = tsdf.value();
                         auto weight = tsdf.weight();
-                        auto intersect = tsdf.getIntersect();
+                        auto intersect = tsdf.intersect();
 
                         // just the cells, which actually have a weight and a value other than (and including) the default one
                         if (weight > 0 && value < 600)
@@ -339,7 +339,7 @@ namespace ROSViewhelper
                             else
                             {
                                 // insert into hashmap and proceed
-                                map[seed] = intersect;
+                                map[seed] = static_cast<TSDFEntry::IntersectStatus>(intersect);
                             }
 
                             // more time measuring
@@ -521,7 +521,7 @@ namespace ROSViewhelper
                     auto tsdf = local_map_ptr_->value(x, y, z);
                     auto value = tsdf.value();
                     auto weight = tsdf.weight();
-                    auto intersect = tsdf.getIntersect();
+                    auto intersect = tsdf.intersect();
 
                     // just the cells, which actually have a weight and a value other than (and including) the default one
                     if (weight > 0 && value < 600)

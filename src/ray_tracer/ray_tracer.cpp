@@ -243,7 +243,7 @@ void RayTracer::updateRaysNew(int mode)
               auto &tsdf_tmp = local_map_ptr_->value(saved_cell);
 
               // set intersection
-              tsdf_tmp.setIntersect(TSDFEntry::IntersectStatus::INT);
+              tsdf_tmp.intersect(static_cast<TSDFEntryHW::IntersectionType>(TSDFEntry::IntersectStatus::INT));
 
               // set association
               cur_association->addAssociation(saved_cell, tsdf_tmp);
@@ -254,7 +254,7 @@ void RayTracer::updateRaysNew(int mode)
 
             // add zero crossing visualization and association
             cur_association->addAssociation(real_to_map(p1), tsdf);
-            tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+            tsdf.intersect(static_cast<TSDFEntryHW::IntersectionType>(TSDFEntry::IntersectStatus::INT_ZERO));
           }
         }
         else if (!(tsdf.value() < params.map.tau && tsdf.weight() > 0))
@@ -297,7 +297,7 @@ void RayTracer::updateRaysNew(int mode)
           if (mode == 0)
           {
             cur_association->addAssociation(real_to_map(p1), tsdf);
-            tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_NEG);
+            tsdf.intersect(static_cast<TSDFEntryHW::IntersectionType>(TSDFEntry::IntersectStatus::INT_NEG));
           }
         }
       }
@@ -566,7 +566,7 @@ void RayTracer::perform3DBresenham()
             auto &tsdf_tmp = local_map_ptr_->value(saved_cell);
 
             // set intersection
-            tsdf_tmp.setIntersect(TSDFEntry::IntersectStatus::INT);
+            tsdf_tmp.intersect(static_cast<TSDFEntryHW::IntersectionType>(TSDFEntry::IntersectStatus::INT));
 
             // set association
             cur_association->addAssociation(saved_cell, tsdf_tmp);
@@ -577,7 +577,7 @@ void RayTracer::perform3DBresenham()
 
           // add zero crossing visualization and association
           cur_association->addAssociation(bresenham_start, tsdf);
-          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+          tsdf.intersect(static_cast<TSDFEntryHW::IntersectionType>(TSDFEntry::IntersectStatus::INT_ZERO));
         }
         else if (!(tsdf.value() < params.map.tau && tsdf.weight() > 0))
         {
@@ -610,7 +610,7 @@ void RayTracer::perform3DBresenham()
         else
         {
           cur_association->addAssociation(bresenham_start, tsdf);
-          tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_NEG);
+          tsdf.intersect(static_cast<TSDFEntryHW::IntersectionType>(TSDFEntry::IntersectStatus::INT_NEG));
         }
       }
 

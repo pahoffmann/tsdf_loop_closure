@@ -22,6 +22,6 @@ struct TSDFEntryHW
 
     ValueType value;
     WeightType weight;
-    // IndexType pose_index;
-    // IntersectionType intersection;
+    IndexType pose_index;
+    IntersectionType intersection;
 };

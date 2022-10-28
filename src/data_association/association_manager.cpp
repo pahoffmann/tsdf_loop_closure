@@ -610,7 +610,6 @@ void AssociationManager::cleanup()
 {
     // cleanup hdf5
     global_map_ptr->clear_association_data();
-    global_map_ptr->clear_intersection_data();
 
     // cleanup hashmaps and vectors
     level_one_data.clear();

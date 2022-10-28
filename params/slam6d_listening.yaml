@@ -4,8 +4,8 @@ loop_closure:
   min_traveled_lc: 8.0 # in m
   dist_between_lcs: 0.0 # in m
 
-  max_prereg_icp_fitness: 0.2 # in m²
-  max_lc_icp_fitness: 0.1 # in m²
+  max_prereg_icp_fitness: 0.5 # in m²
+  max_lc_icp_fitness: 0.3 # in m²
 
   do_preregistration: true
 

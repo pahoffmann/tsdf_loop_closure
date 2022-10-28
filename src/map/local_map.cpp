@@ -170,8 +170,7 @@ void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top
         {
             for (int chunk_z = chunk_start.z(); chunk_z <= chunk_end.z(); ++chunk_z)
             {
-                std::vector<int> *int_data;
-                auto &chunk = map_->activate_chunk(Vector3i(chunk_x, chunk_y, chunk_z), int_data);
+                auto &chunk = map_->activate_chunk(Vector3i(chunk_x, chunk_y, chunk_z));
 
                 // The usual scenario is to iterate over [0, CHUNK_SIZE) in x,y,z, unless the
                 // current chunk is on the boundary of the area.
@@ -211,19 +210,11 @@ void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top
                             {
                                 // We did a bounds check at the start of the function => unchecked is fine
                                 chunk[index] = value_unchecked(global_pos).raw();
-                                // int_data->operator[](index) = value_unchecked(global_pos).getIntersect();
-                                
-                                // if(int_data->operator[](index) != 0) {
-                                //     //std::cout << "cooookie" << std::endl;
-                                // }
                             }
                             else
                             {
                                 value_unchecked(global_pos).raw(chunk[index]);
-                                // if(int_data == NULL || index > int_data->size()) {
-                                //     throw std::logic_error("ok??? " + std::to_string(int_data->size()) + " | " + std::to_string(index));
-                                // }
-                                // value_unchecked(global_pos).setIntersect(static_cast<TSDFEntry::IntersectStatus>(int_data->operator[](index)));
+                            
                             }
                         }
                     }
