@@ -820,7 +820,15 @@ std::vector<bool> GlobalMap::chunks_empty()
 
 std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
 {
-    std::vector<std::pair<Vector3i, TSDFEntry>> ret;
+
+    int thread_count = omp_get_max_threads();
+
+    std::cout << "Num threads: " << thread_count << std::endl;
+    std::vector<int> counter_vec(thread_count, 0);
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    std::vector<std::pair<Vector3i, TSDFEntry>> ret_final;
+    std::vector<std::vector<std::pair<Vector3i, TSDFEntry>>> ret(thread_count);
 
     auto chunks = all_chunk_poses();
 
@@ -828,6 +836,7 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
 
     int default_counter = 0;
 
+#pragma omp parallel for num_threads(thread_count) schedule(static)
     for (int i = 0; i < chunks.size(); i++)
     {
         auto chunk = chunks[i];
@@ -845,14 +854,18 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
 
         // now determine all <Vector3i, TSDFEntry> entries
 
+// #pragma omp parallel for num_threads(thread_count) schedule(static)
         for (int j = 0; j < data.size(); j++)
         {
+            int thread_idx = omp_get_thread_num();
+            //std::cout << "thread index: " << thread_idx << std::endl;
+
             TSDFEntry tmp_tsdf(data[j]);
 
             // skip default values
             if (tmp_tsdf.value() == params.tau || tmp_tsdf.weight() == 0)
             {
-                default_counter++;
+                counter_vec[thread_idx]++;
                 continue;
             }
 
@@ -862,16 +875,32 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
             // currently pos is a relative pos. to make it absolute, we add the chunk pos;
             index_pos += chunk_pos;
 
-            ret.push_back(std::make_pair(index_pos, tmp_tsdf));
+            ret[thread_idx].push_back(std::make_pair(index_pos, tmp_tsdf));
         }
-
-        // std::cout << "Finished reading data from chunk " << i << std::endl;
     }
 
-    std::cout << "[GlobalMap - get_full_data()] Read " << ret.size() << " values from the whole globalmap" << std::endl;
-    std::cout << "[GlobalMap - get_full_data()] Read " << default_counter << " default values from the whole globalmap" << std::endl;
+    int final_size = 0;
 
-    return ret;
+    for (int i = 0; i < ret.size(); i++)
+    {
+        final_size += ret[i].size();
+    }
+
+    ret_final.reserve(final_size);
+
+    // insert the thread stuff
+    for (int i = 0; i < ret.size(); i++)
+    {
+        ret_final.insert(ret_final.end(), ret[i].begin(), ret[i].end());
+    }
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    std::cout << "[GlobalMap - get_full_data()] Read " << ret_final.size() << " values from the whole globalmap" << std::endl;
+    std::cout << "[GlobalMap - get_full_data()] Read " << default_counter << " default values from the whole globalmap" << std::endl;
+    std::cout << "[GlobalMap - get_full_data()] Took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms fo the data aquisition" << std::endl;
+
+    return ret_final;
 }
 
 Vector3i GlobalMap::pos_from_index(int i)

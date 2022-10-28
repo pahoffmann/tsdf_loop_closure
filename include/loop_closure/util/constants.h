@@ -8,7 +8,7 @@
 #include <loop_closure/util/hdf5_constants.h>
 
 /// Resolution of the Map in Millimeter per Cell.
-constexpr int MAP_RESOLUTION = 64;
+constexpr int MAP_RESOLUTION = 128;
 
 /// Resolution of the Weights. A weight of 1.0f is represented as WEIGHT_RESOLUTION
 constexpr int WEIGHT_RESOLUTION = 64;

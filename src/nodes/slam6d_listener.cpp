@@ -116,7 +116,8 @@ ros::Publisher global_scan_pub;     // result of icp
 ros::Publisher input_cloud_pub;     // publishes the input cloud
 ros::Publisher tsdf_cloud_pub;
 ros::Publisher lc_candidate_publisher; // publishes loop closure candidates
-ros::Publisher normal_publisher;       // publishes loop closure candidates
+ros::Publisher normal_publisher;
+ros::Publisher rays_publisher;
 
 // Ros messages
 nav_msgs::Path ros_path;
@@ -306,12 +307,13 @@ void partial_update()
     local_map_ptr->write_back();
 
     // updateeee
-    Map_Updater::partial_map_update(path, optimized_path, 0.064, 2, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, tracer);
-
+    Map_Updater::partial_map_update(path, optimized_path, params.map.resolution / 1000.0f, 2, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, tracer);
+    auto ray_tracer_marker = tracer->get_ros_marker();
     auto marker_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
 
     tsdf_pub.publish(marker);
+    rays_publisher.publish(ray_tracer_marker);
 
     if (bond_ptr->isBroken())
     {
@@ -344,7 +346,7 @@ void clear_and_update_tsdf()
     local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
     std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
-    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final");
+    // Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final");
 
     auto marker_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
@@ -394,9 +396,9 @@ void enrich_pointcloud(pcl::PointCloud<PointType>::Ptr cloud_ptr, int pose_index
         pcl::transformPointCloud(*dataset_clouds[i], tmp_cloud, index_pose_to_model);
         // enrich
 
-        std::cout << "Cloud size before enlargement: " << cloud_ptr->size() << std::endl;
+        // std::cout << "Cloud size before enlargement: " << cloud_ptr->size() << std::endl;
         *cloud_ptr = *cloud_ptr + tmp_cloud;
-        std::cout << "Cloud size after enlargement: " << cloud_ptr->size() << std::endl;
+        // std::cout << "Cloud size after enlargement: " << cloud_ptr->size() << std::endl;
     }
 }
 
@@ -515,10 +517,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
             // gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score, 0.2);
             gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score, 2.5f);
-            //gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            //  gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            //  gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            //  gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
 
             // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
             if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
@@ -627,7 +629,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
 
     // create TSDF Volume
-    update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution);
+    update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
     local_map_ptr->write_back();
 
 #pragma endregion
@@ -819,7 +821,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
             lc_fitness_scores.push_back(fitness_score);
 
-            if(num_converged >= 2)
+            if (num_converged >= 2)
             {
                 break;
             }
@@ -857,9 +859,13 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // VERY IMPORTANT: perform graph optimization using the last initial estimate
     auto new_values = gtsam_wrapper_ptr->perform_optimization(initial);
 
+    // fill the optimized path based on the gtsam return values
     fill_optimized_path(new_values);
-
     optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
+
+    // do a partial update of the global map
+    //partial_update();
+    //reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
 
     // copy values from optimized path back to the path
     path = new Path(*optimized_path);
@@ -879,37 +885,35 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // clear and update the tsdf
     map_update_counter++;
 
-    if ((map_update_counter - 1) % 10 == 0)
-    {
-        auto previous_filename_path = params.map.filename;
-        // create new map
-        std::string new_stem = previous_filename_path.stem().string();
-        if (map_update_counter == 1)
-        {
-            new_stem += "_" + std::to_string(map_update_counter);
-        }
-        else
-        {
-            new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
-        }
+    // if ((map_update_counter - 1) % 10 == 0)
+    // {
+    //     auto previous_filename_path = params.map.filename;
+    //     // create new map
+    //     std::string new_stem = previous_filename_path.stem().string();
+    //     if (map_update_counter == 1)
+    //     {
+    //         new_stem += "_" + std::to_string(map_update_counter);
+    //     }
+    //     else
+    //     {
+    //         new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
+    //     }
 
-        params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
+    //     params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
 
-        // delete old map
-        boost::filesystem::remove(previous_filename_path);
+    //     // delete old map
+    //     boost::filesystem::remove(previous_filename_path);
 
-        // reset pointers
-        global_map_ptr.reset(new GlobalMap(params.map));
-        local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
-        Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter));
-        gm_data = global_map_ptr->get_full_data();
+    //     // reset pointers
+    //     global_map_ptr.reset(new GlobalMap(params.map));
+    //     local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+    //     Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter));
+    //     gm_data = global_map_ptr->get_full_data();
 
-        marker = ROSViewhelper::marker_from_gm_read(gm_data);
-        // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
-        tsdf_pub.publish(marker);
-    }
-
-    // partial_update();
+    //     marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    //     // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
+    //     tsdf_pub.publish(marker);
+    // }
 
     ready_flag_pub.publish(ready_msg);
 }
@@ -960,6 +964,7 @@ int main(int argc, char **argv)
     ready_flag_pub = n.advertise<std_msgs::String>("/slam6d_listener_ready", 1);
     lc_candidate_publisher = n.advertise<visualization_msgs::Marker>("/lc_candidates", 1);
     normal_publisher = n.advertise<visualization_msgs::Marker>("/input_cloud_normals", 1);
+    rays_publisher = n.advertise<visualization_msgs::Marker>("/rays", 1);
 
     // bond
     std::string id = "42";

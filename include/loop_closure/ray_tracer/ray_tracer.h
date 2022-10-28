@@ -200,7 +200,7 @@ public:
      * 
      * @param pose 
      */
-    void local_removal(Pose *pose);
+    void local_removal(Pose *pose, int pose_index);
 
     /**
      * @brief Get the ros marker for the current ray trace

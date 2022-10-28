@@ -839,14 +839,14 @@ namespace ROSViewhelper
             auto real_point = map_to_real(data_pt.first);
             auto tsdf = data_pt.second;
 
-            points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
-
-            if (tsdf.value() < 0)
+            if (tsdf.value() < 0 && tsdf.weight() > 0)
             {
+                points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
                 points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::maroon));
             }
-            else //if(tsdf.value() >= 0 && tsdf.value() < 600)
+            else if (tsdf.value() >= 0 && tsdf.value() < 600 && tsdf.weight() > 0)
             {
+                points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
                 points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::green));
             }
         }

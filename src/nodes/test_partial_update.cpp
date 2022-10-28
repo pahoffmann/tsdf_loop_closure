@@ -193,7 +193,7 @@ int main(int argc, char **argv)
         auto pose = path->at(i);
 
         auto bb_marker = ROSViewhelper::getBoundingBoxMarker(map_to_real(local_map_ptr_->get_size()), pose);
-        ray_tracer->local_removal(pose);
+        ray_tracer->local_removal(pose, i);
 
         // Association *ass = new Association(*pose, i, global_map_ptr_, params.loop_closure.json_dirname);
 

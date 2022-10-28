@@ -18,6 +18,7 @@
 #include <loop_closure/map/attribute_data_model.h>
 #include <omp.h>
 #include <loop_closure/params/loop_closure_params.h>
+#include <chrono>
 
 struct ActiveChunk
 {
