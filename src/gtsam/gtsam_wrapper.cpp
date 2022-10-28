@@ -109,8 +109,8 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     // pcl::transformPointCloud(*model_cloud, *model_cloud, teaser_transform.inverse());
 
     // perform_pcl_icp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
-    // perform_pcl_gicp(model_cloud, scan_cloud, gicp_cloud, converged_gicp, final_transform_gicp, fitness_score_gicp);
-    perform_adaptive_pcl_gicp(model_cloud, scan_cloud, gicp_cloud, converged_gicp, final_transform_gicp, fitness_score_gicp);
+    perform_pcl_gicp(model_cloud, scan_cloud, gicp_cloud, converged_gicp, final_transform_gicp, fitness_score_gicp);
+    //perform_adaptive_pcl_gicp(model_cloud, scan_cloud, gicp_cloud, converged_gicp, final_transform_gicp, fitness_score_gicp);
     // perform_vgicp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
 
     final_transformation = final_transform_gicp;
