@@ -113,6 +113,45 @@ namespace CoordSysTransform
     }
 
     /**
+     * @brief Reads a file containing ground truth data for the hannover 1 dataset. may be viable for different ground truths
+     *        The specified GT contains rows of poses, each one looking the following way:
+     *        [x, y, z | x, y, z, w] (oder?) [x, y, z | w, x, y, z]
+     * 
+     * @param pose 
+     * @return Eigen::Matrix4f 
+     */
+    static Eigen::Matrix4f getPosesFromSlam6D_GT(const boost::filesystem::path &pose)
+    {
+        std::ifstream poseIn(pose.c_str());
+
+        std::vector<Eigen::Matrix4f> poses;
+        while (poseIn.good())
+        {
+            float in_pos[3];
+            float pos[3];
+            float in_quat[4]; // x, y, z, w?
+
+            poseIn >> in_pos[0] >> in_pos[1] >> in_pos[2];
+            poseIn >> in_quat[0] >> in_quat[1] >> in_quat[2] >> in_quat[3];
+
+            pos[0] = in_pos[2] / 100.0f;
+            pos[1] = -in_pos[0] / 100.0f;
+            pos[2] = in_pos[1] / 100.0f;
+
+            Eigen::Quaternionf quat(in_quat[4], in_quat[0], in_quat[1], in_quat[2]);
+            Eigen::Vector3f pos_vec(pos[0], pos[1], pos[2]);
+
+            Eigen::Matrix4f mat;
+            mat.block<3,3>(0,0) = quat.toRotationMatrix();
+            mat.block<3,1>(1,3) = pos_vec;
+
+            poses.push_back(mat);
+        }
+
+        return poses;
+    }
+
+    /**
      * @brief function which converts a pointcloud from righthand to lefthand sided
      *
      * @param pcl

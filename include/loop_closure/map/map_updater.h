@@ -46,6 +46,12 @@ namespace Map_Updater
                             GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
                             LoopClosureParams &params, RayTracer *tracer);
 
+    void partial_map_update_reverse(Path *old_path, Path *new_path, float transl_delta, float rotation_delta,
+                            std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
+                            GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
+                            LoopClosureParams &params);
+
+
     void full_map_update(Path *new_path, std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
                         GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
                          LoopClosureParams &params, std::string suffix);
