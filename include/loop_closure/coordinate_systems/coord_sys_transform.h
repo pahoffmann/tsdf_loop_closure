@@ -120,7 +120,7 @@ namespace CoordSysTransform
      * @param pose 
      * @return Eigen::Matrix4f 
      */
-    static Eigen::Matrix4f getPosesFromSlam6D_GT(const boost::filesystem::path &pose)
+    static std::vector<Eigen::Matrix4f> getPosesFromSlam6D_GT(const boost::filesystem::path &pose)
     {
         std::ifstream poseIn(pose.c_str());
 

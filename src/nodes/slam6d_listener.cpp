@@ -835,7 +835,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
             lc_fitness_scores.push_back(fitness_score);
 
-            if (num_converged >= 2)
+            if (num_converged >= params.loop_closure.max_closures_per_pose)
             {
                 break;
             }
