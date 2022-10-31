@@ -24,6 +24,8 @@ loop_closure:
   between_translation_noise_y: 0.2
   between_translation_noise_z: 0.2
 
+  ground_truth_filename: "/home/patrick/data/hannover1_gt/gt_han1.dat"
+
 map:
   # directory to save map in
   dir: "/home/patrick/maps/generated"

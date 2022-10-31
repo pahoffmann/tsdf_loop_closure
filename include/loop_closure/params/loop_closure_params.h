@@ -49,6 +49,9 @@ struct LoopClosureParams
     // json filename
     nh.param<std::string>("loop_closure/json_dirname", loop_closure.json_dirname, "/home/patrick/maps/generated/json");
 
+    // ground truth filename
+    nh.param<std::string>("loop_closure/ground_truth_filename", loop_closure.ground_truth_filename, "/home/patrick/data/hannover1_gt/gt_han1.dat");
+
     // NOISES (actual, not the variance)
     // prior
     nh.param<float>("loop_closure/prior_translation_noise_x", loop_closure.prior_translation_noise_x, 0.4f);
@@ -81,6 +84,7 @@ struct LoopClosureParams
 
     int path_method;
     std::string json_dirname;
+    std::string ground_truth_filename;
 
     float max_prereg_icp_fitness;
     float max_lc_icp_fitness;

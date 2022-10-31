@@ -66,9 +66,9 @@ namespace CoordSysTransform
             // float z_axis_angle = 360.0f - rPosTheta[1];
 
             // in interval [-180, 180]
-            float x_axis_angle = - rPosTheta[2];
-            float y_axis_angle = - rPosTheta[0]; // oder : rPosTheta[0];
-            float z_axis_angle = - rPosTheta[1];
+            float x_axis_angle = -rPosTheta[2];
+            float y_axis_angle = -rPosTheta[0]; // oder : rPosTheta[0];
+            float z_axis_angle = -rPosTheta[1];
 
             // rPosTheta[0] *= 0.0174533;
             // rPosTheta[1] *= 0.0174533;
@@ -116,9 +116,9 @@ namespace CoordSysTransform
      * @brief Reads a file containing ground truth data for the hannover 1 dataset. may be viable for different ground truths
      *        The specified GT contains rows of poses, each one looking the following way:
      *        [x, y, z | x, y, z, w] (oder?) [x, y, z | w, x, y, z]
-     * 
-     * @param pose 
-     * @return Eigen::Matrix4f 
+     *
+     * @param pose
+     * @return Eigen::Matrix4f
      */
     static std::vector<Eigen::Matrix4f> getPosesFromSlam6D_GT(const boost::filesystem::path &pose)
     {
@@ -131,22 +131,44 @@ namespace CoordSysTransform
             float pos[3];
             float in_quat[4]; // x, y, z, w?
 
+            // -y, z, x (left handed coordinate system)
             poseIn >> in_pos[0] >> in_pos[1] >> in_pos[2];
             poseIn >> in_quat[0] >> in_quat[1] >> in_quat[2] >> in_quat[3];
 
             pos[0] = in_pos[2] / 100.0f;
-            pos[1] = -in_pos[0] / 100.0f;
+            pos[1] = (-in_pos[0]) / 100.0f;
             pos[2] = in_pos[1] / 100.0f;
 
-            Eigen::Quaternionf quat(in_quat[4], in_quat[0], in_quat[1], in_quat[2]);
+            Eigen::Quaternionf quat(in_quat[0], in_quat[1], in_quat[2], in_quat[3]);
+            // Eigen::Quaternionf quat = Eigen::Quaternionf::Identity();
             Eigen::Vector3f pos_vec(pos[0], pos[1], pos[2]);
 
             Eigen::Matrix4f mat;
-            mat.block<3,3>(0,0) = quat.toRotationMatrix();
-            mat.block<3,1>(1,3) = pos_vec;
+            mat.block<3, 3>(0, 0) = quat.toRotationMatrix();
+            mat.block<3, 1>(0, 3) = pos_vec;
+
+            Eigen::Affine3f affine_trans;
+            affine_trans = mat;
+
+            float roll_in, pitch_in, yaw_in;
+            pcl::getEulerAngles(affine_trans, roll_in, pitch_in, yaw_in);
+
+            float roll = yaw_in;
+            float pitch = roll_in;
+            float yaw = pitch_in;
+
+            Eigen::AngleAxisf rollAngle(roll, Eigen::Vector3f::UnitZ());
+            Eigen::AngleAxisf yawAngle(yaw, Eigen::Vector3f::UnitY());
+            Eigen::AngleAxisf pitchAngle(pitch, Eigen::Vector3f::UnitX());
+
+            Eigen::Quaternionf q = rollAngle * yawAngle * pitchAngle;
+
+            mat.block<3,3>(0,0) = q.toRotationMatrix();
 
             poses.push_back(mat);
         }
+
+        std::cout << "Read " << poses.size() << " poses from ground truth" << std::endl;
 
         return poses;
     }

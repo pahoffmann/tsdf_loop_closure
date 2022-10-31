@@ -44,6 +44,7 @@
 #include <loop_closure/gtsam/gtsam_wrapper.h>
 #include <loop_closure/util/lc_evaluator.h>
 #include <loop_closure/map/map_updater.h>
+#include <loop_closure/coordinate_systems/coord_sys_transform.h>
 
 // transform between ros and eigen
 #include <tf2/convert.h>
@@ -78,6 +79,8 @@ std::unique_ptr<GTSAMWrapper> gtsam_wrapper_ptr;
 Path *path;
 Path *optimized_path;
 Path *gicp_path;
+Path *ground_truth;
+
 int side_length_xy;
 int side_length_z;
 
@@ -105,6 +108,7 @@ Matrix4f last_loop_transform_diff;
 ros::Publisher path_pub;
 ros::Publisher gicp_path_pub;
 ros::Publisher optimized_path_pub;
+ros::Publisher ground_truth_path_pub;
 ros::Publisher loop_pub;
 ros::Publisher tsdf_pub;
 ros::Publisher ready_flag_pub;      // publisher used to signal to it's subscribers, that the node is back in idle mode
@@ -147,6 +151,9 @@ void init_obj()
     // init path
     path = new Path();
     path->attach_raytracer(tracer);
+
+    ground_truth = new Path();
+    ground_truth->attach_raytracer(tracer);
 
     gicp_path = new Path();
     gicp_path->attach_raytracer(tracer);
@@ -273,7 +280,7 @@ void broadcast_robot_pose(Pose &pose)
     br.sendTransform(transformStamped);
 }
 
-void broadcast_robot_path(Path *path)
+void broadcast_robot_path(Path *path, std::string base_child_frame_name = "pose_")
 {
     // std::cout << "Broadcasting transform.. " << std::endl;
 
@@ -287,7 +294,7 @@ void broadcast_robot_path(Path *path)
 
         transformStamped.header.stamp = ros::Time::now();
         transformStamped.header.frame_id = "map";
-        transformStamped.child_frame_id = "pose_" + std::to_string(idx);
+        transformStamped.child_frame_id = base_child_frame_name + std::to_string(idx);
         transformStamped.transform.translation.x = current->pos.x();
         transformStamped.transform.translation.y = current->pos.y();
         transformStamped.transform.translation.z = current->pos.z();
@@ -298,6 +305,32 @@ void broadcast_robot_path(Path *path)
         transformStamped.transform.rotation.w = current->quat.w();
 
         path_br.sendTransform(transformStamped);
+    }
+}
+
+
+void publish_ground_truth()
+{
+    std::cout << "Reading and publishing Ground Truth from file: " << params.loop_closure.ground_truth_filename << std::endl;
+
+    // ground truth:
+    if (params.loop_closure.ground_truth_filename != "")
+    {
+        auto poses = CoordSysTransform::getPosesFromSlam6D_GT(params.loop_closure.ground_truth_filename);
+
+        std::cout << "Got " << poses.size() << "poses from coord sys transform" << std::endl;
+
+        for (auto pose : poses)
+        {
+            Pose tmp(pose);
+            //std::cout << "Pose " << ground_truth->get_length() << std::endl << tmp << std::endl;
+            ground_truth->add_pose(tmp);
+        }
+
+        auto path_marker = ROSViewhelper::initPathMarker(ground_truth);
+        ground_truth_path_pub.publish(path_marker);
+
+        broadcast_robot_path(ground_truth, "gt_");
     }
 }
 
@@ -960,8 +993,9 @@ int main(int argc, char **argv)
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(40), slam6d_cloud_sub, slam6d_pose_sub);
     sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
 
-    optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
+    optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
+    ground_truth_path_pub = n.advertise<visualization_msgs::Marker>("/ground_truth", 1);
     gicp_path_pub = n.advertise<visualization_msgs::Marker>("/gicp_path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
     approx_pcl_pub_cur = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_cur", 1);
@@ -979,6 +1013,8 @@ int main(int argc, char **argv)
     lc_candidate_publisher = n.advertise<visualization_msgs::Marker>("/lc_candidates", 1);
     normal_publisher = n.advertise<visualization_msgs::Marker>("/input_cloud_normals", 1);
     rays_publisher = n.advertise<visualization_msgs::Marker>("/rays", 1);
+
+    publish_ground_truth();
 
     // bond
     std::string id = "42";
