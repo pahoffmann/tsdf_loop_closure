@@ -202,7 +202,8 @@ add_executable(slam6d_listener src/nodes/slam6d_listener.cpp
                         src/path/path.cpp
                         src/gtsam/gtsam_wrapper.cpp
                         src/util/lc_evaluator.cpp
-                        src/map/map_updater.cpp)
+                        src/map/map_updater.cpp
+                        src/util/csv_wrapper.cpp)
 
 add_executable(test_partial_update src/nodes/test_partial_update.cpp 
                         src/util/runtime_evaluator.cpp

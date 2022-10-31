@@ -51,6 +51,8 @@ struct LoopClosureParams
 
     // ground truth filename
     nh.param<std::string>("loop_closure/ground_truth_filename", loop_closure.ground_truth_filename, "/home/patrick/data/hannover1_gt/gt_han1.dat");
+    // path, where to save the generated csv for evaluation
+    nh.param<std::string>("loop_closure/csv_save_path", loop_closure.csv_save_path, "/home/patrick/data/evaluation");
 
     // NOISES (actual, not the variance)
     // prior
@@ -85,6 +87,7 @@ struct LoopClosureParams
     int path_method;
     std::string json_dirname;
     std::string ground_truth_filename;
+    std::string csv_save_path;
 
     float max_prereg_icp_fitness;
     float max_lc_icp_fitness;

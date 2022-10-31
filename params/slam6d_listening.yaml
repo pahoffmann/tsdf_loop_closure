@@ -40,9 +40,9 @@ map:
 
   # localmap size for every dimension (in m)
   size:
-    x: 40
-    y: 40
-    z: 25
+    x: 50
+    y: 50
+    z: 30
 
   # Maximum weight for one TSDF cell. This variable ensures that later changes can still have an influence to the map
   max_weight: 10.0

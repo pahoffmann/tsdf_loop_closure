@@ -385,7 +385,7 @@ static Eigen::Vector3f get_rotation_diff(Matrix4f tf1, Matrix4f tf2)
     Vector3f euler_vec;
     euler_vec << roll, pitch, yaw;
 
-    std::cout << "Rotation diff: " << euler_vec.x() << " | " << euler_vec.y() << " | " << euler_vec.z() << std::endl;
+    //std::cout << "Rotation diff: " << euler_vec.x() << " | " << euler_vec.y() << " | " << euler_vec.z() << std::endl;
 
     return euler_vec;
 }

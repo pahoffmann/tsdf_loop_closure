@@ -684,7 +684,6 @@ void GTSAMWrapper::perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr 
         t_scan_cloud.push_back(t_point);
     }
 
-    std::cout << __LINE__ << std::endl;
 
     // Run TEASER++ registration
     // Prepare solver parameters
@@ -698,7 +697,6 @@ void GTSAMWrapper::perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr 
         teaser::RobustRegistrationSolver::ROTATION_ESTIMATION_ALGORITHM::GNC_TLS;
     params.rotation_cost_threshold = 0.005;
 
-    std::cout << __LINE__ << std::endl;
 
     // Solve with TEASER++
     teaser::RobustRegistrationSolver solver(params);
@@ -706,17 +704,12 @@ void GTSAMWrapper::perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr 
     solver.solve(t_scan_cloud, t_model_cloud, pcl_correspondences);
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-    std::cout << __LINE__ << std::endl;
-
     auto solution = solver.getSolution();
 
-    std::cout << __LINE__ << std::endl;
 
     Eigen::Matrix4d solution_mat = Eigen::Matrix4d::Identity();
     solution_mat.block<3, 3>(0, 0) = solution.rotation;
     solution_mat.block<3, 1>(0, 3) = solution.translation;
-
-    std::cout << __LINE__ << std::endl;
 
     std::cout << "Rotation output: " << std::endl
               << Pose(solution_mat.cast<float>()) << std::endl;
