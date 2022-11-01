@@ -137,10 +137,16 @@ std::unique_ptr<bond::Bond> bond_ptr;
 
 // Evaluation
 
+// translation error against ground truth
 CSVWrapper::CSVObject *translation_error;
 CSVWrapper::CSVRow translation_header_row;
 CSVWrapper::CSVRow relative_translation_error_row;
 CSVWrapper::CSVRow absolute_translation_error_row;
+
+// gtsam graph error
+CSVWrapper::CSVObject *graph_error;
+CSVWrapper::CSVRow graph_error_header;
+CSVWrapper::CSVRow graph_error_row;
 
 #pragma endregion
 
@@ -183,6 +189,7 @@ void init_obj()
 
     // evaluation
     translation_error = csv_wrapper_ptr->create_object("translation_error");
+    graph_error = csv_wrapper_ptr->create_object("graph_error");
 }
 
 void fill_optimized_path(gtsam::Values values)
@@ -383,6 +390,9 @@ void clear_and_update_tsdf()
     translation_error->add_row(relative_translation_error_row);
     translation_error->add_row(absolute_translation_error_row);
 
+    graph_error->set_header(graph_error_header);
+    graph_error->add_row(graph_error_row);
+
     csv_wrapper_ptr->write_all();
 
     std::cout << "[Slam6D_Listener] Cleanup and write new tsdf" << std::endl;
@@ -456,6 +466,23 @@ void enrich_pointcloud(pcl::PointCloud<PointType>::Ptr cloud_ptr, int pose_index
         *cloud_ptr = *cloud_ptr + tmp_cloud;
         // std::cout << "Cloud size after enlargement: " << cloud_ptr->size() << std::endl;
     }
+}
+
+float get_current_graph_error()
+{
+    gtsam::Values initial;
+
+    // fill initial values with path positions
+    for (int i = 0; i < path->get_length(); i++)
+    {
+        auto current_pose = path->at(i);
+        gtsam::Rot3 rot3(path->at(i)->rotationMatrixFromQuaternion().cast<double>());
+        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+
+        initial.insert(i, gtsam::Pose3(rot3, point3));
+    }
+
+    return gtsam_wrapper_ptr->get_error(initial);
 }
 
 /**
@@ -728,6 +755,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         Matrix4f pose_mat = path->at(0)->getTransformationMatrix();
         gtsam_wrapper_ptr->add_prior_constraint(pose_mat);
 
+        graph_error_header.add("1");
+        graph_error_row.add(std::to_string(get_current_graph_error()));
+
         ready_flag_pub.publish(ready_msg);
 
         return;
@@ -762,6 +792,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         std::cout << "No loop found when inserting Pose with index" << path->get_length() - 1 << ":" << std::endl
                   << *path->at(path->get_length() - 1) << std::endl;
 
+        graph_error_header.add(std::to_string(path->get_length()));
+        graph_error_row.add(std::to_string(get_current_graph_error()));
+
         ready_flag_pub.publish(ready_msg);
 
         return;
@@ -773,19 +806,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     for (auto lc_pair : lc_pairs)
     {
-
-        // std::cout << "Found LC Candidate between pose " << lc_pair.first << " and " << lc_pair.second << std::endl;
-
         // check if the detected loop might be viable considering already found loops
-        if (!is_viable_lc(lc_pair))
+        if (is_viable_lc(lc_pair))
         {
-            // std::cout << "LC pair not viable!" << std::endl;
-
-            continue;
-        }
-        else
-        {
-            // std::cout << "Possible LC found between " << lc_pair.first << " and " << lc_pair.second << std::endl;
             lc_candidate_pairs.push_back(std::make_pair(Matrix4f::Identity(), lc_pair));
         }
     }
@@ -900,9 +923,17 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // if the lc found did not converge, we skip everything else
     if (!converged)
     {
+        graph_error_header.add(std::to_string(path->get_length()));
+        graph_error_row.add(std::to_string(get_current_graph_error()));
+
         ready_flag_pub.publish(ready_msg);
 
         return;
+    }
+    else
+    {
+        graph_error_header.add(std::to_string(path->get_length()));
+        graph_error_row.add(std::to_string(get_current_graph_error()));
     }
 
 #pragma endregion

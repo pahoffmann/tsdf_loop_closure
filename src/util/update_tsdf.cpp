@@ -279,6 +279,25 @@ void reverse_update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const 
 #pragma omp barrier
     for (auto &map_entry : local_values)
     {
+      bool skip = false;
+      for (int i = 0; i < thread_count; i++)
+      {
+        if (i == current_thread)
+        {
+          continue;
+        }
+
+        auto iter = values[i].find(map_entry.first);
+        if (iter != values[i].end() && fabsf(iter->second.value()) < fabsf(map_entry.second.value()))
+        {
+          skip = true;
+          break;
+        }
+      }
+      if (skip)
+      {
+        continue;
+      }
 
       auto &index = map_entry.first;
 

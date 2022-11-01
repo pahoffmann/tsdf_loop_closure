@@ -263,6 +263,12 @@ void GTSAMWrapper::reset()
     graph.reset(new gtsam::NonlinearFactorGraph());
 }
 
+float GTSAMWrapper::get_error(gtsam::Values initial)
+{
+    return graph->error(initial);
+}
+
+
 void GTSAMWrapper::perform_pcl_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
                                    pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
 {
