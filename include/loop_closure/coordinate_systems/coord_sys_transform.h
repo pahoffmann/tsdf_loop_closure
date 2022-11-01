@@ -163,6 +163,9 @@ namespace CoordSysTransform
 
             Eigen::Quaternionf q = rollAngle * yawAngle * pitchAngle;
 
+            // TODO: REMOVE
+            //q = Eigen::Quaternionf::Identity();
+
             mat.block<3,3>(0,0) = q.toRotationMatrix();
 
             poses.push_back(mat);

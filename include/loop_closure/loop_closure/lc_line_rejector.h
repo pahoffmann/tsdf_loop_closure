@@ -53,15 +53,15 @@ namespace LCRejectors
             Vector3f point = path->at(idx)->pos;
 
 #ifdef TEST_DEBUG
-            std::cout << "Point: " << std::endl
-                      << point << std::endl;
+            // std::cout << "Point: " << std::endl
+            //           << point << std::endl;
 #endif
             // check distance to line
             // float distance = ((line_end_vector - line_location_vector).cross(line_location_vector - point)).norm() / (line_end_vector - line_location_vector).norm();
             float distance = ((point - line_location_vector).cross(point - line_end_vector)).norm() / (line_end_vector - line_location_vector).norm();
 
 #ifdef TEST_DEBUG
-            std::cout << "Calculated dist: " << distance << std::endl;
+            //std::cout << "Calculated dist: " << distance << std::endl;
 #endif
 
             // not a line

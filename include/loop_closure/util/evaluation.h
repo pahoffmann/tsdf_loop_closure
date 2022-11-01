@@ -10,7 +10,7 @@ namespace Evaluation
     {
         float acc_error = 0.0f;
 
-        if (path->get_length() < 2)
+        if (path->get_length() < 1)
         {
             return acc_error;
         }
@@ -22,6 +22,13 @@ namespace Evaluation
 
             Vector3f transl_diff = gt_pose->getTransformationMatrix().block<3, 1>(0, 3) - pose->getTransformationMatrix().block<3, 1>(0, 3);
             Vector3f transl_diff_abs = transl_diff.cwiseAbs();
+
+            // std::cout << "Pose: " << std::endl
+            //           << pose->getTransformationMatrix().block<3, 1>(0, 3) << std::endl;
+            // std::cout << "GT Pose: " << std::endl
+            //           << gt_pose->getTransformationMatrix().block<3, 1>(0, 3) << std::endl;
+            // std::cout << "Diff: " << std::endl
+            //           << transl_diff_abs << std::endl;
 
             acc_error += transl_diff_abs.norm();
         }
@@ -57,6 +64,13 @@ namespace Evaluation
             auto gt_diff = (gt_pose_2->getTransformationMatrix().block<3, 1>(0, 3) - gt_pose_1->getTransformationMatrix().block<3, 1>(0, 3)).cwiseAbs();
 
             auto relative_diff = (gt_diff - diff).cwiseAbs();
+
+            // std::cout << "Diff: " << std::endl
+            //           << diff << std::endl;
+            // std::cout << "GT Diff: " << std::endl
+            //           << gt_diff << std::endl;
+            // std::cout << "Relative diff: " << std::endl
+            //           << relative_diff << std::endl;
 
             acc_error += relative_diff.norm();
         }

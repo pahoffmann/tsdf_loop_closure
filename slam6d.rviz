@@ -37,7 +37,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -280,133 +280,15 @@ Visualization Manager:
           Value: true
         pose_10:
           Value: true
-        pose_100:
-          Value: true
-        pose_101:
-          Value: true
-        pose_102:
-          Value: true
-        pose_103:
-          Value: true
-        pose_104:
-          Value: true
-        pose_105:
-          Value: true
-        pose_106:
-          Value: true
-        pose_107:
-          Value: true
-        pose_108:
-          Value: true
-        pose_109:
-          Value: true
         pose_11:
-          Value: true
-        pose_110:
-          Value: true
-        pose_111:
-          Value: true
-        pose_112:
-          Value: true
-        pose_113:
-          Value: true
-        pose_114:
-          Value: true
-        pose_115:
-          Value: true
-        pose_116:
-          Value: true
-        pose_117:
-          Value: true
-        pose_118:
-          Value: true
-        pose_119:
           Value: true
         pose_12:
           Value: true
-        pose_120:
-          Value: true
-        pose_121:
-          Value: true
-        pose_122:
-          Value: true
-        pose_123:
-          Value: true
-        pose_124:
-          Value: true
-        pose_125:
-          Value: true
-        pose_126:
-          Value: true
-        pose_127:
-          Value: true
-        pose_128:
-          Value: true
-        pose_129:
-          Value: true
         pose_13:
-          Value: true
-        pose_130:
-          Value: true
-        pose_131:
-          Value: true
-        pose_132:
-          Value: true
-        pose_133:
-          Value: true
-        pose_134:
-          Value: true
-        pose_135:
-          Value: true
-        pose_136:
-          Value: true
-        pose_137:
-          Value: true
-        pose_138:
-          Value: true
-        pose_139:
           Value: true
         pose_14:
           Value: true
-        pose_140:
-          Value: true
-        pose_141:
-          Value: true
-        pose_142:
-          Value: true
-        pose_143:
-          Value: true
-        pose_144:
-          Value: true
-        pose_145:
-          Value: true
-        pose_146:
-          Value: true
-        pose_147:
-          Value: true
-        pose_148:
-          Value: true
-        pose_149:
-          Value: true
         pose_15:
-          Value: true
-        pose_150:
-          Value: true
-        pose_151:
-          Value: true
-        pose_152:
-          Value: true
-        pose_153:
-          Value: true
-        pose_154:
-          Value: true
-        pose_155:
-          Value: true
-        pose_156:
-          Value: true
-        pose_157:
-          Value: true
-        pose_158:
           Value: true
         pose_16:
           Value: true
@@ -524,73 +406,11 @@ Visualization Manager:
           Value: true
         pose_68:
           Value: true
-        pose_69:
-          Value: true
         pose_7:
-          Value: true
-        pose_70:
-          Value: true
-        pose_71:
-          Value: true
-        pose_72:
-          Value: true
-        pose_73:
-          Value: true
-        pose_74:
-          Value: true
-        pose_75:
-          Value: true
-        pose_76:
-          Value: true
-        pose_77:
-          Value: true
-        pose_78:
-          Value: true
-        pose_79:
           Value: true
         pose_8:
           Value: true
-        pose_80:
-          Value: true
-        pose_81:
-          Value: true
-        pose_82:
-          Value: true
-        pose_83:
-          Value: true
-        pose_84:
-          Value: true
-        pose_85:
-          Value: true
-        pose_86:
-          Value: true
-        pose_87:
-          Value: true
-        pose_88:
-          Value: true
-        pose_89:
-          Value: true
         pose_9:
-          Value: true
-        pose_90:
-          Value: true
-        pose_91:
-          Value: true
-        pose_92:
-          Value: true
-        pose_93:
-          Value: true
-        pose_94:
-          Value: true
-        pose_95:
-          Value: true
-        pose_96:
-          Value: true
-        pose_97:
-          Value: true
-        pose_98:
-          Value: true
-        pose_99:
           Value: true
         robot:
           Value: true
@@ -608,133 +428,15 @@ Visualization Manager:
             {}
           pose_10:
             {}
-          pose_100:
-            {}
-          pose_101:
-            {}
-          pose_102:
-            {}
-          pose_103:
-            {}
-          pose_104:
-            {}
-          pose_105:
-            {}
-          pose_106:
-            {}
-          pose_107:
-            {}
-          pose_108:
-            {}
-          pose_109:
-            {}
           pose_11:
-            {}
-          pose_110:
-            {}
-          pose_111:
-            {}
-          pose_112:
-            {}
-          pose_113:
-            {}
-          pose_114:
-            {}
-          pose_115:
-            {}
-          pose_116:
-            {}
-          pose_117:
-            {}
-          pose_118:
-            {}
-          pose_119:
             {}
           pose_12:
             {}
-          pose_120:
-            {}
-          pose_121:
-            {}
-          pose_122:
-            {}
-          pose_123:
-            {}
-          pose_124:
-            {}
-          pose_125:
-            {}
-          pose_126:
-            {}
-          pose_127:
-            {}
-          pose_128:
-            {}
-          pose_129:
-            {}
           pose_13:
-            {}
-          pose_130:
-            {}
-          pose_131:
-            {}
-          pose_132:
-            {}
-          pose_133:
-            {}
-          pose_134:
-            {}
-          pose_135:
-            {}
-          pose_136:
-            {}
-          pose_137:
-            {}
-          pose_138:
-            {}
-          pose_139:
             {}
           pose_14:
             {}
-          pose_140:
-            {}
-          pose_141:
-            {}
-          pose_142:
-            {}
-          pose_143:
-            {}
-          pose_144:
-            {}
-          pose_145:
-            {}
-          pose_146:
-            {}
-          pose_147:
-            {}
-          pose_148:
-            {}
-          pose_149:
-            {}
           pose_15:
-            {}
-          pose_150:
-            {}
-          pose_151:
-            {}
-          pose_152:
-            {}
-          pose_153:
-            {}
-          pose_154:
-            {}
-          pose_155:
-            {}
-          pose_156:
-            {}
-          pose_157:
-            {}
-          pose_158:
             {}
           pose_16:
             {}
@@ -852,73 +554,11 @@ Visualization Manager:
             {}
           pose_68:
             {}
-          pose_69:
-            {}
           pose_7:
-            {}
-          pose_70:
-            {}
-          pose_71:
-            {}
-          pose_72:
-            {}
-          pose_73:
-            {}
-          pose_74:
-            {}
-          pose_75:
-            {}
-          pose_76:
-            {}
-          pose_77:
-            {}
-          pose_78:
-            {}
-          pose_79:
             {}
           pose_8:
             {}
-          pose_80:
-            {}
-          pose_81:
-            {}
-          pose_82:
-            {}
-          pose_83:
-            {}
-          pose_84:
-            {}
-          pose_85:
-            {}
-          pose_86:
-            {}
-          pose_87:
-            {}
-          pose_88:
-            {}
-          pose_89:
-            {}
           pose_9:
-            {}
-          pose_90:
-            {}
-          pose_91:
-            {}
-          pose_92:
-            {}
-          pose_93:
-            {}
-          pose_94:
-            {}
-          pose_95:
-            {}
-          pose_96:
-            {}
-          pose_97:
-            {}
-          pose_98:
-            {}
-          pose_99:
             {}
           robot:
             {}
@@ -1008,6 +648,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /ground_truth
+      Name: Marker
+      Namespaces:
+        path: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 211; 215; 207
@@ -1036,7 +684,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 195.0902862548828
+      Distance: 147.96060180664062
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1044,17 +692,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 21.82589340209961
-        Y: -20.57734489440918
-        Z: -1.204892635345459
+        X: -5.096768379211426
+        Y: 41.81808090209961
+        Z: -31.903181076049805
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7347967028617859
+      Pitch: 1.5647963285446167
       Target Frame: <Fixed Frame>
-      Yaw: 5.136655807495117
+      Yaw: 3.2098116874694824
     Saved: ~
 Window Geometry:
   Displays:

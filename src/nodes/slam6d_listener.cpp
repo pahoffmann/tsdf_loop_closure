@@ -248,6 +248,12 @@ bool is_viable_lc(std::pair<int, int> candidate_pair)
         }
     }
 
+    // TODO:    CHECK IF THE CURRENT LC IS ON A LINE, POSSIBLY DENY THEM
+    // if(LCRejectors::is_line(path, candidate_pair.first, candidate_pair.second, 1.5f))
+    // {
+    //     return false;
+    // }
+
     return true;
 }
 
@@ -351,7 +357,7 @@ void publish_ground_truth()
         std::cout << "In the GT marker, there are " << path_marker.points.size() << " points" << std::endl;
         ground_truth_path_pub.publish(path_marker);
 
-        // broadcast_robot_path(ground_truth, "gt_");
+        //broadcast_robot_path(ground_truth, "gt_");
     }
 }
 
@@ -684,6 +690,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
+/*
 #pragma region TSDF_UPDATE
     // CREATE POINTCLOUD USED FOR TSDF UPDATE
     pcl::VoxelGrid<PointType> grid;
@@ -708,8 +715,11 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
     Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
-    l_map_half_f *= 0.5f;
+    l_map_half_f *= 0.25f;
     Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
+
+    std::cout << "Localmap-size / 2: " << std::endl << l_map_half << std::endl;
+    std::cout << "input_3d_pos: " << std::endl << input_3d_pos << std::endl;
 
     if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
     {
@@ -725,7 +735,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     local_map_ptr->write_back();
 
 #pragma endregion
-
+*/
 #pragma region CLOUD_GM_VIS
     auto gm_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
@@ -964,7 +974,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
 
     // do a partial update of the global map
-    partial_update();
+    // partial_update();
     // reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
 
     // copy values from optimized path back to the path

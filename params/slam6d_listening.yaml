@@ -5,7 +5,7 @@ loop_closure:
   dist_between_lcs: 0.0 # in m
   max_closures_per_pose: 2
 
-  max_prereg_icp_fitness: 0.5 # in m²
+  max_prereg_icp_fitness: 0.3 # in m²
   max_lc_icp_fitness: 0.3 # in m²
 
   do_preregistration: true

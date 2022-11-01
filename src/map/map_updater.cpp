@@ -167,16 +167,17 @@ namespace Map_Updater
 
             // Shift
             Vector3i input_3d_pos = real_to_map(pose_mat.block<3, 1>(0, 3));
+            local_map_ptr->shift(input_3d_pos);
 
-            auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
-            Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
-            l_map_half_f *= 0.5f;
-            Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
+            // auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
+            // Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
+            // l_map_half_f *= 0.5f;
+            // Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
 
-            if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
-            {
-                local_map_ptr->shift(input_3d_pos);
-            }
+            // if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
+            // {
+            //     local_map_ptr->shift(input_3d_pos);
+            // }
 
             Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
             rot.block<3, 3>(0, 0) = to_int_mat(pose_mat).block<3, 3>(0, 0);
@@ -366,16 +367,17 @@ namespace Map_Updater
 
             // Shift
             Vector3i input_3d_pos = real_to_map(pose_mat.block<3, 1>(0, 3));
+            local_map_ptr->shift(input_3d_pos);
 
-            auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
-            Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
-            l_map_half_f *= 0.5f;
-            Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
+            // auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
+            // Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
+            // l_map_half_f *= 0.5f;
+            // Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
 
-            if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
-            {
-                local_map_ptr->shift(input_3d_pos);
-            }
+            // if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
+            // {
+            //     local_map_ptr->shift(input_3d_pos);
+            // }
 
             Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
             rot.block<3, 3>(0, 0) = to_int_mat(pose_mat).block<3, 3>(0, 0);
