@@ -690,7 +690,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
-/*
+
 #pragma region TSDF_UPDATE
     // CREATE POINTCLOUD USED FOR TSDF UPDATE
     pcl::VoxelGrid<PointType> grid;
@@ -735,7 +735,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     local_map_ptr->write_back();
 
 #pragma endregion
-*/
+
+
 #pragma region CLOUD_GM_VIS
     auto gm_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
