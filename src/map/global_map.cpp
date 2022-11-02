@@ -820,6 +820,64 @@ std::vector<bool> GlobalMap::chunks_empty()
 
 std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
 {
+    std::vector<std::pair<Vector3i, TSDFEntry>> ret;
+
+    auto chunks = all_chunk_poses();
+
+    auto group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    int default_counter = 0;
+
+    for (int i = 0; i < chunks.size(); i++)
+    {
+        auto chunk = chunks[i];
+
+        auto chunk_pos = chunk * CHUNK_SIZE;
+
+        auto tag = tag_from_chunk_pos(chunk);
+
+        auto ds = group.getDataSet(tag);
+
+        std::vector<TSDFEntry::RawType> data;
+        ds.read(data);
+
+        // std::cout << "[GlobalMap - get_full_data()] Read " << data.size() << " entries from h5!" << std::endl;
+
+        // now determine all <Vector3i, TSDFEntry> entries
+
+        for (int j = 0; j < data.size(); j++)
+        {
+            TSDFEntry tmp_tsdf(data[j]);
+
+            // skip default values
+            if (tmp_tsdf.value() == params.tau || tmp_tsdf.weight() == 0)
+            {
+                default_counter++;
+                continue;
+            }
+
+            // determine x, y and z from index
+            Vector3i index_pos = pos_from_index(j);
+
+            // currently pos is a relative pos. to make it absolute, we add the chunk pos;
+            index_pos += chunk_pos;
+
+            ret.push_back(std::make_pair(index_pos, tmp_tsdf));
+        }
+
+        // std::cout << "Finished reading data from chunk " << i << std::endl;
+    }
+
+    std::cout << "[GlobalMap - get_full_data()] Read " << ret.size() << " values from the whole globalmap" << std::endl;
+    std::cout << "[GlobalMap - get_full_data()] Read " << default_counter << " default values from the whole globalmap" << std::endl;
+
+    return ret;
+}
+
+// parallelized, possibly broken
+/**
+std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
+{
 
     int thread_count = omp_get_max_threads();
 
@@ -902,6 +960,7 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
 
     return ret_final;
 }
+*/
 
 Vector3i GlobalMap::pos_from_index(int i)
 {

@@ -304,7 +304,7 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud,
     // align the clouds using generalized icp
     static pcl::GeneralizedIterativeClosestPoint<PointType, PointType> g_icp;
     g_icp.setMaximumIterations(params.loop_closure.max_icp_iterations);
-    g_icp.setMaximumOptimizerIterations(100);
+    g_icp.setMaximumOptimizerIterations(params.loop_closure.max_icp_iterations);
     g_icp.setTransformationEpsilon(0.01);
     //g_icp.setMaxCorrespondenceDistance(params.loop_closure.max_dist_lc * 2);
     g_icp.setMaxCorrespondenceDistance(0.2);

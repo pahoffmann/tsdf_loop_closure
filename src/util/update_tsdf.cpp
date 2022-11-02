@@ -28,7 +28,7 @@ void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::V
     for (const auto &point : scan_points)
     {
       Eigen::Vector3i direction_vector = point - pos;
-      int distance = direction_vector.norm();
+      long distance = direction_vector.norm();
       if (distance == 0)
       {
         distance_zero_cnt++;
@@ -63,8 +63,10 @@ void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::V
 
         // use the distance to the center of the cell, since 'proj' can be anywhere in the cell
         Eigen::Vector3i target_center = index * map_resolution + Eigen::Vector3i::Constant(map_resolution / 2);
-        int value = (point - target_center).norm();
-        value = std::min(value, tau);
+        long value_tmp = (point - target_center).norm();
+        value_tmp = std::min(value_tmp, (long)tau);
+        int value = static_cast<int>(value_tmp);
+
         if (len > distance)
         {
           value = -value;
