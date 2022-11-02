@@ -28,7 +28,7 @@ In ROS wird konventionell ein rechtshändisches Koordinatensystem, abgebildet in
 \begin{figure}
 		\centering
 		\includegraphics
-			[scale=0.35]
+			[scale=0.25]
 			{ros_coordinate_sys}
 		\caption
 			[Caption for LOF]{Schematische Darstellung der Konvention für Koordinatensysteme im ROS Framework. Die z-Achse zeigt nach oben, die x-Achse nach vorne und die y-Achse nach links. Die Rotation um die Achsen ist entsprechend der Konvention im Uhrzeigersinn.}			                                                                                                                                     
@@ -117,16 +117,16 @@ Bei vielen Lösungsansätzen wie zum Beispiel einer inkrementellen \textbf{Regis
 Punktwolken stellen dabei keine geschlossenen Oberflächenrepräsentationen dar und benötigen viel Speicher im Gegensatz zu einigen geschlossenen Repräsentationen wie aus den Punktwolken generierten Dreiecksnetzen.
 Ein großer Nutzen einer solchen Repräsentation ist die vereinfachte Lokalisierung und Navigation auf Basis der Kartenrepräsentation. 
 
-Eine weitere Form der geschlossenen Oberflächenrepräsentation der Umgebung sind \textbf{Signed Distance Functions (SDF)}.
+Eine weitere Form der geschlossenen Oberflächenrepräsentation der Umgebung sind \textbf{Signed Distance Fields (SDF)}.
 Im Gegensatz zu Dreiecksnetzen sind die SDF implizite, volumetrische Beschreibung der Oberfläche \cite{werner2014truncated}. Sie beschreiben die Oberfläche nicht direkt, sondern den Raum um die Oberfläche herum.
 Die \textbf{Signed Distance} ist die orthogonale metrische Distanz eines beliebigen Punktes $p$ zur Oberfläche räumlicher Daten, wie zum Beispiel Punktwolken.
-Diese Distanz kann sowohl negativ, als auch positiv sein. Unterschieden wird zwischen dem Innenbereich und Außenbereich.
+Diese Distanz kann sowohl negativ, als auch positiv sein. Unterschieden wird zwischen dem Innenbereich, räumlich gesehen vor einer Wand oder einem Hindernis, und dem Außenbereich, welcher räumich gesehen hinter dem vom Laser getroffnen Objekt befindlich ist.
 Abbildung \ref{fig:tsdf} zeigt ein zweidimensionales, schematisches Beispiel für eine diskretisierte TSDF nach Abtasten der Oberfläche einer unbekannten Umgebung durch einen Laserscanner.
 
 \begin{figure}
 		\centering
 		\includegraphics
-			[scale=0.3]
+			[scale=0.22]
 			{TSDF}
 		\caption
 			[Caption for LOF]{Schematische Darstellung einer diskretisierten 2D TSDF Karte. Abgebildet sind nur Voxel mit TSDF-Werten im Intervall $ \left] -\tau, \tau \right[$. In der Mitte der Karte befindet sich ein Roboter mit einem Laserscanner (hier dargestellt in rot). Der Roboter befindet sich zum Beispiel in einem Raum. Der Innenbereich (des Raumes) mit positiven TSDF-Werten ist hier dargestellt in grün, der Außenbereich mit negativen TSDF-Werten in rot. Die Oberfläche, in deren Umgebung die TSDF-Werte nahezu Null sind, ist abgebildet in schwarz.}			                                                                                                                                     
@@ -145,24 +145,34 @@ I = [-\tau, \tau]:= \lbrace x \in \mathbb{R} \rvert \tau > 0 \rbrace
 Dadurch sind TSDF basierte Karten ideal, um mittels des \textbf{Marching Cubes Algorithmus} \cite{lorensen_marching_1987} eine polygonale Netz-Repräsentation, wie zum Beispiel ein Dreiecksnetz generieren zu können.
 Dieses kann zum Beispiel als optische Referenz für die Qualität der Karte verwendet werden.
 
-Eisoldt et al. \cite{HATSDF} basieren ihren SLAM Ansatz auf einer diskreten, inkrementell erweiterten TSDF Karte. Zur Registierung (vergleiche Kapitel \ref{section:slam}) verwenden sie ebenfalls die TSDF-Karte. Punktwolken werden dabei mit einer \textbf{Point-to-TSDF} Strategie an die TSDF Karte registiert \cite{HATSDF}.
-In \cite{HATSDF} werden neue Punktdaten nicht an die globale TSDF Karte registriert sondern an eine lokale TSDF Karte fester Größe. Lediglich die lokale Karte befindet sich im Arbeitsspeicher und lädt Daten aus der globalen Karte, die in einer HDF5 Datei repräsentiert wird und auf der Festplatte liegt, nach, sofern eine Repositionierung der Karte notwendig ist.
-Dies sorgt dafür, dass \cite{HATSDF} auch für große Umgebungen \textbf{(Large-Scale)} geeignet ist, da der Arbeitsspeicher nicht überläuft.
-Abbildung \ref{} zeigt den internen Aufbau einer HDF5 Datei, in der die globale Karte abgespeichert ist.
-\improvement{Abbildung einfügen, HDF5 näher beschreiben, Vorteile erklären, referenzieren}
-\improvement{TSDF-Update} erklären.
+Diese Arbeit beschäftigt sich mit einer möglichen Integration von Schleifenschlüssen in einen auf einer TSDF-Karte basierenden Ansatz wie vorgestellt von Eisoldt et al. \cite{HATSDF}. Der Aufbau und die Verwendung der TSDF-Karte ist im nachfolgenden Abschnitt beschrieben. Ziel ist die Korrektur von Fehlern bei der Registrierung und der damit Verbundenen Korrektur der TSDF-Karte. Dies ist in Kapitel \ref{chapter:loop_closure} und \ref{chapter:map_update} beschrieben.
 
-Diese Arbeit beschäftigt sich mit einer möglichen Integration von Schleifenschlüssen in einen auf einer TSDF Karte basierenden Ansatz wie vorgestellt von Eisoldt et al. \cite{HATSDF}. Ziel ist die Korrektur von Fehlern bei der Registrierung und der damit Verbundenen Korrektur der TSDF-Karte. Dies ist in Kapitel \ref{chapter:loop_closure} und \ref{chapter:map_update} beschrieben.
-
-Nachfolgende Sektion behandelt des Thema SLAM und gibt einen groben Überblick über einige SLAM Ansätze. 
-
-\section{TSDF-Karte}
+\subsection{TSDF-Karte}
 \label{section:tsdf_map}
 
-Die Bezeichnung (TSDF-)Karte beziehungsweise \textbf{Map} wird im Folgenden für die implizite TSDF Repräsentation der Umgebung verwendet.
-Sie bezeichnet zusätzlich das Weltkoordinatensystem.
+Eisoldt et al. \cite{HATSDF} basieren ihren SLAM Ansatz auf einer diskreten, inkrementell erweiterten TSDF Karte. Zur Registierung (vergleiche Kapitel \ref{section:slam}) verwenden sie ebenfalls die TSDF-Karte. Punktwolken werden dabei mit einer \textbf{Point-to-TSDF} Strategie an die TSDF Karte registiert \cite{HATSDF}.
+In \cite{HATSDF} werden neue Punktdaten nicht an die globale TSDF Karte registriert sondern an eine lokale TSDF Karte fester Größe. Lediglich die lokale Karte befindet sich im Arbeitsspeicher und lädt wenn nötig Daten aus der globalen Karte, die durch einer \textbf{HDF5}-Datei repräsentiert ist und auf der Festplatte gespeichert ist, nach. Das \textbf{Hierarchical Data Format 5 (HDF5)} \cite{hdf5} ist ein Dateiformat für die Speicherung und Verwaltung von Daten in einem hierarischen System, das dem Dateisystem von Windows oder UNIX Betriebssystemen ähnelt. HDF5 erlaubt die Gruppierung von zusammengehörigen Daten und die Speicherung von Metadaten wie zum Beispiel den Hyperparametern der verwendeten Karte. Auch Schachtelungen sind möglich. HDF5 eignet sich besonders für die effiziente Serialisierung und Deserialisierung komplexer Daten oder Objekte und kann die interne Struktur der zu serialsierenden Objekte abbilden.
+Diese Aufteilung in eine globale und eine lokale Karte sorgt dafür, dass \cite{HATSDF} auch für große Umgebungen \textbf{(Large-Scale)} geeignet ist und der Arbeitsspeicher nicht überläuft. Die Implementation dieser TSDF-Kartenstruktur wird auch in dieser Arbeit verwendet. Sie dient als Basis für die Bestimmung der Datenassoziationen wie beschrieben in Kapitel \ref{chapter:associations} und bildet die Grundlage für jegliche Form der Kartenoptimierung, die in dieser Arbeit vorgenommen wird.
 
-\improvement{Informationen über lokale und globale Karte niederschreiben, Verweisen auf \cite{HATSDF}}
+Die globale TSDF-Karte ist unterteilt in Teilstücke beziehungsweise \textbf{Chunks} fester Größe, deren Seitenlänge durch die Anzahl der TSDF-Voxel entlang einer Seitenlänge definiert ist. Bei Bedarf kann ein beliebiger Chunk in den Arbeitsspeicher geladen oder zurück auf die Festplatte in die HDF5-Datei geschrieben werden. Diese enthält in der hierarchischen Struktur ein Datenset für jeden angelegten Chunk. Neben den TSDF-Informationen ist nach Durchlaufen des SLAM-Algorithmus zusätzlich die erstellte Pose-Historie in der HDF5 gespeichert.
+Abbildung \ref{fig:HDF5old} zeigt den internen Aufbau der HDF5 Datei, in der die globale Karte abgespeichert ist.
+
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.25]
+			{HDF5old}
+		\caption
+			[Caption for LOF]{Innere Struktur der HDF5-Datei, die die globale TSDF-Karte repräsentiert. Auf der obersten hierarchischen Ebene werden die Daten in zwei Gruppen aufgeteilt. \textit{/poses} enthält dabei die Trajektorie des Roboters, separiert in einzelne Posen, die mit Null beginnend indiziert sind. \textit{/map} enthält die eigentliche TSDF-Karte. Sie ist in unterteilt in Chunks, die ein Datenarray aus Paaren von TSDF-Wert und TSDF-Gewicht enthalten. Das Label der Chunks entspricht den diskreten Koordinaten der Chunks im Raum.}			                                                                                                                                     
+		\label{fig:HDF5old}
+\end{figure}
+
+Die Bezeichnung (TSDF-)Karte beziehungsweise \textbf{Map} wird im Folgenden für die implizite TSDF Repräsentation der Umgebung verwendet. Der Urpsrung der Karte ist im Folgenden als Ursprung des Weltkoordinatensystems definiert.
+
+\subsection{TSDF-Update}
+\improvement{TSDF-Update} erklären.
+
+Nachfolgende Sektion behandelt des Thema SLAM und gibt einen groben Überblick über einige SLAM Ansätze. 
 
 
 \section{SLAM}
