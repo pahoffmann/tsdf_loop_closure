@@ -327,4 +327,12 @@ public:
      * 
      */
     std::vector<std::pair<std::string, std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>>>> read_old_format();
+
+    /**
+     * @brief writes a chunk of data to the hdf5
+     * 
+     * @param tag 
+     * @param data 
+     */
+    void write_chunk(std::string tag, std::vector<TSDFEntry::RawType> data);
 };

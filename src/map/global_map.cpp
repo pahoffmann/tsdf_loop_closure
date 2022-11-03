@@ -1050,3 +1050,20 @@ std::vector<std::pair<std::string, std::vector<std::pair<TSDFEntry::ValueType, T
 
     return converted_data;
 }
+
+void GlobalMap::write_chunk(std::string tag, std::vector<TSDFEntry::RawType> data)
+{
+    HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    if (g.exist(tag))
+    {
+        // read chunk from file
+        HighFive::DataSet d = g.getDataSet(tag);
+        d.write(data);
+    }
+    else
+    {
+        // create new chunk
+        auto d = g.createDataSet(tag, data);
+    }
+}

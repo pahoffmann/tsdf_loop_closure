@@ -112,8 +112,6 @@ void init_obj()
     translation_error = csv_wrapper_ptr->create_object("translation_error");
 }
 
-
-
 /**
  * @brief Main method
  *
@@ -138,16 +136,31 @@ int main(int argc, char **argv)
     params.map.filename = boost::filesystem::path("/home/patrick/maps/converted/test_converted.h5");
     std::cout << "New file name: " << params.map.filename.string() << std::endl;
 
-    GlobalMap tmp = GlobalMap(params.map);
+    GlobalMap tmp_map = GlobalMap(params.map);
     auto old_data = global_map_ptr->read_old_format();
     auto path = global_map_ptr->get_path();
 
-    tmp.write_path(path);
+    tmp_map.write_path(path);
 
 
     for(auto chunk : old_data)
     {
+        std::vector<TSDFEntry::RawType> new_data;
 
+        std::cout << "Got " << chunk.second.size() << " entries from hdf5 as chunk" << std::endl;
+        for(auto pair : chunk.second)
+        {
+            TSDFEntry tmp;
+            tmp.pose_index(-1);
+            tmp.intersect(static_cast<TSDFEntry::IntersectionType>(0));
+            tmp.value(pair.first);
+            tmp.weight(pair.second);
+
+            new_data.push_back(tmp.raw());
+        }
+        std::cout << "Writing " << new_data.size() << " objects to new map" << std::endl;
+        tmp_map.write_chunk(chunk.first, new_data);
+        
     }
 
     std::cout << "Done converting.. " << std::endl;

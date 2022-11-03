@@ -1,7 +1,7 @@
 map:
   # directory to save map in
   dir: "/home/patrick/maps/converted"
-  filename: "/home/patrick/maps/cafeteria.h5"
+  filename: "/home/patrick/maps/GlobalMap_unconverted.h5"
 
   comment: "convert"
 

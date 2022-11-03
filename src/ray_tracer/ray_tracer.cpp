@@ -505,6 +505,7 @@ void RayTracer::perform3DBresenham()
   // do bresenham for every ray
   for (int i = 0; i < bresenham_cells.size(); i++)
   {
+
     auto &cell = bresenham_cells[i];
     Vector3i bresenham_start = real_to_map(current_pose->pos);
 
@@ -639,6 +640,11 @@ void RayTracer::perform3DBresenham()
       {
         cell_tmp.z() += max_diff;
         bresenham_start.z() += sz;
+      }
+
+      if(bresenham_start == bresenham_cells[i])
+      {
+        lines_finished[i] = RayStatus::FINISHED;
       }
     }
 

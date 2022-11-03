@@ -192,7 +192,6 @@ void initialize_path(int path_method = 0)
       exploration.dijsktra();
     }
 
-
     if (path->get_length() == 0)
     {
       throw std::invalid_argument("There are no poses in the path, hence the arguments listed seem to be wrong. Check them.");
@@ -300,7 +299,7 @@ void populate_markers()
   bb_marker = ROSViewhelper::getBoundingBoxMarker(map_to_real(local_map_ptr_->get_size()), path->at(0));
 
   // full tsdf map for display, very ressource intensive, especially for large maps..
-  //tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &updated_path, true);
+  // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, &updated_path, true);
   // tsdf_map_full_after = ROSViewhelper::initTSDFmarkerPath(local_map_ptr_, path, false);
 
   auto gm_data = global_map_ptr_->get_full_data();
@@ -345,57 +344,61 @@ int main(int argc, char **argv)
   int num_loops = 0;
   int current_start_idx = 0;
 
-  while (is_ok)
-  {
-    std::pair<int, int> lc_pair = find_next_loop(path, current_start_idx);
+  manager = new AssociationManager(path, params.loop_closure.json_dirname, ray_tracer, local_map_ptr_, global_map_ptr_);
+  manager->greedy_associations();
 
-    // break, if no loop is found, aka at least one of the returned indices is -1
-    if (lc_pair.first == -1 || lc_pair.second == -1)
-    {
-      is_ok = false;
+  // while (is_ok)
+  // {
+  //   std::pair<int, int> lc_pair = find_next_loop(path, current_start_idx);
 
-      break;
-    }
+  //   // break, if no loop is found, aka at least one of the returned indices is -1
+  //   if (lc_pair.first == -1 || lc_pair.second == -1)
+  //   {
+  //     is_ok = false;
 
-    current_start_idx = lc_pair.second;
+  //     break;
+  //   }
 
-    // we found a loop!
-    num_loops++;
+  //   current_start_idx = lc_pair.second;
 
-    // create associationmanager and find the associations for the current path
-    manager = new AssociationManager(path, params.loop_closure.json_dirname, ray_tracer, local_map_ptr_, global_map_ptr_);
+  //   // we found a loop!
+  //   num_loops++;
 
-    // TODO: this function should only generate associations of poses which 'participate' in the loop closure
-    manager->greedy_associations();
+  //   // create associationmanager and find the associations for the current path
+  //   manager = new AssociationManager(path, params.loop_closure.json_dirname, ray_tracer, local_map_ptr_, global_map_ptr_);
 
-    // update the path after finding the loop!
-    // updated_path = update_path();
-    updated_path = update_path_test(path, PathUpdateTestMethod::TRANSLATION, lc_pair.first, lc_pair.second);
+  //   // TODO: this function should only generate associations of poses which 'participate' in the loop closure
+  //   manager->greedy_associations();
 
-    // create a visualization marker
-    loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(lc_pair.first)->pos, path->at(lc_pair.second)->pos));
+  //   // update the path after finding the loop!
+  //   // updated_path = update_path();
+  //   updated_path = update_path_test(path, PathUpdateTestMethod::TRANSLATION, lc_pair.first, lc_pair.second);
 
-    // update the localmap with the updated path
-    tsdf_read_marker = manager->update_localmap(&updated_path, lc_pair.first, lc_pair.second, AssociationManager::UpdateMethod::MEAN);
+  //   // create a visualization marker
+  //   loop_visualizations.push_back(ROSViewhelper::init_loop_detected_marker(path->at(lc_pair.first)->pos, path->at(lc_pair.second)->pos));
 
-    std::cout << "[MAIN] IN THE LEVEL X DATA, THERE ARE " << tsdf_read_marker.points.size() << " POINTS!" << std::endl;
-    // manager->test_associations();
+  //   // update the localmap with the updated path
+  //   tsdf_read_marker = manager->update_localmap(&updated_path, lc_pair.first, lc_pair.second, AssociationManager::UpdateMethod::MEAN);
 
-    // after every run, the data needs to be cleaned
-    manager->cleanup();
-  }
+  //   std::cout << "[MAIN] IN THE LEVEL X DATA, THERE ARE " << tsdf_read_marker.points.size() << " POINTS!" << std::endl;
+  //   // manager->test_associations();
+
+  //   // after every run, the data needs to be cleaned
+  //   manager->cleanup();
+  // }
 
   // when no loop is found, we terminate early
-  if (num_loops == 0)
-  {
-    std::cout << "[Main]: No Loops found in the current HDF5, terminating..." << std::endl;
-    exit(EXIT_SUCCESS);
-  }
-  else
-  {
-    std::cout << "[Main]: Found " << num_loops << " loop(s)" << std::endl;
-  }
+  // if (num_loops == 0)
+  // {
+  //   std::cout << "[Main]: No Loops found in the current HDF5, terminating..." << std::endl;
+  //   exit(EXIT_SUCCESS);
+  // }
+  // else
+  // {
+  //   std::cout << "[Main]: Found " << num_loops << " loop(s)" << std::endl;
+  // }
 
+  ray_markers = ray_tracer->get_ros_marker();
   // write back the data
   local_map_ptr_->write_back();
 
