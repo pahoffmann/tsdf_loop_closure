@@ -1,6 +1,6 @@
 \chapter{Datenassoziationen}\label{chapter:association}
 
-Wie in der Einleitung beschrieben, soll in einem ersten Ansatz analysiert werden, ob eine TSDF Karte mit gegebenem initialen Pfad durch die Optimierung des initalen Pfades mittels Schleifenschlüssen verbessert werden kann. Dazu ist im ersten Schritt zu identifizierten, welcher Teil der Karte mit welcher Pose assoziiert ist um bei einer Veränderung der Trajektorie entscheiden zu können, wie die Karte angepasst werden muss. Dies Kapitel befasst sich mit der Generation von Datenassoziationen zwischen den Posen des Pfades und der TSDF-Karte.
+Wie in der Einleitung beschrieben, soll in einem ersten Ansatz analysiert werden, ob eine TSDF Karte mit gegebenem initialen Pfad durch die Optimierung des initialen Pfades mittels Schleifenschlüssen verbessert werden kann. Dazu ist im ersten Schritt zu identifizierten, welcher Teil der Karte mit welcher Pose assoziiert ist um bei einer Veränderung der Trajektorie entscheiden zu können, wie die Karte angepasst werden muss. Dies Kapitel befasst sich mit der Generation von Datenassoziationen zwischen den Posen des Pfades und der TSDF-Karte.
 
 \section{Ansatz}
 \label{section:ansatz}
@@ -10,7 +10,7 @@ Eine Möglichkeit der Generation dieser Assoziation wäre eine \textbf{1:1} Bezi
 
 Die Informationen darüber, welche Position welche TSDF Zelle beschrieben lässt sich allerdings nicht ohne Weiteres aus der TSDF Karte herauslesen.
 Um dies zu ermöglichen könnte \cite{HATSDF} um die Funktion erweitert werden an jeder Zelle zusätzlich ein Array zu speichern, in dem die Posen enthalten sind, die die betroffene Zelle modifiziert haben. Dieses Array muss in einem eigenen Datenset gespeichert sein, da die Anzahl Posen, die auf diese Weise einer Zelle zugeordnet werden können, dynamisch ist. Das bedeutet, dass für jede einzelne TSDF Zelle ein eigenes Datenset gespeichert werden muss, in dem die zugehörigen Posen enthalten sind. Je nach Auflösung der diskretisierten Karte müssten nach diesem Ansatz mehrere Millionen separate Datensets gespeichert werden. Ein solches Vorgehen erfordert nicht nur viel Speicher, sondern ist auch aus hierarchischer Betrachtungsweise keine sinnvolle Herangehensweise.
-\improvement{TODO: anhand mehrerer Datensätze Assozationen bilden und schauen, von wie vielen Posen eine Zelle im Durchschnitt angepasst wurde und hochrechnen, was das für den Speicher bedeutet}
+\improvement{TODO: anhand mehrerer Datensätze Assoziationen bilden und schauen, von wie vielen Posen eine Zelle im Durchschnitt angepasst wurde und hochrechnen, was das für den Speicher bedeutet}
 Eine Möglichkeit, die gewünschten Daten auf Basis einer gegebenen TSDF Karte zu generieren ist diese über die Methode, mit der die Daten generiert wurden, zu regenerieren. In \cite{HATSDF} wird die TSDF-Karte über ein \textbf{Ray-Marching} generiert. Eine alternative zum Ray-Marching stellt der Bresenham Algorithmus dar, der die Diskretisierung der Karte ausnutzt.
 Beide Varianten werden im Folgenden beschrieben, evaluiert und miteinander verglichen.
 Zunächst beschreibt der folgende Abschnitt die Serialisierung der Datenassoziation in der HDF5-Datenstruktur.
@@ -31,7 +31,7 @@ Abbildung \ref{fig:hdf5new} zeigt die neue interne HDF5 Struktur nach dieser Än
 			[scale=0.4]
 			{HDF5new}
 		\caption
-			[Caption for LOF]{Schematische Darstellung der HDF5 internen Datenstruktur nach Speicherung der generierten Datenassoziationen zwischen TSDF-Zellen und Posen. Die in Kapitel \ref{section:ansatz} beschrieben \textit{1:N} Beziehung zwischen einer Zelle und den zugehörigen Posen ist hier indirekt realisiert. Anstelle pro Zelle ein Datenset zu erstellen, wir für jede Pose ein Datenset enthält, das alle assoziierten TSDF-Zellen enthält. Verschiedene Posen können dabei dieselbe TSDF-Zelle assoziieren. Das Datenset \textit{pose} enthält die Transformation der aktuellen Pose ins Urpsrungskoordinatensystem. Das Datenset \textit{associations} enthält ein Array der assoziierten Zellkoordinaten, die durch die Diskretisierung ganzzahlig sind und als Integer abgespeichert werden.}			                                                                                                                                     
+			[Caption for LOF]{Schematische Darstellung der HDF5 internen Datenstruktur nach Speicherung der generierten Datenassoziationen zwischen TSDF-Zellen und Posen. Die in Kapitel \ref{section:ansatz} beschrieben \textit{1:N} Beziehung zwischen einer Zelle und den zugehörigen Posen ist hier indirekt realisiert. Anstelle pro Zelle ein Datenset zu erstellen, wir für jede Pose ein Datenset enthält, das alle assoziierten TSDF-Zellen enthält. Verschiedene Posen können dabei dieselbe TSDF-Zelle assoziieren. Das Datenset \textit{pose} enthält die Transformation der aktuellen Pose ins Ursprungskoordinatensystem. Das Datenset \textit{associations} enthält ein Array der assoziierten Zellkoordinaten, die durch die Diskretisierung ganzzahlig sind und als Integer abgespeichert werden.}			                                                                                                                                     
 		\label{fig:hdf5new}
 \end{figure}
 
@@ -149,10 +149,11 @@ Die Ergebnisse dieses Ansatz sind in Abbildung \ref{fig:bresenham_vs_raytrace}im
 \improvement{Beschreibung von Türen, Beschreibung von Problem wie Verdeckung durch Diskretisierung, ggf. Ray-Trace Bild, Beschreibung von Fallstricken: Nicht getroffene Zellen, Information loss}
 
 \improvement{ggf. RVIZ-Bild des Ray-Tracing Markers}
+\improvement{Tür-Problem}
 
 \subsection{Bresenham}
 
-Eine alternative algorithmische Herangehensweise an das beschriebene Problem der Assoziationsidentifikation ist die Nutzung des Bresenham-Algorithmus nach Bresenham \cite{bresenham1965algorithm}. Dieser wurde usprünglich verwendet, um einen digitalen Plotter mittels eines Computers zu kontrollieren und beliebige zweidimensionale Linien und Kurven approximativ abzubilden. Der Plotter lässt sich dabei in acht Richtungen auf einem diskretisierten Raster bewegen. Bresenham \cite{bresenham1965algorithm} beschreibt, wie sich die Zellen im Raster berechnen lässt, die das gegebene Liniensegment einer Kurve oder eine Linie am besten beschreibt. Der Bresenham Algorithmus findet heutzutage vielfach Anwendung im Bereich der Computergrafik. Hier liegt eine Diskretisierung durch die Auflösung des Computers in Pixeln vor. Mittels des Bresenham Algorithmus kann bestimmt werden, durch welche Pixel eine Linie oder ein Liniensegment beschrieben werden kann. Abbildung \ref{fig:Bresenham2D} zeigt die initiale Idee des Bresenham Algorithmus in zwei Dimensionen. Eine ähnliche Diskretisierung weist auch die in dieser Arbeit verwendete TSDF-Karte auf. Sie ist allerdings im Gegensatz zu den beschriebenen Beispielen in drei Dimensionen diskretisiert. Mittels Bresenham soll bestimmt werden, welche Voxel der TSDF-Karte zu einem Ray gehören, der von einer Position $\vec{p}$ ausgesendet wurde und sich mit der TSDF-Karte schneidet. Dabei gelten die gleichen Voraussetzungen wie beim zuvor beschriebenen Ray-Tracing und die Initialisierung der einzelnen Rays erfolgt analog zum Ray-Tracing. Im Gegensatz zum Ray-Tracing wird allerdings nicht der Ray schrittweise verlängert, sondern basierend auf den initialen Richtungsvektoren der Rays jeweils das nächste Voxel berechnet, das den Ray am besten beschreibt.
+Eine alternative algorithmische Herangehensweise an das beschriebene Problem der Assoziationsidentifikation ist die Nutzung des Bresenham-Algorithmus nach Bresenham \cite{bresenham1965algorithm}. Dieser wurde usprünglich verwendet, um einen digitalen Plotter mittels eines Computers zu kontrollieren und beliebige zweidimensionale Linien und Kurven approximativ abzubilden. Der Plotter lässt sich dabei in acht Richtungen auf einem diskretisierten Raster bewegen. Bresenham \cite{bresenham1965algorithm} beschreibt, wie sich die Zellen im Raster berechnen lässt, die das gegebene Liniensegment einer Kurve oder eine Linie am besten beschreibt. Der Bresenham Algorithmus findet heutzutage vielfach Anwendung im Bereich der Computergrafik. Hier liegt eine Diskretisierung durch die Auflösung des Computers in Pixeln vor. Mittels des Bresenham Algorithmus kann bestimmt werden, durch welche Pixel eine Linie oder ein Liniensegment beschrieben werden kann. Abbildung \ref{fig:Bresenham2D} zeigt die initiale Idee des Bresenham Algorithmus in zwei Dimensionen. Eine ähnliche Diskretisierung weist auch die in dieser Arbeit verwendete TSDF-Karte auf. Sie ist allerdings im Gegensatz zu den beschriebenen Beispielen in drei Dimensionen diskretisiert. Mittels Bresenham soll bestimmt werden, welche Voxel der TSDF-Karte zu einem Ray gehören, der von einer Position $\vec{p}$ ausgesendet wurde und sich mit der TSDF-Karte schneidet. Ziel ist die Beschleunigung des Ray-Tracing Ansatzes durch die Ausnutzung der Registrierung der Karte. Dabei gelten die gleichen Voraussetzungen wie beim zuvor beschriebenen Ray-Tracing und die Initialisierung der einzelnen Rays erfolgt analog. Im Gegensatz zum Ray-Tracing wird allerdings nicht der Ray schrittweise verlängert, sondern basierend auf den initialen Richtungsvektoren der Rays jeweils das nächste Voxel berechnet, das den Ray am besten beschreibt.
 
 \begin{figure}
 		\centering
@@ -165,41 +166,66 @@ Eine alternative algorithmische Herangehensweise an das beschriebene Problem der
 \end{figure}
 
 Die Grundlage für die Berechnung der zum Ray gehörigen Voxel bildet ein Startvoxel $\vec{V_{start}}$, gegeben durch die aktuell betrachtete Pose beziehungsweise Scannerposition $P_{i}$ und ein Endvoxel $\vec{V_{end}}$. Letzterer berechnet sich aus dem Schnittpunkt des betrachteten Rays mit der Bounding-Box der lokalen Karte, gekennzeichnet durch ihren Ursprung $\vec{p_{lmap}}$ und ihre Seitenlängen $\left(s_x, s_y, s_z\right)^T$.
-\improvement{ggf. Mathematik dahinter erklären}. Basierend auf den berechneten Start- und Endvoxeln jedes Rays können nun die dazwischenliegenden Voxel ermittelt mittels Bresenham ermittelt werden. Abbildung \ref{pseudo:bresenham} erklärt den Pseudocode für die Bestimmung der Voxel, die die Linie gegeben durch den Startvoxel $\vec{V_{start}}$ und Endvoxel $\vec{V_{end}}$ beschrieben. Der Bresenham-Algorithmus ist
+\improvement{ggf. Mathematik dahinter erklären}. Basierend auf den berechneten Start- und Endvoxeln jedes Rays können nun die dazwischenliegenden Voxel mittels Bresenham ermittelt werden. Der Pseudo-Code in Abbildung \ref{pseudo:bresenham} legt die Logik für die Bestimmung der der Voxel dar, die die Linie gegeben durch den Startvoxel $\vec{V_{start}}$ und Endvoxel $\vec{V_{end}}$ beschrieben. 
 
 \begin{algorithm}[H]
 \caption{Bresenham Algorithmus adaptiert in 3D (nach \cite{bresenham1965algorithm})} \label{pseudo:bresenham}
 \begin{algorithmic}[1]
-\Procedure{Bresenham}{ $\vec{V_{start}}, map_{local}$ }
-	\State{\textbf{\textsl{Initialization:}}}
-	\State Initialisiere die Rays $R_i$ um $P_{i}$ wie beschrieben in \ref{section:ray-tracing}
-	\State Berechne die Endposition $\vec{V_{start}}^j$ für jeden Ray $r_i^j$
-	\State Initialisiere ein Array $r_{status}$ der Größe der Anzahl von Rays, welches die aktuellen 				Zustände der Rays, gegeben durch das Zustandsdiagramm in \ref{fig:Ray-Trace-Zustandsdiagramm} beschreibt
-	\State Initialisiere einen Zähler für die Anzahl der fertigen Rays: $cnt_{fin} = 0$
-	\State Berechne Bresenham Parameter:
-	\State $dx = \abs{\vec{V_{end}}^x - \vec{V_{start}}^x}$
+\Procedure{Bresenham}{ $\vec{V_{start}}, map_{l}, r_i^j$}
+	\State{\textbf{\textsl{Initialisierung:}}}
+	\State Berechne die Endposition $\vec{V_{end}}$ als Schnittpunkt des Rays $r_i^j$ mit der lokalen Karte $map_{l}$
+	\State Berechne Bresenham Parameter (absolute Abstände und Raumrichtungen):
+	\State $dx = \abs{\vec{V_{end}}^x - \vec{V_{start}}^x}$ \Comment{Absolute zwischen den Punkten in alle Raumrichtungen}
 	\State $dy = \abs{\vec{V_{end}}^y - \vec{V_{start}}^y}$
 	\State $dz = \abs{\vec{V_{end}}^z - \vec{V_{start}}^z}$
-	\State $sx = \vec{V_{start}}^x < \vec{V_{end}}^x$ ? $1$ : $-1$
+	\State $dm = max(dx, dy, dz)$ \Comment Maximale Komponente der Manhattan Distanz
+	\State $sx = \vec{V_{start}}^x < \vec{V_{end}}^x$ ? $1$ : $-1$ \Comment{Raumrichtung}
 	\State $sy = \vec{V_{start}}^y < \vec{V_{end}}^y$ ? $1$ : $-1$
 	\State $sz = \vec{V_{start}}^z < \vec{V_{end}}^z$ ? $1$ : $-1$
-	\While{$cnt_{fin} < size\left(r_{status}\right)$}
-		\For{$r_i^j$ in $R_i$}
-			\State 
-		\EndFor \label{Rays-Loop}
-	\EndWhile
+	\State \textbf{\textsl{Temporäre Vektoren zur Iteration initialisieren:}} 
+	\State $\vec{v_0} = \left(x_0, y_0, z_0\right)^T = \vec{V_{start}}$ und $\vec{v_0} = \left(x_1, y_1, z_1\right)^T = \left(\frac{dm}{2}, \frac{dm}{2}, \frac{dm}{2}\right)^T$
+	\For{$i = 1; i < dm; i++$} \Comment{$\left(dm - 1\right)$ mal iterieren}
+		\State \textbf{\textsl{Berechnung des nächsten Voxels (gegeben durch $\vec{v_0}$)}}
+		\State $x_1 = x_1 - d_x;$ \hskip \algorithmicindent if $\left(x_1 < 0 \right) \left\lbrace x_1 += d_m; \hskip \algorithmicindent x_0 += s_x; \right\rbrace$
+		\State $y_1 = y_1 - d_y;$ \hskip \algorithmicindent if $\left(y_1 < 0 \right) \left\lbrace y_1 += d_m; \hskip \algorithmicindent y_0 += s_y; \right\rbrace$
+		\State $z_1 = z_1 - d_z;$ \hskip \algorithmicindent if $\left(z_1 < 0 \right) \left\lbrace z_1 += d_m; \hskip \algorithmicindent z_0 += s_z; \right\rbrace$
+		\State Neues Linien-Voxel gegeben durch: $\vec{v_0}$ bzw. $\left(x_0, y_0, z_0\right)^T $
+	\EndFor \label{Rays-Loop}
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
+Mit Hilfe dieser Logik lässt sich iterativ für jeden Ray $r_i^j \in R_i$ der nächste zugehörige Voxel berechnen und evaluieren. Die Evaluation der von Bresenham ermittelten, aktuell vom Ray getroffenen TSDF-Zellen erfolgt analog zu der Evaluation des Ray-Tracing entsprechend des Zustandsdiagramms in Abbildung \ref{fig:Ray-Trace-Zustandsdiagramm}. Das Abbruchkriterium für jeden Ray $r_i^j$ beim Bresenham ist entweder das Erreichen des Zielzustands im Zustandsdiagramm oder das Erreichen des zu $r_i^j$ zugehörigen Endvoxels $\vec{V_{end}}$.
+Ingesamt ergibt sich der in Abbildung \ref{pseudo:associations} dargestellte Pseudo-Code, bei variabler Verwendung von Bresenham oder Ray-Tracing. Dieser Pseudo Code wird zur Assoziationsbestimmung ausgehend von jeder Pose $P_i$ ausgeführt, für die die Assoziationen bestimmt werden sollen.
 
 
-Beschleunigung gegenüber RayTracing in reiner Software Variante erklären
-Algorithmus erklären
-Varianten der Bestimmung von start/endzelle bestimmen: Schnittpunkt zwischen Ray und lokaler Karte, über vektor und abfrage
+\begin{algorithm}[H]
+\caption{Asssoziations-Berechnung mittels Bresenham oder Ray-Tracing} \label{pseudo:associations}
+\begin{algorithmic}[1]
+\Procedure{Assoziations-Berechnung}{ $P_i, map_{local}$ }
+	\State{\textbf{\textsl{Initialization:}}}
+	\State Initialisiere die Rays $R_i$ um $P_{i}$ wie beschrieben in \ref{section:ray-tracing}
+	\State Initialisiere ein Array $r_{status}$ der Größe der Anzahl von Rays, welches die aktuellen 				Zustände der Rays, gegeben durch das Zustandsdiagramm in \ref{fig:Ray-Trace-Zustandsdiagramm} beschreibt
+	\State Initialisiere einen Zähler für die Anzahl der fertigen Rays: $cnt_{fin} = 0$
+	\While{$cnt_{fin} < size\left(r_{status}\right)$}
+		\For{$r_i^j$ in $R_i$}
+			\State Ermittle nächstes Voxel $V_i^j$ mittels Ray-Tracing oder Bresenham
+			\State Evaluiere $V_i^j$ auf Basis des Zustandsdiagramms in \ref{fig:Ray-Trace-Zustandsdiagramm}
+			\State Speichere $V_i^j$ als Assoziation, wenn es gemäß \ref{fig:Ray-Trace-Zustandsdiagramm} mit $P_i$ assoziiert ist
+		\EndFor \label{Rays-Loop}
+	\EndWhile
+	\State Speichere die gefunden Assoziationen gemäß \ref{fig:hdf5new} in der HDF5
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+In den folgenden beiden Sektionen werden die Ergebnisse der Assoziationsbestimmung evaluiert und es findet ein Vergleich zwischen den beiden vorgestellten Algorithmen statt.
 
 \subsection{Ergebnisse}
 \label{section:association_results}
+
+Abbildung \ref{fig:bresenham_vs_raytrace} zeigt eine Gegenüberstellung der Ergebnisse der Evaluationsbestimmung zwischen Bresenham und dem Ray-Tracing Ansatz. Es ist ersichtlich, dass in beiden Figuren sehr ähnliche Ergebnisse erzielt werden konnten. Dies lässt sich auch an dem Prozentsatz der assoziierten Zellen von der Gesamtheit der Zellen kenntlich machen. Hier beträgt der Unterschied zwischen den beiden Ansätzen lediglich $0.23 \%$, die vom Ray-Tracer zusätzlich assoziiert wurden. Dieser Unterschied lässt sich anhand einiger Eigenschaften von Bresenham deutlich machen. Der Algorithmus erlaubt unter gewissen Umständen, das aufeinander folgende Zellen nur an der Ecke miteinander verbunden sind. Dann gilt zum Beispiel  $C_i = (0,0,0)^T$ und $C_{i+1} = (1,1,1)^T$. Dies ist eine der Ursachen die dazu führt, dass grundsätzlich nicht alle Zellen assoziiert werden können. Auch das Ray-Tracing weist ähnliche Probleme aufgrund der Diskretisierung der Schritte auf. Hier können durch die diskreten Schritte Zellen Zellen übersprungen werden, die in einer kontinuierlichen Betrachtungsweise vom Ray getroffen werden. Dieses Problem ist beim Ray-Tracer allerdings vernachlässigbar, solange die Schrittweite identisch zu derer gewählt wird, die beim Update der TSDF-Karte, in welchem nach Kapitel \ref{} ebenfalls ein Ray-Tracing Ansatz gewählt wurde, verwendet wird. Dadurch kann sichergestellt werden, dass Zellen, die beim Update der TSDF-Karte ausgehend von $P_i$ verändert wurden, auch von dem Ray-Tracer zur Datenassoziation getroffen werden. Dies erklärt dementsprechend nicht die restlichen knapp $9\%$ der Zellen, die durch den Ray-Tracer nicht assoziiert werden konnten.
+
 
 \begin{figure}
 	\centering
