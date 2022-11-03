@@ -219,6 +219,14 @@ add_executable(test_partial_update src/nodes/test_partial_update.cpp
                         src/util/lc_evaluator.cpp
                         src/map/map_updater.cpp)
 
+add_executable(convert_global_map src/nodes/convert_global_map.cpp
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp
+                        src/map/attribute_data_model.cpp
+                        src/ray_tracer/ray_tracer.cpp
+                        src/path/path.cpp
+                        src/util/csv_wrapper.cpp)
+
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -376,6 +384,18 @@ target_link_libraries(test_partial_update
   OpenMP::OpenMP_CXX
   gtsam
 )
+
+target_link_libraries(convert_global_map
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${PCL_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
+  gtsam
+)
+
 
 ## Tests ##
 

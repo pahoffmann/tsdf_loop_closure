@@ -993,3 +993,60 @@ void GlobalMap::write_meta(const MapParams &params)
 
     file_->flush();
 }
+
+std::vector<std::pair<std::string, std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>>>> GlobalMap::read_old_format()
+{
+    struct TSDFValueHWOld
+    {
+        using ValueType = int16_t;
+        using WeightType = int16_t;
+
+        ValueType value;
+        WeightType weight;
+    };
+
+    union
+    {
+        uint32_t raw;
+        TSDFValueHWOld tsdf;
+    } old_data;
+
+    auto chunks = all_chunk_poses();
+
+    auto group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    int default_counter = 0;
+
+    std::vector<std::pair<std::string, std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>>>> converted_data;
+
+    for (int i = 0; i < chunks.size(); i++)
+    {
+        auto chunk = chunks[i];
+
+        auto chunk_pos = chunk * CHUNK_SIZE;
+
+        auto tag = tag_from_chunk_pos(chunk);
+
+        auto ds = group.getDataSet(tag);
+
+        // old format: 2 * 16 bit
+        std::vector<uint32_t> data;
+        ds.read(data);
+
+        std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>> chunk_converted;
+
+        for (auto entry : data)
+        {
+            old_data.raw = entry;
+
+            TSDFEntry new_entry(old_data.tsdf.value, old_data.tsdf.weight);
+            chunk_converted.push_back(std::make_pair(new_entry.value(), new_entry.weight()));
+        }
+
+        converted_data.push_back(std::make_pair(tag, chunk_converted));
+
+        std::cout << "[GlobalMap - convert_old_format()] Read " << data.size() << " entries from h5!" << std::endl;
+    }
+
+    return converted_data;
+}

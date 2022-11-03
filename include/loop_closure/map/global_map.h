@@ -321,4 +321,10 @@ public:
      * @return Vector3i 
      */
     Vector3i pos_from_index(int i);
+
+    /**
+     * @brief attempts to read the data of an old formatted gm
+     * 
+     */
+    std::vector<std::pair<std::string, std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>>>> read_old_format();
 };
