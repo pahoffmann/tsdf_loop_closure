@@ -25,9 +25,9 @@
 \contentsline {subsection}{\numberline {4.3.3}Ergebnisse}{26}{subsection.4.3.3}%
 \contentsline {subsection}{\numberline {4.3.4}Evaluation}{27}{subsection.4.3.4}%
 \contentsline {section}{\numberline {4.4}Loop Closure}{28}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Kartenupdate}{28}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Transformationen}{28}{subsection.4.5.1}%
-\contentsline {section}{\numberline {4.6}Evaluation}{29}{section.4.6}%
+\contentsline {section}{\numberline {4.5}Kartenupdate}{30}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Transformationen}{30}{subsection.4.5.1}%
+\contentsline {section}{\numberline {4.6}Evaluation}{30}{section.4.6}%
 \contentsline {chapter}{\numberline {5}Loop Closure}{31}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Detektion}{31}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Graphenoptimierung}{31}{section.5.2}%

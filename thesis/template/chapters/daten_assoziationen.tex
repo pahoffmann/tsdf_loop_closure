@@ -252,6 +252,16 @@ Diese Sektion befasst sich mit den Problematiken bei der Bestimmung von Assoziat
 
 Im vorigen Abschnitt wurde beschrieben, dass ein je nach Datensatz variabler Prozentsatz der Karte nicht durch den Ray-Tracer und ebenfalls nicht durch Bresenham mit einer der Posen assoziiert werden kann. Dieses Problem wird sowohl durch die diskreten Schritte beim Ray-Tracer, als auch durch eine unpassende Wahl der nächsten Zelle im 3D Bresenham Algorithmus ausgelöst. Diese beiden Probleme sorgen allerdings nur zum Teil für die nicht assoziierten Zellen. Eine wesentliche Ursache sind durch die Diskretisierung eintretende Verdeckungen und Reflexionen beziehungsweise nicht gefiltertes Sensorrauschen bei der Generation der Karte, das für einzelne in der Luft schwebende TSDF-Zellen sorgt. Ein Beispiel für beschriebene Verdeckungen sind zum Beispiel Türen. In der Realität kann ein Laserscanner beliebig nah am Türrahmen vorbei scannen. Hier wird der Sichtbereich durch die Tür lediglich vom Türrahmen eingeschränkt. In einer diskretisierten TSDF-Karte wird der Sichtbereich durch die Tür je nach der Auflösung der Karte eingeschränkt. Abbildung \ref{} zeigt dieses Problem schematisch in "D anhand einer Pose und einem Hindernis, wie zum Beispiel einem Pfeiler. Es ist erkenntlich, dass ein Teil des ursprünglichen Sichtbereichs nun durch die diskretisierte TSDF-Karte verdeckt ist und alle Zellen, die sich im verdeckten Bereich hinter dem Hindernis nicht mehr assoziiert werden können. Dies ist die Hauptursache für beschriebene Probleme bei der Assoziationsbestimmung und kann ohne zusätzliche Informationen innerhalb der TSDF-Karte nicht gelöst werden. Eine Möglichkeit wäre, es dem Ray-Tracer zu erlauben, durch Wände hindurch zu sehen, was allerdings dazu führen könnte, dass Zellen mit der Pose assoziiert werden, die nicht zu ihr gehören. Dies ist einer der Hauptgründe für eine grundlegende Veränderung der Herangehensweise an das in dieser Arbeit formulierte Problem. \ref{section:ass_lc} eruiert weitere Probleme dieses ersten Ansatzes.
 
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.25]
+			{Verdeckungen}
+		\caption
+			[Caption for LOF]{Diese Abbildung zeigt die Vergrößerung des Verdeckungsbereichs durch die Diskretisierung der Karte als TSDF. Zu sehen ist der ehemalige Verdeckungsbereich des in schwarz gefärbten Objektes. Dieser ist als halbtransparenter blauer Bereich gekennzeichnet. Darum herum zeigt sich der neue Verdeckungsbereich, der durch die Diskretisierung der Karte auftritt, ausgehend von der aktuell betrachteten Pose. Er ist halbtransparent in rot dargestellt. Diese Vergrößerung kommt durch die Beschaffenheit der Karte zustande. Nur außerhalb der roten Pfeile, also außerhalb des Verdeckungsbereichs kann mit Sicherheit gesagt werden, dass der künstliche Ray Freiraum passiert. Durch die Diskretisierung hat sich der Bereich, in dem ein Objekt sein könnte, vergrößert. Dies ist die Hauptursache für nicht assoziierbare Zellen.}		                                                                                                                                     
+		\label{fig:Verdeckungen}
+\end{figure}
+
 Abbildung \ref{fig:BresenhamVsRayTracing} zeigte eine Gegenüberstellung der Laufzeiten des Bresenham-Algorithmus in 3D gegenüber des vorgestellten Ray-Tracing Ansatzes. Es wird deutlich, dass durch die Einführung des Bresenham Algorithmus eine deutliche Steigerung der Effizienz erzielt wird.
 
 \begin{figure}
@@ -264,9 +274,23 @@ Abbildung \ref{fig:BresenhamVsRayTracing} zeigte eine Gegenüberstellung der Lau
 		\label{fig:BresenhamVsRayTracing}
 \end{figure}
 
+Der folgende Absatz beschäftigt sich mit der Identifikation von Loop Closures innerhalb dieses ersten Ansatzes.
+
 
 \section{Loop Closure}
 \label{section:ass_lc}
+
+Wie in \ref{section:loop_closure_basics} eingeführt wurde, ist es für die Identifikation von Schleifenschlüssen notwendig zu detektieren, dass der Roboters oder das Systems räumlich gesehen an derselben Pose oder in der Nähe der aktuellen Pose bereits gewesen ist. Dies lässt sich zum Beispiel über eine Distanzheuristik ermitteln. Alle Posen, deren euklidische Distanz zur aktuellen Pose geringer ist als eine festgelegte Schwelle sind Kandidaten für potentielle Schleifenschlüsse, die dann in den Posegraphen, gegeben durch die Posen des Roboters und gegebenenfalls vorige Schleifenschlüsse, eingefügt werden können. Um zu bestimmten, ob einer der ermittelten Schleifenschluss-Kandidaten für einen Schleifenschluss in Frage kommt, muss die Umgebung jeder einzelnen in Frage kommenden Pose gegen die Umgebung der aktuellen Pose verglichen werden. Das Mittel der Wahl ist hier ein Scan-Matching Ansatz wie vorgeschlagen in \cite{lu1997globally,shan2020lio,borrmann2008globally}. Dieser Ansatz basiert allerdings auf räumlichen Punktdaten, die an dieser Stelle nicht vorhanden sind. Die Einzige Repräsentation der Umgebung ist die bereits fertiggestellte TSDF-Kartendarstellung. Aus dieser können allerdings Punktwolken approximiert werden. Grundlage dafür bildet in dieser Arbeit der zuvor entwickelte Ray-Tracer. Dieser wird wie gehabt mit einer beliebigen Auflösung initialisiert und alle Rays werden schrittweise verlängert. Anstelle nun Assoziationen zu ermitteln, wird der erste Schnitt des Ray-Tracers mit einem Nulldurchgang, einem Wechsel von positiven auf negative TSDF-Werte, gesucht. Ist ein solcher gefunden, wird die Ebene zwischen den beiden Voxeln berechnet, die die gesuchte Oberfläche am besten beschreibt. Diese Ebene ergibt sich aus den Positionen der Voxel $\vec{V_i}$ und $\vec{V_j}$, sowie den zugehörigen TSDF-Werten $v_i$ und $v_j$. Die TSDF-Werte bestimmen, wo die Ebene zwischen den beiden Voxeln liegt. Gegeben die Zentren der Voxel $\vec{c_i}$ und $\vec{c_j}$ in globalen Koordinaten, sowie die zugehörigen TSDF-Werte ist die Ebene beschrieben durch einen Ortsvektor $\vec{v_{ij}}$, sowie eine Normale $n_{ij}$. Die beiden Komponenten berechnen sich wie folgt:
+
+\begin{myequation}
+\vec{v_{ij}} = \vec{c_i} + \left(\vec{c_j} - \vec{c_i}\right) \cdot \frac{\abs{v_i}}{\abs{v_i}+ \abs{v_j}}
+\end{myequation}
+
+\begin{myequation}
+\vec{n_{ij}} = \left(\vec{c_j} - \vec{c_i}\right)
+\end{myequation}
+
+Auf Basis der durch $\vec{v_{ij}}$ und $n_{ij}$ gegebenen Ebene lässt sich nun ein Punkt der Punktwolke als Schnitt des betrachteten Rays mit der zuvor berechneten Ebene errechnen. Das Ergebnis dieser Approximation ist in Abbildung \ref{} dargestellt.
 
 Problem Loop Closure als Post-Processing Schritt ohne passende Punktwolke erklären:
 einzige Repräsentation der Umgebung ist Karte

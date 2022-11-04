@@ -19,6 +19,7 @@
 \usepackage[figuresright]{rotating} % Bilder rotieren
 \usepackage{amsmath}
 \usepackage{makecell}
+\usepackage{mathtools}
 \newcommand*\colvec[1]{\begin{pmatrix}#1\end{pmatrix}}
 
 \usepackage{xargs}                      % Use more than one optional parameter in a new commands
@@ -51,8 +52,19 @@
 	\end{equation}
 }
 
-\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
-\newcommand{\abs}[1]{\lVert#1\rVert}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+
+% Swap the definition of \abs* and \norm*, so that \abs
+% and \norm resizes the size of the brackets, and the 
+% starred version does not.
+\makeatletter
+\let\oldabs\abs
+\def\abs{\@ifstar{\oldabs}{\oldabs*}}
+%
+\let\oldnorm\norm
+\def\norm{\@ifstar{\oldnorm}{\oldnorm*}}
+\makeatother
 	
 
 \WarningFilter*{microtype}{I cannot find}
