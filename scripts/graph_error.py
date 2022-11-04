@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     # plot individual plots
     #plot_error(df, ["relative", "absolute"])
-    gp.plot_error(df, ["error"])
+    gp.plot_error(df, ["error"], True)
     #plot_average_iterations(df)
 
     data = pd.DataFrame({'iteration': [1, 10, 2, 11], 'error': [0.5, 0.7, 1.0, 1.2], 'label': ['1','2','1','2']})

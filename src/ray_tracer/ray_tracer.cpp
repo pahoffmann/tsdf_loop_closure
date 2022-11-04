@@ -24,10 +24,10 @@ float RayTracer::start(int mode)
     throw std::invalid_argument("[RayTracer] The RayTracer needs a pose to be able to start tracing.");
   }
 
-  // just for better readablity
-  std::cout << std::endl;
+  // // just for better readablity
+  // std::cout << std::endl;
 
-  std::cout << "[RayTracer] Started Tracing..." << std::endl;
+  //std::cout << "[RayTracer] Started Tracing..." << std::endl;
 
   // before doing anything, we need to cleanup the data from the last run
   cleanup();
@@ -52,13 +52,13 @@ float RayTracer::start(int mode)
   // calc duration
   auto duration = end_time - start_time;
 
-  std::cout << std::fixed;
-  std::cout << std::setprecision(2);
-  std::cout << "[RayTracer] Time Measurement updates only: " << duration.toNSec() / 1000000.0f << " ms" << std::endl; // display time in ms, with two decimal points
+  // std::cout << std::fixed;
+  // std::cout << std::setprecision(2);
+  // std::cout << "[RayTracer] Time Measurement updates only: " << duration.toNSec() / 1000000.0f << " ms" << std::endl; // display time in ms, with two decimal points
 
-  std::cout << "[RayTracer] Done Tracing..." << std::endl;
+  //std::cout << "[RayTracer] Done Tracing..." << std::endl;
 
-  std::cout << std::endl;
+  //std::cout << std::endl;
 
   return (float)num_good / (float)num_not_good;
 }
@@ -326,9 +326,9 @@ void RayTracer::start_bresenham()
   }
 
   // just for better readablity
-  std::cout << std::endl;
+  //std::cout << std::endl;
 
-  std::cout << "[RayTracer] Started Tracing..." << std::endl;
+  //std::cout << "[RayTracer] Started Tracing..." << std::endl;
 
   // before doing anything, we need to cleanup the data from the last run
   cleanup();
@@ -343,9 +343,9 @@ void RayTracer::start_bresenham()
 
   auto duration = (end - start);
 
-  std::cout << std::fixed;
-  std::cout << std::setprecision(2);
-  std::cout << "[RayTracer] Time Measurement Bresenham: " << duration.toNSec() / 1000000.0f << " ms" << std::endl; // display time in ms, with two decimal points
+  // std::cout << std::fixed;
+  // std::cout << std::setprecision(2);
+  // std::cout << "[RayTracer] Time Measurement Bresenham: " << duration.toNSec() / 1000000.0f << " ms" << std::endl; // display time in ms, with two decimal points
 }
 
 void RayTracer::init3DBresenham()
@@ -484,7 +484,7 @@ void RayTracer::init3DBresenham()
 
   // this may vary for the same localmap and parametrization, because of the pose of the laserscanner.
   // if it is slightly rotated, this may actually be 3, meaning there were no lines parallel to any of the planes
-  std::cout << "Global Match count avg: " << (float)global_match_count / bresenham_cells.size() << std::endl;
+  //std::cout << "Global Match count avg: " << (float)global_match_count / bresenham_cells.size() << std::endl;
 
   // update the lines finished vector, as we need to track, if a line is already finished
   // initially, all rays have a status of OK, meaning they neither passed a zero crossing, nor are already finished.
@@ -525,6 +525,13 @@ void RayTracer::perform3DBresenham()
     // while the line is not finished
     while (lines_finished[i] != RayStatus::FINISHED)
     {
+      if(!local_map_ptr_->in_bounds(bresenham_start))
+      {
+        std::cout << "not in bounds" << std::endl << bresenham_start << std::endl;
+        lines_finished[i] = RayStatus::FINISHED;
+        break;
+      }
+
       auto &tsdf = local_map_ptr_->value(bresenham_start);
 
       // now do switch case
@@ -783,7 +790,7 @@ pcl::PointCloud<PointType>::Ptr RayTracer::approximate_pointcloud(Pose *pose)
   }
 
   // just for better readablity
-  std::cout << std::endl;
+  //std::cout << std::endl;
 
   std::cout << "[RayTracer] Started approximating a pointcloud..." << std::endl;
 

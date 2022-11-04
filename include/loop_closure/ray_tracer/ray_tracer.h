@@ -148,12 +148,6 @@ private:
      * @return false 
      */
     bool linePlaneIntersection(Vector3f& intersection, Vector3f ray_vector, Vector3f ray_origin, Vector3f plane_normal, Vector3f plane_coord);
-
-    /**
-     * @brief does some cleanup work in between runs.
-     * 
-     */
-    void cleanup();
 public:
 
     /**
@@ -179,6 +173,12 @@ public:
     {
         cur_association = association;
     }
+
+    /**
+     * @brief does some cleanup work in between runs.
+     * 
+     */
+    void cleanup();
 
     /**
      * @brief Starts the tracing process
