@@ -24,18 +24,18 @@
 \contentsline {subsection}{\numberline {4.3.2}Bresenham}{23}{subsection.4.3.2}%
 \contentsline {subsection}{\numberline {4.3.3}Ergebnisse}{26}{subsection.4.3.3}%
 \contentsline {subsection}{\numberline {4.3.4}Evaluation}{27}{subsection.4.3.4}%
-\contentsline {section}{\numberline {4.4}Loop Closure}{27}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Kartenupdate}{27}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Transformationen}{27}{subsection.4.5.1}%
-\contentsline {section}{\numberline {4.6}Evaluation}{28}{section.4.6}%
-\contentsline {chapter}{\numberline {5}Loop Closure}{29}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Detektion}{29}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Graphenoptimierung}{29}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Optimierungen}{29}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Datensätze}{30}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Hannover1}{30}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}Maps}{30}{subsection.5.4.2}%
-\contentsline {chapter}{\numberline {6}Map Update}{31}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Globales Update}{31}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Partielles Update}{31}{section.6.2}%
-\contentsline {chapter}{\numberline {7}Ausblick}{33}{chapter.7}%
+\contentsline {section}{\numberline {4.4}Loop Closure}{28}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Kartenupdate}{28}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Transformationen}{28}{subsection.4.5.1}%
+\contentsline {section}{\numberline {4.6}Evaluation}{29}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Loop Closure}{31}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Detektion}{31}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Graphenoptimierung}{31}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Optimierungen}{31}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Datensätze}{32}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Hannover1}{32}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Maps}{32}{subsection.5.4.2}%
+\contentsline {chapter}{\numberline {6}Map Update}{33}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Globales Update}{33}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Partielles Update}{33}{section.6.2}%
+\contentsline {chapter}{\numberline {7}Ausblick}{35}{chapter.7}%
