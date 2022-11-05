@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  5 NOV 2022 01:13
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  5 NOV 2022 13:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1208,9 +1208,6 @@ Package csquotes Info: Redefining alias 'default' -> 'american'.
 
 LaTeX Warning: Label `Rays-Loop' multiply defined.
 
-
-LaTeX Warning: Label `fig:bresenham_vs_raytrace' multiply defined.
-
 )
 \openout1 = `main.aux'.
 
@@ -1510,22 +1507,18 @@ LaTeX Warning: Reference `' on page 27 undefined on input line 253.
 
 [27 <./pics/sp_bresenham_91_74_.png (PNG copy)> <./pics/sp_raytrace_91_97_.png 
 (PNG copy)>]
-<pics/Verdeckungen.png, id=576, 895.345pt x 676.5275pt>
+<pics/Verdeckungen.png, id=575, 895.345pt x 676.5275pt>
 File: pics/Verdeckungen.png Graphic file (type png)
 <use pics/Verdeckungen.png>
 Package pdftex.def Info: pics/Verdeckungen.png  used on input line 259.
 (pdftex.def)             Requested size: 223.8357pt x 169.13145pt.
-<pics/BresenhamVsRayTracing.png, id=578, 474.0912pt x 320.1561pt>
+<pics/BresenhamVsRayTracing.png, id=577, 474.0912pt x 320.1561pt>
 File: pics/BresenhamVsRayTracing.png Graphic file (type png)
 <use pics/BresenhamVsRayTracing.png>
 Package pdftex.def Info: pics/BresenhamVsRayTracing.png  used on input line 271
 .
 (pdftex.def)             Requested size: 331.86157pt x 224.10773pt.
  [28 <./pics/Verdeckungen.png>] [29 <./pics/BresenhamVsRayTracing.png>]
-
-LaTeX Warning: Reference `fig:pointcloud_approximation' on page 30 undefined on
- input line 293.
-
 <pics/single_tsdf.png, id=596, 950.80219pt x 645.91313pt>
 File: pics/single_tsdf.png Graphic file (type png)
 <use pics/single_tsdf.png>
@@ -1546,12 +1539,27 @@ Overfull \hbox (34.1419pt too wide) in paragraph at lines 305--306
  [][] 
  []
 
-[30 <./pics/single_tsdf.png (PNG copy)> <./pics/approx_cloud.png (PNG copy)>])
-(./chapters/loopclosure.tex [31] [32
+LaTeX Font Info:    Trying to load font information for U+euf on input line 317
+.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/ueuf.fd
+File: ueuf.fd 2013/01/14 v3.01 Euler Fraktur
+)
+(/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-euf.cfg
+File: mt-euf.cfg 2006/07/03 v1.1 microtype config. file: AMS Euler Fraktur (RS)
 
-]
+) [30 <./pics/single_tsdf.png (PNG copy)> <./pics/approx_cloud.png (PNG copy)>]
+<pics/Assoziationsprobleme.png, id=606, 1485.55pt x 702.625pt>
+File: pics/Assoziationsprobleme.png Graphic file (type png)
+<use pics/Assoziationsprobleme.png>
+Package pdftex.def Info: pics/Assoziationsprobleme.png  used on input line 323.
+
+(pdftex.def)             Requested size: 371.3866pt x 175.6558pt.
+)
+(./chapters/loopclosure.tex [31] [32 <./pics/Assoziationsprobleme.png>]
 Kapitel 5.
-[33]) (./chapters/map_update.tex [34]
+[33
+
+]) (./chapters/map_update.tex [34]
 Kapitel 6.
 ) (./chapters/ausblick.tex [35
 
@@ -1587,38 +1595,39 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 173.
  ) 
 Here is how much of TeX's memory you used:
- 42257 strings out of 483016
- 902694 string characters out of 5961286
- 1341120 words of memory out of 5000000
- 56182 multiletter control sequences out of 15000+600000
- 627014 words of font info for 173 fonts, out of 8000000 for 9000
+ 42300 strings out of 483016
+ 903578 string characters out of 5961286
+ 1341963 words of memory out of 5000000
+ 56211 multiletter control sequences out of 15000+600000
+ 628596 words of font info for 181 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
- 73i,18n,127p,2290b,1085s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 73i,18n,127p,2290b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
 dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/sha
 re/texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/
-lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texm
-f/fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx
-12.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx9.pfb></usr/share/texmf/font
-s/type1/public/lm/lmbxo10.pfb></usr/share/texmf/fonts/type1/public/lm/lmcsc10.p
-fb></usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></usr/share/texmf/fonts/t
-ype1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi6.pfb></u
-sr/share/texmf/fonts/type1/public/lm/lmmi7.pfb></usr/share/texmf/fonts/type1/pu
-blic/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share
-/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/
-lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lmr5.pfb></usr/share/texmf/fo
-nts/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts/type1/public/lm/lmr7.pfb><
-/usr/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/p
-ublic/lm/lmr9.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/shar
-e/texmf/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/l
-m/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texm
-f/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt1
-0.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10
-.pfb>
-Output written on main.pdf (47 pages, 2152779 bytes).
+lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/euler/eufm10.pfb></usr/share/texmf/f
+onts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx12.
+pfb></usr/share/texmf/fonts/type1/public/lm/lmbx9.pfb></usr/share/texmf/fonts/t
+ype1/public/lm/lmbxo10.pfb></usr/share/texmf/fonts/type1/public/lm/lmcsc10.pfb>
+</usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></usr/share/texmf/fonts/type
+1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi6.pfb></usr/
+share/texmf/fonts/type1/public/lm/lmmi7.pfb></usr/share/texmf/fonts/type1/publi
+c/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/te
+xmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr
+17.pfb></usr/share/texmf/fonts/type1/public/lm/lmr5.pfb></usr/share/texmf/fonts
+/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts/type1/public/lm/lmr7.pfb></us
+r/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/publ
+ic/lm/lmr9.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/t
+exmf/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/l
+msy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/f
+onts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.p
+fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pf
+b>
+Output written on main.pdf (47 pages, 2183232 bytes).
 PDF statistics:
- 780 PDF objects out of 1000 (max. 8388607)
- 650 compressed objects within 7 object streams
- 153 named destinations out of 1000 (max. 500000)
- 14821 words of extra memory for PDF output out of 17280 (max. 10000000)
+ 789 PDF objects out of 1000 (max. 8388607)
+ 656 compressed objects within 7 object streams
+ 154 named destinations out of 1000 (max. 500000)
+ 14826 words of extra memory for PDF output out of 17280 (max. 10000000)
 

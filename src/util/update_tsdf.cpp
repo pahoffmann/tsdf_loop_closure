@@ -89,6 +89,7 @@ void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::V
         auto lowest = (proj - ((delta_z * interpolation_vector) / MATRIX_RESOLUTION).cast<int>());
         auto mid_index = index;
 
+        // interpolation
         for (auto step = 0; step < iter_steps; ++step)
         {
           index = (lowest + ((step * map_resolution * interpolation_vector) / MATRIX_RESOLUTION).cast<int>()) / map_resolution;
