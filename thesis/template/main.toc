@@ -25,17 +25,17 @@
 \contentsline {subsection}{\numberline {4.3.3}Ergebnisse}{26}{subsection.4.3.3}%
 \contentsline {subsection}{\numberline {4.3.4}Evaluation}{27}{subsection.4.3.4}%
 \contentsline {section}{\numberline {4.4}Loop Closure}{28}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Kartenupdate}{30}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Transformationen}{30}{subsection.4.5.1}%
-\contentsline {section}{\numberline {4.6}Evaluation}{30}{section.4.6}%
-\contentsline {chapter}{\numberline {5}Loop Closure}{31}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Detektion}{31}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Graphenoptimierung}{31}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Optimierungen}{31}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Datensätze}{32}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Hannover1}{32}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}Maps}{32}{subsection.5.4.2}%
-\contentsline {chapter}{\numberline {6}Map Update}{33}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Globales Update}{33}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Partielles Update}{33}{section.6.2}%
-\contentsline {chapter}{\numberline {7}Ausblick}{35}{chapter.7}%
+\contentsline {section}{\numberline {4.5}Kartenupdate}{31}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Transformationen}{31}{subsection.4.5.1}%
+\contentsline {section}{\numberline {4.6}Evaluation}{31}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Loop Closure}{33}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Detektion}{33}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Graphenoptimierung}{33}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Optimierungen}{33}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Datensätze}{34}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Hannover1}{34}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Maps}{34}{subsection.5.4.2}%
+\contentsline {chapter}{\numberline {6}Map Update}{35}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Globales Update}{35}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Partielles Update}{35}{section.6.2}%
+\contentsline {chapter}{\numberline {7}Ausblick}{37}{chapter.7}%

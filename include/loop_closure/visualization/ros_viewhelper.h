@@ -518,6 +518,7 @@ namespace ROSViewhelper
             {
                 for (int z = pose->pos.z() + (-1 * (local_map_ptr_->get_size().z() - 1) / 2); z < pose->pos.z() + ((local_map_ptr_->get_size().z() - 1) / 2); z++)
                 {
+                    if(!local_map_ptr_->in_bounds(x, y, z)) continue;
                     auto tsdf = local_map_ptr_->value(x, y, z);
                     auto value = tsdf.value();
                     auto weight = tsdf.weight();

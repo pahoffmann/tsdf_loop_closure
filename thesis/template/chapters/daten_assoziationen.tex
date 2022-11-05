@@ -290,11 +290,27 @@ Wie in \ref{section:loop_closure_basics} eingeführt wurde, ist es für die Iden
 \vec{n_{ij}} = \left(\vec{c_j} - \vec{c_i}\right)
 \end{myequation}
 
-Auf Basis der durch $\vec{v_{ij}}$ und $n_{ij}$ gegebenen Ebene lässt sich nun ein Punkt der Punktwolke als Schnitt des betrachteten Rays mit der zuvor berechneten Ebene errechnen. Das Ergebnis dieser Approximation ist in Abbildung \ref{} dargestellt.
+Auf Basis der durch $\vec{v_{ij}}$ und $n_{ij}$ gegebenen Ebene lässt sich nun ein Punkt der Punktwolke als Schnitt des betrachteten Rays mit der zuvor berechneten Ebene errechnen. Das Ergebnis dieser Approximation ist in Abbildung \ref{fig:pointcloud_approximation} dargestellt. Eine Zuordnung der approximierten Punktwolke zur Pose von welcher ausgehend die Punktwolke generiert wurde ist jedoch nicht sinnvoll, da unbekannt ist, welcher Teil der Karte tatsächlich von dieser Pose aus generiert wurde. Dasselbe Problem gilt auch für die Bestimmung von Punktwolken aus einer statischen Karte zur Berechnung potentieller Schleifenschlüsse um auf Basis der Schleifenschlüsse erneut die Karte zu optimieren. Dies scheitert schon bei der Generierung von Punktwolken aus einer potentiell unvollständigen oder gänzlich falschen Karte. Die approximierten Punktwolken stellen dann in jedem Fall auch unvollständige oder falsche Daten dar. Auch ein Scan-Matching mit potentiell unvollständigen oder falschen Daten ist nicht zielführend. Aus den genannten Gründen wurde die Idee der Punktwolkenapproximation zur Identifikation von Schleifenschlüssen verworfen.
 
-Problem Loop Closure als Post-Processing Schritt ohne passende Punktwolke erklären:
-einzige Repräsentation der Umgebung ist Karte
-scan-matching erfordert Punktdaten, Möglichkeit: Approximation von punktwolken, funktioniert auch sehr gut (Beispielbild), aber: Punktwolken einer falsch generierten Karte aufeinander matchen ergibt nicht besonders viel sinn.
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+ 		 \centering
+  		 \includegraphics[width=1.15\linewidth]{single_tsdf}
+  		 \centering \caption{Lokale TSDF Karte ausgehend von einer festgelegten Pose.}
+  		 \label{fig:single_tsdf}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=1.15\linewidth]{approx_cloud}
+  		\centering \caption{Aus der lokalen Karte generierte Punktwolke.}
+  		\label{fig:approx_cloud}
+	\end{subfigure}
+	\caption{Gegenüberstellung eines Ausschnitts der TSDF-Karte und einer dazugehörigen, approximierten Punktwolke.}
+	\label{fig:pointcloud_approximation}
+\end{figure}
+
+Im nachfolgenden Abschnitt wird auf ein mögliches Kartenupdate unter der Prämisse eines zuvor identifizierten Schleifenschlusses eingegangen und die Ergebnisse eruiert.
 
 \section{Kartenupdate}
 

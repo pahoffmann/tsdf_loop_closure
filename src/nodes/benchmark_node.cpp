@@ -61,7 +61,7 @@ std::vector<visualization_msgs::Marker> path_marker_updates;
 // ros publishers declaration
 ros::Publisher tsdf_before_publisher;
 ros::Publisher tsdf_after_publisher;
-ros::Publisher tsdf_read_publisher;
+ros::Publisher single_tsdf_publisher;
 ros::Publisher pose_publisher;
 ros::Publisher path_publisher;
 ros::Publisher updated_path_publisher;
@@ -70,6 +70,7 @@ ros::Publisher bb_publisher;
 ros::Publisher chunk_publisher;
 ros::Publisher bresenham_int_publisher;
 ros::Publisher loop_pub;
+ros::Publisher cloud_pub;
 
 /// Map Stuff ///
 std::shared_ptr<GlobalMap> global_map_ptr_;
@@ -98,7 +99,7 @@ AssociationManager *manager;
  *
  * @param path_method
  */
-void initialize_raytracing_benchmark()
+void initialize_benchmark()
 {
     csv_wrapper_ptr.reset(new CSVWrapper(params.loop_closure.csv_save_path));
 
@@ -147,13 +148,14 @@ void populate_publishers(ros::NodeHandle &n)
 {
     tsdf_before_publisher = n.advertise<visualization_msgs::Marker>("tsdf_before", 1, true);
     tsdf_after_publisher = n.advertise<visualization_msgs::Marker>("tsdf_after", 1, true);
-    tsdf_read_publisher = n.advertise<visualization_msgs::Marker>("tsdf_read", 1, true);
+    single_tsdf_publisher = n.advertise<visualization_msgs::Marker>("single_tsdf", 1, true);
     path_publisher = n.advertise<visualization_msgs::Marker>("path", 1, true);
     updated_path_publisher = n.advertise<visualization_msgs::Marker>("path_updated", 1, true);
     ray_publisher = n.advertise<visualization_msgs::Marker>("rays", 100);
     bb_publisher = n.advertise<visualization_msgs::Marker>("bounding_box", 1, true);
     chunk_publisher = n.advertise<visualization_msgs::Marker>("chunk_poses", 1, true);
     bresenham_int_publisher = n.advertise<visualization_msgs::Marker>("bresenham_intersections", 1, true);
+    cloud_pub = n.advertise<sensor_msgs::PointCloud2>("approx_cloud", 1, true);
 }
 
 void populate_markers()
@@ -306,6 +308,24 @@ void benchmark_bresenham()
     ray_trace_benchmark->add_row(ray_trace_benchmark_bresenham);
 }
 
+void benchmark_pcl_approximation()
+{
+    std::cout << __LINE__ << std::endl;
+    auto marker = ROSViewhelper::initSinglePoseMarker(local_map_ptr_, path->at(0));
+    std::cout << "There are " << marker.points.size() << " points in the single pose map" << std::endl;
+    std::cout << __LINE__ << std::endl;
+
+    auto cloud = ray_tracer->approximate_pointcloud(path->at(0));
+    std::cout << "There are " << cloud->size() << " points in the cloud" << std::endl;
+
+    std::cout << __LINE__ << std::endl;
+
+    auto cloud_marker = ROSViewhelper::marker_from_pcl_pointcloud(cloud, "map");
+    std::cout << __LINE__ << std::endl;
+
+    single_tsdf_publisher.publish(marker);
+    cloud_pub.publish(cloud_marker);
+}
 /**
  * @brief Main method
  *
@@ -324,14 +344,27 @@ int main(int argc, char **argv)
 
     // define stuff for raytracer
 
-    initialize_raytracing_benchmark();
+    initialize_benchmark();
 
     // generate publishers
-    // populate_publishers(n);
+    populate_publishers(n);
 
     // start benchmark
-    benchmark_ray_tracer();
-    benchmark_bresenham();
+    // benchmark_ray_tracer();
+    // benchmark_bresenham();
+    //benchmark_pcl_approximation();
+    std::cout << __LINE__ << std::endl;
+    auto marker = ROSViewhelper::initSinglePoseMarker(local_map_ptr_, path->at(0));
+    std::cout << "There are " << marker.points.size() << " points in the single pose map" << std::endl;
+    std::cout << __LINE__ << std::endl;
+
+    auto cloud = ray_tracer->approximate_pointcloud(path->at(0));
+    std::cout << "There are " << cloud->size() << " points in the cloud" << std::endl;
+
+    auto cloud_marker = ROSViewhelper::marker_from_pcl_pointcloud(cloud, "map");
+
+    single_tsdf_publisher.publish(marker);
+    cloud_pub.publish(cloud_marker);
 
     // now populate the markers
     // populate_markers();
@@ -359,7 +392,6 @@ int main(int argc, char **argv)
     tsdf_before_publisher.publish(tsdf_map_full_before);
     tsdf_after_publisher.publish(tsdf_map_full_after);
     // tsdf_publisher.publish(single_marker);
-    tsdf_read_publisher.publish(tsdf_read_marker);
     chunk_publisher.publish(chunk_marker);
 
     if (bresenham_marker.points.size() != 0)
@@ -381,6 +413,8 @@ int main(int argc, char **argv)
         // publish the individual messages
         bb_publisher.publish(bb_marker);
         ray_publisher.publish(ray_markers);
+        //single_tsdf_publisher.publish(marker);
+        cloud_pub.publish(cloud_marker);
 
         // more ros related stuff
         ros::spinOnce();
