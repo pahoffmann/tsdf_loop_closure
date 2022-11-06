@@ -10,45 +10,45 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: papers.bib
 Warning--empty number in dellaert2012factor
 Warning--empty note in dellaert2012factor
-You've used 21 entries,
+You've used 23 entries,
             4328 wiz_defined-function locations,
-            960 strings with 9909 characters,
-and the built_in function-call counts, 14453 in all, are:
-= -- 1495
-> -- 469
-< -- 627
-+ -- 722
-- -- 172
-* -- 972
-:= -- 2694
-add.period$ -- 21
-call.type$ -- 21
-change.case$ -- 123
+            974 strings with 10230 characters,
+and the built_in function-call counts, 15443 in all, are:
+= -- 1607
+> -- 489
+< -- 659
++ -- 758
+- -- 180
+* -- 1032
+:= -- 2865
+add.period$ -- 23
+call.type$ -- 23
+change.case$ -- 130
 chr.to.int$ -- 0
-cite$ -- 23
-duplicate$ -- 326
-empty$ -- 797
-format.name$ -- 328
-if$ -- 2631
+cite$ -- 25
+duplicate$ -- 353
+empty$ -- 870
+format.name$ -- 340
+if$ -- 2832
 int.to.chr$ -- 0
-int.to.str$ -- 21
-missing$ -- 76
-newline$ -- 118
-num.names$ -- 42
-pop$ -- 166
+int.to.str$ -- 23
+missing$ -- 83
+newline$ -- 128
+num.names$ -- 46
+pop$ -- 176
 preamble$ -- 1
-purify$ -- 123
+purify$ -- 130
 quote$ -- 0
-skip$ -- 812
+skip$ -- 865
 stack$ -- 0
-substring$ -- 944
-swap$ -- 120
-text.length$ -- 92
+substring$ -- 1021
+swap$ -- 127
+text.length$ -- 96
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 85
+type$ -- 93
 warning$ -- 2
-while$ -- 139
-width$ -- 23
-write$ -- 268
+while$ -- 148
+width$ -- 25
+write$ -- 293
 (There were 2 warnings)
