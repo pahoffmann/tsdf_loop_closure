@@ -9,7 +9,7 @@ import general_purpose as gp
 if __name__ == '__main__':
     labels = []
 
-    df = pd.read_csv("./data/translation_error.csv")
+    df = pd.read_csv("./data/translation_error_gicp.csv")
     df = df.dropna(axis=1, how='all')
     #plot_average_error(df, label="lm", n_measurements=5, random=False)
 
