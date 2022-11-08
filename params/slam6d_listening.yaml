@@ -3,7 +3,7 @@ loop_closure:
   max_dist_lc: 12.0     # in m
   min_traveled_lc: 12.0 # in m
   dist_between_lcs: 0.0 # in m
-  max_closures_per_pose: 2
+  max_closures_per_pose: 3
 
   max_prereg_icp_fitness: 0.3 # in m²
   max_lc_icp_fitness: 0.3 # in m²

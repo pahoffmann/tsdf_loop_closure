@@ -306,7 +306,7 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud,
     g_icp.setMaximumIterations(params.loop_closure.max_icp_iterations);
     g_icp.setMaximumOptimizerIterations(params.loop_closure.max_icp_iterations);
     g_icp.setTransformationEpsilon(0.01);
-    //g_icp.setMaxCorrespondenceDistance(params.loop_closure.max_dist_lc * 2);
+    //g_icp.setMaxCorrespondenceDistance(0.2f);
     g_icp.setMaxCorrespondenceDistance(params.loop_closure.max_dist_lc * 2);
     g_icp.setRANSACIterations(100);
     g_icp.setRANSACOutlierRejectionThreshold(params.loop_closure.max_dist_lc * 2);

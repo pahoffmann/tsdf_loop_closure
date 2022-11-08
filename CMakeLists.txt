@@ -243,6 +243,21 @@ add_executable(benchmark_node src/nodes/benchmark_node.cpp
                         src/map/map_updater.cpp
                         src/util/csv_wrapper.cpp)
 
+add_executable(benchmark_loop_closures src/nodes/benchmark_loop_closures.cpp 
+                        src/util/runtime_evaluator.cpp
+                        src/map/global_map.cpp 
+                        src/map/local_map.cpp
+                        src/util/update_tsdf.cpp
+                        src/map/attribute_data_model.cpp
+                        src/ray_tracer/ray_tracer.cpp
+                        src/data_association/association.cpp
+                        src/data_association/association_manager.cpp
+                        src/path/path.cpp
+                        src/gtsam/gtsam_wrapper.cpp
+                        src/util/lc_evaluator.cpp
+                        src/map/map_updater.cpp
+                        src/util/csv_wrapper.cpp)
+
                   
 # currently only for the test node.
 #set_target_properties(lc_test_node PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -413,6 +428,21 @@ target_link_libraries(convert_global_map
 )
 
 target_link_libraries(benchmark_node
+  ${catkin_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${HDF5_HL_LIBRARIES}
+  Eigen3::Eigen
+  ${JSONCPP_LIBRARIES}
+  teaserpp::teaser_registration
+  teaserpp::teaser_features
+  teaserpp::teaser_io
+  ${PCL_LIBRARIES}
+  ${Boost_LIBRARIES}
+  OpenMP::OpenMP_CXX
+  gtsam
+)
+
+target_link_libraries(benchmark_loop_closures
   ${catkin_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}

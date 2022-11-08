@@ -104,14 +104,14 @@ void publish_next_data()
     }
 
     // testing
-    if (global_scan_counter > 330)
-    {
-        // all data is published, break the bound and shutdown
+    // if (global_scan_counter > 80)
+    // {
+    //     // all data is published, break the bound and shutdown
 
-        std::cout << "[TransformCoordSys] Breaking the Bond to the listener (test)" << std::endl;
-        bond_ptr->breakBond();
-        return;
-    }
+    //     std::cout << "[TransformCoordSys] Breaking the Bond to the listener (test)" << std::endl;
+    //     bond_ptr->breakBond();
+    //     return;
+    // }
 
     auto scan_path = scan_pose_filename_pairs.first[global_scan_counter];
     auto pose_path = scan_pose_filename_pairs.second[global_scan_counter];

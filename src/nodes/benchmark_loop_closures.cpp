@@ -142,12 +142,22 @@ CSVWrapper::CSVObject *translation_error;
 CSVWrapper::CSVRow translation_header_row;
 CSVWrapper::CSVRow relative_translation_error_row;
 CSVWrapper::CSVRow absolute_translation_error_row;
-CSVWrapper::CSVRow loop_closure_at_index_row; // 0: no, 1: yeeeees
 
 // gtsam graph error
 CSVWrapper::CSVObject *graph_error;
 CSVWrapper::CSVRow graph_error_header;
 CSVWrapper::CSVRow graph_error_row;
+
+// window average lc fitness score
+CSVWrapper::CSVObject *fitness_scores;
+CSVWrapper::CSVRow fitness_scores_header;
+CSVWrapper::CSVRow fitness_score_0;
+CSVWrapper::CSVRow fitness_score_1;
+CSVWrapper::CSVRow fitness_score_2;
+CSVWrapper::CSVRow fitness_score_3;
+CSVWrapper::CSVRow fitness_score_4;
+CSVWrapper::CSVRow fitness_score_5;
+CSVWrapper::CSVRow fitness_score_6;
 
 #pragma endregion
 
@@ -191,6 +201,7 @@ void init_obj()
     // evaluation
     translation_error = csv_wrapper_ptr->create_object("translation_error");
     graph_error = csv_wrapper_ptr->create_object("graph_error");
+    fitness_scores = csv_wrapper_ptr->create_object("fitness_scores");
 }
 
 void fill_optimized_path(gtsam::Values values)
@@ -372,10 +383,10 @@ void partial_update()
 
     // auto ray_tracer_marker = tracer->get_ros_marker();
 
-    auto marker_data = global_map_ptr->get_full_data();
-    auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
+    // auto marker_data = global_map_ptr->get_full_data();
+    // auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
 
-    tsdf_pub.publish(marker);
+    // tsdf_pub.publish(marker);
     // rays_publisher.publish(ray_tracer_marker);
 
     if (bond_ptr->isBroken())
@@ -396,10 +407,18 @@ void clear_and_update_tsdf()
     translation_error->set_header(translation_header_row);
     translation_error->add_row(relative_translation_error_row);
     translation_error->add_row(absolute_translation_error_row);
-    translation_error->add_row(loop_closure_at_index_row);
 
     graph_error->set_header(graph_error_header);
     graph_error->add_row(graph_error_row);
+
+    fitness_scores->set_header(fitness_scores_header);
+    fitness_scores->add_row(fitness_score_0);
+    fitness_scores->add_row(fitness_score_1);
+    fitness_scores->add_row(fitness_score_2);
+    fitness_scores->add_row(fitness_score_3);
+    fitness_scores->add_row(fitness_score_4);
+    fitness_scores->add_row(fitness_score_5);
+    fitness_scores->add_row(fitness_score_6);
 
     csv_wrapper_ptr->write_all();
 
@@ -422,10 +441,10 @@ void clear_and_update_tsdf()
     std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
     Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final");
 
-    auto marker_data = global_map_ptr->get_full_data();
-    auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
+    // auto marker_data = global_map_ptr->get_full_data();
+    // auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
 
-    tsdf_pub.publish(marker);
+    // tsdf_pub.publish(marker);
 
     if (bond_ptr->isBroken())
     {
@@ -523,16 +542,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     pcl::fromROSMsg(*cloud_ptr.get(), *input_cloud.get());
 
-    // filter input cloud with a statistical outlier filter:
-    // std::cout << "[SLAM6D_LISTENER] Start input cloud filtering: " << std::endl;
-    // std::cout << "[SLAM6D_LISTENER] Size before filtering: " << input_cloud->size() << std::endl;
-    // pcl::StatisticalOutlierRemoval<PointType> sor;
-    // sor.setInputCloud(input_cloud);
-    // sor.setMeanK(50);
-    // sor.setStddevMulThresh(1.0);
-    // sor.filter(*input_cloud);
-    // std::cout << "[SLAM6D_LISTENER] Size after filtering: " << input_cloud->size() << std::endl;
-
     // save cloud
     dataset_clouds.push_back(input_cloud);
 
@@ -545,8 +554,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     tf::poseMsgToEigen(pose_ptr->pose, tmp_pose);
 
     input_pose = Pose(tmp_pose.matrix().cast<float>());
-    // input_pose.quat = tmp_quat.cast<float>();
-    // input_pose.pos = tmp_point.cast<float>();
 
     std::cout << "New Pose with index: " << path->get_length() << ":" << std::endl
               << input_pose << std::endl;
@@ -558,10 +565,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // fitness score from preregistration (-1.0f = default)
     float prereg_fitness_score = -1.0f;
-
-    // path->add_pose(input_pose);
-    // broadcast_robot_pose(input_pose);
-    // broadcast_robot_path(path);
 
     if (path->get_length() > 0)
     {
@@ -696,57 +699,57 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
-/*
-#pragma region TSDF_UPDATE
-    // CREATE POINTCLOUD USED FOR TSDF UPDATE
-    pcl::VoxelGrid<PointType> grid;
-    grid.setInputCloud(input_cloud);
-    grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
-    grid.filter(*tsdf_cloud);
+    /*
+    #pragma region TSDF_UPDATE
+        // CREATE POINTCLOUD USED FOR TSDF UPDATE
+        pcl::VoxelGrid<PointType> grid;
+        grid.setInputCloud(input_cloud);
+        grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
+        grid.filter(*tsdf_cloud);
 
-    pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, input_pose_mat);
+        pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, input_pose_mat);
 
-    std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
+        std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
 
-    // transform points to map coordinates
-#pragma omp parallel for schedule(static) default(shared)
-    for (int i = 0; i < tsdf_cloud->size(); ++i)
-    {
-        const auto &cp = (*tsdf_cloud)[i];
-        points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
-    }
+        // transform points to map coordinates
+    #pragma omp parallel for schedule(static) default(shared)
+        for (int i = 0; i < tsdf_cloud->size(); ++i)
+        {
+            const auto &cp = (*tsdf_cloud)[i];
+            points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
+        }
 
-    // Shift
-    Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
+        // Shift
+        Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
 
-    auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
-    Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
-    l_map_half_f *= 0.25f;
-    Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
+        auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
+        Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
+        l_map_half_f *= 0.25f;
+        Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
 
-    std::cout << "Localmap-size / 2: " << std::endl << l_map_half << std::endl;
-    std::cout << "input_3d_pos: " << std::endl << input_3d_pos << std::endl;
+        std::cout << "Localmap-size / 2: " << std::endl << l_map_half << std::endl;
+        std::cout << "input_3d_pos: " << std::endl << input_3d_pos << std::endl;
 
-    if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
-    {
-        local_map_ptr->shift(input_3d_pos);
-    }
+        if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
+        {
+            local_map_ptr->shift(input_3d_pos);
+        }
 
-    Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
-    rot.block<3, 3>(0, 0) = to_int_mat(input_pose_mat).block<3, 3>(0, 0);
-    Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
+        Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
+        rot.block<3, 3>(0, 0) = to_int_mat(input_pose_mat).block<3, 3>(0, 0);
+        Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
 
-    // create TSDF Volume
-    update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
-    local_map_ptr->write_back();
+        // create TSDF Volume
+        update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
+        local_map_ptr->write_back();
 
-#pragma endregion
-*/
+    #pragma endregion
+    */
 
 #pragma region CLOUD_GM_VIS
-    auto gm_data = global_map_ptr->get_full_data();
-    auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    tsdf_pub.publish(marker);
+    // auto gm_data = global_map_ptr->get_full_data();
+    // auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    // tsdf_pub.publish(marker);
 
     // reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
     // gm_data = global_map_ptr->get_full_data();
@@ -758,7 +761,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     tsdf_cloud_pub.publish(filtered_ros_cloud);
 
     path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::lime));
-    gicp_path_pub.publish(ROSViewhelper::initPathMarker(gicp_path, Colors::ColorNames::teal));
 
 #pragma endregion
 
@@ -774,7 +776,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
         graph_error_header.add("1");
         graph_error_row.add(std::to_string(get_current_graph_error()));
-        loop_closure_at_index_row.add(std::to_string(0));
+
         ready_flag_pub.publish(ready_msg);
 
         return;
@@ -811,7 +813,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
         graph_error_header.add(std::to_string(path->get_length()));
         graph_error_row.add(std::to_string(get_current_graph_error()));
-        loop_closure_at_index_row.add(std::to_string(0));
 
         ready_flag_pub.publish(ready_msg);
 
@@ -843,98 +844,181 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     bool converged = false;
     int num_converged = 0;
 
-    for (auto lc_pair : lc_candidate_pairs)
+    fitness_scores_header.add(std::to_string(path->get_length()));
+
+    for (int i = 0; i < 7; i++)
     {
-        //////////////////////////////////////////////////////////////
-        // The identified loops are only candidates at the moment.
-        // To verify them we need to check if a scan matching between
-        // The model (aka the pointcloud of the previous pose) and
-        // The scan (aka the pointcloud of the current)
-        // not only converges, but also has minimal error.
-        // To ensure this, ICP needs to have a low MSD between the clouds
-        // after registration (e.g. 0.3)
-        //
-        // NORMALLY one would pretransform the scan towards the model
-        // using the inital estimates. Here we proceed the other way
-        // round:
-        //
-        // We transform the model into the coordinate system of the
-        // scan, because it is the current robot position and therefore
-        // the current coordinate system of the roboter.
-        // So all this is actually for display purposes.
-        //
-        // This transformation needs to be considered later on in the
-        // following manner:
-        // TODO: add math
-        /////////////////////////////////////////////////////////////
+        float avg_fitness_score = 0.0f;
 
-        pcl::PointCloud<PointType>::Ptr icp_cloud;
-        icp_cloud.reset(new pcl::PointCloud<PointType>());
-
-        auto cur_to_map = path->at(lc_pair.second.second)->getTransformationMatrix();
-        auto prev_to_map = path->at(lc_pair.second.first)->getTransformationMatrix();
-
-        // transform from the current pose (aka the scan) to the previous pose (aka the model) (aka.: switching from current coordinate system to the previous)
-        // this has to be added to the final transformation!!!!
-        auto prev_to_cur_initial = getTransformationMatrixBetween(cur_to_map, prev_to_map);
-
-        pcl::PointCloud<PointType>::Ptr model_cloud;
-        pcl::PointCloud<PointType>::Ptr global_model_cloud;
-        pcl::PointCloud<PointType>::Ptr global_scan_cloud;
-        pcl::PointCloud<PointType>::Ptr scan_cloud;
-        model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
-        scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
-        global_model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
-        global_scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
-
-        // enrich clouds
-        enrich_pointcloud(model_cloud, lc_pair.second.first, 3, 3);
-        enrich_pointcloud(global_model_cloud, lc_pair.second.first, 3, 3);
-
-        // transform into the global coord system and display them there.
-        pcl::transformPointCloud(*global_model_cloud, *global_model_cloud, prev_to_map);
-        pcl::transformPointCloud(*global_scan_cloud, *global_scan_cloud, cur_to_map);
-
-        // transform the scan cloud into the coordinate system of the model cloud using the initial estimate
-        // pcl::transformPointCloud(*scan_cloud, *scan_cloud, cur_to_prev_initial);
-
-        // transform the model cloud into the coordinate system of the scan cloud using the initial estimate
-        pcl::transformPointCloud(*model_cloud, *model_cloud, prev_to_cur_initial);
-
-        Matrix4f final_transformation = Matrix4f::Identity();
-        float fitness_score = 10.0f;
-        bool converged_unit = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair.second, model_cloud, scan_cloud,
-                                                                             icp_cloud, fitness_score, final_transformation, prev_to_cur_initial, path);
-
-        cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(scan_cloud, "robot");
-        prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(model_cloud, "robot");
-        icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_cloud, "robot");
-
-        // for testing purposes
-        // these should be aligned with the cur and prev clouds
-        auto global_model_msg = ROSViewhelper::marker_from_pcl_pointcloud(global_model_cloud, "map");
-        auto global_scan_msg = ROSViewhelper::marker_from_pcl_pointcloud(global_scan_cloud, "map");
-
-        // std::cout << "Number of points in icp cloud: " << icp_cloud->size() << std::endl;
-
-        approx_pcl_pub_cur.publish(cur_pcl_msg);
-        approx_pcl_pub_prev.publish(prev_pcl_msg);
-        approx_pcl_pub_icp.publish(icp_pcl_msg);
-        global_model_pub.publish(global_model_msg);
-        global_scan_pub.publish(global_scan_msg);
-
-        // add lc if unit converged, update converge flag for all found lcs for the current position
-        if (converged_unit)
+        for (auto lc_pair : lc_candidate_pairs)
         {
-            num_converged++;
-            converged = true;
-            lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
-            lc_fitness_scores.push_back(fitness_score);
+            //////////////////////////////////////////////////////////////
+            // The identified loops are only candidates at the moment.
+            // To verify them we need to check if a scan matching between
+            // The model (aka the pointcloud of the previous pose) and
+            // The scan (aka the pointcloud of the current)
+            // not only converges, but also has minimal error.
+            // To ensure this, ICP needs to have a low MSD between the clouds
+            // after registration (e.g. 0.3)
+            //
+            // NORMALLY one would pretransform the scan towards the model
+            // using the inital estimates. Here we proceed the other way
+            // round:
+            //
+            // We transform the model into the coordinate system of the
+            // scan, because it is the current robot position and therefore
+            // the current coordinate system of the roboter.
+            // So all this is actually for display purposes.
+            //
+            // This transformation needs to be considered later on in the
+            // following manner:
+            // TODO: add math
+            /////////////////////////////////////////////////////////////
 
-            if (num_converged >= params.loop_closure.max_closures_per_pose)
+            if (i == 3 && num_converged < params.loop_closure.max_closures_per_pose)
             {
-                break;
+                pcl::PointCloud<PointType>::Ptr icp_cloud;
+                icp_cloud.reset(new pcl::PointCloud<PointType>());
+
+                auto cur_to_map = path->at(lc_pair.second.second)->getTransformationMatrix();
+                auto prev_to_map = path->at(lc_pair.second.first)->getTransformationMatrix();
+
+                // transform from the current pose (aka the scan) to the previous pose (aka the model) (aka.: switching from current coordinate system to the previous)
+                // this has to be added to the final transformation!!!!
+                auto prev_to_cur_initial = getTransformationMatrixBetween(cur_to_map, prev_to_map);
+
+                pcl::PointCloud<PointType>::Ptr model_cloud;
+                pcl::PointCloud<PointType>::Ptr global_model_cloud;
+                pcl::PointCloud<PointType>::Ptr global_scan_cloud;
+                pcl::PointCloud<PointType>::Ptr scan_cloud;
+                model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
+                scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
+                global_model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
+                global_scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
+
+                // enrich clouds
+                enrich_pointcloud(model_cloud, lc_pair.second.first, i, i);
+                enrich_pointcloud(global_model_cloud, lc_pair.second.first, i, i);
+
+                // transform into the global coord system and display them there.
+                pcl::transformPointCloud(*global_model_cloud, *global_model_cloud, prev_to_map);
+                pcl::transformPointCloud(*global_scan_cloud, *global_scan_cloud, cur_to_map);
+
+                // transform the scan cloud into the coordinate system of the model cloud using the initial estimate
+                // pcl::transformPointCloud(*scan_cloud, *scan_cloud, cur_to_prev_initial);
+
+                // transform the model cloud into the coordinate system of the scan cloud using the initial estimate
+                pcl::transformPointCloud(*model_cloud, *model_cloud, prev_to_cur_initial);
+
+                Matrix4f final_transformation = Matrix4f::Identity();
+                float fitness_score = 10.0f;
+                bool converged_unit = gtsam_wrapper_ptr->add_loop_closure_constraint(lc_pair.second, model_cloud, scan_cloud,
+                                                                                     icp_cloud, fitness_score, final_transformation, prev_to_cur_initial, path);
+
+                cur_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(scan_cloud, "robot");
+                prev_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(model_cloud, "robot");
+                icp_pcl_msg = ROSViewhelper::marker_from_pcl_pointcloud(icp_cloud, "robot");
+
+                // for testing purposes
+                // these should be aligned with the cur and prev clouds
+                auto global_model_msg = ROSViewhelper::marker_from_pcl_pointcloud(global_model_cloud, "map");
+                auto global_scan_msg = ROSViewhelper::marker_from_pcl_pointcloud(global_scan_cloud, "map");
+
+                // std::cout << "Number of points in icp cloud: " << icp_cloud->size() << std::endl;
+
+                approx_pcl_pub_cur.publish(cur_pcl_msg);
+                approx_pcl_pub_prev.publish(prev_pcl_msg);
+                approx_pcl_pub_icp.publish(icp_pcl_msg);
+                global_model_pub.publish(global_model_msg);
+                global_scan_pub.publish(global_scan_msg);
+
+                avg_fitness_score += fitness_score;
+
+                // add lc if unit converged, update converge flag for all found lcs for the current position
+                if (converged_unit && i == 3 && num_converged < params.loop_closure.max_closures_per_pose)
+                {
+                    num_converged++;
+                    converged = true;
+                    lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
+                    lc_fitness_scores.push_back(fitness_score);
+
+                    // if (num_converged >= params.loop_closure.max_closures_per_pose)
+                    // {
+                    //     break;
+                    // }
+                }
             }
+            else
+            {
+                pcl::PointCloud<PointType>::Ptr icp_cloud;
+                icp_cloud.reset(new pcl::PointCloud<PointType>());
+
+                auto cur_to_map = path->at(lc_pair.second.second)->getTransformationMatrix();
+                auto prev_to_map = path->at(lc_pair.second.first)->getTransformationMatrix();
+
+                // transform from the current pose (aka the scan) to the previous pose (aka the model) (aka.: switching from current coordinate system to the previous)
+                // this has to be added to the final transformation!!!!
+                auto prev_to_cur_initial = getTransformationMatrixBetween(cur_to_map, prev_to_map);
+
+                pcl::PointCloud<PointType>::Ptr model_cloud;
+                pcl::PointCloud<PointType>::Ptr global_model_cloud;
+                pcl::PointCloud<PointType>::Ptr global_scan_cloud;
+                pcl::PointCloud<PointType>::Ptr scan_cloud;
+                model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
+                scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
+                global_model_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.first]));
+                global_scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
+
+                // enrich clouds
+                enrich_pointcloud(model_cloud, lc_pair.second.first, i, i);
+                enrich_pointcloud(global_model_cloud, lc_pair.second.first, i, i);
+
+                // transform into the global coord system and display them there.
+                pcl::transformPointCloud(*global_model_cloud, *global_model_cloud, prev_to_map);
+                pcl::transformPointCloud(*global_scan_cloud, *global_scan_cloud, cur_to_map);
+
+                // transform the scan cloud into the coordinate system of the model cloud using the initial estimate
+                // pcl::transformPointCloud(*scan_cloud, *scan_cloud, cur_to_prev_initial);
+
+                // transform the model cloud into the coordinate system of the scan cloud using the initial estimate
+                pcl::transformPointCloud(*model_cloud, *model_cloud, prev_to_cur_initial);
+
+                Matrix4f final_transformation = Matrix4f::Identity();
+                float fitness_score = 10.0f;
+                bool converged = false;
+                gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, icp_cloud, converged, final_transformation, fitness_score);
+
+                avg_fitness_score += fitness_score;
+            }
+        }
+
+        avg_fitness_score /= lc_candidate_pairs.size();
+
+        switch (i)
+        {
+        case 0:
+            fitness_score_0.add(std::to_string(avg_fitness_score));
+            break;
+        case 1:
+            fitness_score_1.add(std::to_string(avg_fitness_score));
+            break;
+        case 2:
+            fitness_score_2.add(std::to_string(avg_fitness_score));
+            break;
+        case 3:
+            fitness_score_3.add(std::to_string(avg_fitness_score));
+            break;
+        case 4:
+            fitness_score_4.add(std::to_string(avg_fitness_score));
+            break;
+        case 5:
+            fitness_score_5.add(std::to_string(avg_fitness_score));
+            break;
+        case 6:
+            fitness_score_6.add(std::to_string(avg_fitness_score));
+            break;
+        default:
+            break;
         }
     }
 
@@ -943,7 +1027,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     {
         graph_error_header.add(std::to_string(path->get_length()));
         graph_error_row.add(std::to_string(get_current_graph_error()));
-        loop_closure_at_index_row.add(std::to_string(0));
 
         ready_flag_pub.publish(ready_msg);
 
@@ -953,7 +1036,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     {
         graph_error_header.add(std::to_string(path->get_length()));
         graph_error_row.add(std::to_string(get_current_graph_error()));
-        loop_closure_at_index_row.add(std::to_string(1));
     }
 
 #pragma endregion
