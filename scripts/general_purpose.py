@@ -51,12 +51,11 @@ def stack_by_iteration(data: pd.DataFrame):
     return stacked
 
 
-def plot_error(df: pd.DataFrame, columns: [str], use_ticks: True):
-    data = transpose_by_iteration(df, columns=columns)
-    sns.lineplot(data=data)
+def plot_error(df: pd.DataFrame, use_ticks: True, tick_steps: 10):
+    sns.lineplot(data=df)
     plt.xticks(rotation="90")
     if use_ticks:
-        plt.xticks(np.arange(0, len(data.index), 1)[::10])
+        plt.xticks(np.arange(0, len(df.index), 1)[::tick_steps])
 
 
 def plot_average_error(df: pd.DataFrame, label:str, n_measurements: int = None, random: bool = False):

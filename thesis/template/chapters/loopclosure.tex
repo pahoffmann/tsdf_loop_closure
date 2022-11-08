@@ -35,11 +35,42 @@ T_{scan' \rightarrow model} = T_{model \rightarrow scan}^{-1} \cdot T_{reg}
 			[scale=0.3]
 			{LoopIdentifikation}
 		\caption
-			[Caption for LOF]{Diese Grafik stellt die Posen und Transformationen dar, die bei der Detektion eines Schleifenschlusses zur Verwendung kommen. Dabei bestimmt $T_{model \rightarrow scan}$ die Vortransformation vom lokalen Model-Koordinatensystem ins das des Scans (dargestellt in rot). In grün dargestellt ist die Transformation $T_reg$, die von dem verwendeten Algorithmus zur Registrierung der Scan-Punktwolke an die mit $T_{model \rightarrow scan}$ vortransformierte Model-Punktwolke, ausgegeben wird. Eine Kombination der Transformationen $T_reg$ und $T_{model \rightarrow scan}$ ergibt die finale, zur Optimierung des Pose-Graphen verwendete Transformationen. Diese Kombination ist in Gleichung \ref{math:final_transformation} definiert.}		                                                                                                                                     
+			[Caption for LOF]{Diese Grafik stellt die Posen und Transformationen dar, die bei der Detektion eines Schleifenschlusses zur Verwendung kommen. Dabei bestimmt $T_{model \rightarrow scan}$ die Vortransformation vom lokalen Model-Koordinatensystem in das des Scans (dargestellt in rot). In grün dargestellt ist die Transformation $T_reg$, die von dem verwendeten Algorithmus zur Registrierung der Scan-Punktwolke an die mit $T_{model \rightarrow scan}$ vortransformierte Model-Punktwolke, ausgegeben wird. Eine Kombination der Transformationen $T_reg$ und $T_{model \rightarrow scan}$ ergibt die finale, zur Optimierung des Pose-Graphen verwendete Transformationen. Diese Kombination ist in Gleichung \ref{math:final_transformation} definiert.}		                                                                                                                                     
 		\label{fig:LoopIdentifikation}
 \end{figure}
 
-Auf diese Art und Weise können nur wenige Schleifenschlüsse identifiziert werden. Ursache ist zu diesem Zeitpunkt das Scan-Matching, welches zwar in den meisten Fällen konvergiert, jedoch fast keinen der Kandidaten aufgrund zu hoher Fitness-Scores validieren kann. Zusätzlich sind einige der identifizierten Schleifenschlüsse, besonders in Bereichen von Fluren oder Orten mit wenigen Features, fehlerhaft. Hier sind zwar die genannten Rahmenbedingungen erfüllt, allerdings verschlechtern die Schleifenschlüsse das Ergebnis maßgeblich.
+Auf diese Art und Weise können nur wenige Schleifenschlüsse identifiziert werden. Ursache ist zu diesem Zeitpunkt das Scan-Matching, welches zwar in den meisten Fällen konvergiert, jedoch fast keinen der Kandidaten aufgrund zu hoher Fitness-Scores validieren kann. Zusätzlich sind einige der identifizierten Schleifenschlüsse, besonders in Bereichen von Fluren oder Orten mit wenigen Features, fehlerhaft. Hier sind zwar die genannten Rahmenbedingungen erfüllt, allerdings verschlechtern die Schleifenschlüsse das Ergebnis maßgeblich. Um diese Problem zu lösen wurden mehrere Ansätze implementiert und evaluiert. Dazu wurde zunächst das Problem des Scan-Matching näher betrachtet. Dabei stellt sich heraus, dass für ein gute Transformations-Schätzung der Scan-Matching Algorithmen neben einer guten Initial-Schätzung zusätzlich eine dichtere Model-Punktwolke essentiell ist. Basierend auf der Annahme, dass eine lokale Umgebung $\left\lbrace P_{i - x}, ..., P_i, ..., P_{i+x} \right\rbrace$ um eine Pose $P_i$ konsistent registriert ist, wurde die Model-Punktwolke um die Punktwolken aus der direkten Nachbarschaft, gegeben durch den Parameter $x$, angereichert. Dazu wird jeweils die Pose-Differenz zur Model-Punktwolke berechnet und die Punktwolke entsprechend der berechneten Transformation ins Koordinatensystem der Model-Punktwolke angereichert. Ergebnis ist eine deutlich dichtere Punktwolke, was die Korrespondenzfindung für die Scan-Matching Algorithmen deutlich verbessert und so zu einem besseren Endergebnis führt. Abbildung \ref{fig:Windows} zeigt die durchschnittlichen Fitness-Scores aller Schleifenschluss-Kandidaten der jeweiligen Iteration für ein durch $x$ gegebenes Fenster um die Model-Punktwolke herum.
+
+%\begin{figure}
+%		\centering
+%		\includegraphics
+%			[scale=0.8]
+%			{Windows_small}
+%		\caption
+%			[Caption for LOF]{Diese Grafik zeigt den Einfluss des Fensters für die Anreicherung der Model-Punktwolke bei der Validierung gefundener Schleifenschluss-Kandidaten, gegeben die Größe des Fensters $x$. Rote vertikale Linien markieren Posen, an den Schleifenschlüsse detektiert und aufgrund des geringen Fitness-Scores validiert wurden. Die Gesamtmenge der Posen, deren Punktwolken zu einer dichteren Model-Punktwolke zusammengeführt werden, beträgt $2 \cot x + 1$. Es ist zu erkennen, dass der durchschnittlich berechnete Fitness-Score mit steigendem $x$ im Schnitt niedriger ist. Allerdings wird die Verringerung ab einem gewissen Punkt unwesentlich. Hier sind zwischen einer Wahl von $x = 2$ bis $x = 6$ nur geringe Unterschiede zu erkennen. Die Größten Veränderungen sind zwischen $x = 0$ und $x = 2$ zu erkennen. Hier sinkt der durchschnittliche Fitness-Score merklich. Dies trifft auch auf die Ergebnisse im Scan-Matching zu. Diese verbessern sich bei zunehmendem $x$, hier sind ebenfalls die größten Veränderungen zwischen $x=0$ und $x=2$ zu sehen. Die Wahl des Fenster korreliert zusätzlich mit dem durchschnittlichen absoluten Fehler zwischen der durch die Schleifenschlüsse optimierten Trajektorie eines Datensatz und der zugehörigen \textbf{Ground-Truth}. }	                                                                                                                                     
+%		\label{fig:Windows}
+%\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		 \centering
+  		 \includegraphics[width=1.15\linewidth]{Windows_small}
+  		 \centering \caption{Durchschnittlicher Fitness-Score für gefundene Schleifenschluss-Kandidaten eines Datensatz von Pose $0$ bis Pose $80$, Posen ohne Kandidaten sind nicht dargestellt.}
+  		 \label{fig:single_tsdf}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=1.15\linewidth]{Windows_small_limit}
+  		\centering \caption{Vergrößerung des Bereiches von links, in dem Schleifenschlüsse gefunden und validiert wurden. Dargestellt als grüne horizontale Linie ist die parametrisierte Schranke für Schleifenschlüsse.}
+  		\label{fig:approx_cloud}
+	\end{subfigure}
+	\caption{Diese Grafik zeigt den Einfluss des Fensters für die Anreicherung der Model-Punktwolke bei der Validierung gefundener Schleifenschluss-Kandidaten, gegeben die Größe des Fensters $x$. Rote vertikale Linien markieren Posen, an den Schleifenschlüsse detektiert und aufgrund des geringen Fitness-Scores validiert wurden. Die Gesamtmenge der Posen, deren Punktwolken zu einer dichteren Model-Punktwolke zusammengeführt werden, beträgt $2 \cot x + 1$. Es ist zu erkennen, dass der durchschnittlich berechnete Fitness-Score mit steigendem $x$ im Schnitt niedriger ist. Allerdings wird die Verringerung ab einem gewissen Punkt unwesentlich. Hier sind zwischen einer Wahl von $x = 2$ bis $x = 6$ nur geringe Unterschiede zu erkennen. Die Größten Veränderungen sind zwischen $x = 0$ und $x = 2$ zu erkennen. Hier sinkt der durchschnittliche Fitness-Score merklich. Dies trifft auch auf die Ergebnisse im Scan-Matching zu. Diese verbessern sich bei zunehmendem $x$, hier sind ebenfalls die größten Veränderungen zwischen $x=0$ und $x=2$ zu sehen. Die Wahl des Fenster korreliert zusätzlich mit dem durchschnittlichen absoluten Fehler zwischen der durch die Schleifenschlüsse optimierten Trajektorie eines Datensatz und der zugehörigen \textbf{Ground-Truth}. }
+	\label{fig:Windows}
+\end{figure}
+
+Ein weiteres, bereits angeschnittenes Problem sind Schleifenschlüsse, die zwar die vorgegebenen Rahmenbedingungen erfüllen, allerdings grundsätzlich fehlerhaft sind. Hier ist zum Beispiel in einem Flur das Scan-Matching aufgrund einer sehr Feature armen Umgebung konvergiert und die Validierung auf Basis des Fitness-Scores konnte zusätzlich keinen Fehler bei der Registrierung identifizieren. Dann werden häufig Positionen, die in einer initialen Schätzung weit auseinander liegen aufeinander gezogen. Zusätzlich kann es vorkommen, dass das Scan-Matching mit einem guten Fitness-Score konvergiert, obwohl die Umgebungen nicht zueinander passen. Die berechnete finale Transformation stimmt dann überhaupt nicht mit der beliebig falschen, initialen Schätzung überein. Aus diesem Grund wurden zwei Validatoren beziehungsweise \textbf{Rejector} entwickelt, die neben dem Fitness-Score zusätzliche Validations-Stufen einführen. Dies ist zum einen der \textbf{Linien-Rejector} und auf  der anderen Seite der \textbf{Reichweiten-Rejector}. Diese nutzen die Unsicherheiten der einzelnen Posen aus. Vor Beginn das Algorithmus erfolgt eine Einschätzung über die Sicherheit der initial bestimmten Posen. Diese kann beliebig schlecht gewählt werden um sicherzustellen, dass bei der Optimierung gewünschte Änderungen vorgenommen werden. Dies erhöht allerdings die Wahrscheinlichkeit für fehlerhafte Schleifenschlüsse, die durch die beiden im Folgenden beschriebenen Validatoren nicht erfasst werden können. Kann für eine Initial-Schätzung zum Beispiel aufgrund voriger Erfahrungen ein gewisser Fehler für die Translation und Rotation zwischen aufeinander folgenden Posen abgeschätzt werden, sollte dieser im Folgenden verwendet werden.
+
 
 
 
@@ -97,4 +128,7 @@ Herausforderungen:
 - problematisch: fehlerhafte LC Optimierung durch schlechtes Scan Matching (Grund: Feature-armer Flur) -> mögliche ( noch zu entwickelnde) Lösung: LC's auf Linien gesondert betrachten -> Identifikation eines LC auf Linien -> Betrachtung der Scan Matching Transformation - wenn aufGeraden kann die Transformation die beiden LC-Punkte nicht vollständig zusammen ziehen
 
 \subsection{Maps}
+
+\section{Evaluation}
+
 
