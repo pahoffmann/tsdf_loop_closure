@@ -88,15 +88,30 @@ Je nach Parametrisierung ist es möglich, dass Schleifenschlüsse zwischen Posen
 Wie bereits zuvor beschrieben, ist eine mögliche Lösung dieses Problems die Ausnutzung von relativen, lokalen Unsicherheiten zwischen aufeinanderfolgenden Posen. Der Linien-Rejector nutzt dabei die definierten Unsicherheiten für die Translation als Vektor aus den gegebenen Standardabweichungen: $\vec{\sigma_t} = \left(\sigma_x, \sigma_y, \sigma_z \right)$. Diese können entweder konstant gegeben oder für jede Pose-Differenz aufeinander folgender Posen einzeln, zum Beispiel anhand von Berechnungen im SLAM Ansatz, gegeben sein. Im Folgenden werden die Standardabweichungen als konstant angenommen. Gegeben $P_{cur}$ und $P_{prev}$, die Anzahl an Zwischen-Posen $N_{between}$, sowie die konstante Standardabweichung der Translation $\vec{\sigma_t}$ lässt sich nun Konfidenzintervall berechnen, in dem basierend auf der gegebenen Standardabweichung ein gewisser Prozentsatz der für $P_{cur}$ möglichen liegt. Dies ist in 3D ein räumlicher Bereich. Als Erwartungswert wird die initiale Schätzung für $P_{cur}$, genauer gesagt dessen Translationsanteil $\vec{t_{cur}}$ verwendet. Damit ergibt sich für die untere Grenze $\vec{t_u}$ und obere Grenze $\vec{t_o}$ des Konfidenzintervalls unter Ausnutzung der akkumulierten Standardabweichungen zwischen $P_{prev}$ und $P_{cur}$:
 
 \begin{myequation}
-\vec{t_u} = \vec{t_{cur}} - \left( N_{between} + 1 \right) \cdot \vec{\sigma_t}
+\vec{t_u} = \vec{t_{cur}} - \left( N_{between} + 1 \right) \cdot k \cdot \vec{\sigma_t}
 \end{myequation}
 
 \begin{myequation}
-\vec{t_o} = \vec{t_{cur}} + \left( N_{between} + 1 \right) \cdot \vec{\sigma_t}
+\vec{t_o} = \vec{t_{cur}} + \left( N_{between} + 1 \right) \cdot k \cdot \vec{\sigma_t}
 \end{myequation}
 
+Dabei bezeichnet $k$ die verwendete standardisierte Intervallgrenze. Im Folgenden wird hierfür $1$ verwendet, eine beliebige Anpassung dieses Wertes ist möglich. Für $k=1$ werden für eine gegebene Standardabweichung im Konfidenzintervall etwa $80\%$ bis $85\%$ der möglichen relativen Pose-Änderungen zwischen aufeinander folgenden Posen abgedeckt. Der Prozentsatz des durch $\vec{t_u}$ und $\vec{t_o}$ abgedeckten Volumens berechnet sich aus folgender Potenz:
+
+\begin{myequation}
+\prod_{i=0}^{N_{between}} 0.8
+\end{myequation}
+
+Zugrunde liegt die Schätzung des Prozentsatzes, der durch die Intervallgrenzen, gegeben $k$ abgedeckt wird (hier etwa $80\%$). Für $4$ Zwischen-Posen beträgt die Abdeckung in diesem Fall in etwa $33\%$. Für eine größere Abdeckung ist ein größeres $k$ zu wählen. Mit zunehmender Anzahl an Zwischen-Posen wird der durch den Rejector abgedeckte Bereich verhältnismäßig immer kleiner, obwohl er linear vergrößert wird. Dies hat eine sehr strenge Behandlung von Schleifenschlüssen auf Linien zur Folge. Mit einem größeren $k$ kann dies entschärft werden. Liegt $P_{cur}$ nach Bestimmung der neuen Transformation $T_{GICP}$ außerhalb des durch $\vec{t_u}$ und $\vec{t_o}$ beschriebenen Volumens, der gefundene Schleifenschluss als ungültig angesehen. Liegt die neue Pose innerhalb des Volumens, ist sie validiert. Auf diese Weise konnten in einem Beispieldurchlauf für eine Fenster-Größe von $x = 0$ und $\Delta d = 2.0m$ bei einem Datensatz mit $200$ Posen $8$ fehlerhafte Schleifenschlüsse identifiziert und verworfen werden. Mit größerer Fenstergröße reduziert sich die Anzahl dieser fehlerhaften Schleifenschlüsse. So konnten bereits bei einer Größe von $x = 2$ in diesem Datensatz keine fehlerhaften Schleifenschlüsse identifiziert werden. Diese sind jedoch auch weiterhin nicht ausgeschlossen, weshalb der Rejector als weitere Sicherheitsschranke hinter das Scan-Matching geschaltet wird.
+
+\textbf{\textsl{Reichweiten-Rejector}}
+
+Der \textbf{Reichweiten-Rejector} basiert auf dem identischen Prinzip wie der zuvor erläuterte Linien-Rejector. Hier wird zusätzlich zur Standardabweichung in der Translation auch die Standardabweichung in der Rotation berücksichtigt. Zusätzlich ist das Vorhandensein einer Linie keine Voraussetzung für diesen Rejector. Alle anderen mathematischen Verhältnisse aus dem oben vorgestellten Rejector treffen so auch hier zu und werden analog sowohl für die Translation, als auch für die Rotation angewandt.  Dieser Rejector greift ist dem Linien-Rejector nachgeschaltet.
+
+Der nachfolgende Abschnitt beschäftigt sich mit der Optimierung des Pose-Graphen auf Basis identifizierter Schleifenschlüsse.
 
 \section{Graphenoptimierung}
+
+
 
 Bezug zu GTSAM Library Beschreibung aufnehmen.
 Wichtigste verwendete Funktionen bennen.
