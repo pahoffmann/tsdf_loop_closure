@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  8 NOV 2022 22:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  9 NOV 2022 01:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1594,25 +1594,40 @@ Package pdftex.def Info: pics/Windows_small_limit.png  used on input line 64.
 (pdftex.def)             Requested size: 216.24023pt x 162.18364pt.
  [38 <./pics/Windows_small.png> <./pics/Windows_small_limit.png>]
 
-LaTeX Warning: Marginpar on page 39 moved.
+LaTeX Warning: Reference `Line-Rejector' on page 39 undefined on input line 76.
 
-[39]) (./chapters/map_update.tex [40]
+
+<pics/Line-Rejector.png, id=675, 1568.86125pt x 756.8275pt>
+File: pics/Line-Rejector.png Graphic file (type png)
+<use pics/Line-Rejector.png>
+Package pdftex.def Info: pics/Line-Rejector.png  used on input line 82.
+(pdftex.def)             Requested size: 470.662pt x 227.05pt.
+
+Overfull \hbox (15.41792pt too wide) in paragraph at lines 80--84
+ [][] 
+ []
+
+[39]
+
+LaTeX Warning: Marginpar on page 40 moved.
+
+[40 <./pics/Line-Rejector.png>]) (./chapters/map_update.tex [41] [42
+
+]
 Kapitel 6.
-) (./chapters/ausblick.tex [41
-
-] [42
+) (./chapters/ausblick.tex [43] [44
 
 ]
 Kapitel 7.
-) (./main.bbl [43] [44
+) (./main.bbl [45] [46
 
 ]
 LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 
 69.
  (/usr/share/texmf/tex/latex/lm/ot1lmtt.fd
 File: ot1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [45])
-[46] [47
+) [47])
+[48] [49
 
 ]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 173.
@@ -1632,10 +1647,10 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 173.
  ) 
 Here is how much of TeX's memory you used:
- 42367 strings out of 483016
- 904878 string characters out of 5961286
- 1351300 words of memory out of 5000000
- 56251 multiletter control sequences out of 15000+600000
+ 42379 strings out of 483016
+ 905101 string characters out of 5961286
+ 1351334 words of memory out of 5000000
+ 56260 multiletter control sequences out of 15000+600000
  629259 words of font info for 187 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
  73i,18n,127p,2552b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1661,10 +1676,10 @@ msy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf/f
 onts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pf
 b></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-
 dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (53 pages, 2343350 bytes).
+Output written on main.pdf (55 pages, 2416308 bytes).
 PDF statistics:
- 852 PDF objects out of 1000 (max. 8388607)
- 704 compressed objects within 8 object streams
- 171 named destinations out of 1000 (max. 500000)
- 14849 words of extra memory for PDF output out of 17280 (max. 10000000)
+ 864 PDF objects out of 1000 (max. 8388607)
+ 712 compressed objects within 8 object streams
+ 174 named destinations out of 1000 (max. 500000)
+ 14854 words of extra memory for PDF output out of 17280 (max. 10000000)
 
