@@ -111,11 +111,11 @@ Der nachfolgende Abschnitt beschäftigt sich mit der Optimierung des Pose-Graphe
 
 \section{Graphenoptimierung}
 
-
+Für die Optimierung des Pose-Graphen wird in diesem Fall die C++ Bibliothek GTSAM \cite{dellaert2012factor} verwendet. GTSAM implementiert die Fusion von Sensor Daten für Anwendungen im Bereich von Robotik und Computer-Grafik und kommt insbesondere in SLAM-Ansätzen zum Einsatz \cite{dellaert2012factor}. Als unterliegende Datenstruktur für den hier verwendeten Anwendungsfall dient ein Faktorgraph. Faktorgraphen sind grafische Modelle, die sich gut für Anwendungsfälle wie SLAM und deren Modellieren eignen.
 
 Bezug zu GTSAM Library Beschreibung aufnehmen.
 Wichtigste verwendete Funktionen bennen.
-Verweis auf GTSAM Paper.
+Verweis auf GTSAM Paper. \cite{dellaert2012factor}
 Erklärung von Faktorgraphen und Faktoren.
 Erklärung der Genutzten datenstrukturen und optimizer.
 Erklärung von noise constraints (Unsicherheiten)
@@ -141,8 +141,6 @@ Erklärung von noise constraints (Unsicherheiten)
 	
 	\improvement{einführen: Pointcloud-Enrichment, Grafik: Fitness score im bezug zum enrichment: eine wolke vs. mehrere}
 
-\section{Pseudocode}
-
 
 \improvement{insert the pseudo code to the whole algorithm}
 	
@@ -152,16 +150,9 @@ Verwendete Datensätze und herausforderungen herausstellen
 
 \subsection{Hannover1}
 
-Herausforderungen:
 
-- Datensatz allgemein: falsches Koordindatensystem -> Transformation beschreiben
 
-- extrem fehlerbehaftete Rotation in zweitem Kreis (Lösung: Vorregistrierung ICP)
-(Scan-Matching bekommt extrem divergierte Wolken nicht mehr aufeinander)
 
-- problematisch: fehlerhafte LC Optimierung durch schlechtes Scan Matching (Grund: Feature-armer Flur) -> mögliche ( noch zu entwickelnde) Lösung: LC's auf Linien gesondert betrachten -> Identifikation eines LC auf Linien -> Betrachtung der Scan Matching Transformation - wenn aufGeraden kann die Transformation die beiden LC-Punkte nicht vollständig zusammen ziehen
-
-\subsection{Maps}
 
 \section{Evaluation}
 
