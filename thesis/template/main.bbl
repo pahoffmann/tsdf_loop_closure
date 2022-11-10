@@ -86,25 +86,38 @@
 \newblock {In: }\emph{Proceedings of the 24th annual ACM symposium on User
   interface software and technology}, 2011
 
-\vspace*{4pt}\bibitem[13]{lorensen_marching_1987}
+\vspace*{4pt}\bibitem[13]{levenberg1944method}
+\textsc{Levenberg}, Kenneth:
+\newblock A method for the solution of certain non-linear problems in least
+  squares.
+\newblock {In: }\emph{Quarterly of applied mathematics} 2 (1944), Nr. 2, S.
+  164--168
+
+\vspace*{4pt}\bibitem[14]{lorensen_marching_1987}
 \textsc{Lorensen}, W.~E.; \textsc{Cline}, H.~E.:
 \newblock Marching {Cubes}: {A} {High} {Resolution} 3D {Surface} {Construction}
   {Algorithm}.
 \newblock {In: }\emph{{ACM} {SIGGRAPH} '87}, 1987
 
-\vspace*{4pt}\bibitem[14]{lu1997globally}
+\vspace*{4pt}\bibitem[15]{lu1997globally}
 \textsc{Lu}, Feng; \textsc{Milios}, Evangelos:
 \newblock Globally consistent range scan alignment for environment mapping.
 \newblock {In: }\emph{Autonomous robots} 4 (1997), Nr. 4, S. 333--349
 
-\vspace*{4pt}\bibitem[15]{mccormac2018fusion++}
+\vspace*{4pt}\bibitem[16]{marquardt1963algorithm}
+\textsc{Marquardt}, Donald~W.:
+\newblock An algorithm for least-squares estimation of nonlinear parameters.
+\newblock {In: }\emph{Journal of the society for Industrial and Applied
+  Mathematics} 11 (1963), Nr. 2, S. 431--441
+
+\vspace*{4pt}\bibitem[17]{mccormac2018fusion++}
 \textsc{McCormac}, John; \textsc{Clark}, Ronald; \textsc{Bloesch}, Michael;
   \textsc{Davison}, Andrew; \textsc{Leutenegger}, Stefan:
 \newblock Fusion++: Volumetric object-level slam.
 \newblock {In: }\emph{2018 international conference on 3D vision (3DV)} IEEE,
   2018
 
-\vspace*{4pt}\bibitem[16]{prisacariu2017infinitam}
+\vspace*{4pt}\bibitem[18]{prisacariu2017infinitam}
 \textsc{Prisacariu}, Victor~A.; \textsc{K{\"a}hler}, Olaf; \textsc{Golodetz},
   Stuart; \textsc{Sapienza}, Michael; \textsc{Cavallari}, Tommaso;
   \textsc{Torr}, Philip~H.; \textsc{Murray}, David~W.:
@@ -112,24 +125,24 @@
   closure.
 \newblock {In: }\emph{arXiv preprint arXiv:1708.00783}  (2017)
 
-\vspace*{4pt}\bibitem[17]{rusu20113d}
+\vspace*{4pt}\bibitem[19]{rusu20113d}
 \textsc{Rusu}, Radu~B.; \textsc{Cousins}, Steve:
 \newblock 3d is here: Point cloud library (pcl).
 \newblock {In: }\emph{2011 IEEE international conference on robotics and
   automation} IEEE, 2011
 
-\vspace*{4pt}\bibitem[18]{ros_tf_image}
+\vspace*{4pt}\bibitem[20]{ros_tf_image}
 \textsc{Schultz}, Jarvis:
 \newblock \emph{{tf}}.
 \newblock \url{{http://wiki.ros.org/tf}}. --
 \newblock zuletzt abgerufen am: 09.10.2022
 
-\vspace*{4pt}\bibitem[19]{segal2009generalized}
+\vspace*{4pt}\bibitem[21]{segal2009generalized}
 \textsc{Segal}, Aleksandr; \textsc{Haehnel}, Dirk; \textsc{Thrun}, Sebastian:
 \newblock Generalized-icp.
 \newblock {In: }\emph{Robotics: science and systems} Bd.~2 Seattle, WA, 2009
 
-\vspace*{4pt}\bibitem[20]{shan2020lio}
+\vspace*{4pt}\bibitem[22]{shan2020lio}
 \textsc{Shan}, Tixiao; \textsc{Englot}, Brendan; \textsc{Meyers}, Drew;
   \textsc{Wang}, Wei; \textsc{Ratti}, Carlo; \textsc{Rus}, Daniela:
 \newblock Lio-sam: Tightly-coupled lidar inertial odometry via smoothing and
@@ -137,19 +150,19 @@
 \newblock {In: }\emph{2020 IEEE/RSJ international conference on intelligent
   robots and systems (IROS)} IEEE, 2020
 
-\vspace*{4pt}\bibitem[21]{sprickerhof2011heuristic}
+\vspace*{4pt}\bibitem[23]{sprickerhof2011heuristic}
 \textsc{Sprickerhof}, Jochen; \textsc{N{\"u}chter}, Andreas;
   \textsc{Lingemann}, Kai; \textsc{Hertzberg}, Joachim:
 \newblock A heuristic loop closing technique for large-scale 6d slam.
 \newblock {In: }\emph{Automatika} 52 (2011), Nr. 3, S. 199--222
 
-\vspace*{4pt}\bibitem[22]{werner2014truncated}
+\vspace*{4pt}\bibitem[24]{werner2014truncated}
 \textsc{Werner}, Diana; \textsc{Al-Hamadi}, Ayoub; \textsc{Werner}, Philipp:
 \newblock Truncated signed distance function: experiments on voxel size.
 \newblock {In: }\emph{International Conference Image Analysis and Recognition}
   Springer, 2014
 
-\vspace*{4pt}\bibitem[23]{whelan2012kintinuous}
+\vspace*{4pt}\bibitem[25]{whelan2012kintinuous}
 \textsc{Whelan}, Thomas; \textsc{Kaess}, Michael; \textsc{Fallon}, Maurice;
   \textsc{Johannsson}, Hordur; \textsc{Leonard}, John; \textsc{McDonald}, John:
 \newblock Kintinuous: Spatially extended kinectfusion.

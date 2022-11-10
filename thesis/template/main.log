@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  10 NOV 2022 15:47
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  10 NOV 2022 15:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1628,6 +1628,11 @@ Underfull \hbox (badness 1968) in paragraph at lines 123--124
  []
 
 
+Overfull \hbox (2.38899pt too wide) in paragraph at lines 125--125
+[]|\OT1/lmr/bx/n/10.95 Between-
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 125--125
 []|\OT1/lmr/m/n/10.95 (+20) Definiert einen re-la-ti-ven Pose-Constraint
  []
@@ -1714,22 +1719,6 @@ Package pdftex.def Info: pics/Flussdiagramm-Optimization.png  used on input lin
 e 137.
 (pdftex.def)             Requested size: 300.52507pt x 443.25943pt.
 
-Package natbib Warning: Citation `levenberg1944method' on page 42 undefined on 
-input line 139.
-
-
-Package natbib Warning: Citation `marquardt1963algorithm' on page 42 undefined 
-on input line 139.
-
-
-Package natbib Warning: Citation `levenberg1944method' on page 42 undefined on 
-input line 139.
-
-
-Package natbib Warning: Citation `marquardt1963algorithm' on page 42 undefined 
-on input line 139.
-
-
 LaTeX Warning: Float too large for page by 11.75156pt on input line 141.
 
 
@@ -1751,28 +1740,18 @@ LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line
 69.
  (/usr/share/texmf/tex/latex/lm/ot1lmtt.fd
 File: ot1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [49])
-[50]
+) [49]
+[50]) [51] [52
 
-Package natbib Warning: There were undefined citations.
-
-[51
-
-]
+] [53]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 173.
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 173.
  (./main.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 173.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 173.
+Package rerunfilecheck Info: File `main.out' has not changed.
+(rerunfilecheck)             Checksum: D3A982EF813F011D85CCA867D71FC1AD;4209.
 
-
-Package rerunfilecheck Warning: File `main.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main.out':
-(rerunfilecheck)             Before: AAE8EA45397125B2B3A972681AFC178F;4209
-(rerunfilecheck)             After:  D3A982EF813F011D85CCA867D71FC1AD;4209.
 
 LaTeX Warning: There were undefined references.
 
@@ -1782,42 +1761,39 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 173.
  ) 
 Here is how much of TeX's memory you used:
- 42402 strings out of 483016
- 905587 string characters out of 5961286
- 1354684 words of memory out of 5000000
- 56270 multiletter control sequences out of 15000+600000
- 629508 words of font info for 190 fonts, out of 8000000 for 9000
+ 42413 strings out of 483016
+ 905807 string characters out of 5961286
+ 1355716 words of memory out of 5000000
+ 56274 multiletter control sequences out of 15000+600000
+ 629686 words of font info for 192 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
  73i,18n,127p,2552b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
-pdfTeX warning (dest): name{subsection.5.4.1} has been referenced but does no
-t exist, replaced by a fixed one
-
-{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/dv
-ips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share
-/texmf/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm
--mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/euler/eufm10.pfb></usr/share/texmf/fon
-ts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx12.pf
-b></usr/share/texmf/fonts/type1/public/lm/lmbx9.pfb></usr/share/texmf/fonts/typ
-e1/public/lm/lmbxo10.pfb></usr/share/texmf/fonts/type1/public/lm/lmcsc10.pfb></
-usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></usr/share/texmf/fonts/type1/
-public/lm/lmmi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi6.pfb></usr/sh
-are/texmf/fonts/type1/public/lm/lmmi7.pfb></usr/share/texmf/fonts/type1/public/
-lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/texm
-f/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr17
-.pfb></usr/share/texmf/fonts/type1/public/lm/lmr5.pfb></usr/share/texmf/fonts/t
-ype1/public/lm/lmr6.pfb></usr/share/texmf/fonts/type1/public/lm/lmr7.pfb></usr/
-share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/public
-/lm/lmr9.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/tex
-mf/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/lms
-y10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf/fon
-ts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb>
-</usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-di
-st/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (57 pages, 2526799 bytes).
+{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
+dvips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/sha
+re/texmf/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/share/texmf/fonts/enc/dvips/lm/
+lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/euler/eufm10.pfb></usr/share/texmf/f
+onts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx12.
+pfb></usr/share/texmf/fonts/type1/public/lm/lmbx9.pfb></usr/share/texmf/fonts/t
+ype1/public/lm/lmbxo10.pfb></usr/share/texmf/fonts/type1/public/lm/lmcsc10.pfb>
+</usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></usr/share/texmf/fonts/type
+1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi6.pfb></usr/
+share/texmf/fonts/type1/public/lm/lmmi7.pfb></usr/share/texmf/fonts/type1/publi
+c/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/te
+xmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr
+17.pfb></usr/share/texmf/fonts/type1/public/lm/lmr5.pfb></usr/share/texmf/fonts
+/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts/type1/public/lm/lmr7.pfb></us
+r/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/publ
+ic/lm/lmr9.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/t
+exmf/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/fonts/type1/public/lm/l
+msy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf/f
+onts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pf
+b></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (59 pages, 2528418 bytes).
 PDF statistics:
- 888 PDF objects out of 1000 (max. 8388607)
- 732 compressed objects within 8 object streams
- 181 named destinations out of 1000 (max. 500000)
+ 901 PDF objects out of 1000 (max. 8388607)
+ 741 compressed objects within 8 object streams
+ 184 named destinations out of 1000 (max. 500000)
  14851 words of extra memory for PDF output out of 17280 (max. 10000000)
 

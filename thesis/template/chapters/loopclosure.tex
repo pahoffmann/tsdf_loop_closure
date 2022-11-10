@@ -41,16 +41,6 @@ T_{scan' \rightarrow model} = T_{model \rightarrow scan}^{-1} \cdot T_{reg}
 
 Auf diese Art und Weise können nur wenige Schleifenschlüsse identifiziert werden. Ursache ist zu diesem Zeitpunkt das Scan-Matching, welches zwar in den meisten Fällen konvergiert, jedoch fast keinen der Kandidaten aufgrund zu hoher Fitness-Scores validieren kann. Zusätzlich sind einige der identifizierten Schleifenschlüsse, besonders in Bereichen von Fluren oder Orten mit wenigen Features, fehlerhaft. Hier sind zwar die genannten Rahmenbedingungen erfüllt, allerdings verschlechtern die Schleifenschlüsse das Ergebnis maßgeblich. Um diese Problem zu lösen wurden mehrere Ansätze implementiert und evaluiert. Dazu wurde zunächst das Problem des Scan-Matching näher betrachtet. Dabei stellt sich heraus, dass für ein gute Transformations-Schätzung der Scan-Matching Algorithmen neben einer guten Initial-Schätzung zusätzlich eine dichtere Model-Punktwolke essentiell ist. Basierend auf der Annahme, dass eine lokale Umgebung $\left\lbrace P_{i - x}, ..., P_i, ..., P_{i+x} \right\rbrace$ um eine Pose $P_i$ konsistent registriert ist, wurde die Model-Punktwolke um die Punktwolken aus der direkten Nachbarschaft, gegeben durch den Parameter $x$, angereichert. Dazu wird jeweils die Pose-Differenz zur Model-Punktwolke berechnet und die Punktwolke entsprechend der berechneten Transformation ins Koordinatensystem der Model-Punktwolke angereichert. Ergebnis ist eine deutlich dichtere Punktwolke, was die Korrespondenzfindung für die Scan-Matching Algorithmen deutlich verbessert und so zu einem besseren Endergebnis führt. Abbildung \ref{fig:Windows} zeigt die durchschnittlichen Fitness-Scores aller Schleifenschluss-Kandidaten der jeweiligen Iteration für ein durch $x$ gegebenes Fenster um die Model-Punktwolke herum.
 
-%\begin{figure}
-%		\centering
-%		\includegraphics
-%			[scale=0.8]
-%			{Windows_small}
-%		\caption
-%			[Caption for LOF]{Diese Grafik zeigt den Einfluss des Fensters für die Anreicherung der Model-Punktwolke bei der Validierung gefundener Schleifenschluss-Kandidaten, gegeben die Größe des Fensters $x$. Rote vertikale Linien markieren Posen, an den Schleifenschlüsse detektiert und aufgrund des geringen Fitness-Scores validiert wurden. Die Gesamtmenge der Posen, deren Punktwolken zu einer dichteren Model-Punktwolke zusammengeführt werden, beträgt $2 \cot x + 1$. Es ist zu erkennen, dass der durchschnittlich berechnete Fitness-Score mit steigendem $x$ im Schnitt niedriger ist. Allerdings wird die Verringerung ab einem gewissen Punkt unwesentlich. Hier sind zwischen einer Wahl von $x = 2$ bis $x = 6$ nur geringe Unterschiede zu erkennen. Die Größten Veränderungen sind zwischen $x = 0$ und $x = 2$ zu erkennen. Hier sinkt der durchschnittliche Fitness-Score merklich. Dies trifft auch auf die Ergebnisse im Scan-Matching zu. Diese verbessern sich bei zunehmendem $x$, hier sind ebenfalls die größten Veränderungen zwischen $x=0$ und $x=2$ zu sehen. Die Wahl des Fenster korreliert zusätzlich mit dem durchschnittlichen absoluten Fehler zwischen der durch die Schleifenschlüsse optimierten Trajektorie eines Datensatz und der zugehörigen \textbf{Ground-Truth}. }	                                                                                                                                     
-%		\label{fig:Windows}
-%\end{figure}
-
 \begin{figure}
 	\centering
 	\begin{subfigure}{.5\textwidth}
@@ -116,13 +106,13 @@ Für die Optimierung des Pose-Graphen wird in diesem Fall die C++ Bibliothek GTS
 	\begin{table}
 		\centering
 		\caption{Verwendete GTSAM-Faktoren und deren Funktionsweise.}
-		\begin{tabular}{| p{1.5cm} | p{8cm} | p{4cm} |}
+		\begin{tabular}{| p{1.7cm} | p{8cm} | p{4cm} |}
 			\hline
 			\thead{Faktor}   & \thead{Beschreibung}  & \thead{Nutzung}\\
 			\hline
 			\textbf{Prior-Faktor}   & Definiert ein initiales Rauschen für die erste Pose des Pose-Graphen. Dieser Faktor ist der einzige verwendete Faktor, der einen absoluten Pose-Constraint beziehungsweise Faktor definiert. Alle anderen Faktoren sind relative Faktoren zwischen zwei Posen, gegeben durch ihre Indices. Aus diesem Grund wählt \cite{shan2020lio} an dieser Stelle ein großes initiales Rauschen, um die Optimierung nicht durch eine zu statische erste Pose einzuschränken. \cite{shan2020lio} definiert einen 6D Varianz-Vektor, der die Varianzen der Rotations- und Translationskomponenten (in dieser Reihenfolge, in $rad^2$ und $m^2$) enthält. Dieser lautet wie folgt: $\left( 10^{-2}, 10^{-2}, \pi \cdot \pi, 10^8, 10^8, 10^8 \right)^T$. Dies wurde in dieser Arbeit zunächst übernommen und später parametrisierbar gemacht. Die in dieser Arbeit verwendeten Default-Werte lauten: $\left(10^{-2}, 10^{-2}, 10^{-2}, 0.064, 0.064, 0.064\right)^T$. Diese orientieren sich an dem Ansatz von \cite{HATSDF}. & Der Prior-Factor wird insgesamt einmal für das definierte initiale Rauschen der ersten Pose verwendet. \\
 			\hline
-			Between-Faktor     & Definiert einen relativen Pose-Constraint zwischen zwei Posen $P_i$ und $P_j$, gegeben durch deren Indices $i$ und $j$. Dieser Constraint ist gegeben als 3D Pose-Differenz, bestehend aus Rotation und Translation. Hierfür stellt GTSAM die Klasse $Pose3$ zur Verfügung. Auch für diesen Faktor kann neben dem relativen Constraint zwischen zwei Posen auch eine Unsicherheit definiert werden. Für aufeinanderfolgende Posen ist diese parametrisch gegeben (Default: $\left(10^{-2}, 10^{-2}, 10^{-2}, 0.064, 0.064, 0.064\right)^T$), für identifizierte Schleifenschlüsse wird der beim Scan-Matching resultierende Fitness-Score $\Gamma$ verwendet: $\left(\Gamma, \Gamma, \Gamma, \Gamma, \Gamma, \Gamma\right)^T$. Bei dieser Entscheidung wurde sich an \cite{shan2020lio} orientiert. & Dieser Faktor findet sowohl zur Beschreibung der Pose-Differenzen aufeinanderfolgender Posen (gegeben durch die gegebenenfalls mit GICP optimierte, initiale Schätzung), als auch für die Beschreibung der im Scan-Matching ermittelten Pose-Differenz zwischen den an Schleifenschlüssen beteiligten Posen. \\
+			\textbf{Between-Faktor}    & Definiert einen relativen Pose-Constraint zwischen zwei Posen $P_i$ und $P_j$, gegeben durch deren Indices $i$ und $j$. Dieser Constraint ist gegeben als 3D Pose-Differenz, bestehend aus Rotation und Translation. Hierfür stellt GTSAM die Klasse $Pose3$ zur Verfügung. Auch für diesen Faktor kann neben dem relativen Constraint zwischen zwei Posen auch eine Unsicherheit definiert werden. Für aufeinanderfolgende Posen ist diese parametrisch gegeben (Default: $\left(10^{-2}, 10^{-2}, 10^{-2}, 0.064, 0.064, 0.064\right)^T$), für identifizierte Schleifenschlüsse wird der beim Scan-Matching resultierende Fitness-Score $\Gamma$ verwendet: $\left(\Gamma, \Gamma, \Gamma, \Gamma, \Gamma, \Gamma\right)^T$. Bei dieser Entscheidung wurde sich an \cite{shan2020lio} orientiert. & Dieser Faktor findet sowohl zur Beschreibung der Pose-Differenzen aufeinanderfolgender Posen (gegeben durch die gegebenenfalls mit GICP optimierte, initiale Schätzung), als auch für die Beschreibung der im Scan-Matching ermittelten Pose-Differenz zwischen den an Schleifenschlüssen beteiligten Posen. \\
 			\hline
 		\end{tabular}
 		\label{table:gtsam_faktoren}
@@ -144,20 +134,35 @@ Im Folgenden wird der hier vorgestellte Ansatz auf Basis mehrerer Datensätze ev
 
 \section{Evaluation}
 
-Dieser Absatz befasst sich mit der Evaluation des zuvor vorgestellten Ansatzes zur Optimierung des Pose-Graphen mittels identifizierter Schleifenschlüsse unter Verwendung der GTSAM Bibliothek \cite{dellaert2012factor}.
+Dieser Absatz befasst sich mit der Evaluation des zuvor vorgestellten Ansatzes zur Optimierung des Pose-Graphen mittels identifizierter Schleifenschlüsse unter Verwendung der GTSAM Bibliothek \cite{dellaert2012factor}. Wie beschrieben werden zur Evaluation des Ansatzes mehrere Datensätze verwendet, die aus einer Initialschätzung des Pose-Graphen mit einer zu jeder Pose $P_i$ zugehörigen Punktwolke $C_i$, die relativ zum Koordinatensystem der zugehörigen Pose gesehen ist. Zu den verwendete Datensets gehört sowohl der \textbf{Hannover-1} Datensatz der Universität Osnabrück mit zugehöriger Initialschätzung des Pose-Graphen durch Odometrie und einer \textbf{Ground-Truth}, die in \cite{sprickerhof2011heuristic} vorgestellt wird. Die Ground-Truth bezeichnet eine Pose-Historie, die die (näherungsweise) realen Posen enthält, von denen die Daten aufgenommen wurden. Dies erlaubt einen direkten Vergleich der mit diesem Ansatz optimierten Trajektorie mit der Ground-Truth. Zusätzlich wurden im Laufe dieser Arbeit weitere Datensätze aufgenommen. Aus diesen Datensätzen erfolgte zunächst die Bestimmung einer Initialschätzung des Pose-Graphen mit einer überarbeiteten Variante des in \cite{zhang2014loam} vorgestellten SLAM-Ansatzes. Bei einer visuellen Überprüfung der so generierten Initialschätzungen fallen direkt mehrere Fehler wie doppelte Wände auf, die durch eine Fehlerfortpflanzung beim SLAM auftreten. Im Zuge dieser Evaluation soll überprüft werden ob diese Fehler durch diesen Ansatz kompensiert werden können.
 
+\subsection{Hannover 1}
+
+Zunächst erfolgt eine Evaluation des Hannover-1 Datensatzes. Abbildung \ref{} zeigt eine Gegenüberstellung der beschriebenen Ground-Truth mit der durch Odometrie gegebeben Initialschätzung. Hier ist eine deutliche Differenz zwischen den beiden Pose-Graphen zu erkennen, die nicht ausschließlich durch die Integration von Schleifenschlüssen aufgelöst werden kann. Aus diesem Grund wird eine Vorregistrierung der aktuell betrachteten Initialschätzung der Pose $P_i$ mit den zuvor in den Pose-Graphen eingefügten Posen mittels GICP vorgenommen. Lediglich für die erste Pose wird die initiale Schätzung verwendet. Wie zuvor erläutert und in Abbildung \ref{fig:Windows} schematisch dargestellt verbessert eine Anreicherung der Model-Punktwolke mit den Punktwolken der benachbarten Posen das Ergebnis der Registrierung maßgeblich. Diese Erkenntnis kommt auch bei der Vorregistrierung zum Einsatz. Der erörterte Vorregistrierungs-Schritt findet zusätzlich bei den anderen Datensätzen Verwendung.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		 \centering
+  		 \includegraphics[width=.95\linewidth]{Han1Initial}
+  		 \centering \caption{Durchschnittlicher Fitness-Score für gefundene Schleifenschluss-Kandidaten eines Datensatz von Pose $0$ bis Pose $80$, Posen ohne Kandidaten sind nicht dargestellt.}
+  		 \label{fig:Han1Initial}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=.95\linewidth]{Han1GT}
+  		\centering \caption{Vergrößerung des Bereiches von links, in dem Schleifenschlüsse gefunden und validiert wurden. Dargestellt als grüne horizontale Linie ist die parametrisierte Schranke für Schleifenschlüsse.}
+  		\label{fig:Han1GT}
+	\end{subfigure}
+	\caption{}
+	\label{fig:Windows}
+\end{figure}
 
 \section{Optimierungen}
 
 \improvement{an dieser Stelle könnte noch eine Menge an Abbildungen folgen, die die Ergebnisse in Abhängigkeit von mehreren Ursachen beschreiben}
 \improvement{ggf. auf andere Scan-Matching Verfahren eingehen (ICP, GICP, Teaser++, VGICP)}
 
-	
-\section{Datensätze}
-
-Verwendete Datensätze und herausforderungen herausstellen
-
-\subsection{Hannover1}
 
 
 
