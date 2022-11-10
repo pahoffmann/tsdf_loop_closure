@@ -111,38 +111,47 @@ Der nachfolgende Abschnitt beschäftigt sich mit der Optimierung des Pose-Graphe
 
 \section{Graphenoptimierung}
 
-Für die Optimierung des Pose-Graphen wird in diesem Fall die C++ Bibliothek GTSAM \cite{dellaert2012factor} verwendet. GTSAM implementiert die Fusion von Sensor Daten für Anwendungen im Bereich von Robotik und Computer-Grafik und kommt insbesondere in SLAM-Ansätzen zum Einsatz \cite{dellaert2012factor}. Als unterliegende Datenstruktur für den hier verwendeten Anwendungsfall dient ein Faktorgraph. Faktorgraphen sind grafische Modelle, die sich gut für Anwendungsfälle wie SLAM und deren Modellieren eignen.
+Für die Optimierung des Pose-Graphen wird in diesem Fall die C++ Bibliothek GTSAM \cite{dellaert2012factor} verwendet. GTSAM implementiert die Fusion von Sensor Daten für Anwendungen im Bereich von Robotik und Computer-Grafik und kommt insbesondere in SLAM-Ansätzen zum Einsatz \cite{dellaert2012factor}. Als unterliegende Datenstruktur für den hier verwendeten Anwendungsfall dient ein Faktorgraph. Faktorgraphen sind grafische Modelle, die sich gut für komplexe Schätzungsprobleme wie SLAM und deren Modellieren eignen. Ein Faktorgraph ist ein bipartiter beziehungsweise paarer Graph, der Beziehungen zwischen zwei Mengen darstellt. Der Graph besteht das Faktoren beziehungsweise \textbf{Graph-Constraints}, die mit der Menge der \textbf{Variablen} verbunden sind. Dabei stellen die Variablen die unbekannten Zufallsvariablen des Schätzproblems dar, während die Faktoren probabilistische Beschränkungen oder Voraussetzungen für diese Variablen darstellen, die aus Messungen wie Odometrie, \textbf{IMU (Intertial Measurement Unit)}-Schätzungen, gesichteten Landmarken oder SLAM-Schätzungen abgeleitet werden \cite{dellaert2012factor}. Im Folgenden sind die Zufallsvariablen des Schätzproblems die gesuchten optimierten Posen des Pose-Graphs. Als Faktoren werden die initialen Pose-Schätzungen verwendet, die durch eine zusätzliche Vorregistrierung mittels GICP verbessert werden, sowie die identifizierten Schleifenschlüsse. GTSAM stellt für diese Faktoren vordefinierte Klassen, die in Tabelle \ref{table:gtsam_faktoren} vorgestellt werden.
 
-Bezug zu GTSAM Library Beschreibung aufnehmen.
-Wichtigste verwendete Funktionen bennen.
-Verweis auf GTSAM Paper. \cite{dellaert2012factor}
-Erklärung von Faktorgraphen und Faktoren.
-Erklärung der Genutzten datenstrukturen und optimizer.
-Erklärung von noise constraints (Unsicherheiten)
+	\begin{table}
+		\centering
+		\caption{Verwendete GTSAM-Faktoren und deren Funktionsweise.}
+		\begin{tabular}{| p{1.5cm} | p{8cm} | p{4cm} |}
+			\hline
+			\thead{Faktor}   & \thead{Beschreibung}  & \thead{Nutzung}\\
+			\hline
+			\textbf{Prior-Faktor}   & Definiert ein initiales Rauschen für die erste Pose des Pose-Graphen. Dieser Faktor ist der einzige verwendete Faktor, der einen absoluten Pose-Constraint beziehungsweise Faktor definiert. Alle anderen Faktoren sind relative Faktoren zwischen zwei Posen, gegeben durch ihre Indices. Aus diesem Grund wählt \cite{shan2020lio} an dieser Stelle ein großes initiales Rauschen, um die Optimierung nicht durch eine zu statische erste Pose einzuschränken. \cite{shan2020lio} definiert einen 6D Varianz-Vektor, der die Varianzen der Rotations- und Translationskomponenten (in dieser Reihenfolge, in $rad^2$ und $m^2$) enthält. Dieser lautet wie folgt: $\left( 10^{-2}, 10^{-2}, \pi \cdot \pi, 10^8, 10^8, 10^8 \right)^T$. Dies wurde in dieser Arbeit zunächst übernommen und später parametrisierbar gemacht. Die in dieser Arbeit verwendeten Default-Werte lauten: $\left(10^{-2}, 10^{-2}, 10^{-2}, 0.064, 0.064, 0.064\right)^T$. Diese orientieren sich an dem Ansatz von \cite{HATSDF}. & Der Prior-Factor wird insgesamt einmal für das definierte initiale Rauschen der ersten Pose verwendet. \\
+			\hline
+			Between-Faktor     & Definiert einen relativen Pose-Constraint zwischen zwei Posen $P_i$ und $P_j$, gegeben durch deren Indices $i$ und $j$. Dieser Constraint ist gegeben als 3D Pose-Differenz, bestehend aus Rotation und Translation. Hierfür stellt GTSAM die Klasse $Pose3$ zur Verfügung. Auch für diesen Faktor kann neben dem relativen Constraint zwischen zwei Posen auch eine Unsicherheit definiert werden. Für aufeinanderfolgende Posen ist diese parametrisch gegeben (Default: $\left(10^{-2}, 10^{-2}, 10^{-2}, 0.064, 0.064, 0.064\right)^T$), für identifizierte Schleifenschlüsse wird der beim Scan-Matching resultierende Fitness-Score $\Gamma$ verwendet: $\left(\Gamma, \Gamma, \Gamma, \Gamma, \Gamma, \Gamma\right)^T$. Bei dieser Entscheidung wurde sich an \cite{shan2020lio} orientiert. & Dieser Faktor findet sowohl zur Beschreibung der Pose-Differenzen aufeinanderfolgender Posen (gegeben durch die gegebenenfalls mit GICP optimierte, initiale Schätzung), als auch für die Beschreibung der im Scan-Matching ermittelten Pose-Differenz zwischen den an Schleifenschlüssen beteiligten Posen. \\
+			\hline
+		\end{tabular}
+		\label{table:gtsam_faktoren}
+	\end{table}	
+
+In den Faktor-Graph selbst werden beim Durchlauf des Algorithmus lediglich die beschriebenen Faktoren eingefügt. Zu einem beliebigen Zeitpunkt besteht er aus dem initialen Prior-Faktor der ersten Pose, sowie mehren Between-Faktoren für aufeinander folgenden Posen und Schleifenschlüsse. Der Verbund mit der Menge der Variablen wird durch die Verwendung von Indices erreicht. Dabei erhält der Prior-Faktor den Index $0$, der er sich lediglich auf die erste Pose des Pose-Graphen bezieht, die mit $0$ indiziert ist. Between-Faktoren erhalten jeweils zwei Indices, die ebenfalls den entsprechenden Posen des Pose-Graphen zugeordnet werden können. Die beiden Indices legen fest, zwischen welchen Variablen der Faktor gilt und in welche Richtung er gilt. Der grundlegende Ablauf bei dem Einfügen neuer Faktoren in den Faktorgraphen und der anschließenden Optimierung der Variablenmenge, hier dem verwendeten Pose-Graphen, ist in Abbildung \ref{fig:Flussdiagramm-Optimization} dargestellt.
+
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.3]
+			{Flussdiagramm-Optimization}
+		\caption
+			[Caption for LOF]{Dieses Flussdiagramm beschreibt den algorithmischen Ablauf der Graph-Optimierung unter besonderer Betrachtung der in den Faktorgraphen einzufügenden Faktoren. Für den Fall, dass Schleifenschlüsse gefunden werden, wird die Menge der Variablen, hier der Pose-Graph auf Basis der in den Faktorgraphen eingefügten Faktoren optimiert. Als Optimierer wird hier der in GTSAM implementierte \textbf{Levenberg-Marquardt-Optimizer} verwendet, der die von Levenberg \cite{levenberg1944method} und Marquard \cite{marquardt1963algorithm} vorgeschlagene Lösung von nicht-linearen \textbf{Least-Squares} Problemen implementiert. Im Anschluss an die durchgeführte Optimierung, muss der Faktor-Graph $F$ auf Basis der neuen Pose-Differenzen in $G$ neu aufgebaut werden. Dies wird so lange durchgeführt, bis das letzte Pose-Punktwolke Paar der initialen Schätzung abgearbeitet ist. Um die Pose-Differenzen der initialen Schätzung auch nach der Optimierung des Teilgraphen beim Einfügen einer neuen Pose $P_i$ zu erhalten wird mit \textbf{Pose-Deltas} gearbeitet. Dazu wird immer die zuletzt eingefügte Pose der initialen Schätzung gespeichert, bei einer neuen Pose das Pose-Delta beziehungsweise die Pose-Differenz zwischen der neuen und der gespeicherten Pose berechnet und auf die zuletzt eingefügte Pose in $G$ angewandt.}                                                                                                                                     
+		\label{fig:Flussdiagramm-Optimization}
+\end{figure}
+
+Im Folgenden wird der hier vorgestellte Ansatz auf Basis mehrerer Datensätze evaluiert.
+
+\section{Evaluation}
+
+Dieser Absatz befasst sich mit der Evaluation des zuvor vorgestellten Ansatzes zur Optimierung des Pose-Graphen mittels identifizierter Schleifenschlüsse unter Verwendung der GTSAM Bibliothek \cite{dellaert2012factor}.
+
 
 \section{Optimierungen}
 
-1. Vorregistrierung
+\improvement{an dieser Stelle könnte noch eine Menge an Abbildungen folgen, die die Ergebnisse in Abhängigkeit von mehreren Ursachen beschreiben}
+\improvement{ggf. auf andere Scan-Matching Verfahren eingehen (ICP, GICP, Teaser++, VGICP)}
 
-2. Filtern der Punktwolke
-
-3. Unterschiedliche Scan-Matching Varianten
-	1. ICP
-	2. GICP
-	3. Kurz auf Teaser++ eingehen
-	4. VGICP
-	
-	-> Analyse des Scan Matchings bezogen auf 1. Vorregistrierung, 2. LC Detektion Matching
-	-> Graph über Fitness Counter mit LC Linie (dünn) verschiedene Farben
-	-> dazu: starten mit allen varianten und jeweils werte akkumulieren
-	-> schreiben in csv
-	
-	4. Rejectors
-	
-	\improvement{einführen: Pointcloud-Enrichment, Grafik: Fitness score im bezug zum enrichment: eine wolke vs. mehrere}
-
-
-\improvement{insert the pseudo code to the whole algorithm}
 	
 \section{Datensätze}
 
@@ -150,10 +159,5 @@ Verwendete Datensätze und herausforderungen herausstellen
 
 \subsection{Hannover1}
 
-
-
-
-
-\section{Evaluation}
 
 
