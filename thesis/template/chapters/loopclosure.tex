@@ -138,19 +138,32 @@ Dieser Absatz befasst sich mit der Evaluation des zuvor vorgestellten Ansatzes z
 
 \subsection{Hannover 1}
 
-Zunächst erfolgt eine Evaluation des Hannover-1 Datensatzes. Abbildung \ref{} zeigt eine Gegenüberstellung der beschriebenen Ground-Truth mit der durch Odometrie gegebeben Initialschätzung. Hier ist eine deutliche Differenz zwischen den beiden Pose-Graphen zu erkennen, die nicht ausschließlich durch die Integration von Schleifenschlüssen aufgelöst werden kann. Aus diesem Grund wird eine Vorregistrierung der aktuell betrachteten Initialschätzung der Pose $P_i$ mit den zuvor in den Pose-Graphen eingefügten Posen mittels GICP vorgenommen. Lediglich für die erste Pose wird die initiale Schätzung verwendet. Wie zuvor erläutert und in Abbildung \ref{fig:Windows} schematisch dargestellt verbessert eine Anreicherung der Model-Punktwolke mit den Punktwolken der benachbarten Posen das Ergebnis der Registrierung maßgeblich. Diese Erkenntnis kommt auch bei der Vorregistrierung zum Einsatz. Der erörterte Vorregistrierungs-Schritt findet zusätzlich bei den anderen Datensätzen Verwendung.
+Zunächst erfolgt eine Evaluation des Hannover-1 Datensatzes. Abbildung \ref{GTvsInit} zeigt eine Gegenüberstellung der beschriebenen Ground-Truth mit der durch Odometrie gegebeben Initialschätzung. Hier ist eine deutliche Differenz zwischen den beiden Pose-Graphen zu erkennen, die nicht ausschließlich durch die Integration von Schleifenschlüssen aufgelöst werden kann. Aus diesem Grund wird eine Vorregistrierung der aktuell betrachteten Initialschätzung der Pose $P_i$ mit den zuvor in den Pose-Graphen eingefügten Posen mittels GICP vorgenommen. Lediglich für die erste Pose wird die initiale Schätzung verwendet. Wie zuvor erläutert und in Abbildung \ref{fig:Windows} schematisch dargestellt verbessert eine Anreicherung der Model-Punktwolke mit den Punktwolken der benachbarten Posen das Ergebnis der Registrierung maßgeblich. Diese Erkenntnis kommt auch bei der Vorregistrierung zum Einsatz. Der erörterte Vorregistrierungs-Schritt findet zusätzlich bei den anderen Datensätzen Verwendung.
+
+GTvsInit
+
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.7]
+			{GTvsInit}
+		\caption
+			[Caption for LOF]{Diese Grafik zeigt die Ground-Truth des Hannover-1 Datensatzes im Vergleich mit der initialen Odometrieschätzung. Es ist ersichtlich, dass die Odometrieschätzung signifikante Fehler aufweist, sodass die Trajektorien sehr unterschiedlich sind. Im Fol}                                                                                                                                     
+		\label{GTvsInit}
+\end{figure}
+
 
 \begin{figure}
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		 \centering
-  		 \includegraphics[width=.95\linewidth]{Han1Initial}
+  		 \includegraphics[width=.95\linewidth]{GTvsInit}
   		 \centering \caption{Durchschnittlicher Fitness-Score für gefundene Schleifenschluss-Kandidaten eines Datensatz von Pose $0$ bis Pose $80$, Posen ohne Kandidaten sind nicht dargestellt.}
   		 \label{fig:Han1Initial}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
     	\centering
-  		\includegraphics[width=.95\linewidth]{Han1GT}
+  		\includegraphics[width=.95\linewidth]{GTvsInit}
   		\centering \caption{Vergrößerung des Bereiches von links, in dem Schleifenschlüsse gefunden und validiert wurden. Dargestellt als grüne horizontale Linie ist die parametrisierte Schranke für Schleifenschlüsse.}
   		\label{fig:Han1GT}
 	\end{subfigure}

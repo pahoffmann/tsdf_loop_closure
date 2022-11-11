@@ -31,11 +31,10 @@
 \contentsline {section}{\numberline {5.1}Detektion}{35}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Graphenoptimierung}{41}{section.5.2}%
 \contentsline {section}{\numberline {5.3}Evaluation}{42}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Optimierungen}{42}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Datensätze}{42}{section.5.5}%
-\contentsline {subsection}{\numberline {5.5.1}Hannover1}{42}{subsection.5.5.1}%
-\contentsline {chapter}{\numberline {6}Map Update}{45}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Globales Update}{45}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Partielles Update}{45}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Pseudocode}{45}{section.6.3}%
-\contentsline {chapter}{\numberline {7}Ausblick}{47}{chapter.7}%
+\contentsline {subsection}{\numberline {5.3.1}Hannover 1}{44}{subsection.5.3.1}%
+\contentsline {section}{\numberline {5.4}Optimierungen}{44}{section.5.4}%
+\contentsline {chapter}{\numberline {6}Map Update}{47}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Globales Update}{47}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Partielles Update}{47}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Pseudocode}{47}{section.6.3}%
+\contentsline {chapter}{\numberline {7}Ausblick}{49}{chapter.7}%

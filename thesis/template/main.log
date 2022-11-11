@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  10 NOV 2022 15:53
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  11 NOV 2022 15:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1220,6 +1220,9 @@ LaTeX Warning: Label `fig:approx_cloud' multiply defined.
 
 LaTeX Warning: Label `sub@fig:approx_cloud' multiply defined.
 
+
+LaTeX Warning: Label `fig:Windows' multiply defined.
+
 )
 \openout1 = `main.aux'.
 
@@ -1325,7 +1328,7 @@ Package microtype Info: No adjustment of character kerning.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-<base/unilogo.pdf, id=179, 597.23125pt x 845.1575pt>
+<base/unilogo.pdf, id=175, 597.23125pt x 845.1575pt>
 File: base/unilogo.pdf Graphic file (type pdf)
 <use base/unilogo.pdf>
 Package pdftex.def Info: base/unilogo.pdf  used on input line 114.
@@ -1405,7 +1408,7 @@ Kapitel 2.
 Kapitel 3.
 Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
 ine 3.
-<pics/ros_coordinate_sys.png, id=344, 606.265pt x 465.74pt>
+<pics/ros_coordinate_sys.png, id=339, 606.265pt x 465.74pt>
 File: pics/ros_coordinate_sys.png Graphic file (type png)
 <use pics/ros_coordinate_sys.png>
 Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 32.
@@ -1413,13 +1416,13 @@ Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 32.
 [7
 
 ]
-<pics/robot_tf.png, id=359, 909.3975pt x 788.9475pt>
+<pics/robot_tf.png, id=354, 909.3975pt x 788.9475pt>
 File: pics/robot_tf.png Graphic file (type png)
 <use pics/robot_tf.png>
 Package pdftex.def Info: pics/robot_tf.png  used on input line 53.
 (pdftex.def)             Requested size: 318.2939pt x 276.13576pt.
  [8 <./pics/ros_coordinate_sys.png>] [9 <./pics/robot_tf.png>]
-<pics/transformation.png, id=377, 1726.45pt x 562.1pt>
+<pics/transformation.png, id=372, 1726.45pt x 562.1pt>
 File: pics/transformation.png Graphic file (type png)
 <use pics/transformation.png>
 Package pdftex.def Info: pics/transformation.png  used on input line 95.
@@ -1431,7 +1434,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <5> on input line 97.
  [10 <./pics/transformation.png>]
-<pics/TSDF.png, id=402, 1087.06125pt x 1004.75375pt>
+<pics/TSDF.png, id=397, 1087.06125pt x 1004.75375pt>
 File: pics/TSDF.png Graphic file (type png)
 <use pics/TSDF.png>
 Package pdftex.def Info: pics/TSDF.png  used on input line 130.
@@ -1442,7 +1445,7 @@ LaTeX Warning: Reference `chapter:associations' on page 12 undefined on input l
 ine 155.
 
 [12 <./pics/TSDF.png>]
-<pics/HDF5old.png, id=432, 1065.9825pt x 592.2125pt>
+<pics/HDF5old.png, id=427, 1065.9825pt x 592.2125pt>
 File: pics/HDF5old.png Graphic file (type png)
 <use pics/HDF5old.png>
 Package pdftex.def Info: pics/HDF5old.png  used on input line 164.
@@ -1460,7 +1463,7 @@ LaTeX Warning: Reference `section:sdf' on page 13 undefined on input line 185.
 ]
 Kapitel 4.
 [17]
-<pics/HDF5new.png, id=470, 943.525pt x 461.725pt>
+<pics/HDF5new.png, id=465, 943.525pt x 461.725pt>
 File: pics/HDF5new.png Graphic file (type png)
 <use pics/HDF5new.png>
 Package pdftex.def Info: pics/HDF5new.png  used on input line 32.
@@ -1468,12 +1471,12 @@ Package pdftex.def Info: pics/HDF5new.png  used on input line 32.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <9> on input line 56.
  [18] [19 <./pics/HDF5new.png>] [20] [21]
-<pics/RayTracingBig.png, id=507, 1447.4075pt x 682.55pt>
+<pics/RayTracingBig.png, id=502, 1447.4075pt x 682.55pt>
 File: pics/RayTracingBig.png Graphic file (type png)
 <use pics/RayTracingBig.png>
 Package pdftex.def Info: pics/RayTracingBig.png  used on input line 130.
 (pdftex.def)             Requested size: 434.2256pt x 204.76657pt.
-<pics/Ray-Trace-Zustandsdiagramm.png, id=512, 1039.885pt x 1162.3425pt>
+<pics/Ray-Trace-Zustandsdiagramm.png, id=507, 1039.885pt x 1162.3425pt>
 File: pics/Ray-Trace-Zustandsdiagramm.png Graphic file (type png)
 <use pics/Ray-Trace-Zustandsdiagramm.png>
 Package pdftex.def Info: pics/Ray-Trace-Zustandsdiagramm.png  used on input lin
@@ -1490,7 +1493,7 @@ LaTeX Warning: Marginpar on page 23 moved.
 LaTeX Warning: Marginpar on page 23 moved.
 
 [23 <./pics/Ray-Trace-Zustandsdiagramm.png>]
-<pics/Bresenham2D.png, id=536, 1485.55pt x 1236.62pt>
+<pics/Bresenham2D.png, id=531, 1485.55pt x 1236.62pt>
 File: pics/Bresenham2D.png Graphic file (type png)
 <use pics/Bresenham2D.png>
 Package pdftex.def Info: pics/Bresenham2D.png  used on input line 162.
@@ -1503,12 +1506,12 @@ put line 172.
 
 LaTeX Warning: Reference `' on page 26 undefined on input line 227.
 
-<pics/sp_bresenham_91_74_.png, id=563, 857.45343pt x 645.91313pt>
+<pics/sp_bresenham_91_74_.png, id=558, 857.45343pt x 645.91313pt>
 File: pics/sp_bresenham_91_74_.png Graphic file (type png)
 <use pics/sp_bresenham_91_74_.png>
 Package pdftex.def Info: pics/sp_bresenham_91_74_.png  used on input line 234.
 (pdftex.def)             Requested size: 216.24023pt x 162.88727pt.
-<pics/sp_raytrace_91_97_.png, id=564, 857.45343pt x 645.91313pt>
+<pics/sp_raytrace_91_97_.png, id=559, 857.45343pt x 645.91313pt>
 File: pics/sp_raytrace_91_97_.png Graphic file (type png)
 <use pics/sp_raytrace_91_97_.png>
 Package pdftex.def Info: pics/sp_raytrace_91_97_.png  used on input line 240.
@@ -1519,19 +1522,19 @@ LaTeX Warning: Reference `' on page 27 undefined on input line 253.
 
 [27 <./pics/sp_bresenham_91_74_.png (PNG copy)> <./pics/sp_raytrace_91_97_.png 
 (PNG copy)>]
-<pics/Verdeckungen.png, id=575, 895.345pt x 676.5275pt>
+<pics/Verdeckungen.png, id=570, 895.345pt x 676.5275pt>
 File: pics/Verdeckungen.png Graphic file (type png)
 <use pics/Verdeckungen.png>
 Package pdftex.def Info: pics/Verdeckungen.png  used on input line 259.
 (pdftex.def)             Requested size: 223.8357pt x 169.13145pt.
-<pics/BresenhamVsRayTracing.png, id=577, 474.0912pt x 320.1561pt>
+<pics/BresenhamVsRayTracing.png, id=572, 474.0912pt x 320.1561pt>
 File: pics/BresenhamVsRayTracing.png Graphic file (type png)
 <use pics/BresenhamVsRayTracing.png>
 Package pdftex.def Info: pics/BresenhamVsRayTracing.png  used on input line 271
 .
 (pdftex.def)             Requested size: 331.86157pt x 224.10773pt.
  [28 <./pics/Verdeckungen.png>] [29 <./pics/BresenhamVsRayTracing.png>]
-<pics/single_tsdf.png, id=596, 950.80219pt x 645.91313pt>
+<pics/single_tsdf.png, id=590, 950.80219pt x 645.91313pt>
 File: pics/single_tsdf.png Graphic file (type png)
 <use pics/single_tsdf.png>
 Package pdftex.def Info: pics/single_tsdf.png  used on input line 299.
@@ -1541,7 +1544,7 @@ Overfull \hbox (34.1419pt too wide) in paragraph at lines 299--300
  [][] 
  []
 
-<pics/approx_cloud.png, id=597, 950.80219pt x 645.91313pt>
+<pics/approx_cloud.png, id=591, 950.80219pt x 645.91313pt>
 File: pics/approx_cloud.png Graphic file (type png)
 <use pics/approx_cloud.png>
 Package pdftex.def Info: pics/approx_cloud.png  used on input line 305.
@@ -1561,7 +1564,7 @@ File: mt-euf.cfg 2006/07/03 v1.1 microtype config. file: AMS Euler Fraktur (RS)
 
 ) [30 <./pics/single_tsdf.png (PNG copy)> <./pics/approx_cloud.png (PNG copy)>]
  [31]
-<pics/Assoziationsprobleme.png, id=614, 1485.55pt x 702.625pt>
+<pics/Assoziationsprobleme.png, id=609, 1485.55pt x 702.625pt>
 File: pics/Assoziationsprobleme.png Graphic file (type png)
 <use pics/Assoziationsprobleme.png>
 Package pdftex.def Info: pics/Assoziationsprobleme.png  used on input line 339.
@@ -1576,181 +1579,195 @@ LaTeX Warning: Reference `rusu20113d' on page 35 undefined on input line 10.
 [35
 
 ] [36]
-<pics/LoopIdentifikation.png, id=647, 943.525pt x 565.11125pt>
+<pics/LoopIdentifikation.png, id=642, 943.525pt x 565.11125pt>
 File: pics/LoopIdentifikation.png Graphic file (type png)
 <use pics/LoopIdentifikation.png>
 Package pdftex.def Info: pics/LoopIdentifikation.png  used on input line 36.
 (pdftex.def)             Requested size: 283.05968pt x 169.53468pt.
  [37 <./pics/LoopIdentifikation.png>]
-<pics/Windows_small.png, id=661, 462.528pt x 346.896pt>
+<pics/Windows_small.png, id=656, 462.528pt x 346.896pt>
 File: pics/Windows_small.png Graphic file (type png)
 <use pics/Windows_small.png>
-Package pdftex.def Info: pics/Windows_small.png  used on input line 58.
+Package pdftex.def Info: pics/Windows_small.png  used on input line 48.
 (pdftex.def)             Requested size: 216.24023pt x 162.18364pt.
-<pics/Windows_small_limit.png, id=662, 462.528pt x 346.896pt>
+<pics/Windows_small_limit.png, id=657, 462.528pt x 346.896pt>
 File: pics/Windows_small_limit.png Graphic file (type png)
 <use pics/Windows_small_limit.png>
-Package pdftex.def Info: pics/Windows_small_limit.png  used on input line 64.
+Package pdftex.def Info: pics/Windows_small_limit.png  used on input line 54.
 (pdftex.def)             Requested size: 216.24023pt x 162.18364pt.
  [38 <./pics/Windows_small.png> <./pics/Windows_small_limit.png>]
 
-LaTeX Warning: Reference `Line-Rejector' on page 39 undefined on input line 76.
+LaTeX Warning: Reference `Line-Rejector' on page 39 undefined on input line 66.
 
 
-<pics/Line-Rejector.png, id=670, 1588.93625pt x 764.8575pt>
+<pics/Line-Rejector.png, id=666, 1588.93625pt x 764.8575pt>
 File: pics/Line-Rejector.png Graphic file (type png)
 <use pics/Line-Rejector.png>
-Package pdftex.def Info: pics/Line-Rejector.png  used on input line 82.
+Package pdftex.def Info: pics/Line-Rejector.png  used on input line 72.
 (pdftex.def)             Requested size: 429.01852pt x 206.51428pt.
 [39] [40 <./pics/Line-Rejector.png>] [41]
-Underfull \hbox (badness 10000) in paragraph at lines 123--123
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
 []|\OT1/lmr/bx/n/10.95 Prior-
  []
 
 
-Underfull \hbox (badness 5260) in paragraph at lines 123--123
+Underfull \hbox (badness 5260) in paragraph at lines 113--113
 \OT1/lmr/m/n/10.95 (+20) und sp[]ater pa-ra-me-tri-sier-bar ge-macht. Die
  []
 
 
-Underfull \hbox (badness 1052) in paragraph at lines 123--123
+Underfull \hbox (badness 1052) in paragraph at lines 113--113
 \OT1/lmr/m/n/10.95 (+20) in die-ser Ar-beit ver-wen-de-ten Default-Werte
  []
 
 
-Underfull \hbox (badness 1565) in paragraph at lines 123--123
+Underfull \hbox (badness 1565) in paragraph at lines 113--113
 \OT1/lmr/m/n/10.95 (+20) lau-ten: $[][]$.
  []
 
 
-Underfull \hbox (badness 1968) in paragraph at lines 123--124
+Underfull \hbox (badness 1968) in paragraph at lines 113--114
 []|\OT1/lmr/m/n/10.95 (+20) Der Prior-Factor wird
  []
 
 
-Overfull \hbox (2.38899pt too wide) in paragraph at lines 125--125
+Overfull \hbox (2.38899pt too wide) in paragraph at lines 115--115
 []|\OT1/lmr/bx/n/10.95 Between-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--125
+Underfull \hbox (badness 10000) in paragraph at lines 115--115
 []|\OT1/lmr/m/n/10.95 (+20) Definiert einen re-la-ti-ven Pose-Constraint
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--125
+Underfull \hbox (badness 10000) in paragraph at lines 115--115
 \OT1/lmr/m/n/10.95 (+20) de-fi-niert wer-den. F[]ur auf-ein-an-der-fol-gen-de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--125
+Underfull \hbox (badness 10000) in paragraph at lines 115--115
 [][]$\OT1/lmr/m/n/10.95 (+20) ), f[]ur
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--125
+Underfull \hbox (badness 10000) in paragraph at lines 115--115
 \OT1/lmr/m/n/10.95 (+20) Scan-Matching re-sul-tie-ren-de Fitness-Score
  []
 
 
-Underfull \hbox (badness 3148) in paragraph at lines 125--125
+Underfull \hbox (badness 3148) in paragraph at lines 115--115
 \OT1/lmr/m/n/10.95 (+20) ^^@$ ver-wen-det: $[][]$. Bei die-ser
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 []|\OT1/lmr/m/n/10.95 (+20) Dieser Fak-tor fin-det
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) der Pose-Differenzen
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) auf-ein-an-der-fol-gen-der
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) die ge-ge-be-nen-falls
  []
 
 
-Underfull \hbox (badness 1383) in paragraph at lines 125--126
+Underfull \hbox (badness 1383) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) mit GICP op-ti-mier-te,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) in-itia-le Sch[]atzung),
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) als auch f[]ur die
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) Be-schrei-bung der
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) im Scan-Matching
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) er-mit-tel-ten Pose-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 125--126
+Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) an Schlei-fen-schl[]ussen
  []
 
-<pics/Flussdiagramm-Optimization.png, id=697, 1001.7425pt x 1477.52pt>
+<pics/Flussdiagramm-Optimization.png, id=693, 1001.7425pt x 1477.52pt>
 File: pics/Flussdiagramm-Optimization.png Graphic file (type png)
 <use pics/Flussdiagramm-Optimization.png>
 Package pdftex.def Info: pics/Flussdiagramm-Optimization.png  used on input lin
-e 137.
+e 127.
 (pdftex.def)             Requested size: 300.52507pt x 443.25943pt.
 
-LaTeX Warning: Float too large for page by 11.75156pt on input line 141.
+LaTeX Warning: Float too large for page by 11.75156pt on input line 131.
+
+[42] [43 <./pics/Flussdiagramm-Optimization.png>]
+<pics/GTvsInit.png, id=718, 462.528pt x 346.896pt>
+File: pics/GTvsInit.png Graphic file (type png)
+<use pics/GTvsInit.png>
+Package pdftex.def Info: pics/GTvsInit.png  used on input line 149.
+(pdftex.def)             Requested size: 323.76738pt x 242.82553pt.
+File: pics/GTvsInit.png Graphic file (type png)
+<use pics/GTvsInit.png>
+Package pdftex.def Info: pics/GTvsInit.png  used on input line 160.
+(pdftex.def)             Requested size: 216.24023pt x 162.18364pt.
+File: pics/GTvsInit.png Graphic file (type png)
+<use pics/GTvsInit.png>
+Package pdftex.def Info: pics/GTvsInit.png  used on input line 166.
+(pdftex.def)             Requested size: 216.24023pt x 162.18364pt.
 
 
-LaTeX Warning: Marginpar on page 42 moved.
+LaTeX Warning: Marginpar on page 44 moved.
 
-) (./chapters/map_update.tex [42] [43 <./pics/Flussdiagramm-Optimization.png>]
-[44]
+) (./chapters/map_update.tex [44 <./pics/GTvsInit.png>] [45] [46]
 Kapitel 6.
-) (./chapters/ausblick.tex [45
+) (./chapters/ausblick.tex [47
 
-] [46
+] [48
 
 ]
 Kapitel 7.
-) (./main.bbl [47] [48
+) (./main.bbl [49] [50
 
 ]
 LaTeX Font Info:    Trying to load font information for OT1+lmtt on input line 
 69.
  (/usr/share/texmf/tex/latex/lm/ot1lmtt.fd
 File: ot1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [49]
-[50]) [51] [52
+) [51]
+[52]) [53] [54
 
-] [53]
+] [55]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 173.
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 173.
  (./main.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 173.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 173.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: D3A982EF813F011D85CCA867D71FC1AD;4209.
+(rerunfilecheck)             Checksum: 5FE339B8817A6A18E82976AC5306F114;4109.
 
 
 LaTeX Warning: There were undefined references.
@@ -1761,11 +1778,11 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 173.
  ) 
 Here is how much of TeX's memory you used:
- 42413 strings out of 483016
- 905807 string characters out of 5961286
- 1355716 words of memory out of 5000000
- 56274 multiletter control sequences out of 15000+600000
- 629686 words of font info for 192 fonts, out of 8000000 for 9000
+ 42435 strings out of 483016
+ 906161 string characters out of 5961286
+ 1355384 words of memory out of 5000000
+ 56288 multiletter control sequences out of 15000+600000
+ 629908 words of font info for 194 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
  73i,18n,127p,2552b,1084s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
@@ -1790,10 +1807,10 @@ msy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf/f
 onts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pf
 b></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-
 dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (59 pages, 2528418 bytes).
+Output written on main.pdf (61 pages, 2564473 bytes).
 PDF statistics:
- 901 PDF objects out of 1000 (max. 8388607)
- 741 compressed objects within 8 object streams
- 184 named destinations out of 1000 (max. 500000)
- 14851 words of extra memory for PDF output out of 17280 (max. 10000000)
+ 915 PDF objects out of 1000 (max. 8388607)
+ 751 compressed objects within 8 object streams
+ 188 named destinations out of 1000 (max. 500000)
+ 14848 words of extra memory for PDF output out of 17280 (max. 10000000)
 

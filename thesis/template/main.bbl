@@ -168,4 +168,9 @@
 \newblock Kintinuous: Spatially extended kinectfusion.
 \newblock   (2012)
 
+\vspace*{4pt}\bibitem[26]{zhang2014loam}
+\textsc{Zhang}, Ji; \textsc{Singh}, Sanjiv:
+\newblock LOAM: Lidar odometry and mapping in real-time.
+\newblock {In: }\emph{Robotics: Science and Systems} Bd.~2 Berkeley, CA, 2014
+
 \end{thebibliography}
