@@ -58,6 +58,13 @@ def plot_error(df: pd.DataFrame, use_ticks: True, tick_steps: 10):
         plt.xticks(np.arange(0, len(df.index), 1)[::tick_steps])
 
 
+def plot_path(df: pd.DataFrame, use_ticks: True, tick_steps: 10):
+    sns.lineplot(data=df)
+    plt.xticks(rotation="90")
+    if use_ticks:
+        plt.xticks(np.arange(0, len(df.index), 1)[::tick_steps])
+
+
 def plot_average_error(df: pd.DataFrame, label:str, n_measurements: int = None, random: bool = False):
     data = transpose_by_iteration(df, n_measurements=n_measurements, random=random)
     stacked = stack_by_iteration(data)
