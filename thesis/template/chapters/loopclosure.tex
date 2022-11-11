@@ -138,9 +138,8 @@ Dieser Absatz befasst sich mit der Evaluation des zuvor vorgestellten Ansatzes z
 
 \subsection{Hannover 1}
 
-Zunächst erfolgt eine Evaluation des Hannover-1 Datensatzes. Abbildung \ref{GTvsInit} zeigt eine Gegenüberstellung der beschriebenen Ground-Truth mit der durch Odometrie gegebeben Initialschätzung. Hier ist eine deutliche Differenz zwischen den beiden Pose-Graphen zu erkennen, die nicht ausschließlich durch die Integration von Schleifenschlüssen aufgelöst werden kann. Aus diesem Grund wird eine Vorregistrierung der aktuell betrachteten Initialschätzung der Pose $P_i$ mit den zuvor in den Pose-Graphen eingefügten Posen mittels GICP vorgenommen. Lediglich für die erste Pose wird die initiale Schätzung verwendet. Wie zuvor erläutert und in Abbildung \ref{fig:Windows} schematisch dargestellt verbessert eine Anreicherung der Model-Punktwolke mit den Punktwolken der benachbarten Posen das Ergebnis der Registrierung maßgeblich. Diese Erkenntnis kommt auch bei der Vorregistrierung zum Einsatz. Der erörterte Vorregistrierungs-Schritt findet zusätzlich bei den anderen Datensätzen Verwendung.
+Zunächst erfolgt eine Evaluation des Hannover-1 Datensatzes. Abbildung \ref{GTvsInit} zeigt eine Gegenüberstellung der beschriebenen Ground-Truth des Datensatzes mit der durch Odometrie gegebenen Initialschätzung. Hier ist eine deutliche Differenz zwischen den beiden Pose-Graphen zu erkennen, die nicht ausschließlich durch die Integration von Schleifenschlüssen aufgelöst werden kann. Aus diesem Grund wird eine Vorregistrierung der aktuell betrachteten Initialschätzung der Pose $P_i$ mit den zuvor in den Pose-Graphen eingefügten Posen mittels GICP vorgenommen. Lediglich für die erste Pose wird die initiale Schätzung verwendet. Wie zuvor erläutert und in Abbildung \ref{fig:Windows} schematisch dargestellt verbessert eine Anreicherung der Model-Punktwolke mit den Punktwolken der benachbarten Posen das Ergebnis der Registrierung maßgeblich. Diese Erkenntnis kommt auch bei der Vorregistrierung zum Einsatz. Der erörterte Vorregistrierungs-Schritt findet zusätzlich bei den anderen Datensätzen Verwendung um eine lokale Konsistenz der Daten zu gewährleisten.
 
-GTvsInit
 
 \begin{figure}
 		\centering
@@ -152,24 +151,92 @@ GTvsInit
 		\label{GTvsInit}
 \end{figure}
 
+Um die Effektivität der Schleifenschlüsse im hier vorgestellten Ansatz herauszustellen, erfolgt ein Vergleich dieses Ansatz mit einer Registrierung des Datensatzes durch GICP. Dies ist in Abbildung \ref{fig:Han1This} dargestellt. Zu erkennen ist eine deutliche Optimierung des Pose-Graphen durch die Einführung der Schleifenschlüsse. Lediglich eine Teilschleife des Graphen weicht im Vergleich stärker von der Ground-Truth ab. Hier lag zunächst ein großer Fehler in der Vorregistrierung vor, der von den identifizierten Schleifenschlüssen nur zum Teil korrigiert werden konnte. Dies wird hier zusätzlich anhand einer weiteren Grafik deutlich gemacht, die den absoluten Fehler in der Translation zwischen einer Pose $P_i$ des mit diesem Ansatz korrigierten Pose-Graphen mit der zugehörigen Pose $P_i^{GT}$ der Ground-Truth vergleicht. Dies ist in Abbildung \ref{fig:Han1Error} dargestellt. Dabei ist der absolute Fehler $\varepsilon_{abs}$ für die aktuelle Anzahl an Posen $n_{cur}$, sowie den Translationsanteilen der Posen des mit diesem Ansatzes korrigierten Pfades $\vec{t_i}$ und der Ground-Truth $\vec{t_i^{GT}}$  wie folgt definiert:
+
+\begin{myequation}
+\varepsilon_{abs} = \frac{\sum_{i=0}^{n_{cur}} \norm{\vec{t_i^{GT}} - \vec{t_i}}}{n_{cur}}
+\end{myequation}
+
+Die Abbildung \ref{fig:Han1Error} zeigt dabei die deutlichen Verbesserungen des absoluten Fehlers durch die Nutzung von GICP und die weitere Verbesserung durch die Nutzung von Schleifenschlüssen. 
 
 \begin{figure}
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		 \centering
-  		 \includegraphics[width=.95\linewidth]{GTvsInit}
-  		 \centering \caption{Durchschnittlicher Fitness-Score für gefundene Schleifenschluss-Kandidaten eines Datensatz von Pose $0$ bis Pose $80$, Posen ohne Kandidaten sind nicht dargestellt.}
+  		 \includegraphics[width=1.0\linewidth]{GTvsGICP}
+  		 \centering \caption{Vergleich einer Registrierung des Datensatzes mittels GICP, basierend auf den initial geschätzten Posen, mit der Ground-Truth.}
   		 \label{fig:Han1Initial}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
     	\centering
-  		\includegraphics[width=.95\linewidth]{GTvsInit}
-  		\centering \caption{Vergrößerung des Bereiches von links, in dem Schleifenschlüsse gefunden und validiert wurden. Dargestellt als grüne horizontale Linie ist die parametrisierte Schranke für Schleifenschlüsse.}
+  		\includegraphics[width=1.0\linewidth]{GTvsThis}
+  		\centering \caption{Vergleich des hier vorgestellten Ansatzes mit der Ground-Truth.}
   		\label{fig:Han1GT}
 	\end{subfigure}
-	\caption{}
-	\label{fig:Windows}
+	\caption{Diese Grafik zeigt einen Vergleich des nur mit GICP registrierten Ergebnisses auf der linken Seite mit dem Ergebnis des hier vorgestellten Ansatzes, der neben einer Vorregistrierung mit GICP zusätzlich Schleifenschlüsse integriert, auf der rechten Seite. Beide Ergebnisse sind jeweils im Vergleich zur genannten Ground-Truth dargestellt. Es ist zu erkennen, dass die Registrierung des Datensatzes mittels GICP, basierend auf den initial geschätzten Posen eine deutliche Verbesserung erzielt, jedoch weiterhin große Abweichung zur Ground-Truth vorliegen. Der hier vorgestellte Ansatz nutzt die durch GICP vorregistrierten Daten und führt zusätzlich eine Optimierung des Graphen mittels Schleifenschlüssen ein. Dies verbessert das Ergebnis unter Betrachtung der Ground-Truth maßgeblich.}
+	\label{fig:Han1This}
 \end{figure}
+
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		 \centering
+  		 \includegraphics[width=1.0\linewidth]{initialVsGIPVsLC}
+  		 \centering \caption{Vergleich des absoluten Fehlers $\varepsilon_{abs}$ zwischen der initialen Schätzung, des Pose-Graphen nach Registrierung mit GICP und dem Ergebnis des hier vorgestellten Ansatzes mit der Ground-Truth.}
+  		 \label{fig:initialVsGIPVsLC}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=1.0\linewidth]{GICPvsLC_error2}
+  		\centering \caption{Vergleich des absoluten Fehlers $\varepsilon_{abs}$ zwischen ddem Pose-Graphen nach Registrierung mit GICP und dem Ergebnis des hier vorgestellten Ansatzes mit der Ground-Truth. Rote vertikale Linien zeigen dabei die Schleifenschlüsse durch die der absolute Fehler um mindestens $10\%$ reduziert wurde. Die absolute Anzahl an Schleifenschlüssen ist deutlich höher.}
+  		\label{fig:GICPvsLC_error2}
+	\end{subfigure}
+	\caption{Diese Grafik vergleicht den absoluten Fehler $\varepsilon_{abs}$ in der Translation zwischen einer Pose $P_i$ mit der zugehörigen Pose $P_i^{GT}$ der Ground-Truth. Zusätzlich zum absoluten Fehler dieses Ansatzes wurde in der rechten Abbildung zusätzlich der absolute Fehler unter Vernachlässigung der z-Achse untersucht. Diese Untersuchung wurde so bereits in \cite{sprickerhof2011heuristic} durchgeführt, da der aufgenommene Datensatz aufgrund der Konfiguration des Sensorsystems bei der Registrierung aus unbekannten Gründen eine Kurvenform in der z-Achse annimmt. Aus diesen Grund wurde an dieser Stelle ebenfalls eine Projektion der Daten auf die $z=0$ Ebene vorgenommen und der entsprechende Fehler verglichen. Dieser ist mit einem durchschnittlichen absoluten Fehler von $1.7m$ deutlich geringer als der finale Fehler ohne die Projektion. Dieser liegt bei $3.7m$.}
+	\label{fig:Han1Error}
+\end{figure}
+
+\subsection{Chemnitzer Oper}
+
+Ein weiterer Datensatz der Universität Osnabrück ist eine Aufnahme des Vorplatzes der Oper in Chemnitz. Grundlage für die Optimierung mit dem hier vorgestellten Ansatz ist eine Initialschätzung des Pose-Graphen mit einer abgewandelten Variante des in \cite{zhang2014loam} vorgestellten SLAM-Ansatzes. Ein Ausschnitt der zur Initialschätzung zugehörigen Punktwolke ist in Abbildung \ref{} dargestellt. Hier wird aufgrund der gekennzeichneten doppelten Wände und Objekte deutlich, dass ein akkumulativer Fehler in der bestimmten Initialschätzung vorliegt. Dieser Fehler soll nun mit Hilfe des hier vorgestellten Ansatzes korrigiert werden. Dazu wird der Pose-Graph wie in Abbildung \ref{fig:Flussdiagramm-Optimization} vorgestellt optimiert. Das Ergebnis dieser Optimierung ist die in Abbildung \ref{} gekennzeichnete Anpassung des Pose-Verlaufs.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		 \centering
+  		 \includegraphics[width=1.0\linewidth]{double_walls_marked}
+  		 \centering \caption{}
+  		 \label{fig:initialVsGIPVsLC}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=1.0\linewidth]{double_walls}
+  		\centering \caption{}
+  		\label{fig:GICPvsLC_error2}
+	\end{subfigure}
+	\caption{Diese Grafik }
+	\label{fig:Han1Error}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		 \centering
+  		 \includegraphics[width=1.0\linewidth]{initialVsGIPVsLC}
+  		 \centering \caption{Vergleich des absoluten Fehlers $\varepsilon_{abs}$ zwischen der initialen Schätzung, des Pose-Graphen nach Registrierung mit GICP und dem Ergebnis des hier vorgestellten Ansatzes mit der Ground-Truth.}
+  		 \label{fig:initialVsGIPVsLC}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=1.0\linewidth]{GICPvsLC_error2}
+  		\centering \caption{Vergleich des absoluten Fehlers $\varepsilon_{abs}$ zwischen ddem Pose-Graphen nach Registrierung mit GICP und dem Ergebnis des hier vorgestellten Ansatzes mit der Ground-Truth. Rote vertikale Linien zeigen dabei die Schleifenschlüsse durch die der absolute Fehler um mindestens $10\%$ reduziert wurde. Die absolute Anzahl an Schleifenschlüssen ist deutlich höher.}
+  		\label{fig:GICPvsLC_error2}
+	\end{subfigure}
+	\caption{Diese Grafik vergleicht den absoluten Fehler $\varepsilon_{abs}$ in der Translation zwischen einer Pose $P_i$ mit der zugehörigen Pose $P_i^{GT}$ der Ground-Truth. Zusätzlich zum absoluten Fehler dieses Ansatzes wurde in der rechten Abbildung zusätzlich der absolute Fehler unter Vernachlässigung der z-Achse untersucht. Diese Untersuchung wurde so bereits in \cite{sprickerhof2011heuristic} durchgeführt, da der aufgenommene Datensatz aufgrund der Konfiguration des Sensorsystems bei der Registrierung aus unbekannten Gründen eine Kurvenform in der z-Achse annimmt. Aus diesen Grund wurde an dieser Stelle ebenfalls eine Projektion der Daten auf die $z=0$ Ebene vorgenommen und der entsprechende Fehler verglichen. Dieser ist mit einem durchschnittlichen absoluten Fehler von $1.7m$ deutlich geringer als der finale Fehler ohne die Projektion. Dieser liegt bei $3.7m$.}
+	\label{fig:Han1Error}
+\end{figure}
+
+\subsection{Campus Universität Osnabrück}
 
 \section{Optimierungen}
 
