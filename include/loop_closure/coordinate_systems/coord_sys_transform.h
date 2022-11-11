@@ -145,6 +145,7 @@ namespace CoordSysTransform
 
             Eigen::Matrix4f mat;
             mat.block<3, 3>(0, 0) = quat.toRotationMatrix();
+            //mat.block<3,3>(0,0) = Eigen::Matrix3f::Identity();
             mat.block<3, 1>(0, 3) = pos_vec;
 
             Eigen::Affine3f affine_trans;
@@ -166,7 +167,8 @@ namespace CoordSysTransform
             // TODO: REMOVE
             //q = Eigen::Quaternionf::Identity();
 
-            mat.block<3,3>(0,0) = q.toRotationMatrix();
+            //mat.block<3,3>(0,0) = q.toRotationMatrix();
+            mat.block<3,3>(0,0) = Eigen::Matrix3f::Identity();
 
             poses.push_back(mat);
         }

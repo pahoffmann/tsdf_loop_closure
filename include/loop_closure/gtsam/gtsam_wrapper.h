@@ -37,6 +37,10 @@ private:
     std::unique_ptr<gtsam::NonlinearFactorGraph> graph;
     LoopClosureParams params;
 
+    // eval
+    int num_line_rejects = 0;
+    int num_range_rejects = 0;
+
     // declare noises for the prior, in between and loop_closure constraints
     // SIEHE:
     // https://gtsam.org/tutorials/intro.html#magicparlabel-65728
@@ -106,6 +110,16 @@ public:
      */
     GTSAMWrapper(LoopClosureParams &input_params);
     ~GTSAMWrapper() = default;
+
+    inline int get_num_line_rejects() const
+    {
+        return num_line_rejects;
+    }
+
+    inline int get_num_range_rejects() const
+    {
+        return num_range_rejects;
+    }
 
     /**
      * @brief adds a prior constraint for the initial pose of the graph

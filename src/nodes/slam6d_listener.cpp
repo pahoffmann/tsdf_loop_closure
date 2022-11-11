@@ -354,8 +354,8 @@ void publish_ground_truth()
             ground_truth->add_pose(tmp);
         }
 
-        auto path_marker = ROSViewhelper::initPathMarker(ground_truth);
-        std::cout << "In the GT marker, there are " << path_marker.points.size() << " points" << std::endl;
+        auto path_marker = type_transform::to_ros_path(ground_truth->getPoses()); // ROSViewhelper::initPathMarker(ground_truth);
+        std::cout << "In the GT marker, there are " << path_marker.poses.size() << " poses" << std::endl;
         ground_truth_path_pub.publish(path_marker);
 
         // broadcast_robot_path(ground_truth, "gt_");
@@ -386,6 +386,34 @@ void partial_update()
     }
 }
 
+void csv_from_path(std::string name, Path *in_path)
+{
+    auto path_object = csv_wrapper_ptr->create_object(name);
+
+    CSVWrapper::CSVRow x_coords;
+    CSVWrapper::CSVRow y_coords;
+    CSVWrapper::CSVRow z_coords;
+    CSVWrapper::CSVRow header;
+
+    int cnt = 0;
+    for(auto pose : in_path->getPoses())
+    {
+        auto translation = pose.pos;
+
+        x_coords.add(std::to_string(translation.x()));
+        y_coords.add(std::to_string(translation.y()));
+        z_coords.add(std::to_string(translation.z()));
+
+        header.add(std::to_string(cnt));
+        cnt++;
+    }
+
+    path_object->add_row(x_coords);
+    path_object->add_row(y_coords);
+    path_object->add_row(z_coords);
+    path_object->add_row(header);
+}
+
 /**
  * @brief callback if the bond from data publisher to the current node is broken
  *
@@ -401,7 +429,15 @@ void clear_and_update_tsdf()
     graph_error->set_header(graph_error_header);
     graph_error->add_row(graph_error_row);
 
+    csv_from_path("ground_truth", ground_truth);
+    csv_from_path("final_path", path);
+
     csv_wrapper_ptr->write_all();
+
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << "Number of rejected Lines: " << gtsam_wrapper_ptr->get_num_line_rejects() << std::endl;
+    std::cout << "Number of rejected Ranges: " << gtsam_wrapper_ptr->get_num_range_rejects() << std::endl;
+    std::cout << "-----------------------------" << std::endl;
 
     std::cout << "[Slam6D_Listener] Cleanup and write new tsdf" << std::endl;
 
@@ -492,6 +528,7 @@ float get_current_graph_error()
 
     return gtsam_wrapper_ptr->get_error(initial);
 }
+
 
 /**
  * @brief handles incoming pointcloud2
@@ -888,7 +925,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         global_scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
 
         // enrich clouds
-        enrich_pointcloud(model_cloud, lc_pair.second.first, 3, 3);
+        enrich_pointcloud(model_cloud, lc_pair.second.first,3, 3);
         enrich_pointcloud(global_model_cloud, lc_pair.second.first, 3, 3);
 
         // transform into the global coord system and display them there.
@@ -1068,7 +1105,7 @@ int main(int argc, char **argv)
 
     path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
-    ground_truth_path_pub = n.advertise<visualization_msgs::Marker>("/ground_truth", 1);
+    ground_truth_path_pub = n.advertise<nav_msgs::Path>("/ground_truth", 1);
     gicp_path_pub = n.advertise<visualization_msgs::Marker>("/gicp_path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
     approx_pcl_pub_cur = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_cur", 1);

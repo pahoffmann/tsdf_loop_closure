@@ -20,6 +20,8 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <loop_closure/util/point.h>
+#include <tf_conversions/tf_eigen.h>
 
 namespace type_transform
 {
@@ -100,11 +102,26 @@ namespace type_transform
     return iso;
   }
 
+  static nav_msgs::Path to_ros_path(std::vector<Pose> poses)
+  {
+    nav_msgs::Path path;
+    path.header.frame_id = "map";
+    path.header.stamp = ros::Time::now();
+
+    for (auto pose : poses)
+    {
+      geometry_msgs::PoseStamped pose_stamped = lc_pose_to_pose_stamped(pose);
+      path.poses.push_back(pose_stamped);
+    }
+
+    return path;
+  }
+
   /**
    * @brief Different way to print a eigen vector: inline
-   * 
-   * @param vec 
-   * @return std::string 
+   *
+   * @param vec
+   * @return std::string
    */
   static std::string inline_string(Eigen::Vector3f vec)
   {
@@ -114,4 +131,5 @@ namespace type_transform
 
     return ret;
   }
+
 }

@@ -13,10 +13,12 @@ Panels:
         - /PointCloud23
         - /PointCloud24
         - /PointCloud25
-        - /Marker6
+        - /Marker5
         - /TF1
         - /PointCloud27
         - /PointCloud28
+        - /Path1
+        - /Path2
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz/Selection
@@ -253,18 +255,10 @@ Visualization Manager:
       Value: false
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /initial_path
-      Name: Marker
-      Namespaces:
-        path: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
       Marker Topic: /lc_candidates
       Name: Marker
       Namespaces:
-        {}
+        lc_detect: true
       Queue Size: 100
       Value: true
     - Class: rviz/TF
@@ -278,7 +272,53 @@ Visualization Manager:
           Value: true
         pose_1:
           Value: true
+        pose_10:
+          Value: true
+        pose_11:
+          Value: true
+        pose_12:
+          Value: true
+        pose_13:
+          Value: true
+        pose_14:
+          Value: true
+        pose_15:
+          Value: true
+        pose_16:
+          Value: true
+        pose_17:
+          Value: true
+        pose_18:
+          Value: true
+        pose_19:
+          Value: true
         pose_2:
+          Value: true
+        pose_20:
+          Value: true
+        pose_21:
+          Value: true
+        pose_22:
+          Value: true
+        pose_23:
+          Value: true
+        pose_24:
+          Value: true
+        pose_25:
+          Value: true
+        pose_3:
+          Value: true
+        pose_4:
+          Value: true
+        pose_5:
+          Value: true
+        pose_6:
+          Value: true
+        pose_7:
+          Value: true
+        pose_8:
+          Value: true
+        pose_9:
           Value: true
         robot:
           Value: true
@@ -294,7 +334,53 @@ Visualization Manager:
             {}
           pose_1:
             {}
+          pose_10:
+            {}
+          pose_11:
+            {}
+          pose_12:
+            {}
+          pose_13:
+            {}
+          pose_14:
+            {}
+          pose_15:
+            {}
+          pose_16:
+            {}
+          pose_17:
+            {}
+          pose_18:
+            {}
+          pose_19:
+            {}
           pose_2:
+            {}
+          pose_20:
+            {}
+          pose_21:
+            {}
+          pose_22:
+            {}
+          pose_23:
+            {}
+          pose_24:
+            {}
+          pose_25:
+            {}
+          pose_3:
+            {}
+          pose_4:
+            {}
+          pose_5:
+            {}
+          pose_6:
+            {}
+          pose_7:
+            {}
+          pose_8:
+            {}
+          pose_9:
             {}
           robot:
             {}
@@ -384,13 +470,53 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Class: rviz/Marker
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 32; 74; 135
       Enabled: true
-      Marker Topic: /ground_truth
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.5
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Queue Size: 10
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /ground_truth
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 239; 41; 41
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.5
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Queue Size: 10
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /initial_path
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -420,7 +546,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 147.96060180664062
+      Distance: 260.7571716308594
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

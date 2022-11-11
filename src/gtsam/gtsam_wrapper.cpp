@@ -184,11 +184,13 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     if (LCRejectors::reject_line_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation))
     {
         std::cout << print_prefix << "LC Rejected (LINE)" << std::endl;
+        num_line_rejects++;
         return false;
     }
     else if (LCRejectors::reject_range_loop_closure_new(path, lc_indices.first, lc_indices.second, final_transformation, params))
     {
         std::cout << print_prefix << "LC Rejected (RANGE New)" << std::endl;
+        num_range_rejects++;
         return false;
     }
     // else if (LCRejectors::reject_range_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation, params))

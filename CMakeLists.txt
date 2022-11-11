@@ -180,7 +180,8 @@ add_executable(transform_coord_sys src/nodes/transform_coord_sys.cpp
                         src/map/local_map.cpp 
                         src/map/attribute_data_model.cpp
                         src/ray_tracer/ray_tracer.cpp
-                        src/path/path.cpp)
+                        src/path/path.cpp
+                        src/util/csv_wrapper.cpp)
 
 add_executable(pcd_hdf5_publisher src/nodes/data_publishers/pcd_hdf5_publisher.cpp 
                         src/util/runtime_evaluator.cpp
