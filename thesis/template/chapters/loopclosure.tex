@@ -147,7 +147,7 @@ Zunächst erfolgt eine Evaluation des Hannover-1 Datensatzes. Abbildung \ref{GTv
 			[scale=0.7]
 			{GTvsInit}
 		\caption
-			[Caption for LOF]{Diese Grafik zeigt die Ground-Truth des Hannover-1 Datensatzes im Vergleich mit der initialen Odometrieschätzung. Es ist ersichtlich, dass die Odometrieschätzung signifikante Fehler aufweist, sodass die Trajektorien sehr unterschiedlich sind. Im Fol}                                                                                                                                     
+			[Caption for LOF]{Diese Grafik zeigt die Ground-Truth des Hannover-1 Datensatzes im Vergleich mit der initialen Odometrieschätzung. Es ist ersichtlich, dass die Odometrieschätzung signifikante Fehler aufweist, sodass die Trajektorien stark divergieren.}                                                                                                                                     
 		\label{GTvsInit}
 \end{figure}
 
@@ -198,50 +198,78 @@ Die Abbildung \ref{fig:Han1Error} zeigt dabei die deutlichen Verbesserungen des 
 
 \subsection{Chemnitzer Oper}
 
-Ein weiterer Datensatz der Universität Osnabrück ist eine Aufnahme des Vorplatzes der Oper in Chemnitz. Grundlage für die Optimierung mit dem hier vorgestellten Ansatz ist eine Initialschätzung des Pose-Graphen mit einer abgewandelten Variante des in \cite{zhang2014loam} vorgestellten SLAM-Ansatzes. Ein Ausschnitt der zur Initialschätzung zugehörigen Punktwolke ist in Abbildung \ref{} dargestellt. Hier wird aufgrund der gekennzeichneten doppelten Wände und Objekte deutlich, dass ein akkumulativer Fehler in der bestimmten Initialschätzung vorliegt. Dieser Fehler soll nun mit Hilfe des hier vorgestellten Ansatzes korrigiert werden. Dazu wird der Pose-Graph wie in Abbildung \ref{fig:Flussdiagramm-Optimization} vorgestellt optimiert. Das Ergebnis dieser Optimierung ist die in Abbildung \ref{} gekennzeichnete Anpassung des Pose-Verlaufs.
+Ein weiterer Datensatz der Universität Osnabrück ist eine Aufnahme des Vorplatzes der Oper in Chemnitz. Grundlage für die Optimierung mit dem hier vorgestellten Ansatz ist eine Initialschätzung des Pose-Graphen mit einer abgewandelten Variante des in \cite{zhang2014loam} vorgestellten SLAM-Ansatzes. Ein Ausschnitt der zur Initialschätzung zugehörigen Punktwolke ist in Abbildung \ref{fig:chemnitz_double_walls} dargestellt. Hier wird aufgrund der gekennzeichneten doppelten Wände und Objekte deutlich, dass ein akkumulativer Fehler in der bestimmten Initialschätzung vorliegt. Dieser Fehler soll nun mit Hilfe des hier vorgestellten Ansatzes korrigiert werden. Dazu wird der Pose-Graph wie in Abbildung \ref{fig:Flussdiagramm-Optimization} vorgestellt optimiert. Das Ergebnis dieser Optimierung ist die in Abbildung \ref{fig:vorplatz_paths_3d} gekennzeichnete Anpassung des Pose-Verlaufs. Die Anpassung der Punktwolke auf Basis des korrigierten Pfades wird durch eine Transformation der zu $P_i$ zugehörigen Punktwolke $C_i$. Die dazu verwendete Transformation ist die Transformation von $P_i$ ins Koordinatensystem der Karte: $T_{P_i \rightarrow MAP}$. Das Ergebnis der Korrektur ist ebenfalls in Abbildung \ref{fig:chemnitz_double_walls} zu erkennen.
 
 \begin{figure}
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		 \centering
-  		 \includegraphics[width=1.0\linewidth]{double_walls_marked}
-  		 \centering \caption{}
-  		 \label{fig:initialVsGIPVsLC}
+  		 \includegraphics[width=1.0\linewidth]{double_walls_marked_white}
+  		 \centering \caption{Punktwolke basierend auf der genannten Initialschätzung der Trajektorie.}
+  		 \label{fig:double_walls_marked}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
     	\centering
   		\includegraphics[width=1.0\linewidth]{no_double_walls_cut}
-  		\centering \caption{}
-  		\label{fig:GICPvsLC_error2}
+  		\centering \caption{Punktwolke basierend auf der mit dem hier vorgestellten Ansatz optimierten Trajektorie.}
+  		\label{fig:no_double_walls_cut}
 	\end{subfigure}
-	\caption{Diese Grafik }
-	\label{fig:Han1Error}
+	\caption{Diese Grafik zeigt einen Vergleich der Punktwolken der Chemnitzer Oper vor und nach der in diesem Ansatz angewandten Korrektur. Zu erkennen ist eine deutliche Verbesserung des Gesamtbildes der Punktwolke durch die Nutzung der Schleifenschlüsse. Doppelte Wände durch akkumulative Fehler konnten nahezu vollständig kompensiert werden.}
+	\label{fig:chemnitz_double_walls}
 \end{figure}
+
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=0.7]
+			{vorplatz_paths_3d}
+		\caption
+			[Caption for LOF]{Grafische Darstellung der Initialschätzung der Trajektorie im Vergleich mit dem korrigierten Pfad. Im linken Teil der Abbildung sind doppelte Objekte und Wände in der Punktwolke gekennzeichnet, die durch einen akkumulativen Fehler im SLAM-Verfahren generiert wurden. Es ist eine deutliche Anpassung der Trajektorie zu beobachten. Diese Anpassung sorgt für die in Abbildung \ref{fig:chemnitz_double_walls} erkennbare Kompensation der Fehlerakkumulation und resultiert in einem signifikant besseren Ergebnis, welches keine erkennbaren doppelten Wände ausweist. Die schräge Ausrichtung des Pfades - und damit zusammenhängend auch der Punktwolke - im Raum beruht auf der schrägen Position des Laserscanners. Zum Zeitpunkt der Aufnahme der Daten wurde dieser leicht schräg auf dem Kopf der Person positioniert, die die Daten aufgenommen hat. Dies gilt ebenfalls für den in Abbildung \ref{fig:physik_paths_3d} dargestellten Verlauf des Pose-Graphen.}                                                                           
+		\label{fig:vorplatz_paths_3d}
+\end{figure}
+
+
+\subsection{Campus Universität Osnabrück}
+
+Dieser Absatz behandelt einen weiteren Datensatz unter identischen Bedingungen wie im vorigen Absatz beschrieben. Bei dem Datensatz handelt es sich um einen Teil des Physikgebäudes der Universität Osnabrück inklusive der Tiefgarage mit Durchgang. Die Evaluation dieses Datensatzes erfolgt entsprechend des vorigen Absatzes und ist in Abbildung \ref{fig:physik_double_walls} und \ref{fig:physik_paths_3d} dargestellt. Zu erkennen ist, dass auch hier eine Kompensation der Fehlerfortpflanzung durch den hier vorgestellten Ansatz erreicht werden konnte.
 
 \begin{figure}
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		 \centering
-  		 \includegraphics[width=1.0\linewidth]{initialVsGIPVsLC}
-  		 \centering \caption{Vergleich des absoluten Fehlers $\varepsilon_{abs}$ zwischen der initialen Schätzung, des Pose-Graphen nach Registrierung mit GICP und dem Ergebnis des hier vorgestellten Ansatzes mit der Ground-Truth.}
-  		 \label{fig:initialVsGIPVsLC}
+  		 \includegraphics[width=1.0\linewidth]{physik_double_marked}
+  		 \centering \caption{Punktwolke basierend auf der Initialschätzung der Trajektorie.}
+  		 \label{fig:physik_double_walls}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
     	\centering
-  		\includegraphics[width=1.0\linewidth]{GICPvsLC_error2}
-  		\centering \caption{Vergleich des absoluten Fehlers $\varepsilon_{abs}$ zwischen ddem Pose-Graphen nach Registrierung mit GICP und dem Ergebnis des hier vorgestellten Ansatzes mit der Ground-Truth. Rote vertikale Linien zeigen dabei die Schleifenschlüsse durch die der absolute Fehler um mindestens $10\%$ reduziert wurde. Die absolute Anzahl an Schleifenschlüssen ist deutlich höher.}
-  		\label{fig:GICPvsLC_error2}
+  		\includegraphics[width=1.0\linewidth]{physik_corrected}
+  		\centering \caption{Punktwolke basierend auf der korrigierten Initialschätzung.}
+  		\label{fig:physik_corrected}
 	\end{subfigure}
-	\caption{Diese Grafik vergleicht den absoluten Fehler $\varepsilon_{abs}$ in der Translation zwischen einer Pose $P_i$ mit der zugehörigen Pose $P_i^{GT}$ der Ground-Truth. Zusätzlich zum absoluten Fehler dieses Ansatzes wurde in der rechten Abbildung zusätzlich der absolute Fehler unter Vernachlässigung der z-Achse untersucht. Diese Untersuchung wurde so bereits in \cite{sprickerhof2011heuristic} durchgeführt, da der aufgenommene Datensatz aufgrund der Konfiguration des Sensorsystems bei der Registrierung aus unbekannten Gründen eine Kurvenform in der z-Achse annimmt. Aus diesen Grund wurde an dieser Stelle ebenfalls eine Projektion der Daten auf die $z=0$ Ebene vorgenommen und der entsprechende Fehler verglichen. Dieser ist mit einem durchschnittlichen absoluten Fehler von $1.7m$ deutlich geringer als der finale Fehler ohne die Projektion. Dieser liegt bei $3.7m$.}
-	\label{fig:Han1Error}
+	\caption{Wie Abbildung \ref{fig:chemnitz_double_walls} zeigt auch diese Abbildung einen Vergleich der Punktwolken vor und nach Korrektur des in diesem Kapitel vorgestellten Algorithmus. Im linken Teil der Abbildung sind doppelte Objekte und Wände in der Punktwolke gekennzeichnet, die durch einen akkumulativen Fehler im SLAM-Verfahren generiert wurden. Auch hier ist eine signifikante Verbesserung der Trajektorie, erkennbar an der kontinuierlichen Punktwolke, die keine doppelten Wände oder Objekte enthält, zu beobachten.}
+	\label{fig:physik_double_walls}
 \end{figure}
 
-\subsection{Campus Universität Osnabrück}
+\begin{figure}
+		\centering
+		\includegraphics
+			[scale=1.0]
+			{physik_paths3d}
+		\caption
+			[Caption for LOF]{Grafische Darstellung der Initialschätzung der Trajektorie im Vergleich mit dem korrigierten Pfad. Es ist eine deutliche Anpassung der Trajektorie zu beobachten. Diese Anpassung sorgt für die in Abbildung \ref{fig:physik_double_walls} erkennbare Kompensation der Fehlerakkumulation und resultiert in einem deutlich besseren Ergebnis, welches keine erkennbaren doppelten Wände ausweist.}                                                                                                                                     
+		\label{fig:physik_paths_3d}
+\end{figure}
 
-\section{Optimierungen}
+
+Die in diesem Kapitel entwickelte Lösung wurde hier zunächst vollständig abgekapselt von der TSDF-Karte betrachtet. Dies wird im nachfolgenden Kapitel nun auf Basis der hier vorgestellten Lösung zur Kompensation von akkumulierten Fehler durch die Integration von Schleifenschlüssen und den Ausführungen aus Kapitel \ref{chapter:association} weiter verfolgt.
+
 
 \improvement{an dieser Stelle könnte noch eine Menge an Abbildungen folgen, die die Ergebnisse in Abhängigkeit von mehreren Ursachen beschreiben}
 \improvement{ggf. auf andere Scan-Matching Verfahren eingehen (ICP, GICP, Teaser++, VGICP)}
+\improvement{Zeitmessungen?}
+
+
 
 
 

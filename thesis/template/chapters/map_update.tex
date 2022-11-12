@@ -1,6 +1,8 @@
 \chapter{Map Update}
 \label{chapter:map_update}
 
+Dieses Kapitel basiert auf den Ausführungen in Kapitel \ref{chapter:association}
+
 An dieser Stelle ist bereits beschrieben, dass das Map-update auf Basis abgespeicherter Punktwolken durchgeführt wird und keine TSDF-Pose Assoziationen verwendet werden
 
 \section{Globales Update}
@@ -10,3 +12,7 @@ An dieser Stelle ist bereits beschrieben, dass das Map-update auf Basis abgespei
 erste Herangehenweise: ähnlich wie bei globalem Update, aber: nur TSDF für Posen löschen, die um einen Abstand X bzw. einen Winkel Y verschoben wurden. Problem: welche Zellen müssen gelöscht werden, wenn Pose X um $\delta x$ verschoben wurde? Erste Idee: Ray-Tracing ausgehend von X, getroffene Zellen löschen, die zu einem Update gehören (TODO: wie definiert man das überhaupt?).
 
 \section{Pseudocode}
+
+\section{Evaluation}
+
+Vergleich zwischen den Laufzeiten der beiden Updates, z.B. anhand Hannover1 DS (Gesamtlaufzeit), Vergleich mit 
