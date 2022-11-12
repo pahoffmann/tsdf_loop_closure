@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  12 NOV 2022 00:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  12 NOV 2022 02:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1791,11 +1791,11 @@ File: pics/double_walls_marked.png Graphic file (type png)
 <use pics/double_walls_marked.png>
 Package pdftex.def Info: pics/double_walls_marked.png  used on input line 207.
 (pdftex.def)             Requested size: 227.62204pt x 146.84372pt.
-<pics/double_walls.png, id=771, 1139.00531pt x 594.72188pt>
-File: pics/double_walls.png Graphic file (type png)
-<use pics/double_walls.png>
-Package pdftex.def Info: pics/double_walls.png  used on input line 213.
-(pdftex.def)             Requested size: 227.62204pt x 118.84244pt.
+<pics/no_double_walls_cut.png, id=771, 564.15768pt x 359.09157pt>
+File: pics/no_double_walls_cut.png Graphic file (type png)
+<use pics/no_double_walls_cut.png>
+Package pdftex.def Info: pics/no_double_walls_cut.png  used on input line 213.
+(pdftex.def)             Requested size: 227.62204pt x 144.88335pt.
 File: pics/initialVsGIPVsLC.png Graphic file (type png)
 <use pics/initialVsGIPVsLC.png>
 Package pdftex.def Info: pics/initialVsGIPVsLC.png  used on input line 225.
@@ -1809,8 +1809,8 @@ Package pdftex.def Info: pics/GICPvsLC_error2.png  used on input line 231.
 LaTeX Warning: Marginpar on page 46 moved.
 
 ) (./chapters/map_update.tex [46 <./pics/initialVsGIPVsLC.png> <./pics/GICPvsLC
-_error2.png>] [47 <./pics/double_walls_marked.png> <./pics/double_walls.png>]
-[48]
+_error2.png>] [47 <./pics/double_walls_marked.png> <./pics/no_double_walls_cut.
+png>] [48]
 Kapitel 6.
 ) (./chapters/ausblick.tex [49
 
@@ -1822,7 +1822,7 @@ Kapitel 7.
 
 ]
 Anhang A.
-<pics/elch.png, id=811, 819.06pt x 561.09625pt>
+<pics/elch.png, id=812, 819.06pt x 561.09625pt>
 File: pics/elch.png Graphic file (type png)
 <use pics/elch.png>
 Package pdftex.def Info: pics/elch.png  used on input line 9.
@@ -1857,8 +1857,8 @@ Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 177.
  ) 
 Here is how much of TeX's memory you used:
  42520 strings out of 483016
- 907725 string characters out of 5961286
- 1363203 words of memory out of 5000000
+ 907774 string characters out of 5961286
+ 1363204 words of memory out of 5000000
  56351 multiletter control sequences out of 15000+600000
  630157 words of font info for 197 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
@@ -1886,9 +1886,9 @@ onts/type1/public/lm/lmsy6.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pf
 b></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/typ
 e1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
 nts/symbols/msbm10.pfb>
-Output written on main.pdf (65 pages, 4846736 bytes).
+Output written on main.pdf (65 pages, 4933832 bytes).
 PDF statistics:
- 998 PDF objects out of 1000 (max. 8388607)
+ 999 PDF objects out of 1000 (max. 8388607)
  809 compressed objects within 9 object streams
  202 named destinations out of 1000 (max. 500000)
  14923 words of extra memory for PDF output out of 17280 (max. 10000000)
