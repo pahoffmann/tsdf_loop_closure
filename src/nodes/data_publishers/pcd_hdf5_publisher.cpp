@@ -8,6 +8,7 @@
 #include <loop_closure/params/loop_closure_params.h>
 #include <loop_closure/util/point.h>
 #include <loop_closure/map/global_map.h>
+#include <loop_closure/util/csv_wrapper.h>
 
 #include <iostream>
 
@@ -43,6 +44,8 @@ ros::Publisher initial_path_pub;
 // create a data bound between the data publisher (this node) and the data subscriber
 std::unique_ptr<bond::Bond> bond_ptr;
 
+std::unique_ptr<CSVWrapper> csv_wrapper_ptr;
+
 // global map used to read positional data
 std::unique_ptr<GlobalMap> map_ptr;
 
@@ -55,6 +58,35 @@ sensor_msgs::PointCloud2 pcl_to_ros(pcl::PointCloud<PointType>::Ptr cloud)
 
     return transformed;
 }
+
+void csv_from_path(std::string name, Path *in_path)
+{
+    auto path_object = csv_wrapper_ptr->create_object(name);
+
+    CSVWrapper::CSVRow x_coords;
+    CSVWrapper::CSVRow y_coords;
+    CSVWrapper::CSVRow z_coords;
+    CSVWrapper::CSVRow header;
+
+    int cnt = 0;
+    for(auto pose : in_path->getPoses())
+    {
+        auto translation = pose.pos;
+
+        x_coords.add(std::to_string(translation.x()));
+        y_coords.add(std::to_string(translation.y()));
+        z_coords.add(std::to_string(translation.z()));
+
+        header.add(std::to_string(cnt));
+        cnt++;
+    }
+
+    path_object->add_row(x_coords);
+    path_object->add_row(y_coords);
+    path_object->add_row(z_coords);
+    path_object->add_row(header);
+}
+
 
 /**
  * @brief converts an eigen 4x4 transform matrix to a ros pose stamped, with the stamp being the current time
@@ -159,6 +191,11 @@ void prepare()
         path->add_pose(pose);
     }
 
+    csv_wrapper_ptr.reset(new CSVWrapper(params.loop_closure.csv_save_path));
+    csv_from_path("initial_path", path);
+    csv_wrapper_ptr->write_all();
+    csv_wrapper_ptr.release();
+
     // boost::filesystem::path directory_name = fs::path("/home/patrick/data/physik_unten/physik_unten");
     boost::filesystem::path directory_name = fs::path("/home/patrick/data/vorplatz/vorplatz_19_10");
 
@@ -246,7 +283,7 @@ void bond_broken_callback()
 {
     std::cout << print_prefix << "Done publishing.." << std::endl;
 
-    bond_ptr.reset();
+    bond_ptr.release();
     exit(EXIT_SUCCESS);
 }
 
@@ -262,7 +299,7 @@ int main(int argc, char **argv)
     cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);
     pose_pub = n.advertise<geometry_msgs::PoseStamped>("/slam6d_pose", 0);
     filename_pub = n.advertise<std_msgs::String>("/slam6d_filename", 0);
-    initial_path_pub = n.advertise<visualization_msgs::Marker>("/initial_path", 0);
+    initial_path_pub = n.advertise<nav_msgs::Path>("/initial_path", 0);
 
     // subscribe to the ready topic
     ros::Subscriber slam6d_listener_ready_sub = n.subscribe("/slam6d_listener_ready", 1, handle_slam6d_listener_ready);
@@ -281,8 +318,8 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        initial_path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::red));
-        //broadcast_robot_path(path);
+        initial_path_pub.publish(type_transform::to_ros_path(path->getPoses()));
+        // broadcast_robot_path(path);
 
         ros::spinOnce();
         r.sleep();

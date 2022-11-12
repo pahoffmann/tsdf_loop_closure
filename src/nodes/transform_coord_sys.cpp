@@ -153,7 +153,7 @@ void publish_next_data()
     }
 
     // testing
-    // if (global_scan_counter > 2)
+    // if (global_scan_counter > 5)
     // {
     //     // all data is published, break the bound and shutdown
 

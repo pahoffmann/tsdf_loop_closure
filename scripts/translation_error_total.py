@@ -11,8 +11,13 @@ if __name__ == '__main__':
 
     df = pd.read_csv("./data/translation_error_total.csv")
     df = df.dropna(axis=1, how='all')
-    df = gp.transpose_by_iteration(df, ["odometry", "gicp + loop-closure", "gicp"])
+    df = gp.transpose_by_iteration(df, ["Odometrie", "GICP + Loop-Closure", "GICP", "xy", "index"])
     #plot_average_error(df, label="lm", n_measurements=5, random=False)
+
+    lc_indices = df["index"]
+    df = df.drop("index", axis=1)
+    df = df.drop("xy", 1)
+
 
     # plot individual plots
     gp.plot_error(df, True, 20)

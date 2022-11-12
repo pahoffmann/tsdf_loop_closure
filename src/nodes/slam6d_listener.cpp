@@ -83,6 +83,7 @@ Path *path;
 Path *optimized_path;
 Path *gicp_path;
 Path *ground_truth;
+Path *initial_path; // holds the initial path
 
 int side_length_xy;
 int side_length_z;
@@ -142,6 +143,7 @@ CSVWrapper::CSVObject *translation_error;
 CSVWrapper::CSVRow translation_header_row;
 CSVWrapper::CSVRow relative_translation_error_row;
 CSVWrapper::CSVRow absolute_translation_error_row;
+CSVWrapper::CSVRow absolute_translation_error_xy_row;
 CSVWrapper::CSVRow loop_closure_at_index_row; // 0: no, 1: yeeeees
 
 // gtsam graph error
@@ -175,6 +177,9 @@ void init_obj()
 
     gicp_path = new Path();
     gicp_path->attach_raytracer(tracer);
+
+    initial_path = new Path();
+    initial_path->attach_raytracer(tracer);
 
     // create evaluator
     evaluator.reset(new Evaluator(path));
@@ -396,7 +401,7 @@ void csv_from_path(std::string name, Path *in_path)
     CSVWrapper::CSVRow header;
 
     int cnt = 0;
-    for(auto pose : in_path->getPoses())
+    for (auto pose : in_path->getPoses())
     {
         auto translation = pose.pos;
 
@@ -414,6 +419,45 @@ void csv_from_path(std::string name, Path *in_path)
     path_object->add_row(header);
 }
 
+void transform_and_save_clouds(bool diff = true)
+{
+    auto save_path = boost::filesystem::path("/home/patrick/data/evaluation/pointdata");
+    size_t n_zero = std::to_string(path->get_length()).length();
+
+    if (!boost::filesystem::exists(save_path))
+    {
+        boost::filesystem::create_directory(save_path);
+    }
+
+    for (int i = 0; i < path->get_length(); i++)
+    {
+        // calc cloud transform
+        auto initial_pose = initial_path->at(i);
+        auto path_pose = path->at(i);
+
+        auto init_trans = initial_pose->getTransformationMatrix();
+        auto path_trans = path_pose->getTransformationMatrix();
+
+        auto transform = getTransformationMatrixBetween(path_trans, init_trans);
+
+        // if we dont take the difference, aka the clouds are not already pretransformed, we simply transform with the current pose
+        if (!diff)
+        {
+            transform = path_trans;
+        }
+
+        pcl::PointCloud<PointType>::Ptr save_cloud;
+        save_cloud.reset(new pcl::PointCloud<PointType>());
+
+        pcl::transformPointCloud(*dataset_clouds[i], *save_cloud, transform);
+
+        std::string filename = std::string(n_zero - std::min(n_zero, std::to_string(i).length()), '0') + std::to_string(i);
+
+        std::cout << "Saving to: " << save_path.string() + "/" + filename + ".pcd" << std::endl;
+        pcl::io::savePCDFile(save_path.string() + "/" + filename + ".pcd", *save_cloud);
+    }
+}
+
 /**
  * @brief callback if the bond from data publisher to the current node is broken
  *
@@ -424,6 +468,7 @@ void clear_and_update_tsdf()
     translation_error->set_header(translation_header_row);
     translation_error->add_row(relative_translation_error_row);
     translation_error->add_row(absolute_translation_error_row);
+    translation_error->add_row(absolute_translation_error_xy_row);
     translation_error->add_row(loop_closure_at_index_row);
 
     graph_error->set_header(graph_error_header);
@@ -433,6 +478,8 @@ void clear_and_update_tsdf()
     csv_from_path("final_path", path);
 
     csv_wrapper_ptr->write_all();
+
+    transform_and_save_clouds(false);
 
     std::cout << "-----------------------------" << std::endl;
     std::cout << "Number of rejected Lines: " << gtsam_wrapper_ptr->get_num_line_rejects() << std::endl;
@@ -529,7 +576,6 @@ float get_current_graph_error()
     return gtsam_wrapper_ptr->get_error(initial);
 }
 
-
 /**
  * @brief handles incoming pointcloud2
  *
@@ -541,6 +587,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     translation_header_row.add(std::to_string(path->get_length()));
     relative_translation_error_row.add(std::to_string(Evaluation::calc_relative_translation_error(path, ground_truth)));
     absolute_translation_error_row.add(std::to_string(Evaluation::calc_absolute_translation_error(path, ground_truth)));
+    absolute_translation_error_xy_row.add(std::to_string(Evaluation::calc_absolute_translation_error(path, ground_truth, true, true)));
 
 #pragma region FUNCTION_VARIABLES
     // message used to show, that the processing of the last message pair is done and the node awaits new data
@@ -584,6 +631,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_pose = Pose(tmp_pose.matrix().cast<float>());
     // input_pose.quat = tmp_quat.cast<float>();
     // input_pose.pos = tmp_point.cast<float>();
+
+    // immediately add to initial path
+    initial_path->add_pose(input_pose);
 
     std::cout << "New Pose with index: " << path->get_length() << ":" << std::endl
               << input_pose << std::endl;
@@ -733,52 +783,52 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
-/*
-#pragma region TSDF_UPDATE
-    // CREATE POINTCLOUD USED FOR TSDF UPDATE
-    pcl::VoxelGrid<PointType> grid;
-    grid.setInputCloud(input_cloud);
-    grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
-    grid.filter(*tsdf_cloud);
+    /*
+    #pragma region TSDF_UPDATE
+        // CREATE POINTCLOUD USED FOR TSDF UPDATE
+        pcl::VoxelGrid<PointType> grid;
+        grid.setInputCloud(input_cloud);
+        grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
+        grid.filter(*tsdf_cloud);
 
-    pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, input_pose_mat);
+        pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, input_pose_mat);
 
-    std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
+        std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
 
-    // transform points to map coordinates
-#pragma omp parallel for schedule(static) default(shared)
-    for (int i = 0; i < tsdf_cloud->size(); ++i)
-    {
-        const auto &cp = (*tsdf_cloud)[i];
-        points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
-    }
+        // transform points to map coordinates
+    #pragma omp parallel for schedule(static) default(shared)
+        for (int i = 0; i < tsdf_cloud->size(); ++i)
+        {
+            const auto &cp = (*tsdf_cloud)[i];
+            points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
+        }
 
-    // Shift
-    Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
+        // Shift
+        Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
 
-    auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
-    Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
-    l_map_half_f *= 0.25f;
-    Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
+        auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
+        Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
+        l_map_half_f *= 0.25f;
+        Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
 
-    std::cout << "Localmap-size / 2: " << std::endl << l_map_half << std::endl;
-    std::cout << "input_3d_pos: " << std::endl << input_3d_pos << std::endl;
+        std::cout << "Localmap-size / 2: " << std::endl << l_map_half << std::endl;
+        std::cout << "input_3d_pos: " << std::endl << input_3d_pos << std::endl;
 
-    if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
-    {
-        local_map_ptr->shift(input_3d_pos);
-    }
+        if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
+        {
+            local_map_ptr->shift(input_3d_pos);
+        }
 
-    Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
-    rot.block<3, 3>(0, 0) = to_int_mat(input_pose_mat).block<3, 3>(0, 0);
-    Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
+        Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
+        rot.block<3, 3>(0, 0) = to_int_mat(input_pose_mat).block<3, 3>(0, 0);
+        Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
 
-    // create TSDF Volume
-    update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
-    local_map_ptr->write_back();
+        // create TSDF Volume
+        update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
+        local_map_ptr->write_back();
 
-#pragma endregion
-*/
+    #pragma endregion
+    */
 
 #pragma region CLOUD_GM_VIS
     auto gm_data = global_map_ptr->get_full_data();
@@ -794,7 +844,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     pcl::toROSMsg(*tsdf_cloud, filtered_ros_cloud);
     tsdf_cloud_pub.publish(filtered_ros_cloud);
 
-    path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::lime));
+    path_pub.publish(type_transform::to_ros_path(path->getPoses()));
     gicp_path_pub.publish(ROSViewhelper::initPathMarker(gicp_path, Colors::ColorNames::teal));
 
 #pragma endregion
@@ -925,7 +975,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         global_scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
 
         // enrich clouds
-        enrich_pointcloud(model_cloud, lc_pair.second.first,3, 3);
+        enrich_pointcloud(model_cloud, lc_pair.second.first, 3, 3);
         enrich_pointcloud(global_model_cloud, lc_pair.second.first, 3, 3);
 
         // transform into the global coord system and display them there.
@@ -1103,7 +1153,7 @@ int main(int argc, char **argv)
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(40), slam6d_cloud_sub, slam6d_pose_sub);
     sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
 
-    path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
+    path_pub = n.advertise<nav_msgs::Path>("/path", 1);
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
     ground_truth_path_pub = n.advertise<nav_msgs::Path>("/ground_truth", 1);
     gicp_path_pub = n.advertise<visualization_msgs::Marker>("/gicp_path", 1);

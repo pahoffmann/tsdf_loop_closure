@@ -6,7 +6,7 @@ namespace Evaluation
 {
     static std::string print_prefix = "[Evaluation] ";
 
-    static float calc_absolute_translation_error(Path *path, Path *ground_truth, bool avg = true)
+    static float calc_absolute_translation_error(Path *path, Path *ground_truth, bool avg = true, bool xy = false)
     {
         float acc_error = 0.0f;
 
@@ -21,6 +21,13 @@ namespace Evaluation
             auto gt_pose = ground_truth->at(i);
 
             Vector3f transl_diff = gt_pose->getTransformationMatrix().block<3, 1>(0, 3) - pose->getTransformationMatrix().block<3, 1>(0, 3);
+
+            // ignore z difference
+            if(xy)
+            {
+                transl_diff.z() = 0;
+            }
+
             Vector3f transl_diff_abs = transl_diff.cwiseAbs();
 
             // std::cout << "Pose: " << std::endl
