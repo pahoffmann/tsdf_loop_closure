@@ -1,9 +1,8 @@
 #include <loop_closure/util/csv_wrapper.h>
 
-CSVWrapper::CSVWrapper(boost::filesystem::path dir, char sep_char)
+CSVWrapper::CSVWrapper(boost::filesystem::path dir, char sep_char) : seperator(sep_char), save_dir(dir)
 {
-    this->seperator = sep_char;
-    this->save_dir = dir;
+    std::cout << "Incoming evaluation location: " << dir.string() << std::endl;
 }
 
 void CSVWrapper::write_all()

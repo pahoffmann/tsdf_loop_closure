@@ -180,8 +180,8 @@ void prepare()
 {
     path = new Path();
 
-    // map_ptr.reset(new GlobalMap("/home/patrick/data/physik_unten/physik_unten.h5"));
-    map_ptr.reset(new GlobalMap("/home/patrick/data/vorplatz/vorplatz.h5"));
+    map_ptr.reset(new GlobalMap("/home/patrick/data/physik_unten/physik_unten.h5"));
+    //map_ptr.reset(new GlobalMap("/home/patrick/data/vorplatz/vorplatz.h5"));
 
     auto poses = map_ptr->get_path();
 
@@ -191,13 +191,13 @@ void prepare()
         path->add_pose(pose);
     }
 
-    csv_wrapper_ptr.reset(new CSVWrapper(params.loop_closure.csv_save_path));
+    csv_wrapper_ptr.reset(new CSVWrapper(params.loop_closure.csv_save_path, ','));
     csv_from_path("initial_path", path);
     csv_wrapper_ptr->write_all();
     csv_wrapper_ptr.release();
 
-    // boost::filesystem::path directory_name = fs::path("/home/patrick/data/physik_unten/physik_unten");
-    boost::filesystem::path directory_name = fs::path("/home/patrick/data/vorplatz/vorplatz_19_10");
+    boost::filesystem::path directory_name = fs::path("/home/patrick/data/physik_unten/physik_unten");
+    // boost::filesystem::path directory_name = fs::path("/home/patrick/data/vorplatz/vorplatz_19_10");
 
     std::cout << "[PCD_HDF5_PUBLISHER] Using dataset in folder: " << directory_name.string() << std::endl;
 
@@ -293,7 +293,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::NodeHandle nh("~");
 
-    params = LoopClosureParams(params);
+    params = LoopClosureParams(nh);
 
     // init publishers
     cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);
