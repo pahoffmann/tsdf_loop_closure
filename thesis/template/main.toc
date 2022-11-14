@@ -37,10 +37,10 @@
 \contentsline {chapter}{\numberline {6}Map Update}{51}{chapter.6}%
 \contentsline {section}{\numberline {6.1}Globales Update}{52}{section.6.1}%
 \contentsline {section}{\numberline {6.2}Partielles Update}{53}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Pseudocode}{54}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Evaluation}{54}{section.6.4}%
-\contentsline {chapter}{\numberline {7}Zusammenfassung und Ausblick}{55}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Zusammenfassung}{55}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Ausblick}{55}{section.7.2}%
-\contentsline {subsection}{\numberline {7.2.1}Optimierungen}{55}{subsection.7.2.1}%
-\contentsline {chapter}{\numberline {A}Anhang}{57}{appendix.A}%
+\contentsline {section}{\numberline {6.3}Pseudocode}{55}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Evaluation}{55}{section.6.4}%
+\contentsline {chapter}{\numberline {7}Zusammenfassung und Ausblick}{57}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Zusammenfassung}{57}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Ausblick}{57}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Optimierungen}{57}{subsection.7.2.1}%
+\contentsline {chapter}{\numberline {A}Anhang}{59}{appendix.A}%
