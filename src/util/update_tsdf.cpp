@@ -55,7 +55,9 @@ void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::V
         {
           continue;
         }
+
         prev = index;
+
         if (!buffer.in_bounds(index.x(), index.y(), index.z()))
         {
           continue;
@@ -78,10 +80,12 @@ void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::V
         {
           weight = WEIGHT_RESOLUTION * (tau + value) / (tau - weight_epsilon);
         }
+        
         if (weight == 0)
         {
           continue;
         }
+
         auto object = TSDFEntry(value, weight);
         int delta_z = dz_per_distance * len / MATRIX_RESOLUTION;
         auto iter_steps = (delta_z * 2) / map_resolution + 1;
@@ -89,7 +93,6 @@ void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::V
         auto lowest = (proj - ((delta_z * interpolation_vector) / MATRIX_RESOLUTION).cast<int>());
         auto mid_index = index;
 
-        // interpolation
         for (auto step = 0; step < iter_steps; ++step)
         {
           index = (lowest + ((step * map_resolution * interpolation_vector) / MATRIX_RESOLUTION).cast<int>()) / map_resolution;
@@ -226,26 +229,7 @@ void reverse_update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const 
           continue;
         }
 
-        // use the distance to the center of the cell, since 'proj' can be anywhere in the cell
-        Eigen::Vector3i target_center = index * map_resolution + Eigen::Vector3i::Constant(map_resolution / 2);
-        int value = (point - target_center).norm();
-        value = std::min(value, tau);
-        if (len > distance)
-        {
-          value = -value;
-        }
-
-        // Calculate the corresponding weight for every TSDF value
-        int weight = WEIGHT_RESOLUTION;
-        if (value < -weight_epsilon)
-        {
-          weight = WEIGHT_RESOLUTION * (tau + value) / (tau - weight_epsilon);
-        }
-        if (weight == 0)
-        {
-          continue;
-        }
-        auto object = TSDFEntry(value, weight);
+        auto object = TSDFEntry(tau, 0);
         int delta_z = dz_per_distance * len / MATRIX_RESOLUTION;
         auto iter_steps = (delta_z * 2) / map_resolution + 1;
         auto mid = delta_z / map_resolution;
@@ -262,15 +246,9 @@ void reverse_update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const 
           }
 
           auto tmp = object;
-
-          // if (mid_index != index)
-          if (step != mid)
-          {
-            tmp.weight(tmp.weight() * -1);
-          }
-
+          
           auto existing = local_values.try_emplace(index, tmp);
-          if (!existing.second && (abs(value) < abs(existing.first->second.value()) || existing.first->second.weight() < 0))
+          if (!existing.second)
           {
             existing.first->second = tmp;
           }
@@ -282,31 +260,31 @@ void reverse_update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const 
 #pragma omp barrier
     for (auto &map_entry : local_values)
     {
-      bool skip = false;
-      for (int i = 0; i < thread_count; i++)
-      {
-        if (i == current_thread)
-        {
-          continue;
-        }
+      // bool skip = false;
+      // for (int i = 0; i < thread_count; i++)
+      // {
+      //   if (i == current_thread)
+      //   {
+      //     continue;
+      //   }
 
-        auto iter = values[i].find(map_entry.first);
-        if (iter != values[i].end() && fabsf(iter->second.value()) < fabsf(map_entry.second.value()))
-        {
-          skip = true;
-          break;
-        }
-      }
-      if (skip)
-      {
-        continue;
-      }
+      //   auto iter = values[i].find(map_entry.first);
+      //   if (iter != values[i].end() && fabsf(iter->second.value()) < fabsf(map_entry.second.value()))
+      //   {
+      //     skip = true;
+      //     break;
+      //   }
+      // }
+      // if (skip)
+      // {
+      //   continue;
+      // }
 
       auto &index = map_entry.first;
 
       auto &entry = buffer.value(index.x(), index.y(), index.z());
 
-      // if both cell already exited, and new value calculated for it -> average da ting
+      // in the reverse update, just reset the found cell, whatever it may be
       if (entry.pose_index() == static_cast<TSDFEntryHW::IndexType>(pose_index))
       {
         entry.value(tau);

@@ -335,4 +335,11 @@ public:
      * @param data 
      */
     void write_chunk(std::string tag, std::vector<TSDFEntry::RawType> data);
+
+    /**
+     * @brief will clean the map
+     * 
+     * @param to_be_cleaned 
+     */
+    void clean_poses(std::vector<bool> to_be_cleaned);
 };

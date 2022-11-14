@@ -233,10 +233,18 @@ public:
 
     /**
      * @brief just a little function, that checks
-     * 
-     * @param pos 
+     *
+     * @param pos
      */
     bool is_fully_occupied(Eigen::Vector3i &pos);
+
+    inline void reset()
+    {
+        data_.clear();
+        // offset_ = size_ / 2;
+    }
+
+    void reload();
 
 private:
     /**

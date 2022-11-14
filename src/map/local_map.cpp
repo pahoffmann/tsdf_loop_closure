@@ -214,7 +214,6 @@ void LocalMap::save_load_area(const Vector3i &bottom_corner, const Vector3i &top
                             else
                             {
                                 value_unchecked(global_pos).raw(chunk[index]);
-                            
                             }
                         }
                     }
@@ -244,4 +243,14 @@ bool LocalMap::is_fully_occupied(Eigen::Vector3i &pos)
     // this function works as a delegate to the global map, it checks wether a shift in the local map to pos 'pos' would result in additional chunks
     // getting generated
     return map_->is_fully_occupied(pos, size_);
+}
+
+void LocalMap::reload()
+{
+    Vector3i start = pos_ - size_ / 2;
+    Vector3i end = pos_ + size_ / 2;
+
+    load_area(start, end);
+
+    return;
 }

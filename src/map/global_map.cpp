@@ -30,6 +30,8 @@ GlobalMap::GlobalMap(const MapParams &input_params)
     params = input_params;
 
     write_meta(params);
+
+    default_chunk_data = std::vector<TSDFEntry::RawType>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, initial_tsdf_value_.raw());
 }
 
 GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight, bool use_attributes)
@@ -1066,4 +1068,56 @@ void GlobalMap::write_chunk(std::string tag, std::vector<TSDFEntry::RawType> dat
         // create new chunk
         auto d = g.createDataSet(tag, data);
     }
+}
+
+void GlobalMap::clean_poses(std::vector<bool> to_be_cleaned)
+{
+    auto chunks = all_chunk_poses();
+
+    auto group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    for (int i = 0; i < chunks.size(); i++)
+    {
+        std::cout << "Cleaning chunk " << i << " of " << chunks.size() << std::endl;
+        auto chunk = chunks[i];
+
+
+        auto chunk_pos = chunk * CHUNK_SIZE;
+
+        auto tag = tag_from_chunk_pos(chunk);
+
+        auto ds = group.getDataSet(tag);
+
+        std::vector<TSDFEntry::RawType> data;
+        ds.read(data);
+
+        if(data == default_chunk_data)
+        {
+            std::cout << "Default chunk skipped" << std::endl;
+            continue;
+        }
+
+        for (int j = 0; j < data.size(); j++)
+        {
+            TSDFEntry tmp_tsdf(data[j]);
+
+            if(tmp_tsdf.pose_index() < 0) continue;
+
+            if(to_be_cleaned[tmp_tsdf.pose_index()])
+            {
+                tmp_tsdf.value(params.tau);
+                tmp_tsdf.weight(0);
+                tmp_tsdf.intersect(0);
+                tmp_tsdf.pose_index(-1);
+            }
+            
+            data[j] = tmp_tsdf.raw();
+        }
+
+        ds.write(data);
+
+        // std::cout << "Finished reading data from chunk " << i << std::endl;
+    }
+
+    active_chunks_.clear();
 }

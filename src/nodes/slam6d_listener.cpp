@@ -783,52 +783,54 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
-    /*
-    #pragma region TSDF_UPDATE
-        // CREATE POINTCLOUD USED FOR TSDF UPDATE
-        pcl::VoxelGrid<PointType> grid;
-        grid.setInputCloud(input_cloud);
-        grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
-        grid.filter(*tsdf_cloud);
+#pragma region TSDF_UPDATE
+    // CREATE POINTCLOUD USED FOR TSDF UPDATE
+    pcl::VoxelGrid<PointType> grid;
+    grid.setInputCloud(input_cloud);
+    grid.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
+    grid.filter(*tsdf_cloud);
 
-        pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, input_pose_mat);
+    pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, input_pose_mat);
 
-        std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
+    std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
 
-        // transform points to map coordinates
-    #pragma omp parallel for schedule(static) default(shared)
-        for (int i = 0; i < tsdf_cloud->size(); ++i)
-        {
-            const auto &cp = (*tsdf_cloud)[i];
-            points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
-        }
+    // transform points to map coordinates
+#pragma omp parallel for schedule(static) default(shared)
+    for (int i = 0; i < tsdf_cloud->size(); ++i)
+    {
+        const auto &cp = (*tsdf_cloud)[i];
+        points_original[i] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
+    }
 
-        // Shift
-        Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
+    // Shift
+    Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
 
-        auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
-        Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
-        l_map_half_f *= 0.25f;
-        Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
+    auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
+    Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
+    l_map_half_f *= 0.25f;
+    Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
 
-        std::cout << "Localmap-size / 2: " << std::endl << l_map_half << std::endl;
-        std::cout << "input_3d_pos: " << std::endl << input_3d_pos << std::endl;
+    std::cout << "Localmap-size / 2: " << std::endl
+              << l_map_half << std::endl;
+    std::cout << "input_3d_pos: " << std::endl
+              << input_3d_pos << std::endl;
 
-        if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
-        {
-            local_map_ptr->shift(input_3d_pos);
-        }
+    // if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
+    // {
+    //     local_map_ptr->shift(input_3d_pos);
+    // }
 
-        Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
-        rot.block<3, 3>(0, 0) = to_int_mat(input_pose_mat).block<3, 3>(0, 0);
-        Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
+    local_map_ptr->shift(input_3d_pos);
 
-        // create TSDF Volume
-        update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
-        local_map_ptr->write_back();
+    Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
+    rot.block<3, 3>(0, 0) = to_int_mat(input_pose_mat).block<3, 3>(0, 0);
+    Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
 
-    #pragma endregion
-    */
+    // create TSDF Volume
+    update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
+    local_map_ptr->write_back();
+
+#pragma endregion
 
 #pragma region CLOUD_GM_VIS
     auto gm_data = global_map_ptr->get_full_data();
@@ -1071,7 +1073,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
 
     // do a partial update of the global map
-    // partial_update();
+    partial_update();
     // reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
 
     // copy values from optimized path back to the path

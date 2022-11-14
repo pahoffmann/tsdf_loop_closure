@@ -846,6 +846,8 @@ namespace ROSViewhelper
             auto real_point = map_to_real(data_pt.first);
             auto tsdf = data_pt.second;
 
+            if(tsdf.weight() < 0) continue;
+
             TSDFEntry::IntersectStatus status = static_cast<TSDFEntry::IntersectStatus>(tsdf.intersect());
 
             if (status == TSDFEntry::IntersectStatus::INT)
