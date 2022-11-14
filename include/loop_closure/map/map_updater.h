@@ -20,6 +20,7 @@
 #include <loop_closure/params/loop_closure_params.h>
 #include <loop_closure/util/update_tsdf.h>
 #include <loop_closure/ray_tracer/ray_tracer.h>
+#include <loop_closure/util/csv_wrapper.h>
 
 #include <boost/filesystem.hpp>
 #include <chrono>
@@ -31,15 +32,15 @@ namespace Map_Updater
 
     /**
      * @brief only update the map for poses, which have been moved at least by transl_delta or rotated at least by rotation_delta
-     * 
-     * @param old_path 
-     * @param new_path 
-     * @param transl_delta 
-     * @param rotation_delta 
-     * @param clouds 
-     * @param global_map_ptr 
-     * @param local_map_ptr 
-     * @param params 
+     *
+     * @param old_path
+     * @param new_path
+     * @param transl_delta
+     * @param rotation_delta
+     * @param clouds
+     * @param global_map_ptr
+     * @param local_map_ptr
+     * @param params
      */
     void partial_map_update(Path *old_path, Path *new_path, float transl_delta, float rotation_delta,
                             std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
@@ -47,12 +48,14 @@ namespace Map_Updater
                             LoopClosureParams &params, RayTracer *tracer);
 
     void partial_map_update_reverse(Path *old_path, Path *new_path, float transl_delta, float rotation_delta,
-                            std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
-                            GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
-                            LoopClosureParams &params);
-
+                                    std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
+                                    GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
+                                    LoopClosureParams &params);
 
     void full_map_update(Path *new_path, std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
-                        GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
-                         LoopClosureParams &params, std::string suffix);
+                         GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
+                         LoopClosureParams &params, std::string suffix,
+                         CSVWrapper::CSVRow &header_row,
+                         CSVWrapper::CSVRow &shift_time,
+                         CSVWrapper::CSVRow &update_time);
 }

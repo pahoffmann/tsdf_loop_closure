@@ -49,15 +49,20 @@ Anhand dieser um die Pose-Indices angereicherten Karte kann nun eine Löschung d
 
 \textbf{Reverse-TSDF-Update}
 
-Der erste hier vorgestellte Ansatz nutzt die in der erweitereten Datenbasis gegebenen Punktwolken $\mathbb{C}$ zur Identifikation und Löschung der Zellen, die einen identischen Index haben, wie die dazu betrachtete Pose $P_i$. Analog zum TSDF-Update werden in diesem Ansatz Rays zwischen der betrachteten Pose $P_i$ und den Punkten der zugehörigen Punktwolke $C_i$ generiert. Identisch zum TSDF-Update werden diese Rays nun abgelaufen und die Zellen bestimmt, die im Normalfall durch das TSDF-Update verändert werden. Dazu gehören auch die interpolierten Zellen. Anstelle die Werte der bestimmten Zellen nun so zu manipulieren wie im TSDF-Update, werden die Werte aller Zellen wie oben beschrieben durch Default-Werte ersetzt. Diese Lösung sorgt für die gewünschte partielle Optimierung der Karte, ist allerdings sehr langsam, da für jede Pose ein Shift der lokalen Karte zur aktuell betrachteten Pose notwendig ist. In vorigen Ausführungen wurde bereits beschrieben, dass die Shifts sehr Zeit-intensive Operationen sind. Aus diesem Grund ist die Anzahl an Shifts auf ein Minimum zu reduzieren. Nach diesem Ansatz sind für $n$ benötigte Karten-Updates $n$ Shifts für die Löschung der Zellen mittels des Reverse-TSDF-Update und $n - 1$ weitere Shifts für das grundlegende TSDF-Update durchzuführen. Ingesamt sind dies $2 \cdot n - 1$ Shifts. Abschnitt \ref{}
+Der erste hier vorgestellte Ansatz nutzt die in der erweitereten Datenbasis gegebenen Punktwolken $\mathbb{C}$ zur Identifikation und Löschung der Zellen, die einen identischen Index haben, wie die dazu betrachtete Pose $P_i$. Analog zum TSDF-Update werden in diesem Ansatz Rays zwischen der betrachteten Pose $P_i$ und den Punkten der zugehörigen Punktwolke $C_i$ generiert. Identisch zum TSDF-Update werden diese Rays nun abgelaufen und die Zellen bestimmt, die im Normalfall durch das TSDF-Update verändert werden. Dazu gehören auch die interpolierten Zellen. Anstelle die Werte der bestimmten Zellen nun so zu manipulieren wie im TSDF-Update, werden die Werte aller Zellen wie oben beschrieben durch Default-Werte ersetzt. Diese Lösung sorgt für die gewünschte partielle Optimierung der Karte, ist allerdings sehr langsam, da für jede Pose ein Shift der lokalen Karte zur aktuell betrachteten Pose notwendig ist. In vorigen Ausführungen wurde bereits beschrieben, dass die Shifts sehr Zeit-intensive Operationen sind. Aus diesem Grund ist die Anzahl an Shifts auf ein Minimum zu reduzieren. Nach diesem Ansatz sind für $n$ benötigte Karten-Updates $n$ Shifts für die Löschung der Zellen mittels des Reverse-TSDF-Update und $n$ weitere Shifts für das grundlegende TSDF-Update durchzuführen. Ingesamt sind dies $2 \cdot n$ Shifts. Besonders bei großen Kartenupdates führt dies zu großen Laufzeiten der Updates. Aus diesem Grund wurde eine weitere Lösung des Problems implementiert, die auf den bisherigen Ausführungen aufbaut. Dies wird im folgenden vorgestellt.
 
+\improvement{Balkendiagramm Laufzeit Update -> Shift vs. restliches Update}
 
 \textbf{Global-Map basiert}
+
+Wie den vorigen Ausführungen zu entnehmen ist, sollte die Anzahl der Map-Shifts möglichst reduziert werden.
 
 
 
 
 Darauf eingehen, dass die Karte nach dem Update nicht identisch zum globalen Update ist, da spezifische Gewichte und Werte im Überlappungsbereich durch einen Wert ersetzt werden, der nicht auf den vonvorigen posen geschriebenen Werten basiert.
+
+Abbildung: Vergleich Global Update vs. partial, zusätzlich: Laufzeit überprüfen anhand reverse vs. global
 
 ----------------------
 WIP

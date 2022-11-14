@@ -439,7 +439,7 @@ void clear_and_update_tsdf()
     local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
     std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
-    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final");
+    //Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final");
 
     // auto marker_data = global_map_ptr->get_full_data();
     // auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
