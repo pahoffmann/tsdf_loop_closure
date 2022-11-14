@@ -33,7 +33,13 @@ Dieses Update sorgt für eine konsistente Karte entsprechend des neuen Pfades, i
 \section{Partielles Update}
 \label{section:partial_update}
 
-Dieser Absatz befasst sich mit einem partiellen Karten-Update der durch Optimierungen am Pose-Graphen betroffenen Teilbereiche der TSDF-Karte. Dazu gilt es zunächst die Teile der Karte zu bestimmten, die ein genanntes Update benötigen.
+Dieser Absatz befasst sich mit einem partiellen Karten-Update der durch Optimierungen am Pose-Graphen betroffenen Teilbereiche der TSDF-Karte. Dazu gilt es zunächst die Teile der Karte zu bestimmten, die ein genanntes Update benötigen. Diese Teile der Karte ergeben sich aus den verschobenen Posen des Pose-Graphen. Jedoch sollte nicht bei jeder Transformation einer Pose ein Update des entsprechenden Kartenbereichs durchgeführt werden. Dazu zählen zum Beispiel Transformationen die nahezu keine Verschiebung der entsprechenden Pose bewirken. Dazu werden an dieser Stelle zwei Schwellen für die minimale Translation $\vec{t_{min}}$ und die minimale Rotation um eine beliebige Achse $rot_{min}$ definiert. Im Anschluss wird für jedes Pose-Paar aus alter Pose $P_i^{old}$ und neuer Pose $P_i^{new}$ nach der Graphen-Optimierung die relative Transformation $T_{P_i^{old} \rightarrow P_i^{new}}$ von $P_i^{old}$ nach $P_i^{new}$ ermittelt. Diese ergibt sich aus:
+
+\begin{myequation}
+T_{P_i^{old} \rightarrow P_i^{new}} = \left( T_{P_i^{new} \rightarrow MAP} \right)^{-1} \cdot T_{P_i^{old} \rightarrow MAP}
+\end{myequation}
+
+Für jede ermittelte relative Transformation wird nun der Translations- und Rotationsanteil mit den zuvor definierten Schwellen $\vec{t_{min}}$ und $rot_{min}$ verglichen. Dazu wird die euklidische Norm der ermittelten relativen Translation berechnet und überprüft ob diese die Schwelle überschreitet. Bei der Rotation genügt es, wenn eine der Rotationskomponenten die definierte Schwelle überschreitet. Ist mindestens eine der Schwellen überschritten ist für dieses Pose-Paar ein Kartenupdate durchzuführen. Die entsprechenden Indices der Paare werden in einem Array gespeichert, das im Anschluss durchlaufen wird. In Kapitel \ref{chapter:association} wurde beschrieben, wie an dieser Stelle anhand der Karte Datenassoziationen zwischen der betrachteten Pose $P_i$ und 
 
 ----------------------
 WIP

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  12 NOV 2022 23:04
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  13 NOV 2022 19:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1815,7 +1815,7 @@ Kapitel 6.
 LaTeX Warning: Reference `chapter:grundlagen' on page 52 undefined on input lin
 e 11.
 
-[52]) (./chapters/ausblick.tex [53] [54]
+[52] [53]) (./chapters/ausblick.tex [54]
 Kapitel 7.
 ) (./chapters/appendix.tex [55
 
@@ -1823,7 +1823,7 @@ Kapitel 7.
 
 ]
 Anhang A.
-<pics/elch.png, id=870, 819.06pt x 561.09625pt>
+<pics/elch.png, id=873, 819.06pt x 561.09625pt>
 File: pics/elch.png Graphic file (type png)
 <use pics/elch.png>
 Package pdftex.def Info: pics/elch.png  used on input line 9.
@@ -1857,8 +1857,8 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 177.
  ) 
 Here is how much of TeX's memory you used:
- 42601 strings out of 483016
- 909638 string characters out of 5961286
+ 42602 strings out of 483016
+ 909652 string characters out of 5961286
  1364200 words of memory out of 5000000
  56419 multiletter control sequences out of 15000+600000
  630240 words of font info for 198 fonts, out of 8000000 for 9000
@@ -1887,10 +1887,10 @@ onts/type1/public/lm/lmsy6.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pf
 b></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/typ
 e1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
 nts/symbols/msbm10.pfb>
-Output written on main.pdf (69 pages, 15131748 bytes).
+Output written on main.pdf (69 pages, 15134318 bytes).
 PDF statistics:
- 1058 PDF objects out of 1200 (max. 8388607)
- 853 compressed objects within 9 object streams
- 213 named destinations out of 1000 (max. 500000)
+ 1060 PDF objects out of 1200 (max. 8388607)
+ 855 compressed objects within 9 object streams
+ 214 named destinations out of 1000 (max. 500000)
  14951 words of extra memory for PDF output out of 17280 (max. 10000000)
 
