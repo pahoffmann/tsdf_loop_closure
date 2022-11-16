@@ -159,6 +159,16 @@ CSVWrapper::CSVRow global_update_time;
 CSVWrapper::CSVRow global_removal_time;
 CSVWrapper::CSVRow global_visualization_time;
 
+// partial map update time measurement
+
+CSVWrapper::CSVObject *partial_map_update_time;
+CSVWrapper::CSVRow partial_map_update_header;
+CSVWrapper::CSVRow partial_shift_time;
+CSVWrapper::CSVRow partial_removal_time;
+CSVWrapper::CSVRow partial_update_time;
+CSVWrapper::CSVRow partial_total_time;
+CSVWrapper::CSVRow partial_visualization_time;
+
 #pragma endregion
 
 /**
@@ -205,6 +215,7 @@ void init_obj()
     translation_error = csv_wrapper_ptr->create_object("translation_error");
     graph_error = csv_wrapper_ptr->create_object("graph_error");
     global_map_update_time = csv_wrapper_ptr->create_object("global_update_time");
+    partial_map_update_time = csv_wrapper_ptr->create_object("partial_update_time");
 }
 
 void fill_optimized_path(gtsam::Values values)
@@ -382,15 +393,24 @@ void partial_update()
     local_map_ptr->write_back();
 
     // updateeee
-    Map_Updater::partial_map_update_reverse(path, optimized_path, params.map.resolution / 1000.0f, 2, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params);
+    Map_Updater::partial_map_update_reverse(path, optimized_path, params.map.resolution / 1000.0f, 2, dataset_clouds,
+                                            global_map_ptr.get(), local_map_ptr.get(), params, true, partial_map_update_header, partial_shift_time,
+                                            partial_removal_time, partial_update_time, partial_total_time);
 
-    // auto ray_tracer_marker = tracer->get_ros_marker();
+    std::chrono::steady_clock::time_point partial_update_vis_time_start = std::chrono::steady_clock::now();
 
     auto marker_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
 
     tsdf_pub.publish(marker);
-    // rays_publisher.publish(ray_tracer_marker);
+    std::chrono::steady_clock::time_point partial_update_vis_time_end = std::chrono::steady_clock::now();
+    float partial_update_vis_time =
+        std::chrono::duration_cast<std::chrono::microseconds>(partial_update_vis_time_end - partial_update_vis_time_start).count() / 1000.0f;
+
+    if (partial_map_update_header.data.size() != partial_visualization_time.data.size())
+    {
+        partial_visualization_time.add(std::to_string(partial_update_vis_time));
+    }
 
     if (bond_ptr->isBroken())
     {
@@ -489,6 +509,13 @@ void clear_and_update_tsdf()
     global_map_update_time->add_row(global_removal_time);
     global_map_update_time->add_row(global_visualization_time);
 
+    partial_map_update_time->set_header(partial_map_update_header);
+    partial_map_update_time->add_row(partial_total_time);
+    partial_map_update_time->add_row(partial_update_time);
+    partial_map_update_time->add_row(partial_removal_time);
+    partial_map_update_time->add_row(partial_shift_time);
+    partial_map_update_time->add_row(partial_visualization_time);
+
     csv_from_path("ground_truth", ground_truth);
     csv_from_path("final_path", path);
 
@@ -510,8 +537,6 @@ void clear_and_update_tsdf()
     // update filename
     auto previous_filename_path = params.map.filename;
     params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + "final").string() + previous_filename_path.extension().string());
-
-    boost::filesystem::remove(previous_filename_path);
 
     // reset pointers
     global_map_ptr.reset(new GlobalMap(params.map));
@@ -791,11 +816,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     pcl::toROSMsg(*input_cloud, input_cloud_tf);
     input_cloud_tf.header.frame_id = "robot";
     input_cloud_pub.publish(input_cloud_tf);
-
-    // publish normals for the input cloud
-    // auto normal_marker = ROSViewhelper::visualize_pcl_normals(input_cloud);
-    // normal_marker.header.frame_id = "robot";
-    // normal_publisher.publish(normal_marker);
 
 #pragma endregion
 
@@ -1089,7 +1109,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
 
     // do a partial update of the global map
-    //partial_update();
+    partial_update();
     // reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
 
     // copy values from optimized path back to the path
@@ -1106,47 +1126,47 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 #pragma endregion
 
     // GLOBAL MAP UPDATE
-    std::chrono::steady_clock::time_point removal_time_start = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point removal_time_start = std::chrono::steady_clock::now();
 
-    map_update_counter++;
-    auto previous_filename_path = params.map.filename;
+    // map_update_counter++;
+    // auto previous_filename_path = params.map.filename;
 
-    // create new map
-    std::string new_stem = previous_filename_path.stem().string();
-    if (map_update_counter == 1)
-    {
-        new_stem += "_" + std::to_string(map_update_counter);
-    }
-    else
-    {
-        new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
-    }
+    // // create new map
+    // std::string new_stem = previous_filename_path.stem().string();
+    // if (map_update_counter == 1)
+    // {
+    //     new_stem += "_" + std::to_string(map_update_counter);
+    // }
+    // else
+    // {
+    //     new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
+    // }
 
-    params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
+    // params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
 
-    // delete old map
-    boost::filesystem::remove(previous_filename_path);
+    // // delete old map
+    // boost::filesystem::remove(previous_filename_path);
 
-    // reset pointers
-    global_map_ptr.reset(new GlobalMap(params.map));
-    local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+    // // reset pointers
+    // global_map_ptr.reset(new GlobalMap(params.map));
+    // local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
-    std::chrono::steady_clock::time_point removal_time_end = std::chrono::steady_clock::now();
-    float removal_time = std::chrono::duration_cast<std::chrono::microseconds>(removal_time_end - removal_time_start).count() / 1000.0f;
+    // std::chrono::steady_clock::time_point removal_time_end = std::chrono::steady_clock::now();
+    // float removal_time = std::chrono::duration_cast<std::chrono::microseconds>(removal_time_end - removal_time_start).count() / 1000.0f;
 
-    Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter),
-                                 global_map_update_header, global_shift_time, global_update_time);
+    // Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter),
+    //                              global_map_update_header, global_shift_time, global_update_time);
 
-    // Visualize Map
-    std::chrono::steady_clock::time_point visualization_time_start = std::chrono::steady_clock::now();
-    gm_data = global_map_ptr->get_full_data();
-    marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    tsdf_pub.publish(marker);
-    std::chrono::steady_clock::time_point visualization_time_end = std::chrono::steady_clock::now();
-    float visualization_time = std::chrono::duration_cast<std::chrono::microseconds>(visualization_time_end - visualization_time_start).count() / 1000.0f;
+    // // Visualize Map
+    // std::chrono::steady_clock::time_point visualization_time_start = std::chrono::steady_clock::now();
+    // gm_data = global_map_ptr->get_full_data();
+    // marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    // tsdf_pub.publish(marker);
+    // std::chrono::steady_clock::time_point visualization_time_end = std::chrono::steady_clock::now();
+    // float visualization_time = std::chrono::duration_cast<std::chrono::microseconds>(visualization_time_end - visualization_time_start).count() / 1000.0f;
 
-    global_removal_time.add(std::to_string(removal_time));
-    global_visualization_time.add(std::to_string(visualization_time));
+    // global_removal_time.add(std::to_string(removal_time));
+    // global_visualization_time.add(std::to_string(visualization_time));
 
     ready_flag_pub.publish(ready_msg);
 }

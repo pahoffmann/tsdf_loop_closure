@@ -5,12 +5,22 @@ namespace Map_Updater
     void partial_map_update_reverse(Path *old_path, Path *new_path, float transl_delta, float rotation_delta,
                                     std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
                                     GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
-                                    LoopClosureParams &params)
+                                    LoopClosureParams &params,
+                                    bool use_global,
+                                    CSVWrapper::CSVRow &header_row,
+                                    CSVWrapper::CSVRow &shift_time,
+                                    CSVWrapper::CSVRow &removal_time,
+                                    CSVWrapper::CSVRow &update_time,
+                                    CSVWrapper::CSVRow &total_time)
     {
+        std::chrono::steady_clock::time_point total_update_time_start = std::chrono::steady_clock::now();
+
         // indicates, wether there needs to be an update for the belonging poses
         std::vector<bool> update_incidences(old_path->get_length(), false);
 
         int num_updates = 0;
+        float shift_one_time = 0.0f;
+        float shift_two_time = 0.0f;
 
         for (int i = 0; i < old_path->get_length(); i++)
         {
@@ -43,78 +53,101 @@ namespace Map_Updater
             }
         }
 
+        // when there is no feasible update, it gets ignored
         if (num_updates == 0)
             return;
 
-        global_map_ptr->clean_poses(update_incidences);
-        local_map_ptr->reload();
-        global_map_ptr->get_full_data();
+        header_row.add(std::to_string(new_path->get_length()));
 
-        // now that we know which poses needs to be updated, we need to clear the map first and update it afterwards
-        // go from last to first because this is the logical approach as this part of the map has been updated most recently
-        //         for (int i = update_incidences.size() - 1; i >= 0; i--)
-        //         {
+        std::cout << "Cleaning " << num_updates << " Pose Associations" << std::endl;
+        if (use_global)
+        {
+            std::chrono::steady_clock::time_point partial_update_removal_time_start = std::chrono::steady_clock::now();
+            global_map_ptr->clean_poses(update_incidences);
+            local_map_ptr->reload();
+            std::chrono::steady_clock::time_point partial_update_removal_time_end = std::chrono::steady_clock::now();
 
-        //             // guard clause
-        //             if (!update_incidences[i])
-        //             {
-        //                 continue;
-        //             }
+            float partial_update_removal_time =
+                std::chrono::duration_cast<std::chrono::microseconds>(partial_update_removal_time_end - partial_update_removal_time_start).count() / 1000.0f;
 
-        //             std::cout << "Clearing pose " << i << std::endl;
+            removal_time.add(std::to_string(partial_update_removal_time));
+        }
+        else
+        {
+            // now that we know which poses needs to be updated, we need to clear the map first and update it afterwards
+            // go from last to first because this is the logical approach as this part of the map has been updated most recently
+            std::chrono::steady_clock::time_point partial_update_removal_time_start = std::chrono::steady_clock::now();
 
-        //             // needs to be deleted and renewed
-        //             auto current_pose_ptr = old_path->at(i);
-        //             auto pose_mat = current_pose_ptr->getTransformationMatrix();
+            for (int i = update_incidences.size() - 1; i >= 0; i--)
+            {
 
-        //             pcl::PointCloud<PointType>::Ptr tsdf_cloud;
-        //             tsdf_cloud.reset(new pcl::PointCloud<PointType>());
-        //             pcl::PointCloud<PointType>::Ptr cur_cloud = clouds[i];
-        //             pcl::copyPointCloud(*cur_cloud, *tsdf_cloud);
+                // guard clause
+                if (!update_incidences[i])
+                {
+                    continue;
+                }
 
-        //             // transform cloud according to new position
-        //             pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, pose_mat);
+                //std::cout << "Clearing pose " << i << std::endl;
 
-        //             // CREATE POINTCLOUD USED FOR TSDF UPDATE
-        //             pcl::VoxelGrid<PointType> sor;
-        //             sor.setInputCloud(tsdf_cloud);
-        //             sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
-        //             sor.filter(*tsdf_cloud.get());
+                // needs to be deleted and renewed
+                auto current_pose_ptr = old_path->at(i);
+                auto pose_mat = current_pose_ptr->getTransformationMatrix();
 
-        //             std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
+                pcl::PointCloud<PointType>::Ptr tsdf_cloud;
+                tsdf_cloud.reset(new pcl::PointCloud<PointType>());
+                pcl::PointCloud<PointType>::Ptr cur_cloud = clouds[i];
+                pcl::copyPointCloud(*cur_cloud, *tsdf_cloud);
 
-        //             // transform points to map coordinates
-        // #pragma omp parallel for schedule(static) default(shared)
-        //             for (int j = 0; j < tsdf_cloud->size(); ++j)
-        //             {
-        //                 const auto &cp = (*tsdf_cloud)[j];
-        //                 points_original[j] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
-        //             }
+                // transform cloud according to new position
+                pcl::transformPointCloud(*tsdf_cloud, *tsdf_cloud, pose_mat);
 
-        //             // Shift
-        //             Vector3i input_3d_pos = real_to_map(pose_mat.block<3, 1>(0, 3));
-        //             local_map_ptr->shift(input_3d_pos);
+                // CREATE POINTCLOUD USED FOR TSDF UPDATE
+                pcl::VoxelGrid<PointType> sor;
+                sor.setInputCloud(tsdf_cloud);
+                sor.setLeafSize(params.map.resolution / 1000.0f, params.map.resolution / 1000.0f, params.map.resolution / 1000.0f);
+                sor.filter(*tsdf_cloud.get());
 
-        //             // auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
-        //             // Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
-        //             // l_map_half_f *= 0.5f;
-        //             // Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
+                std::vector<Eigen::Vector3i> points_original(tsdf_cloud->size());
 
-        //             // if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
-        //             // {
-        //             //     local_map_ptr->shift(input_3d_pos);
-        //             // }
+                // transform points to map coordinates
+#pragma omp parallel for schedule(static) default(shared)
+                for (int j = 0; j < tsdf_cloud->size(); ++j)
+                {
+                    const auto &cp = (*tsdf_cloud)[j];
+                    points_original[j] = Eigen::Vector3i(cp.x * 1000.f, cp.y * 1000.f, cp.z * 1000.f);
+                }
 
-        //             Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
-        //             rot.block<3, 3>(0, 0) = to_int_mat(pose_mat).block<3, 3>(0, 0);
-        //             Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
+                // Shift
+                std::chrono::steady_clock::time_point partial_update_shift_one_time_start = std::chrono::steady_clock::now();
 
-        //             // create TSDF Volume
-        //             reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, i);
+                Vector3i input_3d_pos = real_to_map(pose_mat.block<3, 1>(0, 3));
+                local_map_ptr->shift(input_3d_pos);
+                std::chrono::steady_clock::time_point partial_update_shift_one_time_end = std::chrono::steady_clock::now();
+                shift_one_time +=
+                    std::chrono::duration_cast<std::chrono::microseconds>(partial_update_shift_one_time_end - partial_update_shift_one_time_start).count() / 1000.0f;
 
-        //             // write data back
-        //             local_map_ptr->write_back();
-        //         }
+                Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
+                rot.block<3, 3>(0, 0) = to_int_mat(pose_mat).block<3, 3>(0, 0);
+                Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
+
+                // create TSDF Volume
+                reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, i);
+
+                // write data back
+                local_map_ptr->write_back();
+            }
+
+            std::chrono::steady_clock::time_point partial_update_removal_time_end = std::chrono::steady_clock::now();
+
+            float partial_update_removal_time =
+                std::chrono::duration_cast<std::chrono::microseconds>(partial_update_removal_time_end - partial_update_removal_time_start).count() / 1000.0f;
+
+            removal_time.add(std::to_string(partial_update_removal_time - shift_one_time));
+        }
+        std::cout << "Done Cleaning " << num_updates << " Pose Associations" << std::endl;
+
+
+        std::chrono::steady_clock::time_point partial_update_update_time_start = std::chrono::steady_clock::now();
 
         // iterate again, update map, here start from the front.
         for (int i = 0; i < update_incidences.size(); i++)
@@ -155,18 +188,12 @@ namespace Map_Updater
             }
 
             // Shift
+            std::chrono::steady_clock::time_point partial_update_shift_two_time_start = std::chrono::steady_clock::now();
             Vector3i input_3d_pos = real_to_map(pose_mat.block<3, 1>(0, 3));
             local_map_ptr->shift(input_3d_pos);
-
-            // auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
-            // Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
-            // l_map_half_f *= 0.5f;
-            // Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
-
-            // if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
-            // {
-            //     local_map_ptr->shift(input_3d_pos);
-            // }
+            std::chrono::steady_clock::time_point partial_update_shift_two_time_end = std::chrono::steady_clock::now();
+            shift_two_time +=
+                std::chrono::duration_cast<std::chrono::microseconds>(partial_update_shift_two_time_end - partial_update_shift_two_time_start).count() / 1000.0f;
 
             Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
             rot.block<3, 3>(0, 0) = to_int_mat(pose_mat).block<3, 3>(0, 0);
@@ -178,6 +205,19 @@ namespace Map_Updater
             // write data back
             local_map_ptr->write_back();
         }
+
+        shift_time.add(std::to_string(shift_one_time + shift_two_time));
+
+        std::chrono::steady_clock::time_point partial_update_update_time_end = std::chrono::steady_clock::now();
+            
+        float partial_update_update_time = std::chrono::duration_cast<std::chrono::microseconds>(partial_update_update_time_end - partial_update_update_time_start).count() / 1000.0f;
+        update_time.add(std::to_string(partial_update_update_time - shift_two_time));
+
+        std::chrono::steady_clock::time_point total_update_time_end = std::chrono::steady_clock::now();
+        float total_update_time =
+            std::chrono::duration_cast<std::chrono::microseconds>(total_update_time_end - total_update_time_start).count() / 1000.0f;
+
+        total_time.add(std::to_string(total_update_time));
     }
 
     void partial_map_update(Path *old_path, Path *new_path, float transl_delta, float rotation_delta,
@@ -397,7 +437,7 @@ namespace Map_Updater
 
         update_time.add(std::to_string(update_time_ms - acc_shift_time));
         shift_time.add(std::to_string(acc_shift_time));
-        header_row.add(std::to_string(header_row.data.size()));    
+        header_row.add(std::to_string(new_path->get_length()));
 
         std::cout << print_prefix << "Done updating global and local map" << std::endl;
     }

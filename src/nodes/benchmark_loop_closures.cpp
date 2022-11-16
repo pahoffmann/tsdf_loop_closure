@@ -379,7 +379,7 @@ void partial_update()
     local_map_ptr->write_back();
 
     // updateeee
-    Map_Updater::partial_map_update_reverse(path, optimized_path, params.map.resolution / 1000.0f, 2, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params);
+    //Map_Updater::partial_map_update_reverse(path, optimized_path, params.map.resolution / 1000.0f, 2, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params);
 
     // auto ray_tracer_marker = tracer->get_ros_marker();
 

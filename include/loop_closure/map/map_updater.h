@@ -50,7 +50,13 @@ namespace Map_Updater
     void partial_map_update_reverse(Path *old_path, Path *new_path, float transl_delta, float rotation_delta,
                                     std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
                                     GlobalMap *global_map_ptr, LocalMap *local_map_ptr,
-                                    LoopClosureParams &params);
+                                    LoopClosureParams &params,
+                                    bool use_global,
+                                    CSVWrapper::CSVRow &header_row,
+                                    CSVWrapper::CSVRow &shift_time,
+                                    CSVWrapper::CSVRow &removal_time,
+                                    CSVWrapper::CSVRow &update_time,
+                                    CSVWrapper::CSVRow &total_time);
 
     void full_map_update(Path *new_path, std::vector<pcl::PointCloud<PointType>::Ptr> &clouds,
                          GlobalMap *global_map_ptr, LocalMap *local_map_ptr,

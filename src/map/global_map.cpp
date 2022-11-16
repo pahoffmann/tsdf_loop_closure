@@ -1078,7 +1078,7 @@ void GlobalMap::clean_poses(std::vector<bool> to_be_cleaned)
 
     for (int i = 0; i < chunks.size(); i++)
     {
-        std::cout << "Cleaning chunk " << i << " of " << chunks.size() << std::endl;
+        //std::cout << "Cleaning chunk " << i << " of " << chunks.size() << std::endl;
         auto chunk = chunks[i];
 
 
@@ -1093,7 +1093,7 @@ void GlobalMap::clean_poses(std::vector<bool> to_be_cleaned)
 
         if(data == default_chunk_data)
         {
-            std::cout << "Default chunk skipped" << std::endl;
+            //std::cout << "Default chunk skipped" << std::endl;
             continue;
         }
 
