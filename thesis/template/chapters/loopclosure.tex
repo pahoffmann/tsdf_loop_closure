@@ -1,9 +1,9 @@
-\chapter{Loop Closure}
+\chapter{Schleifenschlüsse}
 \label{chapter:loop_closure}
 
 Dieses Kapitel beschäftigt sich mit der Detektion von Schleifenschlüssen und der damit verbundenen Optimierung der initialen Schätzung einer Trajektorie beziehungsweise eines Pose-Graphen, entlang dessen ein Sensorsystem bewegt wurde. Im Folgenden wird zunächst näher auf den Detektionsschritt eingegangen. Auf Basis dessen wird in den drauf folgenden Abschnitten die in dieser Arbeit verwendete Methode zur Optimierung des Pose-Graphen eruiert.
 
-\section{Detektion}
+\section{Detektion von Schleifenschlüssen}
 
 Dieser Abschnitt befasst sich mit der Detektion von Schleifenschlüssen in einem Pose-Graphen. Die hier vorgestellte Methode kann sowohl in einem inkrementell erweiterten Pose-Grahen, zum Beispiel als zusätzlicher Schritt in einem SLAM Verfahren, als auch in einem Nachbearbeitungsschritt auf einen bereits fertigen Graphen angewandt werden. Die Methode und die Optimierung des Graphen ist dabei zunächst vollständig losgelöst von der TSDF-Karte, die im Anschluss optimiert wird. Mehr dazu in Kapitel \ref{chapter:map_update}. Die vorliegenden initiale Schätzung der Roboter-Trajektorie kann das Ergebnis eines inkrementellen SLAM Ansatzes sein oder lediglich auf Odometrie-Schätzung beruhen.
 
@@ -99,7 +99,7 @@ Der \textbf{Reichweiten-Rejector} basiert auf dem identischen Prinzip wie der zu
 
 Der nachfolgende Abschnitt beschäftigt sich mit der Optimierung des Pose-Graphen auf Basis identifizierter Schleifenschlüsse.
 
-\section{Graphenoptimierung}
+\section{Optimierung des Pose-Graphen}
 
 Für die Optimierung des Pose-Graphen wird in diesem Fall die C++ Bibliothek GTSAM \cite{dellaert2012factor} verwendet. GTSAM implementiert die Fusion von Sensor Daten für Anwendungen im Bereich von Robotik und Computer-Grafik und kommt insbesondere in SLAM-Ansätzen zum Einsatz \cite{dellaert2012factor}. Als unterliegende Datenstruktur für den hier verwendeten Anwendungsfall dient ein Faktorgraph. Faktorgraphen sind grafische Modelle, die sich gut für komplexe Schätzungsprobleme wie SLAM und deren Modellieren eignen. Ein Faktorgraph ist ein bipartiter beziehungsweise paarer Graph, der Beziehungen zwischen zwei Mengen darstellt. Der Graph besteht das Faktoren beziehungsweise \textbf{Graph-Constraints}, die mit der Menge der \textbf{Variablen} verbunden sind. Dabei stellen die Variablen die unbekannten Zufallsvariablen des Schätzproblems dar, während die Faktoren probabilistische Beschränkungen oder Voraussetzungen für diese Variablen darstellen, die aus Messungen wie Odometrie, \textbf{IMU (Intertial Measurement Unit)}-Schätzungen, gesichteten Landmarken oder SLAM-Schätzungen abgeleitet werden \cite{dellaert2012factor}. Im Folgenden sind die Zufallsvariablen des Schätzproblems die gesuchten optimierten Posen des Pose-Graphs. Als Faktoren werden die initialen Pose-Schätzungen verwendet, die durch eine zusätzliche Vorregistrierung mittels GICP verbessert werden, sowie die identifizierten Schleifenschlüsse. GTSAM stellt für diese Faktoren vordefinierte Klassen, die in Tabelle \ref{table:gtsam_faktoren} vorgestellt werden.
 
@@ -132,11 +132,11 @@ In den Faktor-Graph selbst werden beim Durchlauf des Algorithmus lediglich die b
 
 Im Folgenden wird der hier vorgestellte Ansatz auf Basis mehrerer Datensätze evaluiert.
 
-\section{Evaluation}
+\section{Evaluation der Graph-Optimierung}
 
 Dieser Absatz befasst sich mit der Evaluation des zuvor vorgestellten Ansatzes zur Optimierung des Pose-Graphen mittels identifizierter Schleifenschlüsse unter Verwendung der GTSAM Bibliothek \cite{dellaert2012factor}. Wie beschrieben werden zur Evaluation des Ansatzes mehrere Datensätze verwendet, die aus einer Initialschätzung des Pose-Graphen mit einer zu jeder Pose $P_i$ zugehörigen Punktwolke $C_i$, die relativ zum Koordinatensystem der zugehörigen Pose gesehen ist. Zu den verwendete Datensets gehört sowohl der \textbf{Hannover-1} Datensatz der Universität Osnabrück mit zugehöriger Initialschätzung des Pose-Graphen durch Odometrie und einer \textbf{Ground-Truth}, die in \cite{sprickerhof2011heuristic} vorgestellt wird. Die Ground-Truth bezeichnet eine Pose-Historie, die die (näherungsweise) realen Posen enthält, von denen die Daten aufgenommen wurden. Dies erlaubt einen direkten Vergleich der mit diesem Ansatz optimierten Trajektorie mit der Ground-Truth. Zusätzlich wurden im Laufe dieser Arbeit weitere Datensätze aufgenommen. Aus diesen Datensätzen erfolgte zunächst die Bestimmung einer Initialschätzung des Pose-Graphen mit einer überarbeiteten Variante des in \cite{zhang2014loam} vorgestellten SLAM-Ansatzes. Bei einer visuellen Überprüfung der so generierten Initialschätzungen fallen direkt mehrere Fehler wie doppelte Wände auf, die durch eine Fehlerfortpflanzung beim SLAM auftreten. Im Zuge dieser Evaluation soll überprüft werden ob diese Fehler durch diesen Ansatz kompensiert werden können.
 
-\subsection{Hannover 1}
+\subsection{Datensatz: Hannover-1}
 
 \improvement{eingehen auf inkompatible Koordinatensystem-Situation und entsprechend notwendige Transformation}
 
@@ -200,7 +200,7 @@ Die Abbildung \ref{fig:Han1Error} zeigt dabei die deutlichen Verbesserungen des 
 
 Im Folgenden wird der Ansatz auf Basis weiterer Datensätze der Universität Osnabrück validiert.
 
-\subsection{Chemnitzer Oper}
+\subsection{Datensatz: Chemnitzer Oper}
 
 Ein weiterer Datensatz der Universität Osnabrück ist eine Aufnahme des Vorplatzes der Oper in Chemnitz. Grundlage für die Optimierung mit dem hier vorgestellten Ansatz ist eine Initialschätzung des Pose-Graphen mit einer abgewandelten Variante des in \cite{zhang2014loam} vorgestellten SLAM-Ansatzes. Ein Ausschnitt der zur Initialschätzung zugehörigen Punktwolke ist in Abbildung \ref{fig:chemnitz_double_walls} dargestellt. Hier wird aufgrund der gekennzeichneten doppelten Wände und Objekte deutlich, dass ein akkumulativer Fehler in der bestimmten Initialschätzung vorliegt. Dieser Fehler soll nun mit Hilfe des hier vorgestellten Ansatzes korrigiert werden. Dazu wird der Pose-Graph wie in Abbildung \ref{fig:Flussdiagramm-Optimization} vorgestellt optimiert. Das Ergebnis dieser Optimierung ist die in Abbildung \ref{fig:vorplatz_paths_3d} gekennzeichnete Anpassung des Pose-Verlaufs. Die Anpassung der Punktwolke auf Basis des korrigierten Pfades wird durch eine Transformation der zu $P_i$ zugehörigen Punktwolke $C_i$. Die dazu verwendete Transformation ist die Transformation von $P_i$ ins Koordinatensystem der Karte: $T_{P_i \rightarrow MAP}$. Das Ergebnis der Korrektur ist ebenfalls in Abbildung \ref{fig:chemnitz_double_walls} zu erkennen.
 
@@ -233,7 +233,7 @@ Ein weiterer Datensatz der Universität Osnabrück ist eine Aufnahme des Vorplat
 \end{figure}
 
 
-\subsection{Campus Universität Osnabrück}
+\subsection{Datensatz: Campus Universität Osnabrück}
 
 Dieser Absatz behandelt einen weiteren Datensatz unter identischen Bedingungen wie im vorigen Absatz beschrieben. Bei dem Datensatz handelt es sich um einen Teil des Physikgebäudes der Universität Osnabrück inklusive der Tiefgarage mit Durchgang. Die Evaluation dieses Datensatzes erfolgt entsprechend des vorigen Absatzes und ist in Abbildung \ref{fig:physik_double_walls} und \ref{fig:physik_paths_3d} dargestellt. Zu erkennen ist, dass auch hier eine Kompensation der Fehlerfortpflanzung durch den hier vorgestellten Ansatz erreicht werden konnte.
 
