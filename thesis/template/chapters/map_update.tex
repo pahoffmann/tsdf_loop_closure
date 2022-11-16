@@ -92,14 +92,14 @@ Im Folgenden werden die Ergebnisse des partiellen Updates mit denen des globalen
 	\begin{subfigure}{.5\textwidth}
 		 \centering
   		 \includegraphics[width=1.0\linewidth]{HistogramCCphysik128_seaborn_fixed}
-  		 \centering \caption{}
+  		 \centering \caption{Absolute Distanzen näherster Punkte zwischen den aus dem Dreiecksnetzen des partiellen und globalen Update extrahierten Punktwolken.}
   		 \label{fig:HistogramCCphysik128_seaborn}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
     	\centering
-  		\includegraphics[width=1.0\linewidth]{HistogramCCphysik128_seaborn_fixed}
-  		\centering \caption{}
-  		\label{fig:HistogramCCphysik128_seaborn}
+  		\includegraphics[width=1.0\linewidth]{Histogram_point_to_mesh}
+  		\centering \caption{Absolute Distanz zwischen den Punktdaten der Punktwolke des partiellen Updates, extrahiert aus dem zugehörigen Dreiecksnetz und dem Dreiecksnetz des globalen Updates.}
+  		\label{fig:Histogram_point_to_mesh}
 	\end{subfigure}
 	\caption{Die hier dargestellten Histogramme zeigen die Verteilungen der absoluten Distanzen zwischen den vorgestellten Methoden zum Update der TSDF-Karte. Verglichen ist jeweils der partielle Ansatz im Vergleich mit dem globalen Ansatz. Die absoluten Distanzen ergeben sich aus der Identifikation der Distanzen der aus den generierten Dreiecksnetzen extrahierten Punktwolken zu den nächsten Punkten der zu vergleichenden Punktwolke. Bei den Verteilungen handelt es sich nicht um Normalverteilungen, sie ähneln viel mehr einem exponentiellen Abfall. Aus diesem Grund werden an dieser Stelle nicht die Parameter von Normalverteilungen, sondern lediglich der Mittelwert der Verteilungen berechnet, der als rote vertikale Linie in den Abbildungen dargestellt ist. Im linken Teil der Abbildung ist die Verteilung für den in Kapitel \ref{chapter:loop_closure} vorgestellten Datensatz der Universität Osnabrück dargestellt, im rechten Teil der Abbildung die Verteilung für den Hannover-1 Datensatz. Der Mittelwert der linken Verteilung beträgt $35.89mm$ und der der rechten $mm$. Dies macht deutlich, dass zwar ein Unterschied zwischen den Ergebnissen der betrachteten Update-Verfahren besteht, dieser aber im Schnitt deutlich geringer ist, als die in beiden Datensätzen verwendete TSDF-Zellgröße mit einer Seitenlänge von $128mm$. Dabei stellt die Zellgröße den begrenzenden Faktor für die Genauigkeit der Ergebnisse dar.}
 	\label{fig:CloudDifferences}
