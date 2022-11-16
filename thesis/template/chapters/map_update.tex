@@ -84,26 +84,25 @@ In diesem Abschnitt werden die zuvor beschriebenen Ansätze zum Karten-Update er
 	\label{fig:MapUpdateTimes}
 \end{figure}
 	
-Im Folgenden werden die Ergebnisse des partiellen Updates mit denen des globalen Updates durch einen Vergleich der TSDF evaluiert. Dazu wird ein in \cite{HATSDF} implementierter Ansatz zur Rekonstruktion der Oberfläche aus TSDF-Karten in Form eines Dreiecksnetzes verwendet. Dies ergibt sowohl für das globale, als auch für das partielle Update ein Dreiecksnetz bestehend aus \emph{Vertices (Knoten)} und \emph{Faces (Flächen, hier Dreiecksflächen)}. Mit Hilfe der Software CloudCompare \cite{} können die Punktwolken der beiden resultierenden Meshes miteinander verglichen werden.
-
+Im Folgenden werden die Ergebnisse des partiellen Updates mit denen des globalen Updates durch einen Vergleich der TSDF evaluiert. Dazu wird ein in \cite{HATSDF} implementierter Ansatz zur Rekonstruktion der Oberfläche aus TSDF-Karten in Form eines Dreiecksnetzes verwendet. Dies ergibt sowohl für das globale, als auch für das partielle Update ein Dreiecksnetz bestehend aus \emph{Vertices (Knoten)} und \emph{Faces (Flächen, hier Dreiecksflächen)}. Mit Hilfe der Software CloudCompare \cite{cloudcompare} können die Punktwolken der beiden resultierenden Meshes miteinander verglichen werden. Dieser Vergleich ist in Abbildung \ref{fig:CloudDifferences} als Vergleich der berechneten absoluten Distanzen zwischen den Punktwolken dargestellt.
 
 
 \begin{figure}
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		 \centering
-  		 \includegraphics[width=1.0\linewidth]{HistogramCCphysik128_seaborn}
+  		 \includegraphics[width=1.0\linewidth]{HistogramCCphysik128_seaborn_fixed}
   		 \centering \caption{}
   		 \label{fig:HistogramCCphysik128_seaborn}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
     	\centering
-  		\includegraphics[width=1.0\linewidth]{HistogramCCphysik128_seaborn}
+  		\includegraphics[width=1.0\linewidth]{HistogramCCphysik128_seaborn_fixed}
   		\centering \caption{}
   		\label{fig:HistogramCCphysik128_seaborn}
 	\end{subfigure}
-	\caption{Mittelwert: $35.89mm$, Standardabweichung: $54.698$}
-	\label{fig:MapUpdateTimes}
+	\caption{Die hier dargestellten Histogramme zeigen die Verteilungen der absoluten Distanzen zwischen den vorgestellten Methoden zum Update der TSDF-Karte. Verglichen ist jeweils der partielle Ansatz im Vergleich mit dem globalen Ansatz. Die absoluten Distanzen ergeben sich aus der Identifikation der Distanzen der aus den generierten Dreiecksnetzen extrahierten Punktwolken zu den nächsten Punkten der zu vergleichenden Punktwolke. Bei den Verteilungen handelt es sich nicht um Normalverteilungen, sie ähneln viel mehr einem exponentiellen Abfall. Aus diesem Grund werden an dieser Stelle nicht die Parameter von Normalverteilungen, sondern lediglich der Mittelwert der Verteilungen berechnet, der als rote vertikale Linie in den Abbildungen dargestellt ist. Im linken Teil der Abbildung ist die Verteilung für den in Kapitel \ref{chapter:loop_closure} vorgestellten Datensatz der Universität Osnabrück dargestellt, im rechten Teil der Abbildung die Verteilung für den Hannover-1 Datensatz. Der Mittelwert der linken Verteilung beträgt $35.89mm$ und der der rechten $mm$. Dies macht deutlich, dass zwar ein Unterschied zwischen den Ergebnissen der betrachteten Update-Verfahren besteht, dieser aber im Schnitt deutlich geringer ist, als die in beiden Datensätzen verwendete TSDF-Zellgröße mit einer Seitenlänge von $128mm$. Dabei stellt die Zellgröße den begrenzenden Faktor für die Genauigkeit der Ergebnisse dar.}
+	\label{fig:CloudDifferences}
 \end{figure}
 
 

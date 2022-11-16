@@ -19,21 +19,26 @@ if __name__ == '__main__':
     # df[" Class end"] = df[" Class end"].div(1000)
 
     x =  []
-    for i in range(0, 1084):
+    for i in range(0, 1085):
         x = np.concatenate([x, np.repeat((df[" Class start"][i] + (df[" Class end"][i] - df[" Class start"][i]) / 2), df[" Value"][i])])
 
     print(x)
     ax = sns.histplot(x, kde=False, stat="density")
-    plt.xlabel("absolute Distanz[mm]")
-    plt.ylabel("Dichte[%]")
+    plt.xlabel("absolute Distanz [mm]")
+    plt.ylabel("Dichte [%]")
 
+    mean = np.sum(x) / np.size(x)
+
+    print("Mean: " + str(mean))
+    
     mu = 35.89
     sigma = 54.698
     values = np.linspace(mu - 3*sigma, mu + 3*sigma, 100)
-    plt.plot(values, stats.norm.pdf(values, mu, sigma), color="red", label="Gauss-Verteilung")
-    plt.axvline(x = 15, color = 'green', label = '< 50%')
-    plt.axvline(x = 67, color = 'orange', label = '< 80%')
-    plt.axvline(x = 126, color = 'purple', label = '< 95%')
+    #plt.plot(values, stats.norm.pdf(values, mu, sigma), color="red", label="Gauss-Verteilung")
+    # plt.axvline(x = 15, color = 'green', label = '< 50%')
+    # plt.axvline(x = 67, color = 'orange', label = '< 80%')
+    # plt.axvline(x = 126, color = 'purple', label = '< 95%')
+    plt.axvline(x = mu, color = 'red', label = 'Mittelwert')
 
     # calculate the pdf
     # x0, x1 = ax.get_xlim()  # extract the endpoints for the x-axis
