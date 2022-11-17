@@ -217,15 +217,14 @@ Diese Begrenzung sorgt dafür, dass keine Zellen interpoliert werden, die näher
 \section{SLAM}
 \label{section:slam}
 
-Diese Sektion befasst sich mit den Grundlagen von SLAM, stellt heraus welche Varianten von SLAM Verfahren es gibt und wie sich TSDF basierte Verfahren, insbesondere der HATSDF-SLAM Ansatz von Eisoldt et al. \ref{TODO} von diesen unterscheidet.
+Diese Sektion befasst sich mit den Grundlagen von SLAM, stellt heraus welche Varianten von SLAM Verfahren es gibt und wie sich TSDF basierte Verfahren, insbesondere der HATSDF-SLAM Ansatz von Eisoldt et al. \ref{HATSDF} von diesen unterscheidet.
 
-SLAM ist der Prozess der simultanen Generierung einer Karte einer unbekannten Umgebung und der Lokalisierung innerhalb dieser Karte beziehungsweise Umgebung.
-SLAM ist ein \emph{Henne-Ei-Problem}, da auf der einen Seite eine vollständige Karte benötigt um die Pose des Roboters akkurat zu bestimmen, auf der anderen Seite allerdings eine akkurate Posenhistorie benötigt wird um eine gute Karte der Umgebung aufbauen zu können.
-Eine grobe Übersicht über existierende SLAM Verfahren liefert der Stand der Forschung in Kapitel \ref{section:sdf}.
-Im Folgenden werden einige der genannten Verfahren erneut aufgegriffen und erläutert.
+SLAM ist der Prozess der simultanen Generierung einer Karte einer unbekannten Umgebung und der Lokalisierung innerhalb dieser Karte beziehungsweise Umgebung. SLAM ist ein \emph{Henne-Ei-Problem}, da auf der einen Seite eine vollständige Karte benötigt um die Pose des Roboters akkurat zu bestimmen, auf der anderen Seite allerdings eine akkurate Posenhistorie benötigt wird um eine gute Karte der Umgebung aufbauen zu können. Eine grobe Übersicht über existierende SLAM Verfahren liefert der Stand der Forschung in Kapitel \ref{section:sdf}. Im Folgenden werden einige der genannten Verfahren und die darunterliegenden Strukturen erneut aufgegriffen und erläutert.
 Schlussendlich wird erklärt, welche der SLAM Verfahren für diese Masterarbeit von Interesse sind und wie sie genutzt werden.
 
-Der \textbf{Iterative Closest Points (ICP)} Algorithmus nach Besl und McKay \cite{Besl:1992} ist ein Algorithmus zur \textbf{Registrierung} von Punktwolken.
+Grundlage für jeden SLAM-Algorithmus ist eine inkrementell erweiterte Kartenstruktur und die Algorithmik, sich innerhalb der Kartenstruktur auf Basis neuer Daten zu lokalisieren. Im Anschluss erfolgt die Erweiterung der Kartenstruktur unter Nutzung der neuen Daten. Die Lokalisierung innerhalb der Karte auf Basis neuer Daten, wie zum Beispiel einer Initial-Schätzung der Pose im Raum basierend auf Odometrie oder einer Akkumulation von IMU Daten in Kombination mit den zum Zeitpunkt aufgenommenen Umgebungsdaten. Dieser Prozess wird häufig als Registrierung oder Scan-Matching bezeichnet. Einer der bekanntesten Algorithmen dafür ist der \textbf{Iterative Closest Points (ICP)} Algorithmus nach Besl und McKay \cite{Besl:1992}.
+
+---- todo ---
 Als \textbf{Registierung} wird der Prozess der Zusammenführung von Punktwolken bezeichnet, die von unterschiedlichen Orten aus aufgenommen werden. Um Punktwolken möglichst gut zusammenzuführen, wird versucht die aus den Laserscans entstandenen Punktwolken maximal zu überlappen. Dieser Prozess wird auch \textbf{Scan Matching} genannt.
 Beim Scan Matching wird zwischen dem \textbf{Model} und dem \textbf{Scan} unterschieden.
 Als Scan bezeichnet werden die Daten, die an das Model registiert werden sollen.
