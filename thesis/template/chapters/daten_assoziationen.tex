@@ -1,4 +1,4 @@
-\chapter{Datenassoziationen}\label{chapter:association}
+\chapter{Identifikation von Datenassoziationen zum Karten-Update}\label{chapter:association}
 
 Wie in der Einleitung beschrieben, soll in einem ersten Ansatz analysiert werden, ob eine TSDF Karte mit gegebenem initialen Pfad durch die Optimierung des initialen Pfades mittels Schleifenschlüssen verbessert werden kann. Dazu ist im ersten Schritt zu identifizierten, welcher Teil der Karte mit welcher Pose assoziiert ist um bei einer Veränderung der Trajektorie entscheiden zu können, wie die Karte angepasst werden muss. Dies Kapitel befasst sich mit der Generation von Datenassoziationen zwischen den Posen des Pfades und der TSDF-Karte.
 
@@ -15,7 +15,7 @@ Eine Möglichkeit, die gewünschten Daten auf Basis einer gegebenen TSDF Karte z
 Beide Varianten werden im Folgenden beschrieben, evaluiert und miteinander verglichen.
 Zunächst beschreibt der folgende Abschnitt die Serialisierung der Datenassoziation in der HDF5-Datenstruktur.
 
-\section{Serialisierung}
+\section{Serialisierung der Datenassoziationen}
 
 
 Diese Sektion beschreibt, wie identifizierte Assoziationen in der hierarchischen Struktur der HDF5-Datei gespeichert werden, die Daten der TSDF-Karte, sowie die zugehörige Pose-Historie enthält.
@@ -37,7 +37,7 @@ Abbildung \ref{fig:hdf5new} zeigt die neue interne HDF5 Struktur nach dieser Än
 
 Auf Basis dieser Änderungen wird im Folgenden erläutert, wie die zu speichernden Zellen für jede Pose ermittelt werden.
 
-\section{Algorithmen}
+\section{Detektions-Algorithmen}
 
 Diese Sektion stellt die Algorithmen heraus, mit denen beschriebene Assoziationen identifiziert werden können. Die Ergebnisse der Algorithmen werden miteiander verglichen und evaluiert.
 
@@ -221,7 +221,7 @@ Ingesamt ergibt sich der in Abbildung \ref{pseudo:associations} dargestellte Pse
 
 In den folgenden beiden Sektionen werden die Ergebnisse der Assoziationsbestimmung evaluiert und es findet ein Vergleich zwischen den beiden vorgestellten Algorithmen statt.
 
-\subsection{Ergebnisse}
+\subsection{Ergebnisse der Algorithmen}
 \label{section:association_results}
 
 Abbildung \ref{fig:bresenham_vs_raytrace} zeigt eine Gegenüberstellung der Ergebnisse der Evaluationsbestimmung zwischen Bresenham und dem Ray-Tracing Ansatz. Es ist ersichtlich, dass in beiden Figuren sehr ähnliche Ergebnisse erzielt werden konnten. Dies lässt sich auch an dem Prozentsatz der assoziierten Zellen von der Gesamtheit der Zellen kenntlich machen. Hier beträgt der Unterschied zwischen den beiden Ansätzen lediglich $0.23 \%$, die vom Ray-Tracer zusätzlich assoziiert wurden. Dieser Unterschied lässt sich anhand einiger Eigenschaften von Bresenham deutlich machen. Der Algorithmus erlaubt unter gewissen Umständen, das aufeinander folgende Zellen nur an der Ecke miteinander verbunden sind. Dann gilt zum Beispiel  $C_i = (0,0,0)^T$ und $C_{i+1} = (1,1,1)^T$. Dies ist eine der Ursachen die dazu führt, dass grundsätzlich nicht alle Zellen assoziiert werden können. Auch das Ray-Tracing weist ähnliche Probleme aufgrund der Diskretisierung der Schritte auf. Hier können durch die diskreten Schritte Zellen Zellen übersprungen werden, die in einer kontinuierlichen Betrachtungsweise vom Ray getroffen werden. Dieses Problem ist beim Ray-Tracer allerdings vernachlässigbar, solange die Schrittweite identisch zu derer gewählt wird, die beim Update der TSDF-Karte, in welchem nach Kapitel \ref{} ebenfalls ein Ray-Tracing Ansatz gewählt wurde, verwendet wird. Dadurch kann sichergestellt werden, dass Zellen, die beim Update der TSDF-Karte ausgehend von $P_i$ verändert wurden, auch von dem Ray-Tracer zur Datenassoziation getroffen werden. Dies erklärt dementsprechend nicht die restlichen knapp $9\%$ der Zellen, die durch den Ray-Tracer nicht assoziiert werden konnten. Der Prozentsatz variiert je nach verwendetem Datensatz und der Struktur der Daten. Nachfolgender Abschnitt erörtert das Problem der nicht assoziierten Zellen.
@@ -277,7 +277,7 @@ Abbildung \ref{fig:BresenhamVsRayTracing} zeigte eine Gegenüberstellung der Lau
 Der folgende Absatz beschäftigt sich mit der Identifikation von Loop Closures innerhalb dieses ersten Ansatzes.
 
 
-\section{Loop Closure}
+\section{Schleifenschlüsse in der Nachbearbeitung}
 \label{section:ass_lc}
 
 Wie in \ref{section:loop_closure_basics} eingeführt wurde, ist es für die Identifikation von Schleifenschlüssen notwendig zu detektieren, dass der Roboters oder das Systems räumlich gesehen an derselben Pose oder in der Nähe der aktuellen Pose bereits gewesen ist. Dies lässt sich zum Beispiel über eine Distanzheuristik ermitteln. Alle Posen, deren euklidische Distanz zur aktuellen Pose geringer ist als eine festgelegte Schwelle sind Kandidaten für potentielle Schleifenschlüsse, die dann in den Posegraphen, gegeben durch die Posen des Roboters und gegebenenfalls vorige Schleifenschlüsse, eingefügt werden können. Um zu bestimmten, ob einer der ermittelten Schleifenschluss-Kandidaten für einen Schleifenschluss in Frage kommt, muss die Umgebung jeder einzelnen in Frage kommenden Pose gegen die Umgebung der aktuellen Pose verglichen werden. Das Mittel der Wahl ist hier ein Scan-Matching Ansatz wie vorgeschlagen in \cite{lu1997globally,shan2020lio,borrmann2008globally}. Dieser Ansatz basiert allerdings auf räumlichen Punktdaten, die an dieser Stelle nicht vorhanden sind. Die Einzige Repräsentation der Umgebung ist die bereits fertiggestellte TSDF-Kartendarstellung. Aus dieser können allerdings Punktwolken approximiert werden. Grundlage dafür bildet in dieser Arbeit der zuvor entwickelte Ray-Tracer. Dieser wird wie gehabt mit einer beliebigen Auflösung initialisiert und alle Rays werden schrittweise verlängert. Anstelle nun Assoziationen zu ermitteln, wird der erste Schnitt des Ray-Tracers mit einem Nulldurchgang, einem Wechsel von positiven auf negative TSDF-Werte, gesucht. Ist ein solcher gefunden, wird die Ebene zwischen den beiden Voxeln berechnet, die die gesuchte Oberfläche am besten beschreibt. Diese Ebene ergibt sich aus den Positionen der Voxel $\vec{V_i}$ und $\vec{V_j}$, sowie den zugehörigen TSDF-Werten $v_i$ und $v_j$. Die TSDF-Werte bestimmen, wo die Ebene zwischen den beiden Voxeln liegt. Gegeben die Zentren der Voxel $\vec{c_i}$ und $\vec{c_j}$ in globalen Koordinaten, sowie die zugehörigen TSDF-Werte ist die Ebene beschrieben durch einen Ortsvektor $\vec{v_{ij}}$, sowie eine Normale $n_{ij}$. Die beiden Komponenten berechnen sich wie folgt:
@@ -312,7 +312,7 @@ Auf Basis der durch $\vec{v_{ij}}$ und $n_{ij}$ gegebenen Ebene lässt sich nun 
 
 Im nachfolgenden Abschnitt wird auf ein mögliches Kartenupdate unter der Prämisse eines zuvor identifizierten Schleifenschlusses eingegangen und die Ergebnisse eruiert.
 
-\section{Kartenupdate}
+\section{Karten-Update mittels generierter Assoziationen}
 
 Dieser Abschnitt befasst sich mit dem Problem des TSDF-Kartenupdates, gegeben ein initialer Pfad $\mathfrak{P}_{init}$ und ein durch Schleifenschlüsse optimierter Pfad $\mathfrak{P}_{opt}$, sowie eine generierte Karte auf Basis des initialen Pfades. Ziel ist die Erstellung einer optimierten Karte, angepasst an den optimierten Pfad $\mathfrak{P}_{opt}$. Um dieses Ziel zu erreichen müssen Teilbereiche der Karte entsprechend der Veränderungen der Posen verschoben werden. Dazu ist eine Assoziation zwischen Teilen der Karte und den zugehörigen Posen herzustellen. Dieses Problem wurde in den vorigen Abschnitten bereits erörtert. Entsprechend wurde ein Manager implementiert, der die zu bestimmenden Assoziationen verwaltet. Jeder Pose des alten Pfades wird ein HDF5-serialisierbares Assoziations-Objekt zugewiesen. Die Assoziationen selbst werden in einer \textbf{1:N} Beziehung durch Ray-Tracing oder den vorgestellten 3D-Bresenham Ansatz generiert. Dies liefert für jede Position $P_{i} \in \mathfrak{P}_{init}$ eine Menge $M = \left\lbrace C_1, ..., C_N \right\rbrace$, wobei die Anzahl der Assoziationen für jede Position unterschiedlich ist.
 

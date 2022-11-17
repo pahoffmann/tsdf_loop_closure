@@ -84,15 +84,14 @@ In diesem Abschnitt werden die zuvor beschriebenen Ansätze zum Karten-Update er
 	\label{fig:MapUpdateTimes}
 \end{figure}
 	
-Im Folgenden werden die Ergebnisse des partiellen Updates mit denen des globalen Updates durch einen Vergleich der TSDF evaluiert. Dazu wird ein in \cite{HATSDF} implementierter Ansatz zur Rekonstruktion der Oberfläche aus TSDF-Karten in Form eines Dreiecksnetzes verwendet. Dies ergibt sowohl für das globale, als auch für das partielle Update ein Dreiecksnetz bestehend aus \emph{Vertices (Knoten)} und \emph{Faces (Flächen, hier Dreiecksflächen)}. Mit Hilfe der Software CloudCompare \cite{cloudcompare} können die Punktwolken der beiden resultierenden Meshes miteinander verglichen werden. Dieser Vergleich ist in Abbildung \ref{fig:CloudDifferences} als Vergleich der berechneten absoluten Distanzen zwischen den Punktwolken dargestellt.
-
+Im Folgenden werden die Ergebnisse des partiellen Updates mit denen des globalen Updates durch einen Vergleich der TSDF evaluiert. Dazu wird ein in \cite{HATSDF} implementierter Ansatz zur Rekonstruktion der Oberfläche aus TSDF-Karten in Form eines Dreiecksnetzes verwendet. Dies ergibt sowohl für das globale, als auch für das partielle Update ein Dreiecksnetz bestehend aus \emph{Vertices (Knoten)} und \emph{Faces (Flächen, hier Dreiecksflächen)}. Mit Hilfe der Software \emph{CloudCompare} \cite{cloudcompare} können die resultierenden Dreiecksnetze, sowie die durch die \emph{Vertices} gegebenen Punktwolken miteinander verglichen werden. Ziel ist hier die Validierung des vorgestellten Ansatzes zum partiellen Update der Karte. Dazu wird untersucht, wie sehr die Ergebnisse voneinander abweichen, indem ein Vergleich mit der qualitativ optimalen Lösung des globalen Updates hergestellt wird. Dies ist in den Abbildungen \ref{fig:CloudDifferences1} und \ref{fig:CloudDifferences2} anhand unterschiedlicher Datensätze dargestellt.
 
 \begin{figure}
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		 \centering
   		 \includegraphics[width=1.0\linewidth]{HistogramCCphysik128_seaborn_fixed}
-  		 \centering \caption{Absolute Distanzen näherster Punkte zwischen den aus dem Dreiecksnetzen des partiellen und globalen Update extrahierten Punktwolken.}
+  		 \centering \caption{Absolute Distanzen nächster Punkte zwischen den aus dem Dreiecksnetzen des partiellen und globalen Update extrahierten Punktwolken.}
   		 \label{fig:HistogramCCphysik128_seaborn}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
@@ -101,12 +100,32 @@ Im Folgenden werden die Ergebnisse des partiellen Updates mit denen des globalen
   		\centering \caption{Absolute Distanz zwischen den Punktdaten der Punktwolke des partiellen Updates, extrahiert aus dem zugehörigen Dreiecksnetz und dem Dreiecksnetz des globalen Updates.}
   		\label{fig:Histogram_point_to_mesh}
 	\end{subfigure}
-	\caption{Die hier dargestellten Histogramme zeigen die Verteilungen der absoluten Distanzen zwischen den vorgestellten Methoden zum Update der TSDF-Karte. Verglichen ist jeweils der partielle Ansatz im Vergleich mit dem globalen Ansatz. Die absoluten Distanzen ergeben sich aus der Identifikation der Distanzen der aus den generierten Dreiecksnetzen extrahierten Punktwolken zu den nächsten Punkten der zu vergleichenden Punktwolke. Bei den Verteilungen handelt es sich nicht um Normalverteilungen, sie ähneln viel mehr einem exponentiellen Abfall. Aus diesem Grund werden an dieser Stelle nicht die Parameter von Normalverteilungen, sondern lediglich der Mittelwert der Verteilungen berechnet, der als rote vertikale Linie in den Abbildungen dargestellt ist. Im linken Teil der Abbildung ist die Verteilung für den in Kapitel \ref{chapter:loop_closure} vorgestellten Datensatz der Universität Osnabrück dargestellt, im rechten Teil der Abbildung die Verteilung für den Hannover-1 Datensatz. Der Mittelwert der linken Verteilung beträgt $35.89mm$ und der der rechten $mm$. Dies macht deutlich, dass zwar ein Unterschied zwischen den Ergebnissen der betrachteten Update-Verfahren besteht, dieser aber im Schnitt deutlich geringer ist, als die in beiden Datensätzen verwendete TSDF-Zellgröße mit einer Seitenlänge von $128mm$. Dabei stellt die Zellgröße den begrenzenden Faktor für die Genauigkeit der Ergebnisse dar.}
-	\label{fig:CloudDifferences}
+	\caption{Die hier dargestellten Histogramme zeigen die Verteilungen der absoluten Distanzen zwischen den vorgestellten Methoden zum Update der TSDF-Karte unter Verwendung des in Kapitel \ref{chapter:loop_closure} vorgestellten Datensatzes des Campus der Universität Osnabrück. Verglichen wird jeweils der partielle Ansatz im mit dem Globalen. Dazu werden zwei verschiedene Methoden verwendet. Im linken Teil der Abbildung ist eine Verteilung der absoluten Distanzen nächster Nachbarn der Punkte der aus den Dreiecksnetzen resultierenden Punktwolken des partiellen und globalen Updates dargestellt. Im Rechten wird die absolute Distanz der Punkte der Punktwolke des partiellen Updates zu den Flächen des Dreiecksnetzes des globalen Updates in einer Verteilung herausgestellt. Beide Abbildungen stellen den Mittelwert der Verteilung in Form einer vertikalen Linie dar. Im rechten Teil der Abbildung ist zusätzlich eine an den Datensatz angeglichene Normalverteilung zu sehen. Im linken Teil der Abbildung liegt viel mehr ein exponentieller Abfall in der Verteilung vor. Dieser Verlauf gründet sich in den positiven Entfernungswerten zwischen zwei Punkten. Im rechten Teil der Abbildung wird dagegen untersucht, auf welcher Seite der Oberfläche der Karte nach dem globalen Update sich ein Vergleichspunkt befindet. Entsprechend wird hier das Vorzeichen gesetzt. Aus diesem Grund wird für den linken Teil der Abbildung nur der sich ergebende Mittelwert evaluiert, der $35.89mm$ beträgt. Im rechten Teil der Abbildung ergibt sich aus der Normalverteilung ein Erwartungswert von $3.98mm$ und eine Standardabweichung von $60.6mm$. Dies macht deutlich, dass zwar ein Unterschied zwischen den Ergebnissen der betrachteten Update-Verfahren besteht, dieser aber im Schnitt deutlich geringer ist, als die in beiden Datensätzen verwendete TSDF-Zellgröße mit einer Seitenlänge von $128mm$. Dabei stellt die Zellgröße den begrenzenden Faktor für die Genauigkeit der Ergebnisse dar.}
+	\label{fig:CloudDifferences1}
 \end{figure}
 
 
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		 \centering
+  		 \includegraphics[width=1.0\linewidth]{Histogram_point_to_point_hannover}
+  		 \centering \caption{Absolute Distanzen nächster Punkte zwischen den aus dem Dreiecksnetzen des partiellen und globalen Update extrahierten Punktwolken.}
+  		 \label{fig:HistogramCCphysik128_seaborn}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+    	\centering
+  		\includegraphics[width=1.0\linewidth]{Histogram_point_to_mesh_hannover}
+  		\centering \caption{Absolute Distanz zwischen den Punktdaten der Punktwolke des partiellen Updates, extrahiert aus dem zugehörigen Dreiecksnetz und dem Dreiecksnetz des globalen Updates.}
+  		\label{fig:Histogram_point_to_mesh}
+	\end{subfigure}
+	\caption{Die dargestellten Histogramme sind analog zu denen aus Abbildung \ref{fig:CloudDifferences1} generiert, jedoch hier für den Datensatz Hannover-1. Zu erkennen sind größere Abweichungen im Vergleich zur Abbildung \ref{fig:CloudDifferences1}. Dies ist jedoch an dieser Stelle zu erwarten, da der Pose-Graph des Hannover-1 Datensets um ein Vielfaches größer ist, bei deutlich geringerer Punktdichte der Punktwolken. Zusätzlich ist die Anzahl durchgeführter Updates wesentlich höher als beim oben verwendeten Datensatz. Trotz diesen initialen Hürden beträgt der mittlere Abstand nächster Punkte hier nur $114.14mm$ und ist damit weiterhin geringer als die verwendete Zellgröße. Der durchschnittliche Abstand der Punktwolke zum Dreiecksnetz beträgt $39.51mm$ bei einer Standardabweichung von $165.76mm$. Hier streuen die Werte deutlich mehr als im oben betrachteten Datensatz. Ursache hierfür sind ebenfalls die oben genannten Gründe.}
+	\label{fig:CloudDifferences2}
+\end{figure}
 
-Nachfolgendes Kapitel fasst die Ergebnisse der Arbeit zusammen und liefert einen Ausblick über mögliche zukünftige Arbeiten im Themengebiet dieses Projektes.
+\section{Kapitel-Zusammenfassung}
+
+Dieses Kapitel behandelt die Implementation und Konzeption zwei distinkter Verfahren zum Update der TSDF-Karte. Dies ist zum Einen das globale Update und zum anderen zwei verschiedene Versionen des partiellen Updates, wobei eine Version bei identischem Ergebnis wesentlich weniger Zeit in Anspruch nimmt, indem sie die Abstraktion der lokalen Karte umgeht. Ein Benchmark zwischen den Laufzeiten der Algorithmen stellt die Laufzeit-Optimierung des partiellen Updates heraus, welches für diesen Datensatz nur $15\%$ der Zeit des globalen Updates benötigt. Bei einem qualitativen Vergleich zwischen  dem globalen und partiellen Update konnten leichte Abweichungen des partiellen Updates, abhängig von den Eigenschaften der Datensätze wie der Länge des Pose-Graphen, der gegebenen Punktdichte, sowie -- damit verbunden -- einer schlechten initialen Schätzung, identifiziert werden. Diese sind in den meisten Fälle allerdings geringer als die Größe der Zellen, die der begrenzende Faktor für die Genauigkeit der Karte ist.
+Nachfolgendes Kapitel fasst die Gesamtergebnisse der Arbeit zusammen und liefert einen Ausblick über mögliche zukünftige Arbeiten im Themengebiet dieses Projektes.
 
 
