@@ -50,7 +50,7 @@ Abbildung \ref{fig:robot_tf} zeigt ein Beispiel für einen Roboter mit mehreren 
 \begin{figure}
 		\centering
 		\includegraphics
-			[scale=0.35]
+			[scale=0.28]
 			{robot_tf}
 		\caption
 			[Caption for LOF]{Schematische Darstellung eines Roboters und dessen beweglicher Teile. Die Ausrichtung der jeweiligen Gelenke wird mit einem lokalen Koordinatensystem beschrieben. Die globale Position einzelner Teile kann durch eine Verkettung der relativen Transformation in Richtung der Wurzel des Baumes bestimmt werden.
@@ -74,10 +74,10 @@ Eine Koordinatensystemtransformation beschreibt die Differenz zwischen zwei unte
 Zur Berechnung dieser Transformation zwischen zwei beliebigen Koordinatensystem $C_1$ und $C_2$ wird die absolute Translation und Rotation beider Koordinatensysteme zum Ursrungskoordinatensystem, wie zum Beispiel den Urpsrung einer Umgebungskarte, benötigt.
 Durch diese Rotations und Translationskomponenten beschreibt sich die absolute Position und Rotation der Koordinatensysteme im Raum aus Sicht des Ursprungskoordinatensystems $C_{MAP}$. Diese absolute Position und Rotation ist die Transformation von den jeweiligen Koordinatensystemen ins Urpsrungskoordinatensystem.
 
-Es existieren diverse Darstellungsweisen für Koodinatensystemtransformationen. Die intuitivste Weise der Darstellung ist die Darstellung als Vektor. In folgendem ist die Transformation vom Koordinatensystem $C_X$ ins Koordinatensystem $C_{MAP}$ dargestellt. Die Variablen $t_i$ bezeichnen dabei die Translationskomponenten und die Variablen $r_i$ die Rotationskomponenten um die jeweiligen Achsen. 
+Es existieren diverse Darstellungsweisen für Koodinatensystemtransformationen. Eine mögliche Darstellung ist die als Vektor. In folgendem ist die Transformation vom Koordinatensystem $C_X$ ins Koordinatensystem $C_{MAP}$ dargestellt. Die Variablen $t_i$ bezeichnen dabei die Translationskomponenten und die Variablen $r_i$ die Rotationskomponenten um die jeweiligen Achsen. 
 
 \begin{myequation}
-T_{C_X \rightarrow C_{MAP}} = \colvec{t_x\\t_y\\t_z\\r_x\\r_y\\r_z}
+T_{C_X \rightarrow C_{MAP}} = \left( t_x,t_y,t_z,r_x,r_y,r_z \right)^T
 \end{myequation}
 
 Neben der Vektordarstellung kann eine Transformation zusätzlich als eine $4x4$ Matrix dargstellt werden.

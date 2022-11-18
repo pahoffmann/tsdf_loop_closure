@@ -11,8 +11,8 @@
 \contentsline {subsubsection}{Pfad}{7}{section*.4}%
 \contentsline {subsection}{\numberline {3.1.2}Koordinatensysteme}{7}{subsection.3.1.2}%
 \contentsline {subsubsection}{Transformationen}{8}{section*.8}%
-\contentsline {section}{\numberline {3.2}TSDF}{11}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}TSDF-Karte}{13}{subsection.3.2.1}%
+\contentsline {section}{\numberline {3.2}TSDF}{10}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}TSDF-Karte}{12}{subsection.3.2.1}%
 \contentsline {subsection}{\numberline {3.2.2}TSDF-Update}{14}{subsection.3.2.2}%
 \contentsline {section}{\numberline {3.3}SLAM}{16}{section.3.3}%
 \contentsline {chapter}{\numberline {4}Identifikation von Datenassoziationen zum Karten-Update}{19}{chapter.4}%
@@ -41,6 +41,6 @@
 \contentsline {section}{\numberline {6.4}Kapitel-Zusammenfassung}{58}{section.6.4}%
 \contentsline {chapter}{\numberline {7}Zusammenfassung und Ausblick}{63}{chapter.7}%
 \contentsline {section}{\numberline {7.1}Zusammenfassung}{63}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Ausblick}{63}{section.7.2}%
-\contentsline {subsection}{\numberline {7.2.1}Optimierungen}{63}{subsection.7.2.1}%
-\contentsline {chapter}{\numberline {A}Anhang}{65}{appendix.A}%
+\contentsline {section}{\numberline {7.2}Ausblick}{65}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Optimierungen}{65}{subsection.7.2.1}%
+\contentsline {chapter}{\numberline {A}Anhang}{67}{appendix.A}%

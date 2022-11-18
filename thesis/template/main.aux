@@ -101,42 +101,42 @@
 \newlabel{section:transformationen}{{3.1.2}{8}{Transformationen}{section*.8}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces Caption for LOF}}{9}{figure.caption.7}\protected@file@percent }
 \newlabel{fig:robot_tf}{{3.2}{9}{Caption for LOF}{figure.caption.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.3}{\ignorespaces Caption for LOF}}{10}{figure.caption.9}\protected@file@percent }
-\newlabel{fig:transformation}{{3.3}{10}{Caption for LOF}{figure.caption.9}{}}
 \citation{Besl:1992}
 \citation{segal2009generalized}
 \citation{werner2014truncated}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.3}{\ignorespaces Caption for LOF}}{10}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:transformation}{{3.3}{10}{Caption for LOF}{figure.caption.9}{}}
+\newlabel{equation:transformation}{{3.3}{10}{Transformationen}{equation.3.1.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}TSDF}{10}{section.3.2}\protected@file@percent }
+\newlabel{section:tsdf}{{3.2}{10}{TSDF}{section.3.2}{}}
 \citation{HATSDF}
-\newlabel{equation:transformation}{{3.3}{11}{Transformationen}{equation.3.1.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.2}TSDF}{11}{section.3.2}\protected@file@percent }
-\newlabel{section:tsdf}{{3.2}{11}{TSDF}{section.3.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.4}{\ignorespaces Caption for LOF}}{11}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:tsdf}{{3.4}{11}{Caption for LOF}{figure.caption.10}{}}
 \citation{whelan2012kintinuous,HATSDF}
 \citation{lorensen_marching_1987}
 \citation{HATSDF}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.4}{\ignorespaces Caption for LOF}}{12}{figure.caption.10}\protected@file@percent }
-\newlabel{fig:tsdf}{{3.4}{12}{Caption for LOF}{figure.caption.10}{}}
 \citation{HATSDF}
 \citation{HATSDF}
 \citation{HATSDF}
 \citation{hdf5}
 \citation{HATSDF}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}TSDF-Karte}{12}{subsection.3.2.1}\protected@file@percent }
+\newlabel{section:tsdf_map}{{3.2.1}{12}{TSDF-Karte}{subsection.3.2.1}{}}
 \citation{HATSDF,Canelhas2017TruncatedSD}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}TSDF-Karte}{13}{subsection.3.2.1}\protected@file@percent }
-\newlabel{section:tsdf_map}{{3.2.1}{13}{TSDF-Karte}{subsection.3.2.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.5}{\ignorespaces Caption for LOF}}{14}{figure.caption.11}\protected@file@percent }
-\newlabel{fig:HDF5old}{{3.5}{14}{Caption for LOF}{figure.caption.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.5}{\ignorespaces Caption for LOF}}{13}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:HDF5old}{{3.5}{13}{Caption for LOF}{figure.caption.11}{}}
+\citation{HATSDF,Canelhas2017TruncatedSD}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2.2}TSDF-Update}{14}{subsection.3.2.2}\protected@file@percent }
 \newlabel{section:tsdf_update}{{3.2.2}{14}{TSDF-Update}{subsection.3.2.2}{}}
-\citation{HATSDF,Canelhas2017TruncatedSD}
 \citation{HATSDF}
 \citation{Besl:1992}
+\citation{segal2009generalized}
 \@writefile{toc}{\contentsline {section}{\numberline {3.3}SLAM}{16}{section.3.3}\protected@file@percent }
 \newlabel{section:slam}{{3.3}{16}{SLAM}{section.3.3}{}}
-\citation{segal2009generalized}
 \@writefile{tdo}{\contentsline {todo}{\color@fb@x {}{red}{}{red!25}{\leavevmode {\color  {red!25}o}}\ Einzelne Verfahren näher beschreiben, erklären welche Bibiloheken verwendet werden}{17}{section*.12}\protected@file@percent }
-\pgfsyspdfmark {pgfid16}{4040140}{16870070}
-\pgfsyspdfmark {pgfid19}{36681343}{16773784}
-\pgfsyspdfmark {pgfid20}{38646181}{16638343}
+\pgfsyspdfmark {pgfid16}{4040140}{31576355}
+\pgfsyspdfmark {pgfid19}{36681343}{31480069}
+\pgfsyspdfmark {pgfid20}{38646181}{31344628}
 \citation{HATSDF}
 \citation{HATSDF}
 \citation{HATSDF}
@@ -353,13 +353,15 @@
 \newlabel{sub@fig:Histogram_point_to_mesh}{{b}{62}{Absolute Distanz zwischen den Punktdaten der Punktwolke des partiellen Updates, extrahiert aus dem zugehörigen Dreiecksnetz und dem Dreiecksnetz des globalen Updates.\relax }{figure.caption.47}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces Die dargestellten Histogramme sind analog zu denen aus Abbildung \ref  {fig:CloudDifferences1} generiert, jedoch hier für den Datensatz Hannover-1. Zu erkennen sind größere Abweichungen im Vergleich zur Abbildung \ref  {fig:CloudDifferences1}. Dies ist jedoch an dieser Stelle zu erwarten, da der Pose-Graph des Hannover-1 Datensets um ein Vielfaches größer ist, bei deutlich geringerer Punktdichte der Punktwolken. Zusätzlich ist die Anzahl durchgeführter Updates wesentlich höher als beim oben verwendeten Datensatz. Trotz diesen initialen Hürden beträgt der mittlere Abstand nächster Punkte hier nur $114.14mm$ und ist damit weiterhin geringer als die verwendete Zellgröße. Der durchschnittliche Abstand der Punktwolke zum Dreiecksnetz beträgt $39.51mm$ bei einer Standardabweichung von $165.76mm$. Hier streuen die Werte deutlich mehr als im oben betrachteten Datensatz. Ursache hierfür sind ebenfalls die oben genannten Gründe.\relax }}{62}{figure.caption.47}\protected@file@percent }
 \newlabel{fig:CloudDifferences2}{{6.3}{62}{Die dargestellten Histogramme sind analog zu denen aus Abbildung \ref {fig:CloudDifferences1} generiert, jedoch hier für den Datensatz Hannover-1. Zu erkennen sind größere Abweichungen im Vergleich zur Abbildung \ref {fig:CloudDifferences1}. Dies ist jedoch an dieser Stelle zu erwarten, da der Pose-Graph des Hannover-1 Datensets um ein Vielfaches größer ist, bei deutlich geringerer Punktdichte der Punktwolken. Zusätzlich ist die Anzahl durchgeführter Updates wesentlich höher als beim oben verwendeten Datensatz. Trotz diesen initialen Hürden beträgt der mittlere Abstand nächster Punkte hier nur $114.14mm$ und ist damit weiterhin geringer als die verwendete Zellgröße. Der durchschnittliche Abstand der Punktwolke zum Dreiecksnetz beträgt $39.51mm$ bei einer Standardabweichung von $165.76mm$. Hier streuen die Werte deutlich mehr als im oben betrachteten Datensatz. Ursache hierfür sind ebenfalls die oben genannten Gründe.\relax }{figure.caption.47}{}}
+\citation{HATSDF}
 \@writefile{toc}{\contentsline {chapter}{\numberline {7}Zusammenfassung und Ausblick}{63}{chapter.7}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
 \newlabel{chapter:ausblick}{{7}{63}{Zusammenfassung und Ausblick}{chapter.7}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {7.1}Zusammenfassung}{63}{section.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.2}Ausblick}{63}{section.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.1}Optimierungen}{63}{subsection.7.2.1}\protected@file@percent }
+\citation{sprickerhof2011heuristic}
+\@writefile{toc}{\contentsline {section}{\numberline {7.2}Ausblick}{65}{section.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.1}Optimierungen}{65}{subsection.7.2.1}\protected@file@percent }
 \citation{sprickerhof2011heuristic}
 \citation{sprickerhof2011heuristic}
 \citation{sprickerhof2011heuristic}
@@ -367,12 +369,12 @@
 \citation{sprickerhof2011heuristic}
 \citation{sprickerhof2011heuristic}
 \bibdata{papers.bib}
-\@writefile{toc}{\contentsline {chapter}{\numberline {A}Anhang}{65}{appendix.A}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {A}Anhang}{67}{appendix.A}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{chapter:anhang}{{A}{65}{Anhang}{appendix.A}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {A.1}{\ignorespaces Caption for LOF}}{66}{figure.caption.48}\protected@file@percent }
-\newlabel{fig:ELCH}{{A.1}{66}{Caption for LOF}{figure.caption.48}{}}
+\newlabel{chapter:anhang}{{A}{67}{Anhang}{appendix.A}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {A.1}{\ignorespaces Caption for LOF}}{68}{figure.caption.48}\protected@file@percent }
+\newlabel{fig:ELCH}{{A.1}{68}{Caption for LOF}{figure.caption.48}{}}
 \bibcite{bentley1975multidimensional}{{1}{}{{}}{{}}}
 \bibcite{Besl:1992}{{2}{}{{}}{{}}}
 \bibcite{besl1992method}{{3}{}{{}}{{}}}
@@ -402,7 +404,7 @@
 \bibcite{whelan2012kintinuous}{{27}{}{{}}{{}}}
 \bibcite{zhang2014loam}{{28}{}{{}}{{}}}
 \providecommand\NAT@force@numbers{}\NAT@force@numbers
-\@writefile{tdo}{\contentsline {todo}{\color@fb@x {}{red}{}{red!25}{\leavevmode {\color  {red!25}o}}\ Endpage für Unterschrift einbauen}{71}{section*.50}\protected@file@percent }
+\@writefile{tdo}{\contentsline {todo}{\color@fb@x {}{red}{}{red!25}{\leavevmode {\color  {red!25}o}}\ Endpage für Unterschrift einbauen}{73}{section*.50}\protected@file@percent }
 \pgfsyspdfmark {pgfid71}{4040140}{47619575}
 \pgfsyspdfmark {pgfid74}{36681343}{47523289}
 \pgfsyspdfmark {pgfid75}{38646181}{47387848}
