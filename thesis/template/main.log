@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  18 NOV 2022 01:12
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  18 NOV 2022 01:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1724,54 +1724,54 @@ Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) an Schlei-fen-schl[]ussen
  []
 
-<pics/Flussdiagramm-Optimization.png, id=741, 1001.7425pt x 1477.52pt>
-File: pics/Flussdiagramm-Optimization.png Graphic file (type png)
-<use pics/Flussdiagramm-Optimization.png>
-Package pdftex.def Info: pics/Flussdiagramm-Optimization.png  used on input lin
-e 127.
-(pdftex.def)             Requested size: 300.52507pt x 443.25943pt.
+<pics/Flussdiagramm-Optimization-colorized.png, id=741, 1878.01625pt x 2770.35p
+t>
+File: pics/Flussdiagramm-Optimization-colorized.png Graphic file (type png)
+<use pics/Flussdiagramm-Optimization-colorized.png>
+Package pdftex.def Info: pics/Flussdiagramm-Optimization-colorized.png  used on
+ input line 127.
+(pdftex.def)             Requested size: 300.48874pt x 443.26506pt.
 
-LaTeX Warning: Float too large for page by 11.75156pt on input line 131.
-
-
-Overfull \hbox (12.36945pt too wide) in paragraph at lines 141--141
-\OT1/lmr/m/n/6 Koordinatensystem- 
- []
+LaTeX Warning: Float too large for page by 11.75719pt on input line 131.
 
 
 Overfull \hbox (12.36945pt too wide) in paragraph at lines 141--141
 \OT1/lmr/m/n/6 Koordinatensystem- 
  []
 
-[44] [45 <./pics/Flussdiagramm-Optimization.png>]
-<pics/GTvsInit.png, id=766, 462.528pt x 346.896pt>
+
+Overfull \hbox (12.36945pt too wide) in paragraph at lines 141--141
+\OT1/lmr/m/n/6 Koordinatensystem- 
+ []
+
+[44] [45 <./pics/Flussdiagramm-Optimization-colorized.png>]
+<pics/GTvsInit.png, id=768, 462.528pt x 346.896pt>
 File: pics/GTvsInit.png Graphic file (type png)
 <use pics/GTvsInit.png>
 Package pdftex.def Info: pics/GTvsInit.png  used on input line 150.
 (pdftex.def)             Requested size: 323.76738pt x 242.82553pt.
  [46 <./pics/GTvsInit.png>]
-<pics/GTvsGICP.png, id=783, 462.528pt x 346.896pt>
+<pics/GTvsGICP.png, id=784, 462.528pt x 346.896pt>
 File: pics/GTvsGICP.png Graphic file (type png)
 <use pics/GTvsGICP.png>
 Package pdftex.def Info: pics/GTvsGICP.png  used on input line 168.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/GTvsThis.png, id=784, 462.528pt x 346.896pt>
+<pics/GTvsThis.png, id=785, 462.528pt x 346.896pt>
 File: pics/GTvsThis.png Graphic file (type png)
 <use pics/GTvsThis.png>
 Package pdftex.def Info: pics/GTvsThis.png  used on input line 174.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/initialVsGIPVsLC.png, id=785, 462.528pt x 346.896pt>
+<pics/initialVsGIPVsLC.png, id=786, 462.528pt x 346.896pt>
 File: pics/initialVsGIPVsLC.png Graphic file (type png)
 <use pics/initialVsGIPVsLC.png>
 Package pdftex.def Info: pics/initialVsGIPVsLC.png  used on input line 187.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/GICPvsLC_error2.png, id=786, 462.528pt x 346.896pt>
+<pics/GICPvsLC_error2.png, id=787, 462.528pt x 346.896pt>
 File: pics/GICPvsLC_error2.png Graphic file (type png)
 <use pics/GICPvsLC_error2.png>
 Package pdftex.def Info: pics/GICPvsLC_error2.png  used on input line 193.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-
-[47 <./pics/GTvsGICP.png> <./pics/GTvsThis.png>]
+ [47 <./pics/GTvsGICP.png> <./pics/GTvsThis.png>]
 <pics/double_walls_marked_white.png, id=803, 544.28343pt x 359.09157pt>
 File: pics/double_walls_marked_white.png Graphic file (type png)
 <use pics/double_walls_marked_white.png>
@@ -1911,7 +1911,7 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 177.
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 177.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 177.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 6433CE2A7BB21890573E4CAF24F01011;6902.
+(rerunfilecheck)             Checksum: 0A648A4E2A04A3FE539ABC14391F638B;6927.
 
 
 LaTeX Warning: There were undefined references.
@@ -1922,11 +1922,11 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 177.
  ) 
 Here is how much of TeX's memory you used:
- 42686 strings out of 483016
- 911823 string characters out of 5961286
- 1389196 words of memory out of 5000000
- 56470 multiletter control sequences out of 15000+600000
- 634063 words of font info for 206 fonts, out of 8000000 for 9000
+ 42694 strings out of 483016
+ 911971 string characters out of 5961286
+ 1389219 words of memory out of 5000000
+ 56466 multiletter control sequences out of 15000+600000
+ 634825 words of font info for 212 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
  73i,18n,127p,3300b,1087s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
@@ -1952,7 +1952,7 @@ onts/type1/public/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.p
 fb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/ty
 pe1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (77 pages, 15366559 bytes).
+Output written on main.pdf (77 pages, 15457799 bytes).
 PDF statistics:
  1149 PDF objects out of 1200 (max. 8388607)
  919 compressed objects within 10 object streams
