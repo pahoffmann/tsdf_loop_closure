@@ -268,6 +268,10 @@ Dieser Absatz behandelt einen weiteren Datensatz unter identischen Bedingungen w
 
 Die in diesem Kapitel entwickelte Lösung wurde hier zunächst vollständig abgekapselt von der TSDF-Karte betrachtet. Dies wird im nachfolgenden Kapitel nun auf Basis der hier vorgestellten Lösung zur Kompensation von akkumulierten Fehler durch die Integration von Schleifenschlüssen und den Ausführungen aus Kapitel \ref{chapter:association} weiter verfolgt.
 
+\section{Kapitel-Zusammenfassung}
+
+In diesem Kapitel wurde die Detektion von Schleifenschlüssen und die darauf aufbauende Optimierung des Pose-Graphen behandelt. Dazu wurde zunächst ein Ansatz zur Detektion der Schleifenschlüsse eruiert und auf das Problem invalider beziehungsweise fehlerhafter Schleifenschlüsse eingegangen. Zur Lösung dieses Problems wurden zwei implementierte Validatoren beziehungsweise Rejector implementiert und vorgestellt. Dadurch können fehlerhafte Schleifenschlüsse identifiziert und verworfen werden. Dies führt zu einem deutlich besseren Ergebnis der Optimierung. Für die Optimierung selbst kommt die Bibliothek GTSAM zum Einsatz. Hier wurde die dazu verwendete Datenstruktur des Faktor-Graphen eingeführt und dessen Funktionsweise, insbesondere über die verwendeten Faktoren, erläutert. Der vorgestellte Ansatz liefert gute Ergebnisse und Vergleiche mit anderen Lösungsansätzen zeigen ähnliche und zum Teil bessere Ergebnisse, wie zu sehen in der Evaluation des Hannover-1 Datensatzes.
+
 
 \improvement{an dieser Stelle könnte noch eine Menge an Abbildungen folgen, die die Ergebnisse in Abhängigkeit von mehreren Ursachen beschreiben}
 \improvement{ggf. auf andere Scan-Matching Verfahren eingehen (ICP, GICP, Teaser++, VGICP)}
