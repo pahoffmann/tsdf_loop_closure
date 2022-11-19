@@ -21,6 +21,12 @@ if __name__ == '__main__':
     df["Visualisierung"] /= 1000
     df["Gesamt"] /= 1000
 
+    update_part = np.sum(df["Updates"]) / np.sum(df["Gesamt"] - df["Visualisierung"])
+    shift_part = np.sum(df["Shift"]) / np.sum(df["Gesamt"] - df["Visualisierung"])
+
+    print("Update-Part: " + str(update_part))
+    print("Shift-Part: " + str(shift_part))
+
     total_time = np.sum(df["Gesamt"]) / 3600
 
     print("Total time: " + str(total_time))
