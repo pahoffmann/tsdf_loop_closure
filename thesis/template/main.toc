@@ -42,5 +42,5 @@
 \contentsline {chapter}{\numberline {7}Zusammenfassung und Ausblick}{63}{chapter.7}%
 \contentsline {section}{\numberline {7.1}Zusammenfassung}{63}{section.7.1}%
 \contentsline {section}{\numberline {7.2}Ausblick}{65}{section.7.2}%
-\contentsline {subsection}{\numberline {7.2.1}Optimierungen}{65}{subsection.7.2.1}%
-\contentsline {chapter}{\numberline {A}Anhang}{67}{appendix.A}%
+\contentsline {subsection}{\numberline {7.2.1}Optimierungen des vorgestellten Ansatzes}{67}{subsection.7.2.1}%
+\contentsline {chapter}{\numberline {A}Anhang}{69}{appendix.A}%
