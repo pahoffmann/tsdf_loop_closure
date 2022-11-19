@@ -8,48 +8,49 @@ Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: papers.bib
+Warning--I didn't find a database entry for "HTSDF"
 Warning--empty booktitle in Canelhas2017TruncatedSD
 Warning--empty number in dellaert2012factor
 Warning--empty note in dellaert2012factor
-You've used 28 entries,
+You've used 30 entries,
             4328 wiz_defined-function locations,
-            1003 strings with 10936 characters,
-and the built_in function-call counts, 17508 in all, are:
-= -- 1828
-> -- 530
-< -- 708
-+ -- 817
-- -- 194
-* -- 1155
-:= -- 3226
-add.period$ -- 27
-call.type$ -- 28
-change.case$ -- 146
+            1016 strings with 11413 characters,
+and the built_in function-call counts, 18480 in all, are:
+= -- 1931
+> -- 561
+< -- 738
++ -- 854
+- -- 204
+* -- 1215
+:= -- 3410
+add.period$ -- 29
+call.type$ -- 30
+change.case$ -- 155
 chr.to.int$ -- 0
-cite$ -- 31
-duplicate$ -- 416
-empty$ -- 1040
-format.name$ -- 364
-if$ -- 3263
+cite$ -- 33
+duplicate$ -- 444
+empty$ -- 1104
+format.name$ -- 384
+if$ -- 3454
 int.to.chr$ -- 0
-int.to.str$ -- 28
-missing$ -- 103
-newline$ -- 153
-num.names$ -- 56
-pop$ -- 203
+int.to.str$ -- 30
+missing$ -- 109
+newline$ -- 163
+num.names$ -- 60
+pop$ -- 216
 preamble$ -- 1
-purify$ -- 146
+purify$ -- 155
 quote$ -- 0
-skip$ -- 964
+skip$ -- 1015
 stack$ -- 0
-substring$ -- 1167
-swap$ -- 142
-text.length$ -- 105
+substring$ -- 1212
+swap$ -- 151
+text.length$ -- 111
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 113
+type$ -- 121
 warning$ -- 3
-while$ -- 168
-width$ -- 30
-write$ -- 353
-(There were 3 warnings)
+while$ -- 177
+width$ -- 32
+write$ -- 378
+(There were 4 warnings)

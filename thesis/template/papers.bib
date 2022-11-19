@@ -218,6 +218,110 @@
   organization={IEEE}
 }
 
+% TSDF Stuff %
+
+
+% order: ascending by year
+
+@inproceedings{hoppe1992surface,
+  title={Surface reconstruction from unorganized points},
+  author={Hoppe, Hugues and DeRose, Tony and Duchamp, Tom and McDonald, John and Stuetzle, Werner},
+  booktitle={Proceedings of the 19th annual conference on computer graphics and interactive techniques},
+  pages={71--78},
+  year={1992}
+}
+
+@inproceedings{bajaj1995automatic,
+  title={Automatic reconstruction of surfaces and scalar fields from 3D scans},
+  author={Bajaj, Chandrajit L and Bernardini, Fausto and Xu, Guoliang},
+  booktitle={Proceedings of the 22nd annual conference on Computer graphics and interactive techniques},
+  pages={109--118},
+  year={1995}
+}
+
+% base paper: SDF
+%
+% neuer Ansatz zur Rekonstruktion von Oberflächen auf Basis einer vorzeichenbehafteten Distanzfunktion
+% erlaubt Konstruktion einer solchen auf Basis einer Reihe von Range Images, gegeben aus Tiefenbildkameras oder Lidar (Light detection and ranging) sensoren
+% ermöglicht ein inkrementelles Update, die repräsentation gerichteter Ungenauigkeit, die Möglichkeit Lücken in der Rekonstruktion zu füllen und robust gegen Outlier zu sein
+% neben diesen noch weitere (wünschenswerte) Eigenschaften: 
+% - inkrementelles Update unabhängig von der Reihenfolge der Anwendung der Scans -> kein Bias
+% stellen zusätzlich die Algorithmik vor, Löcher innerhalb der Repräsentation zu schließen
+
+@inproceedings{curle´ss1996volumetric,
+  title={A volumetric method for building complex models from range images},
+  author={Curless, Brian and Levoy, Marc},
+  booktitle={Proceedings of the 23rd annual conference on Computer graphics and interactive techniques},
+  pages={303--312},
+  year={1996}
+}
+
+@inproceedings{breen19983d,
+  title={3D scan conversion of CSG models into distance volumes},
+  author={Breen, David E and Mauch, Sean and Whitaker, Ross T},
+  booktitle={Proceedings of the 1998 IEEE symposium on Volume visualization},
+  pages={7--14},
+  year={1998}
+}
+
+
+% adaptive signed distance
+@inproceedings{frisken2000adaptively,
+  title={Adaptively sampled distance fields: A general representation of shape for computer graphics},
+  author={Frisken, Sarah F and Perry, Ronald N and Rockwood, Alyn P and Jones, Thouis R},
+  booktitle={Proceedings of the 27th annual conference on Computer graphics and interactive techniques},
+  pages={249--254},
+  year={2000}
+}
+
+@INPROCEEDINGS{novotny2005representation,
+  author={Novotny, P. and Sramek, M.},
+  booktitle={Fourth International Workshop on Volume Graphics, 2005.}, 
+  title={Representation of objects with sharp details in truncated distance fields}, 
+  year={2005},
+  volume={},
+  number={},
+  pages={109-233},
+  doi={10.1109/VG.2005.194104}
+}
+
+
+
+@inproceedings{bastos2008gpu,
+  title={GPU-accelerated adaptively sampled distance fields},
+  author={Bastos, Thiago and Celes, Waldemar},
+  booktitle={2008 IEEE International Conference on Shape Modeling and Applications},
+  pages={171--178},
+  year={2008},
+  organization={IEEE}
+}
+
+
+@inproceedings{newcombe2011kinectfusion,
+  title={Kinectfusion: Real-time dense surface mapping and tracking},
+  author={Newcombe, Richard A and Izadi, Shahram and Hilliges, Otmar and Molyneaux, David and Kim, David and Davison, Andrew J and Kohi, Pushmeet and Shotton, Jamie and Hodges, Steve and Fitzgibbon, Andrew},
+  booktitle={2011 10th IEEE international symposium on mixed and augmented reality},
+  pages={127--136},
+  year={2011},
+  organization={Ieee}
+}
+
+@inproceedings{werner2014truncated,
+  title={Truncated signed distance function: experiments on voxel size},
+  author={Werner, Diana and Al-Hamadi, Ayoub and Werner, Philipp},
+  booktitle={International Conference Image Analysis and Recognition},
+  pages={357--364},
+  year={2014},
+  organization={Springer}
+}
+
+
+@inproceedings{Canelhas2017TruncatedSD,
+  title={Truncated Signed Distance Fields Applied To Robotics},
+  author={Daniel Ricao Canelhas},
+  year={2017}
+}
+
 % Hatsdf slam %
 @INPROCEEDINGS{HATSDF,  
 author={Eisoldt, Marc and Flottmann, Marcel and Gaal, Julian and Buschermöhle, Pascal and Hinderink, Steffen and Hillmann, Malte and Nitschmann, Adrian and Hoffmann, Patrick and Wiemann, Thomas and Porrmann, Mario},  
@@ -228,22 +332,6 @@ number={},
 pages={1-7},  
 doi={10.1109/ECMR50962.2021.9568815
 }}
-
-% TSDF Stuff %
-@inproceedings{newcombe2011kinectfusion,
-  title={Kinectfusion: Real-time dense surface mapping and tracking},
-  author={Newcombe, Richard A and Izadi, Shahram and Hilliges, Otmar and Molyneaux, David and Kim, David and Davison, Andrew J and Kohi, Pushmeet and Shotton, Jamie and Hodges, Steve and Fitzgibbon, Andrew},
-  booktitle={2011 10th IEEE international symposium on mixed and augmented reality},
-  pages={127--136},
-  year={2011},
-  organization={Ieee}
-}
-
-@inproceedings{Canelhas2017TruncatedSD,
-  title={Truncated Signed Distance Fields Applied To Robotics},
-  author={Daniel Ricao Canelhas},
-  year={2017}
-}
 
 
 % LOOP CLOSURE PAPERS %

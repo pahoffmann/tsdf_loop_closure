@@ -127,7 +127,15 @@
 \newblock {In: }\emph{2018 international conference on 3D vision (3DV)} IEEE,
   2018
 
-\vspace*{4pt}\bibitem[20]{prisacariu2017infinitam}
+\vspace*{4pt}\bibitem[20]{noto2000method}
+\textsc{Noto}, Masato; \textsc{Sato}, Hiroaki:
+\newblock A method for the shortest path search by extended Dijkstra algorithm.
+\newblock {In: }\emph{Smc 2000 conference proceedings. 2000 ieee international
+  conference on systems, man and cybernetics.'cybernetics evolving to systems,
+  humans, organizations, and their complex interactions'(cat. no. 0} Bd.~3
+  IEEE, 2000
+
+\vspace*{4pt}\bibitem[21]{prisacariu2017infinitam}
 \textsc{Prisacariu}, Victor~A.; \textsc{K{\"a}hler}, Olaf; \textsc{Golodetz},
   Stuart; \textsc{Sapienza}, Michael; \textsc{Cavallari}, Tommaso;
   \textsc{Torr}, Philip~H.; \textsc{Murray}, David~W.:
@@ -135,24 +143,24 @@
   closure.
 \newblock {In: }\emph{arXiv preprint arXiv:1708.00783}  (2017)
 
-\vspace*{4pt}\bibitem[21]{rusu20113d}
+\vspace*{4pt}\bibitem[22]{rusu20113d}
 \textsc{Rusu}, Radu~B.; \textsc{Cousins}, Steve:
 \newblock 3d is here: Point cloud library (pcl).
 \newblock {In: }\emph{2011 IEEE international conference on robotics and
   automation} IEEE, 2011
 
-\vspace*{4pt}\bibitem[22]{ros_tf_image}
+\vspace*{4pt}\bibitem[23]{ros_tf_image}
 \textsc{Schultz}, Jarvis:
 \newblock \emph{{tf}}.
 \newblock \url{{http://wiki.ros.org/tf}}. --
 \newblock zuletzt abgerufen am: 09.10.2022
 
-\vspace*{4pt}\bibitem[23]{segal2009generalized}
+\vspace*{4pt}\bibitem[24]{segal2009generalized}
 \textsc{Segal}, Aleksandr; \textsc{Haehnel}, Dirk; \textsc{Thrun}, Sebastian:
 \newblock Generalized-icp.
 \newblock {In: }\emph{Robotics: science and systems} Bd.~2 Seattle, WA, 2009
 
-\vspace*{4pt}\bibitem[24]{shan2020lio}
+\vspace*{4pt}\bibitem[25]{shan2020lio}
 \textsc{Shan}, Tixiao; \textsc{Englot}, Brendan; \textsc{Meyers}, Drew;
   \textsc{Wang}, Wei; \textsc{Ratti}, Carlo; \textsc{Rus}, Daniela:
 \newblock Lio-sam: Tightly-coupled lidar inertial odometry via smoothing and
@@ -160,25 +168,30 @@
 \newblock {In: }\emph{2020 IEEE/RSJ international conference on intelligent
   robots and systems (IROS)} IEEE, 2020
 
-\vspace*{4pt}\bibitem[25]{sprickerhof2011heuristic}
+\vspace*{4pt}\bibitem[26]{sprickerhof2011heuristic}
 \textsc{Sprickerhof}, Jochen; \textsc{N{\"u}chter}, Andreas;
   \textsc{Lingemann}, Kai; \textsc{Hertzberg}, Joachim:
 \newblock A heuristic loop closing technique for large-scale 6d slam.
 \newblock {In: }\emph{Automatika} 52 (2011), Nr. 3, S. 199--222
 
-\vspace*{4pt}\bibitem[26]{werner2014truncated}
+\vspace*{4pt}\bibitem[27]{werner2014truncated}
 \textsc{Werner}, Diana; \textsc{Al-Hamadi}, Ayoub; \textsc{Werner}, Philipp:
 \newblock Truncated signed distance function: experiments on voxel size.
 \newblock {In: }\emph{International Conference Image Analysis and Recognition}
   Springer, 2014
 
-\vspace*{4pt}\bibitem[27]{whelan2012kintinuous}
+\vspace*{4pt}\bibitem[28]{whelan2012kintinuous}
 \textsc{Whelan}, Thomas; \textsc{Kaess}, Michael; \textsc{Fallon}, Maurice;
   \textsc{Johannsson}, Hordur; \textsc{Leonard}, John; \textsc{McDonald}, John:
 \newblock Kintinuous: Spatially extended kinectfusion.
 \newblock   (2012)
 
-\vspace*{4pt}\bibitem[28]{zhang2014loam}
+\vspace*{4pt}\bibitem[29]{Yang20tro-teaser}
+\textsc{Yang}, H.; \textsc{Shi}, J.; \textsc{Carlone}, L.:
+\newblock {TEASER: Fast and Certifiable Point Cloud Registration}.
+\newblock {In: }\emph{{IEEE} Trans. Robotics}  (2020)
+
+\vspace*{4pt}\bibitem[30]{zhang2014loam}
 \textsc{Zhang}, Ji; \textsc{Singh}, Sanjiv:
 \newblock LOAM: Lidar odometry and mapping in real-time.
 \newblock {In: }\emph{Robotics: Science and Systems} Bd.~2 Berkeley, CA, 2014
