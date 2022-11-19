@@ -8,49 +8,55 @@ Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: papers.bib
+Repeated entry---line 333 of file papers.bib
+ : @inproceedings{werner2014truncated
+ :                                   ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "curless1996volumetric"
+Warning--I didn't find a database entry for "mauch200fast"
 Warning--I didn't find a database entry for "HTSDF"
 Warning--empty booktitle in Canelhas2017TruncatedSD
 Warning--empty number in dellaert2012factor
 Warning--empty note in dellaert2012factor
-You've used 30 entries,
+You've used 36 entries,
             4328 wiz_defined-function locations,
-            1016 strings with 11413 characters,
-and the built_in function-call counts, 18480 in all, are:
-= -- 1931
-> -- 561
-< -- 738
-+ -- 854
-- -- 204
-* -- 1215
-:= -- 3410
-add.period$ -- 29
-call.type$ -- 30
-change.case$ -- 155
+            1054 strings with 12725 characters,
+and the built_in function-call counts, 21986 in all, are:
+= -- 2299
+> -- 658
+< -- 870
++ -- 1006
+- -- 244
+* -- 1448
+:= -- 4053
+add.period$ -- 36
+call.type$ -- 36
+change.case$ -- 183
 chr.to.int$ -- 0
-cite$ -- 33
-duplicate$ -- 444
-empty$ -- 1104
-format.name$ -- 384
-if$ -- 3454
+cite$ -- 39
+duplicate$ -- 528
+empty$ -- 1328
+format.name$ -- 448
+if$ -- 4116
 int.to.chr$ -- 0
-int.to.str$ -- 30
-missing$ -- 109
-newline$ -- 163
-num.names$ -- 60
-pop$ -- 216
+int.to.str$ -- 36
+missing$ -- 123
+newline$ -- 195
+num.names$ -- 72
+pop$ -- 255
 preamble$ -- 1
-purify$ -- 155
+purify$ -- 183
 quote$ -- 0
-skip$ -- 1015
+skip$ -- 1197
 stack$ -- 0
-substring$ -- 1212
-swap$ -- 151
-text.length$ -- 111
+substring$ -- 1483
+swap$ -- 176
+text.length$ -- 129
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 121
+type$ -- 143
 warning$ -- 3
-while$ -- 177
-width$ -- 32
-write$ -- 378
-(There were 4 warnings)
+while$ -- 207
+width$ -- 38
+write$ -- 453
+(There was 1 error message)

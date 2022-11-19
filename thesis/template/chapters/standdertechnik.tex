@@ -4,108 +4,45 @@ Dieses Kapitel untersucht den aktuellen Stand der Forschung und gibt einen Über
 
 \textbf{SLAM}
 
+\textit{Simulataneous Localization and Mapping (SLAM)} ist eines der größten Forschungsgebiete in der mobilen Robotik. Die Forschungen zu diesem Problem reichen zurück bis vor die Jahrtausendwende.
+Hauptbestandteil vieler SLAM Ansätze sind 3-D Punktwolken als Repräsentation der Umgebung, die mit Sensoren wie Laserscannern und Tiefenbildkameras aufgenommen werden können.
 
+Dabei werden von verschiedenen Positionen im dreidimensionalen Raum \emph{(Posen)} Punktwolken aufgenommen. Um diese Punktwolken nahtlos aneinander anknüpfen zu können, müssen diese miteinander \emph{registriert} werden. Die Registrierung bestimmt die 3D Transformation (siehe dazu Kapitel \ref{section:transformationen}) zwischen zwei Punktwolken, wobei die \emph{Scan-Punktwolke} an die \emph{Model-Punktwolke} registriert wird.
+Einer der bekanntesten Lösungen zur Registierung dreidimensionaler Punktdaten ist der \emph{Iterative Closest Points (ICP)} Algorithmus nach Besl \& McKay \cite{besl1992method}, der in einer Abwandlung ebenfalls von Borrmann et al. im GraphSLAM \cite{borrmann2008globally} verwendet wird.
+Besl \& McKay \cite{besl1992method} bestimmen die gesuchte 3-D Transformation zwischen zwei Punktwolken durch eine Minimierung der Summe der quadrierten Distanzen der nächsten Punkte zwischen den beiden Punktwolken durch eine \emph{Singular Value Decomposition (SVD)}.
+Die Konvergenz des ICP Algorithmus ist stark gekoppelt an die initiale Schätzung zwischen den beiden Laserscans. Ist diese nicht gut gewählt, konvergiert ICP häufig in lokale Minima, was zu ungewünschten Ergebnissen führt \cite{he2017iterative}. 
+Bis heute gibt es zahlreiche Varitationen und Verbesserungen des ICP Algorithmus.
+Chen \& Medioni \cite{chen1992object} erweitern ICP durch die Nutzung von Oberflächen-Normalen des Models und erweitern so die Kostenfunktion von ICP. Sie minimiert nun die Summe der quadrierten Distanzen zwischen einem Scanpunkt und der durch den Modelpunkt und die Oberflächennormale am Modelpunkt beschriebenen Ebene. Dieser Algorithmus wird auch \emph{Normal ICP (NICP)} genannt. 
+Nach \cite{he2017iterative} reduziert NICP die Anzahl Iterationen und konvergiert schneller  gegen eine gewisse Grenze als ICP.
+Segal et al. \cite{segal2009generalized} erweitern die Ideen aus \cite{chen1992object} um eine \emph{Plane-to-Plane} Metrik.
+Neben genannten Methoden existieren zahlreiche weitere Variationen von ICP, die jeweils kleine Anpassungen vornehmen wie Chetverikov et al. \cite{chetverikov2005robust}, die einen \emph{Least Trimmed Squares} Ansatz zur Fehlerminimierung verwenden und so auch für Punktwolken anwendbar ist, deren Überlappung geringer als $50\%$ ist.
 
 \textbf{Schleifenschlüsse}
 
+Um genannte SLAM-Ansätze robust gegenüber 
+
+Borrmann et al. \cite{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird.
+Darauf aufbauend optimieren Sprickerhof et al. \cite{sprickerhof2011heuristic} den Schleifenschluss-Ansatz durch Nutzung einer heuristischen Schleifenschluss-Technik, die im Gegensatz zu bisherigen Methoden einen dünn besetzten SLAM-Graphen nutzen.
+McCormac et al. \cite{mccormac2018fusion++} schlagen ein Online-SLAM System, welches eine dauerhafte und genaue 3D Karte beliebiger rekonstruierter Objekte darstellt \cite{mccormac2018fusion++}. Die Rekonstruktionen sind als TSDF realisiert. \cite{mccormac2018fusion++} schlägt ebenfalls eine Integration von Schleifenschlüssen vor, diese verändert allerdings lediglich die relativen Poseschätzungen, aber führt zu keiner Verformung der durch die TSDF beschriebenen Objekte. An dieser Stelle wird also kein Update der TSDF durch Schleifenschlüsse vorgenommen.
+Prisacariu et al. \cite{prisacariu2017infinitam} unterteilen den 3D-Raum in starre TSDF-Teilkarten und optimieren die relativen Positionen zwischen diesen. Nach \cite{prisacariu2017infinitam} ist eine anschließende Generation der globalen Karte durch ein Zusammenführen der Teilkarten möglich. \cite{prisacariu2017infinitam} verwendet für jede Pose des Graphen eine eigene Teilkarte, die in sich konsistent ist. \cite{prisacariu2017infinitam} erreichen eine globale Konsistenz durch eine Graph-Optimierung, die zusätzlich Schleifenschlüsse berücksichtigt. Optimiert werden die zu den Teilkarten zugehörigen Posen. Die TSDF-Teilkarten selbst werden durch die Graph-Optimierung nicht angepasst.
+Ähnlich wie \cite{borrmann2008globally} nutzen Shan et al. \cite{shan2020lio} in ihrem Feature basierten SLAM Ansatz die euklidische Distanz zur Bestimmung von Kandidaten für Schleifenschlüsse, die durch eine Evaluation des \emph{Fitness-Scores} von ICP nach Registrierung der zugehörigen Punktwolken der beiden Posen der jeweiligen Kandidaten verifiziert werden.
 
 \textbf{TSDF}
 
-Die in dieser Arbeit entwickelten Algorithmen und Konzepte basieren oder zielen auf eine implizite, volumetrische Repräsentation der Umgebung eines Roboters oder Sensorsystems, die \emph{Truncated Signed Distance Function (TSDF)}. Erste Forschungen in diesem Themengebiet stammen aus der Computergrafik, genauer der Rekonstruktion von Oberflächen aus räumlichen Daten. Hoppe et al. definieren und demonstrieren einen Algorithmus, der aus einer gegebenen Menge von unorganisierten Punkten $\left\lbrace x_1, ..., x_n \right\rbrace \in \mathbb{R}^3$ eine vereinfachte Oberfläche generiert. Dazu wird eine vorzeichenbehaftete geometrische Distanzfunktion verwendete, die Distanz zur unbekannten Oberfläche abschätzt. Ein solche Distanzfunktion wird ebenfalls von Bajaj
+Die in dieser Arbeit entwickelten Algorithmen und Konzepte basieren oder zielen auf eine implizite, volumetrische Repräsentation der Umgebung eines Roboters oder Sensorsystems, die \emph{Truncated Signed Distance Function (TSDF)}. Erste Forschungen in diesem Themengebiet stammen aus der Computergrafik, genauer der Rekonstruktion von Oberflächen aus räumlichen Daten. Hoppe et al. definieren und demonstrieren einen Algorithmus, der aus einer gegebenen Menge von unorganisierten Punkten $\left\lbrace x_1, ..., x_n \right\rbrace \in \mathbb{R}^3$ eine vereinfachte Oberfläche generiert. Dazu wird eine vorzeichenbehaftete geometrische Distanzfunktion verwendete, die Distanz zur unbekannten Oberfläche abschätzt. Ein solche Distanzfunktion wird ebenfalls von Bajaj et al. \cite{bajaj1995automatic} die einen Ansatz zur Rekonstruktion der Oberfläche von \emph{(Computer Aided Design (CAD)} Modellen und deren skalaren Feldern auf Basis einer unorganisierten Sammlung von gescannten Punktdaten. Basierend auf diesen Forschungen stellen Curless \& Levoy \cite{curless1996volumetric} eine volumetrische Methode zur Konstruktion komplexer Modelle auf Basis einer Reihe von \emph{Range-Images}, die zum Beispiel durch Tiefenbildkameras oder \emph{Light Detection and Ranging(Lidar)}-Sensoren generiert werden, vor. Sie basieren die Rekonstruktion der Oberfläche auf einer vorzeichenbehafteten Distanzfunktion \emph{SDF}. Der vorgestellte Ansatz ermöglicht ein inkrementelles Update, die Repräsentation gerichteter Ungenauigkeit, sowie das Füllen von Lücken beziehungsweise Löchern in der SDF und ist robust gegen \emph{Outlier} \cite{curless1996volumetric}. Zusätzlich ist der vorgestellte Ansatz unabhängig von der Reihenfolge, in der die Scans in die SDF eingefügt werden, wodurch kein Bias durch zuerst eingefügte Scans entsteht. Dieser Ansatz stellt die Basis für viele weitere Ansätze, die im Bereich der Rekonstruktion im Bereich der SDFs operieren. So präsentieren Breen et al. \cite{breen19983d} einen Ansatz zur Generation eines Distanz-Volumens auf Basis von \emph{Constructive Solid Geometry (CSG)} Modellen. Um die Probleme der zuvor genannten Ansätze mit Objekten veränderlichen Detailgrades zu lösen, schlagen Frisken et al. \cite{frisken2000adaptively} eine adaptives, vorzeichenbehaftetes Distanzfeld \emph{(ADF)} vor, welches als eine generelle Repräsentation für Formen in der Computer-Grafik dienen soll, vor. Diese ist nach \cite{frisken2000adaptively} vorteilhaft für räumliche Strukturen mit Features in sehr unterschiedlichen Maßstäben. In ADFs werden Abstandsfelder entsprechend der lokalen Details adaptiv abgetastet und in einer räumlichen Hierarchie für eine effiziente Verarbeitung gespeichert. Bastos \& Celes optimieren den Ansatz aus \cite{frisken2000adaptively} durch die Nutzung eines \emph{Grafikprozessors (GPU)}. Um scharfe Details in TSDF repräsentieren zu können schlagen Novotny \& Sramek \cite{novotny2005representation} einen Ansatz vor, der die durch das TSDF repräsentierten Objekte nach dem Kriterium der Darstellbarkeit zu verändern. Zusätzlich werden Informationen über die Oberflächen-Normalen mit berücksichtigt.
+Jones et al. \cite{jones2006distance} stellen eine Übersicht über 3-D Distanzfelder vor und gehen dabei auf die verwendeten Techniken und Anwendungsbereiche ein. Sie stellen dabei unter anderem heraus, dass Methoden, die Distanzfelder nur bis zum einem festgelegten Maximalwert erzeugen, also die Charakteristiken einer TSDF aufweisen, in den Ausführungen von Mauch \cite{mauch200fast, mauch2003efficient} ihren Ursprung haben.
+
+
+Erste Forschungen mit TSDF basiertem SLAM stammen aus dem letzten Jahrzehnt.
+Izadi et al. \cite{izadi2011kinectfusion} nutzen ein TSDF-Voxelgrid und eine Kinect-Tiefenkamera, um Umbegungen zu kartieren, während ein Nutzer die Kinect Kamera durch die Umbebung schwenkt.
+Whelan et al. \cite{whelan2012kintinuous} optimieren diesen Ansatz durch Nutzung eines Ringbuffers zur Kartierung großer Umgebungen.
+Im Gegensatz zu genannten TSDF Verfahren, nutzen Eisoldt et al. \cite{HATSDF} einen Hardware beschleunigten TSDF basierten SLAM Ansatz, sowie einen 3D-Laserscanner anstelle einer Tiefenkamera. Eisoldt et. al \cite{HATSDF} nutzen zur Registierung neuer Punktwolken an die TSDF Karte einen \emph{Point-to-TSDF} Ansatz, der die Distanzen von Punkten zur durch die TSDF implizit beschriebenen Oberfläche entlang des Gradienten innerhalb der TSDF minimiert.
 
 
 
 TSDF:
 
 
-
-%-----------------------------------------------------------------------------------%
-
-\textbf{Proceedings of the 19th annual conference on computer graphics and interactive (1992), Hoppe et al.} \cite{hoppe1992surface}
-
-\begin{description}
-\item
-beschreiben und demonstrieren einen Algorithmus, der aus einer gegebenen Menge von unorganisierten Punkten $\left\lbrace x_1, ..., x_n \right\rbrace \in \mathbb{R}^3$ eine vereinfachte Oberfläche generiert. Dazu wird eine vorzeichenbehaftete geometrische Distanzfunktion verwendete, die Distanz zur unbekannten Oberfläche abschätzt.
-\end{description}
-
-%-----------------------------------------------------------------------------------%
-
-
-\textbf{Automatic reconstruction of surfaces and scalar fields from 3D scans (1995), Bajaj et al.} \cite{bajaj1995automatic}
-
-
-\begin{description}
-\item
-präsentieren einen Ansatz zur Rekonstruktion der Oberflächen von CAD ( computer aided design) Modellen und den skalaren Feldern auf Basis einer unorganisierten Sammlung von gescannten Punktdaten
-\end{description}
-
-%-----------------------------------------------------------------------------------%
-
-\textbf{A volumetric method for building complex models from range images (1996)} \cite{curless1996volumetric} 
-
-\begin{description}
-\item
-neuer Ansatz zur Rekonstruktion von Oberflächen auf Basis einer vorzeichenbehafteten Distanzfunktion
-\item
-erlaubt Konstruktion einer solchen auf Basis einer Reihe von Range Images, gegeben aus Tiefenbildkameras oder Lidar (Light detection and ranging) sensoren
-\item
-ermöglicht ein inkrementelles Update, die repräsentation gerichteter Ungenauigkeit, die Möglichkeit Lücken in der Rekonstruktion zu füllen und robust gegen Outlier zu sein
-\item 
-neben diesen noch weitere (wünschenswerte) Eigenschaften: 
-\item
-inkrementelles Update unabhängig von der Reihenfolge der Anwendung der Scans -> kein Bias
-\item
-stellen zusätzlich die Algorithmik vor, Löcher innerhalb der Repräsentation zu schließen
-\end{description}
-
-%-----------------------------------------------------------------------------------%
-
-\textbf{3D scan conversion of CSG models into distance volumes (1998), Breen et al.} \cite{breen19983d}
-
-\begin{description}
-\item
-präsentieren einen Ansatz zur Generation von Distanz-Volumen auf Basis von \emph{Constructive Solid Geometry (CSG) Modellen.}
-\end{description}
-
-
-%-----------------------------------------------------------------------------------%
-
-\textbf{Adaptively sampled distance fields: A general representation of shape for computer graphics (2000)} \cite{frisken2000adaptively}
-
-\begin{description}
-\item
-adaptive vorzeichenbehaftete Distanzfelder für die Rekonstruktion komplexer Strukturen, Formen und Objekte (ADF)
-\item
-In ADFs werden Abstandsfelder entsprechend der lokalen Details adaptiv abgetastet und in einer räumlichen Hierarchie für eine effiziente Verarbeitung gespeichert
-\item
-vorteilhaft für räumliche Strukturen mit Features in sehr unterschiedlichen Maßstäben
-\end{description}
-
-%-----------------------------------------------------------------------------------%
-
-\textbf{Representation of objects with sharp details in truncated distance fields (2004), Novotny \& Sramek} \cite{novotny2005representation}
-
-\begin{description}
-\item
-stellen einen ansatz vor, der es ermöglicht in einem TSDF scharfe details zu repräsentieren
-\item
-Die Hauptidee besteht darin, die Objekte während des Voxelisierungsprozesses nach dem Kriterium der Darstellbarkeit zu verändern. Zusätzlich werden Informationen über die Oberflächen-Normalen mit berücksichtigt.
-\end{description}
-
-%-----------------------------------------------------------------------------------%
-
-\textbf{GPU-accelerated adaptively sampled distance fieldsn (2008), Bastos \& Celes} \cite{bastos2008gpu}
-
-\begin{description}
-\item
-stellen einen GPU basierten Ansatz für ADFs vor
-\item
-nutzen ein 3-D Hash-Schema zur Speicherung der vorliegenden Daten
-\item
-nutzen eine Ray-Casting Technik basierend auf Sphere-Tracing (sphärischer Verfolgung von Strahlen) für das Rendering der ADFs auf der GPU
-\end{description}
-
-%-----------------------------------------------------------------------------------%
 
 
 \textbf{Kinectfusion: real-time 3d reconstruction and interaction using a moving depth camera (2011)} \cite{izadi2011kinectfusion}
@@ -167,35 +104,6 @@ Nutzen eine zweigeteilte Karte (lokal und global) und einen Ring-Buffer, der sic
 Stellen die Nutzung rekonfigurierbarer SOCs zur laufzeittechnischen Optimierung der vorgestellten Ansätze heraus.
 \end{description}
 
-
-
-
-\textit{Simulataneous Localization and Mapping (SLAM)} ist eines der größten Forschungsgebiete in der mobilen Robotik. Die Forschungen zu diesem Problem reichen zurück bis vor die Jahrtausendwende.
-Hauptbestandteil vieler SLAM Ansätze sind 3-D Punktwolken als Repräsentation der Umgebung, die mit Sensoren wie Laserscannern und Tiefenbildkameras aufgenommen werden können.
-
-
-
-Dabei werden von verschiedenen Positionen im dreidimensionalen Raum \emph{(Posen)} Punktwolken aufgenommen. Um diese Punktwolken nahtlos aneinander anknüpfen zu können, müssen diese miteinander \emph{registriert} werden. Die Registrierung bestimmt die 3D Transformation (siehe dazu Kapitel \ref{section:transformationen}) zwischen zwei Punktwolken, wobei die \emph{Scan-Punktwolke} an die \emph{Model-Punktwolke} registriert wird.
-Einer der bekanntesten Lösungen zur Registierung dreidimensionaler Punktdaten ist der \emph{Iterative Closest Points (ICP)} Algorithmus nach Besl \& McKay \cite{besl1992method}, der in einer Abwandlung ebenfalls von Borrmann et al. im GraphSLAM \cite{borrmann2008globally} verwendet wird.
-Besl \& McKay \cite{besl1992method} bestimmen die gesuchte 3-D Transformation zwischen zwei Punktwolken durch eine Minimierung der Summe der quadrierten Distanzen der nächsten Punkte zwischen den beiden Punktwolken durch eine \emph{Singular Value Decomposition (SVD)}.
-Die Konvergenz des ICP Algorithmus ist stark gekoppelt an die initiale Schätzung zwischen den beiden Laserscans. Ist diese nicht gut gewählt, konvergiert ICP häufig in lokale Minima, was zu ungewünschten Ergebnissen führt \cite{he2017iterative}. 
-Bis heute gibt es zahlreiche Varitationen und Verbesserungen des ICP Algorithmus.
-Chen \& Medioni \cite{chen1992object} erweitern ICP durch die Nutzung von Oberflächen-Normalen des Models und erweitern so die Kostenfunktion von ICP. Sie minimiert nun die Summe der quadrierten Distanzen zwischen einem Scanpunkt und der durch den Modelpunkt und die Oberflächennormale am Modelpunkt beschriebenen Ebene. Dieser Algorithmus wird auch \emph{Normal ICP (NICP)} genannt. 
-Nach \cite{he2017iterative} reduziert NICP die Anzahl Iterationen und konvergiert schneller  gegen eine gewisse Grenze als ICP.
-Segal et al. \cite{segal2009generalized} erweitern die Ideen aus \cite{chen1992object} um eine \emph{Plane-to-Plane} Metrik.
-Neben genannten Methoden existieren zahlreiche weitere Variationen von ICP, die jeweils kleine Anpassungen vornehmen wie Chetverikov et al. \cite{chetverikov2005robust}, die einen \emph{Least Trimmed Squares} Ansatz zur Fehlerminimierung verwenden und so auch für Punktwolken anwendbar ist, deren Überlappung geringer als $50\%$ ist.
-
-Erste Forschungen mit TSDF basiertem SLAM stammen aus dem letzten Jahrzehnt.
-Izadi et al. \cite{izadi2011kinectfusion} nutzen ein TSDF-Voxelgrid und eine Kinect-Tiefenkamera, um Umbegungen zu kartieren, während ein Nutzer die Kinect Kamera durch die Umbebung schwenkt.
-Whelan et al. \cite{whelan2012kintinuous} optimieren diesen Ansatz durch Nutzung eines Ringbuffers zur Kartierung großer Umgebungen.
-Im Gegensatz zu genannten TSDF Verfahren, nutzen Eisoldt et al. \cite{HATSDF} einen Hardware beschleunigten TSDF basierten SLAM Ansatz, sowie einen 3D-Laserscanner anstelle einer Tiefenkamera. Eisoldt et. al \cite{HATSDF} nutzen zur Registierung neuer Punktwolken an die TSDF Karte einen \emph{Point-to-TSDF} Ansatz, der die Distanzen von Punkten zur durch die TSDF implizit beschriebenen Oberfläche entlang des Gradienten innerhalb der TSDF minimiert.
-
-
-Borrmann et al. \cite{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird.
-Darauf aufbauend optimieren Sprickerhof et al. \cite{sprickerhof2011heuristic} den Schleifenschluss-Ansatz durch Nutzung einer heuristischen Schleifenschluss-Technik, die im Gegensatz zu bisherigen Methoden einen dünn besetzten SLAM-Graphen nutzen.
-McCormac et al. \cite{mccormac2018fusion++} schlagen ein Online-SLAM System, welches eine dauerhafte und genaue 3D Karte beliebiger rekonstruierter Objekte darstellt \cite{mccormac2018fusion++}. Die Rekonstruktionen sind als TSDF realisiert. \cite{mccormac2018fusion++} schlägt ebenfalls eine Integration von Schleifenschlüssen vor, diese verändert allerdings lediglich die relativen Poseschätzungen, aber führt zu keiner Verformung der durch die TSDF beschriebenen Objekte. An dieser Stelle wird also kein Update der TSDF durch Schleifenschlüsse vorgenommen.
-Prisacariu et al. \cite{prisacariu2017infinitam} unterteilen den 3D-Raum in starre TSDF-Teilkarten und optimieren die relativen Positionen zwischen diesen. Nach \cite{prisacariu2017infinitam} ist eine anschließende Generation der globalen Karte durch ein Zusammenführen der Teilkarten möglich. \cite{prisacariu2017infinitam} verwendet für jede Pose des Graphen eine eigene Teilkarte, die in sich konsistent ist. \cite{prisacariu2017infinitam} erreichen eine globale Konsistenz durch eine Graph-Optimierung, die zusätzlich Schleifenschlüsse berücksichtigt. Optimiert werden die zu den Teilkarten zugehörigen Posen. Die TSDF-Teilkarten selbst werden durch die Graph-Optimierung nicht angepasst.
-Ähnlich wie \cite{borrmann2008globally} nutzen Shan et al. \cite{shan2020lio} in ihrem Feature basierten SLAM Ansatz die euklidische Distanz zur Bestimmung von Kandidaten für Schleifenschlüsse, die durch eine Evaluation des \emph{Fitness-Scores} von ICP nach Registrierung der zugehörigen Punktwolken der beiden Posen der jeweiligen Kandidaten verifiziert werden.
 
 An dieser Stelle setzt diese Arbeit nun an und integriert auf Basis der zuvor genannten Ansätze, Schleifenschlüsse in einen TSDF basierten SLAM Ansatz und die TSDF Karte entsprechend der Änderungen an der Roboter-Trajektorie zu optimieren.
 
