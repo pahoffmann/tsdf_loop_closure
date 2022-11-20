@@ -1,55 +1,16 @@
 \chapter{Stand der Forschung}\label{chapter:sdf}
 
-Dieses Kapitel untersucht den aktuellen Stand der Forschung und gibt einen Überblick über das Forschungsgebiet. Dazu wird zunächst im Grundsatz auf das Thema \emph{SLAM}, sowie auf das Thema Schleifenschlüsse eingegangen. Im Anschluss erfolgt eine Spezifizierung auf TSDF basierte SLAM-Verfahren, sowie die Ursprünge der TSDF.
+Dieses Kapitel untersucht den aktuellen Stand der Forschung und gibt einen Überblick über das Forschungsgebiet. Dazu wird zunächst im Grundsatz auf das Thema \emph{SLAM}, sowie auf das Thema Schleifenschlüsse eingegangen. Im Anschluss erfolgt eine Spezifizierung auf TSDF basierte SLAM-Verfahren, sowie die Ursprünge der TSDF. Der Fokus liegt hier auf der TSDF und den Forschungsbereich der TSDF-basierten Verfahren, die in den kontextuellen Rahmen dieser Arbeit passen. Diese Verfahren sind im Abschnitt \emph{TSDF} dargelegt.
 
 \textbf{SLAM}
 
-\textit{Simulataneous Localization and Mapping (SLAM)} ist eines der größten Forschungsgebiete in der mobilen Robotik. Die Forschungen zu diesem Problem reichen zurück bis vor die Jahrtausendwende.
-Hauptbestandteil vieler SLAM Ansätze sind 3-D Punktwolken als Repräsentation der Umgebung, die mit Sensoren wie Laserscannern und Tiefenbildkameras aufgenommen werden können.
+Dieser Abschnitt stellt im Groben den Stand der Forschung des SLAM-Problems heraus
+\textit{Simulataneous Localization and Mapping (SLAM)} ist eines der größten Forschungsgebiete in der mobilen Robotik \cite{cadena2016past} und beschreibt den Prozess der Lokalisierung in einer Karte auf Basis ankommender Sensordaten bei einer gleichzeitigen Generation dieser Karte. Die Forschungen zu diesem Problem reichen zurück bis vor die Jahrtausendwende. SLAM besteht aus einer Lokalisations- und einer Kartierungskomponente, die aufeinander aufbauen, aber getrennt voneinander betrachtet werden können. Verschiedene Lokalisierungsansätze auf Basis von Scan-Matching-Ansätzen wie \emph{Iterative Closest Point (ICP)} nach Besl \& McKay \cite{besl1992method}, \emph{Normal ICP (NICP)} \cite{chen1992object} oder \emph{Generalized ICP (GICP)} \cite{segal2009generalized} werden in der Praxis verwendet (\cite{shan2020lio, izadi2011kinectfusion}). Diese Algorithmen benötigen dabei in der Regel eine gute initiale Pose-Schätzung \cite{he2017iterative}. Andere Ansätze nutzen statistische Modelle zur Lokalisierung. So verwenden Montemerlo \cite{montemerlo2002fastslam, montemerlo2003fastslam} einen Partikelfilter um statistisch abschätzen zu können, welche Pose ein Roboter oder Sensorsystem derzeit annimmt. Im Bereich der Kartierung wird in der Regel zwischen expliziten und impliziten Darstellungen der Oberfläche abgetasteter Objekte unterschieden. Explizite Darstellungen können zum Beispiel aus einer Ansammlung inkrementell registrierter Punktwolken bestehen \cite{izadi2011kinectfusion}, wobei in vielen dieser Ansätze nicht jede Punktwolke, sondern nur sogenannte \emph{Key-Frames} genutzt werden \cite{shan2020lio}. Eine Punktwolke gilt als Key-Frame, wenn die Distanz die zugehörigen Pose zur Pose des letzten Key-Frames größer ist, als eine vordefinierte Distanz \cite{shan2020lio}.
+Wesentlicher Faktor für die Robustheit von SLAM Ansätzen ist die Integration von Schleifenschlüssen. Im Folgenden wird ein grober Überblick über dieses Thema geliefert. Implizite Darstellungen beschreiben den Raum um die abgetastete Oberfläche herum und ermöglichen eine Kontinuität, die durch eine Beschreibung der Oberfläche mit Punktdaten nicht erreicht werden kann \cite{curless1996volumetric}. Dazu gehören zum Beispiel vorzeichenbehaftete Distanzfelder oder Distanzfunktionen, deren Ursprung und Forschungsstand in Kapitel \emph{TSDF} näher behandelt wird. 
 
-Dabei werden von verschiedenen Positionen im dreidimensionalen Raum \emph{(Posen)} Punktwolken aufgenommen. Um diese Punktwolken nahtlos aneinander anknüpfen zu können, müssen diese miteinander \emph{registriert} werden. Die Registrierung bestimmt die 3D Transformation (siehe dazu Kapitel \ref{section:transformationen}) zwischen zwei Punktwolken, wobei die \emph{Scan-Punktwolke} an die \emph{Model-Punktwolke} registriert wird.
-Einer der bekanntesten Lösungen zur Registierung dreidimensionaler Punktdaten ist der \emph{Iterative Closest Points (ICP)} Algorithmus nach Besl \& McKay \cite{besl1992method}, der in einer Abwandlung ebenfalls von Borrmann et al. im GraphSLAM \cite{borrmann2008globally} verwendet wird.
-Besl \& McKay \cite{besl1992method} bestimmen die gesuchte 3-D Transformation zwischen zwei Punktwolken durch eine Minimierung der Summe der quadrierten Distanzen der nächsten Punkte zwischen den beiden Punktwolken durch eine \emph{Singular Value Decomposition (SVD)}.
-Die Konvergenz des ICP Algorithmus ist stark gekoppelt an die initiale Schätzung zwischen den beiden Laserscans. Ist diese nicht gut gewählt, konvergiert ICP häufig in lokale Minima, was zu ungewünschten Ergebnissen führt \cite{he2017iterative}. 
-Bis heute gibt es zahlreiche Varitationen und Verbesserungen des ICP Algorithmus.
-Chen \& Medioni \cite{chen1992object} erweitern ICP durch die Nutzung von Oberflächen-Normalen des Models und erweitern so die Kostenfunktion von ICP. Sie minimiert nun die Summe der quadrierten Distanzen zwischen einem Scanpunkt und der durch den Modelpunkt und die Oberflächennormale am Modelpunkt beschriebenen Ebene. Dieser Algorithmus wird auch \emph{Normal ICP (NICP)} genannt. 
-Nach \cite{he2017iterative} reduziert NICP die Anzahl Iterationen und konvergiert schneller  gegen eine gewisse Grenze als ICP.
-Segal et al. \cite{segal2009generalized} erweitern die Ideen aus \cite{chen1992object} um eine \emph{Plane-to-Plane} Metrik.
-Neben genannten Methoden existieren zahlreiche weitere Variationen von ICP, die jeweils kleine Anpassungen vornehmen wie Chetverikov et al. \cite{chetverikov2005robust}, die einen \emph{Least Trimmed Squares} Ansatz zur Fehlerminimierung verwenden und so auch für Punktwolken anwendbar ist, deren Überlappung geringer als $50\%$ ist.
-Wesentlicher Faktor für die Robustheit von SLAM Ansätzen ist die Integration von Schleifenschlüssen. Im Folgenden wird ein grober Überblick über dieses Thema geliefert.
+Die Forschung im Bereich SLAM hat sich in verschiedene Richtungen entwickelt, die auf unterschiedlichen Grundlagen oder Annahmen über vorhandene oder ermittelte Daten arbeiten. Dissanayake et al. \cite{dissanayake2001solution} schlagen einen SLAM Ansatz basierend auf Landmarken und einem \emph{Erweiterten Kalman Filter (EKF)} vor. Andere Ansätze extrahieren Features aus Punktwolken und nutzen diese für einen anschließenden Datenvergleich zur Bestimmung der vorliegenden Pose-Differenz. Dazu gehören zum Beispiel zum Beispiel die Arbeiten von Zhang \& Singh \cite{zhang2014loam} oder Shang \& Englot \cite{shan2018lego}. Wiederum andere Ansätze nutzen eine gesonderte Betrachtung einer \emph{Inertial Measurement Unit (IMU)}, um eine optimierte initiale Schätzung der vorliegenden Pose-Differenz zu erreichen. Um sich innerhalb dieser Forschungsgebiete zurechtzufinden, existieren diverse Arbeiten, die eine umfangreiche und detaillierte Beschreibung verschiedener SLAM-Ansätze angefertigt haben \cite{cadena2016past, aulinas2008slam, taketomi2017visual}. 
 
 
-%-----------------------------------------------------------------%
-%@article{cadena2016past,
-%  title={Past, present, and future of simultaneous localization and mapping: Toward the robust-%perception age},
-%  author={Cadena, Cesar and Carlone, Luca and Carrillo, Henry and Latif, Yasir and Scaramuzza, Davide %and Neira, Jos{\'e} and Reid, Ian and Leonard, John J},
-%  journal={IEEE Transactions on robotics},
-%  volume={32},
-%  number={6},
-%  pages={1309--1332},
-%  year={2016},
-%  publisher={IEEE}
-%}
-
-
-
-%-----------------------------------------------------------------%
-
-
-
-%-----------------------------------------------------------------%
-
-
-
-%-----------------------------------------------------------------%
-
-
-
-%-----------------------------------------------------------------%
-
-
-
-%-----------------------------------------------------------------%
 \textbf{Schleifenschlüsse}
 
 Um genannte SLAM-Ansätze robust gegenüber einer Akkumulation von Fehlern zu machen, die häufig in dieser Kategorie von Algorithmen auftreten, werden Schleifenschlüsse verwendet, anhand derer die Fehler nachträglich korrigiert werden können. Grundidee ist dabei anhand der gerade aufgenommenen Sensordaten zu beurteilen, ob diese zu bereits im Vorfeld aufgenommenen Daten passt und darauf basierend die erstellte Karte oder den generierten Pose-Graphen zu optimieren. Für diese Einschätzung existieren mehrere Varianten unterschiedlicher Komplexität, jeweils basierend auf der Bestimmung von Kandidaten und deren anschließenden Verifikation. Im Folgenden wird ein Überblick über das Thema der Wiedererkennung von Orten beziehungsweise Schleifenschlüsse gegeben, welches in der Literatur häufig als \emph{Loop-Closure}, \emph{Place-Recognition} oder \emph{Revisiting-Problem} bezeichnet wird, wobei die genannten Bezeichnungen nicht dasselbe Thema bezeichnen, sondern lediglich eng miteinander verwandt sind. Garg et al. \cite{garg2021your} liefern einen breiten Überblick über die Unterschiede zwischen der visuellen \emph{Place-Recognition} in der Robotik und der Computergrafik. Der im Folgenden dargelegte Überblick über Schleifenschlüsse in der Robotik deckt bei Weitem nicht den Umfang der Forschungen in diesem Bereich ab. 

@@ -46,6 +46,15 @@
   publisher={IEEE}
 }
 
+% lc rejectors
+@inproceedings{xie2017graphtinker,
+  title={GraphTinker: Outlier rejection and inlier injection for pose graph SLAM},
+  author={Xie, Linhai and Wang, Sen and Markham, Andrew and Trigoni, Niki},
+  booktitle={2017 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={6777--6784},
+  year={2017},
+  organization={IEEE}
+}
 
 
 % end LOOP Closure %
@@ -135,17 +144,6 @@
   title={Kintinuous: Spatially extended kinectfusion},
   author={Whelan, Thomas and Kaess, Michael and Fallon, Maurice and Johannsson, Hordur and Leonard, John and McDonald, John},
   year={2012}
-}
-
-
-
-@inproceedings{werner2014truncated,
-  title={Truncated signed distance function: experiments on voxel size},
-  author={Werner, Diana and Al-Hamadi, Ayoub and Werner, Philipp},
-  booktitle={International Conference Image Analysis and Recognition},
-  pages={357--364},
-  year={2014},
-  organization={Springer}
 }
 
 @inproceedings{bylow2013real,
@@ -242,14 +240,30 @@
   Year = {2020} 
 }
 
-% lc rejectors
-@inproceedings{xie2017graphtinker,
-  title={GraphTinker: Outlier rejection and inlier injection for pose graph SLAM},
-  author={Xie, Linhai and Wang, Sen and Markham, Andrew and Trigoni, Niki},
-  booktitle={2017 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
-  pages={6777--6784},
-  year={2017},
-  organization={IEEE}
+@inproceedings{zhou2016fast,
+  title={Fast global registration},
+  author={Zhou, Qian-Yi and Park, Jaesik and Koltun, Vladlen},
+  booktitle={European conference on computer vision},
+  pages={766--782},
+  year={2016},
+  organization={Springer}
+}
+
+@article{montemerlo2002fastslam,
+  title={FastSLAM: A factored solution to the simultaneous localization and mapping problem},
+  author={Montemerlo, Michael and Thrun, Sebastian and Koller, Daphne and Wegbreit, Ben and others},
+  journal={Aaai/iaai},
+  volume={593598},
+  year={2002}
+}
+
+@inproceedings{montemerlo2003fastslam,
+  title={FastSLAM 2.0: An improved particle filtering algorithm for simultaneous localization and mapping that provably converges},
+  author={Montemerlo, Michael and Thrun, Sebastian and Koller, Daphne and Wegbreit, Ben and others},
+  booktitle={IJCAI},
+  volume={3},
+  pages={1151--1156},
+  year={2003}
 }
 
 
@@ -275,6 +289,63 @@
   year={2016},
   publisher={IEEE}
 }
+
+
+% 
+@article{frese2005multilevel,
+  title={A multilevel relaxation algorithm for simultaneous localization and mapping},
+  author={Frese, Udo and Larsson, Per and Duckett, Tom},
+  journal={IEEE Transactions on Robotics},
+  volume={21},
+  number={2},
+  pages={196--207},
+  year={2005},
+  publisher={IEEE}
+}
+
+@inproceedings{zhang2014loam,
+  title={LOAM: Lidar odometry and mapping in real-time.},
+  author={Zhang, Ji and Singh, Sanjiv},
+  booktitle={Robotics: Science and Systems},
+  volume={2},
+  number={9},
+  pages={1--9},
+  year={2014},
+  organization={Berkeley, CA}
+}
+
+@inproceedings{shan2018lego,
+  title={Lego-loam: Lightweight and ground-optimized lidar odometry and mapping on variable terrain},
+  author={Shan, Tixiao and Englot, Brendan},
+  booktitle={2018 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={4758--4765},
+  year={2018},
+  organization={IEEE}
+}
+
+@article{aulinas2008slam,
+  title={The SLAM problem: a survey},
+  author={Aulinas, Josep and Petillot, Yvan and Salvi, Joaquim and Llad{\'o}, Xavier},
+  journal={Artificial Intelligence Research and Development},
+  pages={363--371},
+  year={2008},
+  publisher={IOS Press}
+}
+
+@article{taketomi2017visual,
+  title={Visual SLAM algorithms: A survey from 2010 to 2016},
+  author={Taketomi, Takafumi and Uchiyama, Hideaki and Ikeda, Sei},
+  journal={IPSJ Transactions on Computer Vision and Applications},
+  volume={9},
+  number={1},
+  pages={1--11},
+  year={2017},
+  publisher={SpringerOpen}
+}
+
+
+
+
 
 
 % TSDF Stuff %
@@ -307,7 +378,7 @@
 % - inkrementelles Update unabhängig von der Reihenfolge der Anwendung der Scans -> kein Bias
 % stellen zusätzlich die Algorithmik vor, Löcher innerhalb der Repräsentation zu schließen
 
-@inproceedings{curle´ss1996volumetric,
+@inproceedings{curless1996volumetric,
   title={A volumetric method for building complex models from range images},
   author={Curless, Brian and Levoy, Marc},
   booktitle={Proceedings of the 23rd annual conference on Computer graphics and interactive techniques},
@@ -508,18 +579,6 @@ doi={10.1109/ECMR50962.2021.9568815
   number={2},
   pages={164--168},
   year={1944}
-}
-
-% LOAM
-@inproceedings{zhang2014loam,
-  title={LOAM: Lidar odometry and mapping in real-time.},
-  author={Zhang, Ji and Singh, Sanjiv},
-  booktitle={Robotics: Science and Systems},
-  volume={2},
-  number={9},
-  pages={1--9},
-  year={2014},
-  organization={Berkeley, CA}
 }
 
 @inproceedings{noto2000method,

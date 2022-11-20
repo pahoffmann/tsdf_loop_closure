@@ -5,41 +5,41 @@
 \contentsline {section}{\numberline {1.2}Herangehensweise}{3}{section.1.2}%
 \contentsline {subsection}{\numberline {1.2.1}Fallback}{3}{subsection.1.2.1}%
 \contentsline {chapter}{\numberline {2}Stand der Forschung}{5}{chapter.2}%
-\contentsline {chapter}{\numberline {3}Konzeptuelle Grundlagen und verwendete Datenstrukturen}{9}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Konzeptuelle Grundlagen}{9}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}Die unterliegende Datenstruktur des Pose-Graphen}{9}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {3.1.2}Koordinatensysteme}{9}{subsection.3.1.2}%
-\contentsline {subsubsection}{Transformationen}{10}{section*.4}%
-\contentsline {section}{\numberline {3.2}TSDF}{12}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}TSDF-Karte}{14}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}TSDF-Update}{16}{subsection.3.2.2}%
-\contentsline {section}{\numberline {3.3}SLAM}{18}{section.3.3}%
-\contentsline {chapter}{\numberline {4}Identifikation von Datenassoziationen zum Karten-Update}{21}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Ansatz}{21}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Serialisierung der Datenassoziationen}{22}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Detektions-Algorithmen}{22}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Ray-Tracing}{22}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Bresenham}{26}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}Ergebnisse der Algorithmen}{30}{subsection.4.3.3}%
-\contentsline {subsection}{\numberline {4.3.4}Evaluation}{31}{subsection.4.3.4}%
-\contentsline {section}{\numberline {4.4}Schleifenschlüsse in der Nachbearbeitung}{32}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Karten-Update mittels generierter Assoziationen}{35}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Evaluation und Zusammenfassung}{37}{section.4.6}%
-\contentsline {chapter}{\numberline {5}Schleifenschlüsse und Graph-Optimierung}{39}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Detektion von Schleifenschlüssen}{39}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Optimierung des Pose-Graphen}{45}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Evaluation der Graph-Optimierung}{46}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Datensatz: Hannover-1}{48}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Datensatz: Chemnitzer Opernhaus}{50}{subsection.5.3.2}%
-\contentsline {subsection}{\numberline {5.3.3}Datensatz: Campus Universität Osnabrück}{52}{subsection.5.3.3}%
-\contentsline {section}{\numberline {5.4}Kapitel-Zusammenfassung}{52}{section.5.4}%
-\contentsline {chapter}{\numberline {6}Karten-Update Strategien}{55}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Globales Update der Karte}{56}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Partielles Update der Karte}{57}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Evaluation der Update-Strategien}{60}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Kapitel-Zusammenfassung}{60}{section.6.4}%
-\contentsline {chapter}{\numberline {7}Zusammenfassung und Ausblick}{65}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Zusammenfassung}{65}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Ausblick}{67}{section.7.2}%
-\contentsline {subsection}{\numberline {7.2.1}Optimierungen des vorgestellten Ansatzes}{69}{subsection.7.2.1}%
-\contentsline {chapter}{\numberline {A}Anhang}{71}{appendix.A}%
+\contentsline {chapter}{\numberline {3}Konzeptuelle Grundlagen und verwendete Datenstrukturen}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Konzeptuelle Grundlagen}{11}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Die unterliegende Datenstruktur des Pose-Graphen}{11}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Koordinatensysteme}{11}{subsection.3.1.2}%
+\contentsline {subsubsection}{Transformationen}{12}{section*.4}%
+\contentsline {section}{\numberline {3.2}TSDF}{14}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}TSDF-Karte}{16}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}TSDF-Update}{18}{subsection.3.2.2}%
+\contentsline {section}{\numberline {3.3}SLAM}{20}{section.3.3}%
+\contentsline {chapter}{\numberline {4}Identifikation von Datenassoziationen zum Karten-Update}{23}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Ansatz}{23}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Serialisierung der Datenassoziationen}{24}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Detektions-Algorithmen}{24}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Ray-Tracing}{24}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Bresenham}{28}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Ergebnisse der Algorithmen}{32}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.3.4}Evaluation}{33}{subsection.4.3.4}%
+\contentsline {section}{\numberline {4.4}Schleifenschlüsse in der Nachbearbeitung}{34}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Karten-Update mittels generierter Assoziationen}{37}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Evaluation und Zusammenfassung}{39}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Schleifenschlüsse und Graph-Optimierung}{41}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Detektion von Schleifenschlüssen}{41}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Optimierung des Pose-Graphen}{47}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Evaluation der Graph-Optimierung}{48}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Datensatz: Hannover-1}{50}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Datensatz: Chemnitzer Opernhaus}{52}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Datensatz: Campus Universität Osnabrück}{54}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Kapitel-Zusammenfassung}{54}{section.5.4}%
+\contentsline {chapter}{\numberline {6}Karten-Update Strategien}{57}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Globales Update der Karte}{58}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Partielles Update der Karte}{59}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Evaluation der Update-Strategien}{62}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Kapitel-Zusammenfassung}{62}{section.6.4}%
+\contentsline {chapter}{\numberline {7}Zusammenfassung und Ausblick}{67}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Zusammenfassung}{67}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Ausblick}{69}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Optimierungen des vorgestellten Ansatzes}{71}{subsection.7.2.1}%
+\contentsline {chapter}{\numberline {A}Anhang}{73}{appendix.A}%

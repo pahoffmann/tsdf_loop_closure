@@ -8,55 +8,50 @@ Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: papers.bib
-Repeated entry---line 392 of file papers.bib
- : @inproceedings{werner2014truncated
- :                                   ,
-I'm skipping whatever remains of this entry
-Warning--I didn't find a database entry for "curless1996volumetric"
 Warning--I didn't find a database entry for "mauch200fast"
 Warning--I didn't find a database entry for "HTSDF"
 Warning--empty booktitle in Canelhas2017TruncatedSD
 Warning--empty number in dellaert2012factor
 Warning--empty note in dellaert2012factor
-You've used 41 entries,
+You've used 48 entries,
             4328 wiz_defined-function locations,
-            1080 strings with 13710 characters,
-and the built_in function-call counts, 25524 in all, are:
-= -- 2667
-> -- 768
-< -- 1031
-+ -- 1190
-- -- 286
-* -- 1684
-:= -- 4694
-add.period$ -- 41
-call.type$ -- 41
-change.case$ -- 212
+            1119 strings with 15251 characters,
+and the built_in function-call counts, 30680 in all, are:
+= -- 3195
+> -- 944
+< -- 1260
++ -- 1456
+- -- 351
+* -- 2041
+:= -- 5657
+add.period$ -- 48
+call.type$ -- 48
+change.case$ -- 255
 chr.to.int$ -- 0
-cite$ -- 44
-duplicate$ -- 609
-empty$ -- 1521
-format.name$ -- 524
-if$ -- 4760
+cite$ -- 51
+duplicate$ -- 725
+empty$ -- 1793
+format.name$ -- 648
+if$ -- 5684
 int.to.chr$ -- 0
-int.to.str$ -- 41
-missing$ -- 146
-newline$ -- 220
-num.names$ -- 82
-pop$ -- 298
+int.to.str$ -- 48
+missing$ -- 172
+newline$ -- 255
+num.names$ -- 96
+pop$ -- 356
 preamble$ -- 1
-purify$ -- 212
+purify$ -- 255
 quote$ -- 0
-skip$ -- 1410
+skip$ -- 1702
 stack$ -- 0
-substring$ -- 1723
-swap$ -- 206
-text.length$ -- 150
+substring$ -- 2068
+swap$ -- 252
+text.length$ -- 185
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 163
+type$ -- 191
 warning$ -- 3
-while$ -- 240
-width$ -- 43
-write$ -- 514
-(There was 1 error message)
+while$ -- 291
+width$ -- 50
+write$ -- 599
+(There were 5 warnings)
