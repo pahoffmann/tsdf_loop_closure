@@ -5,9 +5,9 @@
 
 Dieser Abschnitt beschreibt die wesentlichen konzeptuellen Grundlagen, die in dieser Arbeit an mehreren Stellen verwendet werden und daher an zentraler Stelle erläutert werden.
 
-\subsubsection{Pfad}
+\subsection{Die unterliegende Datenstruktur des Pose-Graphen}
 
-\improvement{Schreiben über Pfad (indizierung, grobe Mathe), Posen, relative und absolute Transformationen}
+Die Grundlage für den in dieser Arbeit vorgeschlagenen Ansatz bietet die Implementation einer Datenstruktur für den Pose-Graphen, im Folgenden auch Pose-Historie oder Pfad genannt. Die Datenstruktur ist dabei einfach aufgebaut. Sie hält einen indizierten Vektor aus Posen $\left\lbrace P_0, ..., P_n \right\rbrace$ und kapselt die Funktionalität für das Einfügen dieser Posen. Zusätzlich ist in der Datenstruktur die Funktionalität zur Identifikation von Schleifenschluss-Kandidaten gespeichert.
 
 \subsection{Koordinatensysteme}
 
