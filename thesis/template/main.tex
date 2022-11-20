@@ -117,10 +117,7 @@
 
 \begin{prefacesection}{Zusammenfassung}
 
-Die vorliegende Arbeit beschäftigt sich mit der Implementierung und Konzeption einer Lösung zur Detektion von \textbf{Schleifenschlüssen} in einem auf \textbf{Truncated Signed Distance Field (TSDF)} basierenden \textbf{Simultaneaous Localization and Mapping (SLAM)} Ansatz und der nachfolgenden Optimierung der Robotertrajektorie und TSDF-Karte.
-Zur Optimierung der Trajektorie des Robters nach der Identifikation eines Schleifenschlusses kommt die Bibliothek \textbf{GTSAM} zum Einsatz.
-Es wird evaluiert ob und unter welchen Voraussetzungen eine Nachbearbeitung auf Basis einer fertigen TSDF Karte mit zugehöriger initialer Trajektorie möglich ist und zusätzlich der Einsatz in einem inkrementellen SLAM Ansatz geprüft.
-Darüber wird untersucht, inwiefern ein Teilupdate der TSDF basierten Karte möglich ist.
+Die vorliegenden Arbeit liefert eine Lösung zum Schleifenschluss-Problem in einem \emph{Truncated Signed Distance Field (TSDF)} basiertem \emph{Simultaneaous Localization and Mapping (SLAM)} Ansatz. Beschrieben ist die Konzeption und Algorithmik für eine Detektion von Schleifenschlüssen und die anschließende, mehrschrittige Validierung über im Rahmen der Arbeit entwickelte Validatoren, die fehlerhafte Schleifenschlüsse aussortierten und so für eine robustere Optimierung des Pose-Graphen sorgen. Darüber hinaus sind mehrere in der Arbeit entwickelte Strategien zum Update der volumetrischen TSDF-Kartenrepräsentation dargelegt. Dabei handelt es sich um ein globales Update der Karte und zwei darauf basierte, partielle Kartenupdates, die eine deutliche laufzeittechnische Optimierung gegenüber dem globalen Update ermöglichen.
 
 \end{prefacesection}
 
@@ -128,10 +125,7 @@ Darüber wird untersucht, inwiefern ein Teilupdate der TSDF basierten Karte mög
 
 \begin{prefacesection}{Abstract}
 
-This paper deals with the implementation and design of a solution for the detection of \textbf{loop closures} in a \textbf{Truncated Signed Distance Field (TSDF)} based \textbf{Simultaneaous Localization and Mapping (SLAM)} approach and the subsequent optimization of the robot trajectory and TSDF map.
-The \textbf{GTSAM} library is used to optimize the robot's trajectory after identifying a loop closure.
-It is evaluated whether and under which conditions a postprocessing based on a finished TSDF map with associated initial trajectory is possible and additionally the use in an incremental SLAM approach is examined.
-Furthermore, it will be investigated to what extent a partial update of the TSDF based map is possible.
+The present thesis provides a solution to the loop closure problem in a \emph{Truncated Signed Distance Field (TSDF)} based \emph{Simultaneaous Localization and Mapping (SLAM)} approach. Described is the design and algorithm for a loop closure detection and subsequent multi-step validation via validators developed as part of the thesis, which sorted out erroneous loop closures to provide more robust optimization of the pose graph. In addition, several strategies developed in the work are outlined for updating the volumetric TSDF map representation. These are a global update of the map and two partial map updates based upon it, which provide significant runtime optimization over the global update.
 
 \end{prefacesection}
 

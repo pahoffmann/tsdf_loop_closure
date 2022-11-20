@@ -5,15 +5,14 @@
 \contentsline {section}{\numberline {1.2}Herangehensweise}{3}{section.1.2}%
 \contentsline {subsection}{\numberline {1.2.1}Fallback}{3}{subsection.1.2.1}%
 \contentsline {chapter}{\numberline {2}Stand der Forschung}{5}{chapter.2}%
-\contentsline {chapter}{\numberline {3}Grundlagen}{9}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Mathematische Grundlagen}{9}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}Konventionen}{9}{subsection.3.1.1}%
-\contentsline {subsubsection}{Pfad}{9}{section*.4}%
-\contentsline {subsection}{\numberline {3.1.2}Koordinatensysteme}{9}{subsection.3.1.2}%
-\contentsline {subsubsection}{Transformationen}{10}{section*.8}%
+\contentsline {chapter}{\numberline {3}Konzeptuelle Grundlagen und verwendete Datenstrukturen}{9}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Konzeptuelle Grundlagen}{9}{section.3.1}%
+\contentsline {subsubsection}{Pfad}{9}{section*.2}%
+\contentsline {subsection}{\numberline {3.1.1}Koordinatensysteme}{9}{subsection.3.1.1}%
+\contentsline {subsubsection}{Transformationen}{10}{section*.6}%
 \contentsline {section}{\numberline {3.2}TSDF}{12}{section.3.2}%
 \contentsline {subsection}{\numberline {3.2.1}TSDF-Karte}{14}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}TSDF-Update}{16}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.2}TSDF-Update}{15}{subsection.3.2.2}%
 \contentsline {section}{\numberline {3.3}SLAM}{18}{section.3.3}%
 \contentsline {chapter}{\numberline {4}Identifikation von Datenassoziationen zum Karten-Update}{21}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Ansatz}{21}{section.4.1}%

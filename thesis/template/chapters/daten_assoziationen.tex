@@ -265,7 +265,7 @@ Abbildung \ref{fig:BresenhamVsRayTracing} zeigte eine Gegenüberstellung der Lau
 		\label{fig:BresenhamVsRayTracing}
 \end{figure}
 
-Der folgende Absatz beschäftigt sich mit der Identifikation von Loop Closures innerhalb dieses ersten Ansatzes.
+Der folgende Absatz beschäftigt sich mit der Identifikation von Schleifenschlüssen innerhalb dieses ersten Ansatzes.
 
 
 \section{Schleifenschlüsse in der Nachbearbeitung}
@@ -281,7 +281,7 @@ Wie in Kapitel \ref{section:loop_closure_basics} eruiert wurde, ist es für die 
 \vec{n_{ij}} = \left(\vec{c_j} - \vec{c_i}\right)
 \end{myequation}
 
-Auf Basis der durch $\vec{v_{ij}}$ und $n_{ij}$ gegebenen Ebene lässt sich nun ein Punkt der Punktwolke als Schnitt des betrachteten Strahls mit der zuvor berechneten Ebene errechnen. Das Ergebnis dieser Approximation ist in Abbildung \ref{fig:pointcloud_approximation} dargestellt. Eine Zuordnung der approximierten Punktwolke zur Pose von welcher ausgehend die Punktwolke generiert wurde ist jedoch nicht sinnvoll, da unbekannt ist, welcher Teil der Karte tatsächlich von dieser Pose aus generiert wurde. Dasselbe Problem gilt auch für die Bestimmung von Punktwolken aus einer statischen Karte zur Berechnung potentieller Schleifenschlüsse um auf Basis der Schleifenschlüsse erneut die Karte zu optimieren. Dies scheitert schon bei der Generierung von Punktwolken aus einer potentiell unvollständigen oder gänzlich falschen Karte. Die approximierten Punktwolken stellen dann in jedem Fall auch unvollständige oder falsche Daten dar. Auch ein Scan-Matching mit potentiell unvollständigen oder falschen Daten ist nicht zielführend. Aus den genannten Gründen wurde die Idee der Punktwolkenapproximation zur Identifikation von Schleifenschlüssen verworfen.
+Auf Basis der durch $\vec{v_{ij}}$ und $n_{ij}$ gegebenen Ebene lässt sich nun ein Punkt der Punktwolke als Schnitt des betrachteten Strahls mit der zuvor berechneten Ebene errechnen. Das Ergebnis dieser Approximation ist in Abbildung \ref{fig:pointcloud_approximation} dargestellt. Eine Zuordnung der approximierten Punktwolke zur Pose von welcher ausgehend die Punktwolke generiert wurde ist jedoch nicht sinnvoll, da unbekannt ist, welcher Teil der Karte tatsächlich von dieser Pose aus generiert wurde. Dasselbe Problem gilt auch für die Bestimmung von Punktwolken aus einer statischen Karte zur Berechnung potentieller Schleifenschlüsse um auf Basis der Schleifenschlüsse erneut die Karte zu optimieren. Dies scheitert schon bei der Generierung von Punktwolken aus einer potentiell unvollständigen oder gänzlich falschen Karte. Die approximierten Punktwolken stellen dann in jedem Fall auch unvollständige oder falsche Daten dar. Auch ein Scan-Matching mit potentiell unvollständigen oder falschen Daten ist nicht zielführend. Aus den genannten Gründen wird die Idee der Punktwolkenapproximation zur Identifikation von Schleifenschlüssen an dieser Stelle verworfen.
 
 \begin{figure}
 	\centering
@@ -301,8 +301,9 @@ Auf Basis der durch $\vec{v_{ij}}$ und $n_{ij}$ gegebenen Ebene lässt sich nun 
 	\label{fig:pointcloud_approximation}
 \end{figure}
 
-Im nachfolgenden Abschnitt wird auf ein mögliches Kartenupdate unter der Prämisse eines zuvor identifizierten Schleifenschlusses eingegangen und die Ergebnisse eruiert.
+Im Folgenden wird unabhängig vom Ergebnis dieses Abschnitts, der die Problematik der Detektion von Schleifenschlüssen in der gegebenen Kartenrepräsentation darlegt, untersucht inwiefern ein Karten-Update auf Basis der generierten Assoziationen möglich ist.
 
+ 
 \section{Karten-Update mittels generierter Assoziationen}
 
 Dieser Abschnitt befasst sich mit dem Problem des TSDF-Kartenupdates, gegeben ein initialer Pfad $\mathfrak{P}_{init}$ und ein durch Schleifenschlüsse optimierter Pfad $\mathfrak{P}_{opt}$, sowie eine generierte Karte auf Basis des initialen Pfades. Ziel ist die Erstellung einer optimierten Karte, angepasst an den optimierten Pfad $\mathfrak{P}_{opt}$. Um dieses Ziel zu erreichen, müssen Teilbereiche der Karte entsprechend der Veränderungen der Posen verschoben werden. Dazu ist eine Assoziation zwischen Teilen der Karte und den zugehörigen Posen herzustellen. Entsprechend wurde ein Manager implementiert, der die zu bestimmenden Assoziationen verwaltet. Jeder Pose des alten Pfades wird ein HDF5-serialisierbares Assoziations-Objekt zugewiesen. Die Assoziationen selbst werden in einer \emph{1:N} Beziehung durch Ray-Tracing oder den vorgestellten 3D-Bresenham Ansatz generiert. Dies liefert für jede Position $P_{i} \in \mathfrak{P}_{init}$ eine Menge $M = \left\lbrace C_1, ..., C_N \right\rbrace$, wobei die Anzahl der Assoziationen für jede Position unterschiedlich ist.
