@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  20 NOV 2022 02:58
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  20 NOV 2022 15:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1340,7 +1340,7 @@ Package microtype Info: No adjustment of character kerning.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-<base/unilogo.pdf, id=195, 597.23125pt x 845.1575pt>
+<base/unilogo.pdf, id=199, 597.23125pt x 845.1575pt>
 File: base/unilogo.pdf Graphic file (type pdf)
 <use base/unilogo.pdf>
 Package pdftex.def Info: base/unilogo.pdf  used on input line 114.
@@ -1416,29 +1416,27 @@ t line 46.
 Kapitel 2.
 [5
 
-]
-
-Package natbib Warning: Citation `curless1996volumetric' on page 6 undefined on
- input line 32.
-
-
-Package natbib Warning: Citation `curless1996volumetric' on page 6 undefined on
- input line 32.
-
-
-Package natbib Warning: Citation `mauch200fast' on page 6 undefined on input li
-ne 33.
-
-[6]
+] [6]
 
 Package natbib Warning: Citation `curless1996volumetric' on page 7 undefined on
- input line 36.
+ input line 63.
 
-[7]) (./chapters/grundlagen.tex [8]
+
+Package natbib Warning: Citation `curless1996volumetric' on page 7 undefined on
+ input line 63.
+
+
+Package natbib Warning: Citation `mauch200fast' on page 7 undefined on input li
+ne 64.
+
+[7]
+
+Package natbib Warning: Citation `curless1996volumetric' on page 8 undefined on
+ input line 67.
+
+) (./chapters/grundlagen.tex [8]
 Kapitel 3.
-Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
-ine 10.
-<pics/ros_coordinate_sys.png, id=396, 606.265pt x 465.74pt>
+<pics/ros_coordinate_sys.png, id=414, 606.265pt x 465.74pt>
 File: pics/ros_coordinate_sys.png Graphic file (type png)
 <use pics/ros_coordinate_sys.png>
 Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 27.
@@ -1446,13 +1444,13 @@ Package pdftex.def Info: pics/ros_coordinate_sys.png  used on input line 27.
 [9
 
 ]
-<pics/robot_tf.png, id=408, 909.3975pt x 788.9475pt>
+<pics/robot_tf.png, id=423, 909.3975pt x 788.9475pt>
 File: pics/robot_tf.png Graphic file (type png)
 <use pics/robot_tf.png>
 Package pdftex.def Info: pics/robot_tf.png  used on input line 48.
 (pdftex.def)             Requested size: 254.62956pt x 220.90378pt.
  [10 <./pics/ros_coordinate_sys.png>] [11 <./pics/robot_tf.png>]
-<pics/transformation.png, id=426, 1726.45pt x 562.1pt>
+<pics/transformation.png, id=441, 1726.45pt x 562.1pt>
 File: pics/transformation.png Graphic file (type png)
 <use pics/transformation.png>
 Package pdftex.def Info: pics/transformation.png  used on input line 90.
@@ -1464,18 +1462,18 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <5> on input line 92.
  [12 <./pics/transformation.png>]
-<pics/TSDF.png, id=449, 1087.06125pt x 1004.75375pt>
+<pics/TSDF.png, id=464, 1087.06125pt x 1004.75375pt>
 File: pics/TSDF.png Graphic file (type png)
 <use pics/TSDF.png>
 Package pdftex.def Info: pics/TSDF.png  used on input line 117.
 (pdftex.def)             Requested size: 239.1542pt x 221.04651pt.
- [13 <./pics/TSDF.png>]
+ [13]
 
 LaTeX Warning: Reference `chapter:associations' on page 14 undefined on input l
 ine 139.
 
-[14]
-<pics/HDF5old.png, id=478, 1065.9825pt x 592.2125pt>
+[14 <./pics/TSDF.png>]
+<pics/HDF5old.png, id=495, 1065.9825pt x 592.2125pt>
 File: pics/HDF5old.png Graphic file (type png)
 <use pics/HDF5old.png>
 Package pdftex.def Info: pics/HDF5old.png  used on input line 148.
@@ -1492,12 +1490,14 @@ LaTeX Warning: Reference `section:sdf' on page 18 undefined on input line 217.
 LaTeX Warning: Reference `section:loop_closure_basics' on page 19 undefined on 
 input line 234.
 
+Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
+ine 236.
 ) (./chapters/daten_assoziationen.tex [19] [20
 
 ]
 Kapitel 4.
 [21]
-<pics/HDF5new.png, id=535, 943.525pt x 461.725pt>
+<pics/HDF5new.png, id=551, 943.525pt x 461.725pt>
 File: pics/HDF5new.png Graphic file (type png)
 <use pics/HDF5new.png>
 Package pdftex.def Info: pics/HDF5new.png  used on input line 31.
@@ -1506,18 +1506,18 @@ Package pdftex.def Info: pics/HDF5new.png  used on input line 31.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <9> on input line 53.
  [23 <./pics/HDF5new.png>] [24] [25]
-<pics/RayTracingBig.png, id=572, 1447.4075pt x 682.55pt>
+<pics/RayTracingBig.png, id=588, 1447.4075pt x 682.55pt>
 File: pics/RayTracingBig.png Graphic file (type png)
 <use pics/RayTracingBig.png>
 Package pdftex.def Info: pics/RayTracingBig.png  used on input line 127.
 (pdftex.def)             Requested size: 434.2256pt x 204.76657pt.
-<pics/Ray-Trace-Zustandsdiagramm.png, id=577, 1039.885pt x 1162.3425pt>
+<pics/Ray-Trace-Zustandsdiagramm.png, id=593, 1039.885pt x 1162.3425pt>
 File: pics/Ray-Trace-Zustandsdiagramm.png Graphic file (type png)
 <use pics/Ray-Trace-Zustandsdiagramm.png>
 Package pdftex.def Info: pics/Ray-Trace-Zustandsdiagramm.png  used on input lin
 e 137.
 (pdftex.def)             Requested size: 259.97061pt x 290.58492pt.
-<pics/Bresenham2D.png, id=583, 1485.55pt x 1236.62pt>
+<pics/Bresenham2D.png, id=599, 1485.55pt x 1236.62pt>
 File: pics/Bresenham2D.png Graphic file (type png)
 <use pics/Bresenham2D.png>
 Package pdftex.def Info: pics/Bresenham2D.png  used on input line 153.
@@ -1530,12 +1530,12 @@ Overfull \vbox (121.14235pt too high) has occurred while \output is active []
 
 
 [28 <./pics/Ray-Trace-Zustandsdiagramm.png>] [29 <./pics/Bresenham2D.png>]
-<pics/sp_bresenham_91_74_.png, id=626, 857.45343pt x 645.91313pt>
+<pics/sp_bresenham_91_74_.png, id=642, 857.45343pt x 645.91313pt>
 File: pics/sp_bresenham_91_74_.png Graphic file (type png)
 <use pics/sp_bresenham_91_74_.png>
 Package pdftex.def Info: pics/sp_bresenham_91_74_.png  used on input line 225.
 (pdftex.def)             Requested size: 216.24023pt x 162.88727pt.
-<pics/sp_raytrace_91_97_.png, id=627, 857.45343pt x 645.91313pt>
+<pics/sp_raytrace_91_97_.png, id=643, 857.45343pt x 645.91313pt>
 File: pics/sp_raytrace_91_97_.png Graphic file (type png)
 <use pics/sp_raytrace_91_97_.png>
 Package pdftex.def Info: pics/sp_raytrace_91_97_.png  used on input line 231.
@@ -1543,12 +1543,12 @@ Package pdftex.def Info: pics/sp_raytrace_91_97_.png  used on input line 231.
 
 [30] [31 <./pics/sp_bresenham_91_74_.png (PNG copy)> <./pics/sp_raytrace_91_97_
 .png (PNG copy)>]
-<pics/Verdeckungen.png, id=641, 895.345pt x 676.5275pt>
+<pics/Verdeckungen.png, id=657, 895.345pt x 676.5275pt>
 File: pics/Verdeckungen.png Graphic file (type png)
 <use pics/Verdeckungen.png>
 Package pdftex.def Info: pics/Verdeckungen.png  used on input line 250.
 (pdftex.def)             Requested size: 223.8357pt x 169.13145pt.
-<pics/BresenhamVsRayTracing.png, id=643, 474.0912pt x 320.1561pt>
+<pics/BresenhamVsRayTracing.png, id=659, 474.0912pt x 320.1561pt>
 File: pics/BresenhamVsRayTracing.png Graphic file (type png)
 <use pics/BresenhamVsRayTracing.png>
 Package pdftex.def Info: pics/BresenhamVsRayTracing.png  used on input line 262
@@ -1560,7 +1560,7 @@ LaTeX Warning: Reference `section:loop_closure_basics' on page 32 undefined on
 input line 274.
 
 [32 <./pics/Verdeckungen.png>] [33 <./pics/BresenhamVsRayTracing.png>]
-<pics/single_tsdf.png, id=659, 950.80219pt x 645.91313pt>
+<pics/single_tsdf.png, id=675, 950.80219pt x 645.91313pt>
 File: pics/single_tsdf.png Graphic file (type png)
 <use pics/single_tsdf.png>
 Package pdftex.def Info: pics/single_tsdf.png  used on input line 290.
@@ -1570,7 +1570,7 @@ Overfull \hbox (34.1419pt too wide) in paragraph at lines 290--291
  [][] 
  []
 
-<pics/approx_cloud.png, id=660, 950.80219pt x 645.91313pt>
+<pics/approx_cloud.png, id=676, 950.80219pt x 645.91313pt>
 File: pics/approx_cloud.png Graphic file (type png)
 <use pics/approx_cloud.png>
 Package pdftex.def Info: pics/approx_cloud.png  used on input line 296.
@@ -1580,7 +1580,7 @@ Overfull \hbox (34.1419pt too wide) in paragraph at lines 296--297
  [][] 
  []
 
-LaTeX Font Info:    Trying to load font information for U+euf on input line 308
+LaTeX Font Info:    Trying to load font information for U+euf on input line 309
 .
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/ueuf.fd
 File: ueuf.fd 2013/01/14 v3.01 Euler Fraktur
@@ -1590,10 +1590,10 @@ File: mt-euf.cfg 2006/07/03 v1.1 microtype config. file: AMS Euler Fraktur (RS)
 
 ) [34 <./pics/single_tsdf.png (PNG copy)> <./pics/approx_cloud.png (PNG copy)>]
  [35]
-<pics/Assoziationsprobleme.png, id=676, 1485.55pt x 702.625pt>
+<pics/Assoziationsprobleme.png, id=692, 1485.55pt x 702.625pt>
 File: pics/Assoziationsprobleme.png Graphic file (type png)
 <use pics/Assoziationsprobleme.png>
-Package pdftex.def Info: pics/Assoziationsprobleme.png  used on input line 330.
+Package pdftex.def Info: pics/Assoziationsprobleme.png  used on input line 331.
 
 (pdftex.def)             Requested size: 371.3866pt x 175.6558pt.
  [36]
@@ -1605,18 +1605,18 @@ LaTeX Warning: Reference `rusu20113d' on page 39 undefined on input line 10.
 [39
 
 ] [40]
-<pics/LoopIdentifikation.png, id=710, 943.525pt x 565.11125pt>
+<pics/LoopIdentifikation.png, id=726, 943.525pt x 565.11125pt>
 File: pics/LoopIdentifikation.png Graphic file (type png)
 <use pics/LoopIdentifikation.png>
 Package pdftex.def Info: pics/LoopIdentifikation.png  used on input line 36.
 (pdftex.def)             Requested size: 283.05968pt x 169.53468pt.
  [41 <./pics/LoopIdentifikation.png>]
-<pics/Windows_small.png, id=723, 462.528pt x 346.896pt>
+<pics/Windows_small.png, id=739, 462.528pt x 346.896pt>
 File: pics/Windows_small.png Graphic file (type png)
 <use pics/Windows_small.png>
 Package pdftex.def Info: pics/Windows_small.png  used on input line 48.
 (pdftex.def)             Requested size: 216.24023pt x 162.18364pt.
-<pics/Windows_small_limit.png, id=724, 462.528pt x 346.896pt>
+<pics/Windows_small_limit.png, id=740, 462.528pt x 346.896pt>
 File: pics/Windows_small_limit.png Graphic file (type png)
 <use pics/Windows_small_limit.png>
 Package pdftex.def Info: pics/Windows_small_limit.png  used on input line 54.
@@ -1627,7 +1627,7 @@ LaTeX Warning: Reference `Line-Rejector' on page 42 undefined on input line 66.
 
 
 [42]
-<pics/Line-Rejector.png, id=730, 1588.93625pt x 764.8575pt>
+<pics/Line-Rejector.png, id=749, 1588.93625pt x 764.8575pt>
 File: pics/Line-Rejector.png Graphic file (type png)
 <use pics/Line-Rejector.png>
 Package pdftex.def Info: pics/Line-Rejector.png  used on input line 72.
@@ -1743,7 +1743,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 115--116
 \OT1/lmr/m/n/10.95 (+20) an Schlei-fen-schl[]ussen
  []
 
-<pics/Flussdiagramm-Optimization-colorized.png, id=761, 1878.01625pt x 2770.35p
+<pics/Flussdiagramm-Optimization-colorized.png, id=779, 1878.01625pt x 2770.35p
 t>
 File: pics/Flussdiagramm-Optimization-colorized.png Graphic file (type png)
 <use pics/Flussdiagramm-Optimization-colorized.png>
@@ -1764,45 +1764,45 @@ Overfull \hbox (12.36945pt too wide) in paragraph at lines 141--141
  []
 
 [46] [47 <./pics/Flussdiagramm-Optimization-colorized.png>]
-<pics/GTvsInit.png, id=787, 462.528pt x 346.896pt>
+<pics/GTvsInit.png, id=803, 462.528pt x 346.896pt>
 File: pics/GTvsInit.png Graphic file (type png)
 <use pics/GTvsInit.png>
 Package pdftex.def Info: pics/GTvsInit.png  used on input line 150.
 (pdftex.def)             Requested size: 323.76738pt x 242.82553pt.
  [48 <./pics/GTvsInit.png>]
-<pics/GTvsGICP.png, id=803, 462.528pt x 346.896pt>
+<pics/GTvsGICP.png, id=820, 462.528pt x 346.896pt>
 File: pics/GTvsGICP.png Graphic file (type png)
 <use pics/GTvsGICP.png>
 Package pdftex.def Info: pics/GTvsGICP.png  used on input line 168.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/GTvsThis.png, id=804, 462.528pt x 346.896pt>
+<pics/GTvsThis.png, id=821, 462.528pt x 346.896pt>
 File: pics/GTvsThis.png Graphic file (type png)
 <use pics/GTvsThis.png>
 Package pdftex.def Info: pics/GTvsThis.png  used on input line 174.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/initialVsGIPVsLC.png, id=805, 462.528pt x 346.896pt>
+<pics/initialVsGIPVsLC.png, id=822, 462.528pt x 346.896pt>
 File: pics/initialVsGIPVsLC.png Graphic file (type png)
 <use pics/initialVsGIPVsLC.png>
 Package pdftex.def Info: pics/initialVsGIPVsLC.png  used on input line 187.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/GICPvsLC_error2.png, id=806, 462.528pt x 346.896pt>
+<pics/GICPvsLC_error2.png, id=823, 462.528pt x 346.896pt>
 File: pics/GICPvsLC_error2.png Graphic file (type png)
 <use pics/GICPvsLC_error2.png>
 Package pdftex.def Info: pics/GICPvsLC_error2.png  used on input line 193.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
  [49 <./pics/GTvsGICP.png> <./pics/GTvsThis.png>]
-<pics/double_walls_marked_white.png, id=823, 544.28343pt x 359.09157pt>
+<pics/double_walls_marked_white.png, id=841, 544.28343pt x 359.09157pt>
 File: pics/double_walls_marked_white.png Graphic file (type png)
 <use pics/double_walls_marked_white.png>
 Package pdftex.def Info: pics/double_walls_marked_white.png  used on input line
  211.
 (pdftex.def)             Requested size: 227.62204pt x 150.17087pt.
-<pics/no_double_walls_cut.png, id=824, 564.15768pt x 359.09157pt>
+<pics/no_double_walls_cut.png, id=842, 564.15768pt x 359.09157pt>
 File: pics/no_double_walls_cut.png Graphic file (type png)
 <use pics/no_double_walls_cut.png>
 Package pdftex.def Info: pics/no_double_walls_cut.png  used on input line 217.
 (pdftex.def)             Requested size: 227.62204pt x 144.88335pt.
-<pics/vorplatz_paths_3d.png, id=825, 498.663pt x 255.1131pt>
+<pics/vorplatz_paths_3d.png, id=843, 498.663pt x 255.1131pt>
 File: pics/vorplatz_paths_3d.png Graphic file (type png)
 <use pics/vorplatz_paths_3d.png>
 Package pdftex.def Info: pics/vorplatz_paths_3d.png  used on input line 229.
@@ -1810,18 +1810,18 @@ Package pdftex.def Info: pics/vorplatz_paths_3d.png  used on input line 229.
  [50 <./pics/initialVsGIPVsLC.png> <./pics/GICPvsLC_error2.png>] [51 <./pics/do
 uble_walls_marked_white.png> <./pics/no_double_walls_cut.png> <./pics/vorplatz_
 paths_3d.png>]
-<pics/physik_double_marked.png, id=849, 572.3784pt x 365.9271pt>
+<pics/physik_double_marked.png, id=867, 572.3784pt x 365.9271pt>
 File: pics/physik_double_marked.png Graphic file (type png)
 <use pics/physik_double_marked.png>
 Package pdftex.def Info: pics/physik_double_marked.png  used on input line 244.
 
 (pdftex.def)             Requested size: 227.62204pt x 145.51953pt.
-<pics/physik_corrected.png, id=850, 598.1547pt x 356.7729pt>
+<pics/physik_corrected.png, id=868, 598.1547pt x 356.7729pt>
 File: pics/physik_corrected.png Graphic file (type png)
 <use pics/physik_corrected.png>
 Package pdftex.def Info: pics/physik_corrected.png  used on input line 250.
 (pdftex.def)             Requested size: 227.62204pt x 135.76564pt.
-<pics/physik_paths3d.png, id=853, 365.4453pt x 173.9298pt>
+<pics/physik_paths3d.png, id=871, 365.4453pt x 173.9298pt>
 File: pics/physik_paths3d.png Graphic file (type png)
 <use pics/physik_paths3d.png>
 Package pdftex.def Info: pics/physik_paths3d.png  used on input line 262.
@@ -1862,35 +1862,35 @@ Overfull \hbox (15.41347pt too wide) in paragraph at lines 61--61
 []\OT1/lmr/m/n/6 Uberlappungsbereich 
  []
 
-<pics/GlobalMapUpdateTime.png, id=913, 462.528pt x 346.896pt>
+<pics/GlobalMapUpdateTime.png, id=931, 462.528pt x 346.896pt>
 File: pics/GlobalMapUpdateTime.png Graphic file (type png)
 <use pics/GlobalMapUpdateTime.png>
 Package pdftex.def Info: pics/GlobalMapUpdateTime.png  used on input line 73.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/PartialMapUpdateTime.png, id=914, 469.0323pt x 346.896pt>
+<pics/PartialMapUpdateTime.png, id=932, 469.0323pt x 346.896pt>
 File: pics/PartialMapUpdateTime.png Graphic file (type png)
 <use pics/PartialMapUpdateTime.png>
 Package pdftex.def Info: pics/PartialMapUpdateTime.png  used on input line 79.
 (pdftex.def)             Requested size: 227.62204pt x 168.3502pt.
-<pics/HistogramCCphysik128_seaborn_fixed.png, id=919, 462.528pt x 346.896pt>
+<pics/HistogramCCphysik128_seaborn_fixed.png, id=937, 462.528pt x 346.896pt>
 File: pics/HistogramCCphysik128_seaborn_fixed.png Graphic file (type png)
 <use pics/HistogramCCphysik128_seaborn_fixed.png>
 Package pdftex.def Info: pics/HistogramCCphysik128_seaborn_fixed.png  used on i
 nput line 93.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/Histogram_point_to_mesh.png, id=920, 462.528pt x 346.896pt>
+<pics/Histogram_point_to_mesh.png, id=938, 462.528pt x 346.896pt>
 File: pics/Histogram_point_to_mesh.png Graphic file (type png)
 <use pics/Histogram_point_to_mesh.png>
 Package pdftex.def Info: pics/Histogram_point_to_mesh.png  used on input line 9
 9.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/Histogram_point_to_point_hannover.png, id=923, 462.528pt x 346.896pt>
+<pics/Histogram_point_to_point_hannover.png, id=941, 462.528pt x 346.896pt>
 File: pics/Histogram_point_to_point_hannover.png Graphic file (type png)
 <use pics/Histogram_point_to_point_hannover.png>
 Package pdftex.def Info: pics/Histogram_point_to_point_hannover.png  used on in
 put line 112.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/Histogram_point_to_mesh_hannover.png, id=924, 462.528pt x 346.896pt>
+<pics/Histogram_point_to_mesh_hannover.png, id=942, 462.528pt x 346.896pt>
 File: pics/Histogram_point_to_mesh_hannover.png Graphic file (type png)
 <use pics/Histogram_point_to_mesh_hannover.png>
 Package pdftex.def Info: pics/Histogram_point_to_mesh_hannover.png  used on inp
@@ -1920,7 +1920,7 @@ Package natbib Warning: Citation `HTSDF' on page 69 undefined on input line 32.
 
 ) [69] (./chapters/appendix.tex [70]
 Anhang A.
-<pics/elch.png, id=1005, 819.06pt x 561.09625pt>
+<pics/elch.png, id=1024, 819.06pt x 561.09625pt>
 File: pics/elch.png Graphic file (type png)
 <use pics/elch.png>
 Package pdftex.def Info: pics/elch.png  used on input line 9.
@@ -1948,7 +1948,7 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 171.
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 171.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 171.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 76DABBA985CCFF15BB6E124E1A92FADE;7176.
+(rerunfilecheck)             Checksum: 5CA4ABE390BFDCAFFFD5626DE806EDC1;7490.
 
 
 LaTeX Warning: There were undefined references.
@@ -1959,13 +1959,13 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 171.
  ) 
 Here is how much of TeX's memory you used:
- 42789 strings out of 483016
- 913840 string characters out of 5961286
- 1388286 words of memory out of 5000000
- 56513 multiletter control sequences out of 15000+600000
- 637158 words of font info for 229 fonts, out of 8000000 for 9000
+ 42807 strings out of 483016
+ 914161 string characters out of 5961286
+ 1388299 words of memory out of 5000000
+ 56519 multiletter control sequences out of 15000+600000
+ 637590 words of font info for 233 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
- 73i,18n,127p,3541b,1085s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 73i,18n,127p,3541b,1088s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
 dvips/lm/lm-ts1.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/sh
 are/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm
@@ -1990,10 +1990,10 @@ s/type1/public/lm/lmro10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.pfb
 1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/s
 hare/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-dist/font
 s/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (83 pages, 15491907 bytes).
+Output written on main.pdf (83 pages, 15500716 bytes).
 PDF statistics:
- 1209 PDF objects out of 1440 (max. 8388607)
- 972 compressed objects within 10 object streams
- 244 named destinations out of 1000 (max. 500000)
- 17021 words of extra memory for PDF output out of 17280 (max. 10000000)
+ 1228 PDF objects out of 1440 (max. 8388607)
+ 991 compressed objects within 10 object streams
+ 248 named destinations out of 1000 (max. 500000)
+ 17029 words of extra memory for PDF output out of 17280 (max. 10000000)
 

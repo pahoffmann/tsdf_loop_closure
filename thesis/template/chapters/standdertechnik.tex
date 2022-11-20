@@ -16,98 +16,47 @@ Chen \& Medioni \cite{chen1992object} erweitern ICP durch die Nutzung von Oberfl
 Nach \cite{he2017iterative} reduziert NICP die Anzahl Iterationen und konvergiert schneller  gegen eine gewisse Grenze als ICP.
 Segal et al. \cite{segal2009generalized} erweitern die Ideen aus \cite{chen1992object} um eine \emph{Plane-to-Plane} Metrik.
 Neben genannten Methoden existieren zahlreiche weitere Variationen von ICP, die jeweils kleine Anpassungen vornehmen wie Chetverikov et al. \cite{chetverikov2005robust}, die einen \emph{Least Trimmed Squares} Ansatz zur Fehlerminimierung verwenden und so auch für Punktwolken anwendbar ist, deren Überlappung geringer als $50\%$ ist.
+Wesentlicher Faktor für die Robustheit von SLAM Ansätzen ist die Integration von Schleifenschlüssen. Im Folgenden wird ein grober Überblick über dieses Thema geliefert.
 
+
+%-----------------------------------------------------------------%
+%@article{cadena2016past,
+%  title={Past, present, and future of simultaneous localization and mapping: Toward the robust-%perception age},
+%  author={Cadena, Cesar and Carlone, Luca and Carrillo, Henry and Latif, Yasir and Scaramuzza, Davide %and Neira, Jos{\'e} and Reid, Ian and Leonard, John J},
+%  journal={IEEE Transactions on robotics},
+%  volume={32},
+%  number={6},
+%  pages={1309--1332},
+%  year={2016},
+%  publisher={IEEE}
+%}
+
+
+
+%-----------------------------------------------------------------%
+
+
+
+%-----------------------------------------------------------------%
+
+
+
+%-----------------------------------------------------------------%
+
+
+
+%-----------------------------------------------------------------%
+
+
+
+%-----------------------------------------------------------------%
 \textbf{Schleifenschlüsse}
 
-Um genannte SLAM-Ansätze robust gegenüber einer Akkumulation von Fehlern zu machen, die häufig in dieser Kategorie von Algorithmen auftreten, werden Schleifenschlüsse verwendet, anhand derer die Fehler nachträglich korrigiert werden können. Grundidee ist dabei anhand der gerade aufgenommenen Sensordaten zu beurteilen, ob diese zu bereits im Vorfeld aufgenommenen Daten passt und darauf basierend die erstellte Karte oder den generierten Pose-Graphen zu optimieren. Im Folgenden wird ein Überblick über das Thema der Wiedererkennung von Orten beziehungsweise Schleifenschlüssen gegeben, welches in der Literatur häufig als \emph{Loop Closure}, \emph{Place-Recognition} oder \emph{Revisiting-Problem} bezeichnet wird. Dieser Überblick deckt bei Weitem nicht den Umfang der Forschungen in diesem Bereich ab. Frühe Forschungen in diesem Bereich stammen von Lu \& Milios \cite{lu1997globally}, die einen Ansatz zur konsistenten, globalen Registrierung von 2-D Reichweiten-Scans vorschlagen. Dazu nutzen sie ein Netzwerks aus relativen Pose-Beschränkungen, die durch die Implementation eines Scan-Matching Ansatzes und Odometrie ermittelt werden, welches mit einem globalen Ansatz optimiert wird. Zu diesen Beschränkungen zählen auch ermittelte Schleifenschlüssen. Grundlage für die Identifikation von Schleifenschüssen
+Um genannte SLAM-Ansätze robust gegenüber einer Akkumulation von Fehlern zu machen, die häufig in dieser Kategorie von Algorithmen auftreten, werden Schleifenschlüsse verwendet, anhand derer die Fehler nachträglich korrigiert werden können. Grundidee ist dabei anhand der gerade aufgenommenen Sensordaten zu beurteilen, ob diese zu bereits im Vorfeld aufgenommenen Daten passt und darauf basierend die erstellte Karte oder den generierten Pose-Graphen zu optimieren. Für diese Einschätzung existieren mehrere Varianten unterschiedlicher Komplexität, jeweils basierend auf der Bestimmung von Kandidaten und deren anschließenden Verifikation. Im Folgenden wird ein Überblick über das Thema der Wiedererkennung von Orten beziehungsweise Schleifenschlüsse gegeben, welches in der Literatur häufig als \emph{Loop-Closure}, \emph{Place-Recognition} oder \emph{Revisiting-Problem} bezeichnet wird, wobei die genannten Bezeichnungen nicht dasselbe Thema bezeichnen, sondern lediglich eng miteinander verwandt sind. Garg et al. \cite{garg2021your} liefern einen breiten Überblick über die Unterschiede zwischen der visuellen \emph{Place-Recognition} in der Robotik und der Computergrafik. Der im Folgenden dargelegte Überblick über Schleifenschlüsse in der Robotik deckt bei Weitem nicht den Umfang der Forschungen in diesem Bereich ab. 
 
-Borrmann et al. \cite{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird. Darauf aufbauend optimieren Sprickerhof et al. \cite{sprickerhof2011heuristic} den Schleifenschluss-Ansatz durch Nutzung einer heuristischen Schleifenschluss-Technik, die im Gegensatz zu bisherigen Methoden einen dünn besetzten SLAM-Graphen nutzen.
-Ähnlich wie \cite{borrmann2008globally} nutzen Shan et al. \cite{shan2020lio} in ihrem Feature basierten SLAM Ansatz die euklidische Distanz zur Bestimmung von Kandidaten für Schleifenschlüsse, die durch eine Evaluation des \emph{Fitness-Scores} von ICP nach Registrierung der zugehörigen Punktwolken der beiden Posen der jeweiligen Kandidaten verifiziert werden.
+Frühe Forschungen in diesem Bereich stammen von Lu \& Milios \cite{lu1997globally}, die einen Ansatz zur konsistenten, globalen Registrierung von 2-D Reichweiten-Scans vorschlagen. Dazu nutzen sie ein Netzwerks aus relativen Pose-Beschränkungen, die durch die Implementation eines Scan-Matching Ansatzes und Odometrie ermittelt werden, welches mit einem globalen Ansatz optimiert wird. Zu diesen Beschränkungen zählen auch ermittelte Schleifenschlüssen. Ho \& Newman \cite{ho2006loop} stellen heraus, dass bei herkömmlichen Verfahren zur Identifikation von Schleifenschlüssen eine Initialschätzung notwendig ist und schlechte Schätzungen zu fehlerhaften Schleifenschlüssen führen können. Sie schlagen stattdessen ein Verfahren vor, welches unabhängig von der Navigation und einer damit verbundenen initialen Poseschätzung ist und sich auf den Abgleich charakteristischer Signaturen einzelner lokale Szenen beziehungsweise Scans zur Detektion von Schleifenschlüssen stützt. Borrmann et al. \cite{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird. Darauf aufbauend optimieren Sprickerhof et al. \cite{sprickerhof2011heuristic} den Schleifenschluss-Ansatz durch Nutzung einer heuristischen Schleifenschluss-Technik, die im Gegensatz zu bisherigen Methoden einen dünn besetzten SLAM-Graphen nutzen und vergleichbare Ergebnisse bei einer reduzierten Laufzeit erzielen. In \cite{lowry2015visual} stellen eine umfangreiche Forschung zur visuellen \emph{Place-Recognition} im Robotik-Kontext dar. Xie et al. \cite{xie2017graphtinker}, sowie Tsintotas et al. \cite{tsintotas2022revisiting} stellen die Notwendigkeit von weiteren Validierungsstufen für Schleifenschlüsse heraus um die Anzahl fehlerhafter Schleifenschlüsse und deren verhängnisvolle Auswirkungen auf die Optimierung eines Pose-Graphen zu reduzieren. Ähnlich wie \cite{borrmann2008globally} nutzen Shan et al. \cite{shan2020lio} in ihrem Feature-basierten SLAM Ansatz die euklidische Distanz zur Bestimmung von Kandidaten für Schleifenschlüsse, die durch eine Evaluation des \emph{Fitness-Scores} von ICP nach Registrierung der zugehörigen Punktwolken der beiden Posen der jeweiligen Kandidaten verifiziert werden. Zur Optimierung des Pose-Graphen, basierend auf den so identifizierten Schleifenschlüssen, verwendet \cite{shan2020lio} die Bibliothek GTSAM \cite{dellaert2012factor} und deren Implementation eines Faktor-Graphen. GTSAM kapselt dabei die Funktionalität der Graph-Optimierung und ermöglicht so eine vereinfachte Optimierung basierend auf detektierten Schleifenschlüssen, die vielfach genutzt wird (\cite{shan2020lio}). Eine detaillierte Übersicht über existierende Verfahren zur Detektion von Schleifenschlüssen mit Bezug zu früheren Forschungen auf diesem Gebiet ist in dem Papier von Tsintotas et al. \cite{tsintotas2022revisiting} dargelegt.  
 
-
-
-%-------------------------------------------------------------------------------%
-
-@article{borrmann2008globally,
-  title={Globally consistent 3D mapping with scan matching},
-  author={Borrmann, Dorit and Elseberg, Jan and Lingemann, Kai and N{\"u}chter, Andreas and Hertzberg, Joachim},
-  journal={Robotics and Autonomous Systems},
-  volume={56},
-  number={2},
-  pages={130--142},
-  year={2008},
-  publisher={Elsevier}
-}
-
-%-------------------------------------------------------------------------------%
-
-
-
-%-------------------------------------------------------------------------------%
-
-@article{sprickerhof2011heuristic,
-  title={A heuristic loop closing technique for large-scale 6d slam},
-  author={Sprickerhof, Jochen and N{\"u}chter, Andreas and Lingemann, Kai and Hertzberg, Joachim},
-  journal={Automatika},
-  volume={52},
-  number={3},
-  pages={199--222},
-  year={2011},
-  publisher={Taylor \& Francis}
-}
-
-
-%-------------------------------------------------------------------------------%
-
-
-
-
-%-------------------------------------------------------------------------------%
-
-@inproceedings{mccormac2018fusion++,
-  title={Fusion++: Volumetric object-level slam},
-  author={McCormac, John and Clark, Ronald and Bloesch, Michael and Davison, Andrew and Leutenegger, Stefan},
-  booktitle={2018 international conference on 3D vision (3DV)},
-  pages={32--41},
-  year={2018},
-  organization={IEEE}
-}
-
-
-
-%-------------------------------------------------------------------------------%
-
-@inproceedings{shan2020lio,
-  title={Lio-sam: Tightly-coupled lidar inertial odometry via smoothing and mapping},
-  author={Shan, Tixiao and Englot, Brendan and Meyers, Drew and Wang, Wei and Ratti, Carlo and Rus, Daniela},
-  booktitle={2020 IEEE/RSJ international conference on intelligent robots and systems (IROS)},
-  pages={5135--5142},
-  year={2020},
-  organization={IEEE}
-}
-%-------------------------------------------------------------------------------%
-
-%-------------------------------------------------------------------------------%
-@article{tsintotas2022revisiting,
-  title={The Revisiting Problem in Simultaneous Localization and Mapping: A Survey on Visual Loop Closure Detection},
-  author={Tsintotas, Konstantinos A and Bampis, Loukas and Gasteratos, Antonios},
-  journal={IEEE Transactions on Intelligent Transportation Systems},
-  year={2022},
-  publisher={IEEE}
-}
-
-\textbf{The Revisiting Problem in Simultaneous Localization and Mapping: A Survey on Visual Loop Closure Detection (2022), Tsintotas et al.}
-
-\begin{description}
-\item
-Übersicht über Place-Recognition
-\end{description}
-%-------------------------------------------------------------------------------%
-
-Borrmann et al. \cite{borrmann2008globally} schufen in ihrer Arbeit eine gute Grundlage für die Integration von Schleifenschlüssen in SLAM-Verfahren auf Basis von Pose-Graphen, die bis heute vielfach verwendet wird. Darauf aufbauend optimieren Sprickerhof et al. \cite{sprickerhof2011heuristic} den Schleifenschluss-Ansatz durch Nutzung einer heuristischen Schleifenschluss-Technik, die im Gegensatz zu bisherigen Methoden einen dünn besetzten SLAM-Graphen nutzen.
-McCormac et al. \cite{mccormac2018fusion++} schlagen ein Online-SLAM System, welches eine dauerhafte und genaue 3D Karte beliebiger rekonstruierter Objekte darstellt \cite{mccormac2018fusion++}. Die Rekonstruktionen sind als TSDF realisiert. \cite{mccormac2018fusion++} schlägt ebenfalls eine Integration von Schleifenschlüssen vor, diese verändert allerdings lediglich die relativen Poseschätzungen, aber führt zu keiner Verformung der durch die TSDF beschriebenen Objekte. An dieser Stelle wird also kein Update der TSDF durch Schleifenschlüsse vorgenommen.
-Prisacariu et al. \cite{prisacariu2017infinitam} unterteilen den 3D-Raum in starre TSDF-Teilkarten und optimieren die relativen Positionen zwischen diesen. Nach \cite{prisacariu2017infinitam} ist eine anschließende Generation der globalen Karte durch ein Zusammenführen der Teilkarten möglich. \cite{prisacariu2017infinitam} verwendet für jede Pose des Graphen eine eigene Teilkarte, die in sich konsistent ist. \cite{prisacariu2017infinitam} erreichen eine globale Konsistenz durch eine Graph-Optimierung, die zusätzlich Schleifenschlüsse berücksichtigt. Optimiert werden die zu den Teilkarten zugehörigen Posen. Die TSDF-Teilkarten selbst werden durch die Graph-Optimierung nicht angepasst.
-Ähnlich wie \cite{borrmann2008globally} nutzen Shan et al. \cite{shan2020lio} in ihrem Feature basierten SLAM Ansatz die euklidische Distanz zur Bestimmung von Kandidaten für Schleifenschlüsse, die durch eine Evaluation des \emph{Fitness-Scores} von ICP nach Registrierung der zugehörigen Punktwolken der beiden Posen der jeweiligen Kandidaten verifiziert werden.
+Im Folgenden wird eine Übersicht des Forschungsstands im Bereich der TSDF dargelegt mit besonderem Bezug auf TSDF-basierte SLAM Verfahren, die im vorigen Abschnitt nur grob angeschnitten wurden.
 
 \textbf{TSDF}
 
@@ -115,7 +64,7 @@ Die in dieser Arbeit entwickelten Algorithmen und Konzepte basieren oder zielen 
 Jones et al. \cite{jones2006distance} stellen eine Übersicht über 3-D Distanzfelder vor und gehen dabei auf die verwendeten Techniken und Anwendungsbereiche ein. Sie stellen dabei unter anderem heraus, dass Methoden, die Distanzfelder nur bis zum einem festgelegten Maximalwert erzeugen, also die Charakteristiken einer TSDF aufweisen, in den Ausführungen von Mauch \cite{mauch200fast, mauch2003efficient} ihren Ursprung haben. Weitere Forschungen in diesem Themengebiet befassen sich zum Beispiel mit der Parallelisierung der volumetrischen Repräsentation. Werner et al. \cite{werner2014truncated} evaluieren die Ergebnisse der Oberflächenrekonstruktion anhand von TSDF-Karten unter Berücksichtigung der Größe der Voxel und geben einige Empfehlungen für den Umgang mit TSDF.
 
 Erste Forschungen mit TSDF basiertem SLAM stammen aus dem letzten Jahrzehnt.
-Izadi et al. \cite{izadi2011kinectfusion} nutzen ein TSDF-Voxelgrid und eine Kinect-Tiefenkamera, um Umbegungen zu kartieren, während ein Nutzer die Kinect Kamera durch die Umbebung schwenkt. Dabei wird das aktuell betrachtete Tiefenbild der Kinect-Kamera jeweils in eine Punktwolke konvertiert und mittels ICP an die letzten Tiefenbilder registriert. Ergebnis der Registrierung ist eine 6-D Pose für die aktuelle Position der Kamera. Auf Basis der so erhaltenen Kameraposition erfolgt im Anschluss ein Update des volumetrischen Oberflächenrepräsentation, die ebenfalls auf den Ausführungen aus \cite{curless1996volumetric} basiert. Whelan et al. \cite{whelan2012kintinuous} optimieren diesen Ansatz durch Nutzung eines Ringbuffers zur Kartierung großer Umgebungen. Im Gegensatz zu diesen Verfahren stellt Canelhas \cite{Canelhas2017TruncatedSD} ein neues Verfahren zur Registrierung neuer Punktdaten an die TSDF-Karte vor: \emph{Point-to-TSDF}. Dabei werden die Punktdaten mittels eines Gradientenabstiegs an das TSDF registriert. Ergebnis ist erneut eine 6-D-Pose, anhand derer das TSDF erweitert werden kann. Zusätzlich liefert Canelhas \cite{Canelhas2017TruncatedSD} einen Überblick über das Themengebiet der \emph{TSDF}. Prisacariu et al. \cite{prisacariu2017infinitam} unterteilen den 3D-Raum in starre TSDF-Teilkarten und optimieren die relativen Positionen zwischen diesen. Nach \cite{prisacariu2017infinitam} ist eine anschließende Generation der globalen Karte durch ein Zusammenführen der Teilkarten möglich. \cite{prisacariu2017infinitam} verwendet für jede Pose des Graphen eine eigene Teilkarte, die in sich konsistent ist. Sie erreichen eine globale Konsistenz durch eine Graph-Optimierung, die zusätzlich Schleifenschlüsse berücksichtigt. Optimiert werden die zu den Teilkarten zugehörigen Posen. Die TSDF-Teilkarten selbst werden durch die Graph-Optimierung nicht angepasst. In einem weiteren volumetrischen Ansatz von McCormac et al. wird eine volumetrischer, Objekt basierter SLAM Ansatz verwendet, der eine TSDF zur Repräsentation mehrerer Objekte verwendet. Dabei werden lediglich die relativen Pose-Schätzungen zwischen den Objekten verändert, aber keine Verformung der Objekte selbst durchgeführt. Eisoldt et al. \cite{HATSDF} schlagen einen Hardware-beschleunigten, TSDF-basierten SLAM Ansatz vor, der einen 3-D-Laserscanner anstelle einer Tiefenkamera nutzt. Eisoldt et. al \cite{HATSDF} nutzen zur Registrierung neuer Punktwolken an die TSDF-Karte den von Canelhas \cite{Canelhas2017TruncatedSD} vorgeschlagenen \emph{Point-to-TSDF} Ansatz, der die Distanzen von Punkten einer neuen Punktwolke zur durch die TSDF implizit beschriebenen Oberfläche entlang des Gradienten innerhalb des TSDF minimiert. \cite{HATSDF} implementiert keinen Ansatz zur Integration von Schleifenschlüssen und Graphoptimierung und ist dementsprechend anfällig für akkumulative Fehler. An dieser Stelle setzt diese Arbeit nun an und integriert auf Basis der zuvor genannten Ansätze, Schleifenschlüsse in einen TSDF basierten SLAM Ansatz und die TSDF Karte entsprechend der Änderungen an der Roboter-Trajektorie zu optimieren.
+Izadi et al. \cite{izadi2011kinectfusion} nutzen ein TSDF-Voxelgrid und eine Kinect-Tiefenkamera, um Umbegungen zu kartieren, während ein Nutzer die Kinect Kamera durch die Umbebung schwenkt. Dabei wird das aktuell betrachtete Tiefenbild der Kinect-Kamera jeweils in eine Punktwolke konvertiert und mittels ICP an die letzten Tiefenbilder registriert. Ergebnis der Registrierung ist eine 6-D Pose für die aktuelle Position der Kamera. Auf Basis der so erhaltenen Kameraposition erfolgt im Anschluss ein Update des volumetrischen Oberflächenrepräsentation, die ebenfalls auf den Ausführungen aus \cite{curless1996volumetric} basiert. Whelan et al. \cite{whelan2012kintinuous} optimieren diesen Ansatz durch Nutzung eines Ringbuffers zur Kartierung großer Umgebungen. Im Gegensatz zu diesen Verfahren stellt Canelhas \cite{Canelhas2017TruncatedSD} ein neues Verfahren zur Registrierung neuer Punktdaten an die TSDF-Karte vor: \emph{Point-to-TSDF}. Dabei werden die Punktdaten mittels eines Gradientenabstiegs an das TSDF registriert. Ergebnis ist erneut eine 6-D-Pose, anhand derer das TSDF erweitert werden kann. Zusätzlich liefert Canelhas \cite{Canelhas2017TruncatedSD} einen Überblick über das Themengebiet der \emph{TSDF}. Prisacariu et al. \cite{prisacariu2017infinitam} unterteilen den 3D-Raum in starre TSDF-Teilkarten und optimieren die relativen Positionen zwischen diesen. Nach \cite{prisacariu2017infinitam} ist eine anschließende Generation der globalen Karte durch ein Zusammenführen der Teilkarten möglich. \cite{prisacariu2017infinitam} verwendet für jede Pose des Graphen eine eigene Teilkarte, die in sich konsistent ist. Sie erreichen eine globale Konsistenz durch eine Graph-Optimierung, die zusätzlich Schleifenschlüsse berücksichtigt. Optimiert werden die zu den Teilkarten zugehörigen Posen. Die TSDF-Teilkarten selbst werden durch die Graph-Optimierung nicht angepasst. In einem weiteren volumetrischen Ansatz von McCormac et al. \cite{mccormac2018fusion++} wird eine volumetrischer, Objekt basierter SLAM Ansatz verwendet, der eine TSDF zur Repräsentation mehrerer Objekte verwendet. Dabei werden lediglich die relativen Pose-Schätzungen zwischen den Objekten verändert, aber keine Verformung der Objekte selbst durchgeführt. Eisoldt et al. \cite{HATSDF} schlagen einen Hardware-beschleunigten, TSDF-basierten SLAM Ansatz vor, der einen 3-D-Laserscanner anstelle einer Tiefenkamera nutzt. Eisoldt et. al \cite{HATSDF} nutzen zur Registrierung neuer Punktwolken an die TSDF-Karte den von Canelhas \cite{Canelhas2017TruncatedSD} vorgeschlagenen \emph{Point-to-TSDF} Ansatz, der die Distanzen von Punkten einer neuen Punktwolke zur durch die TSDF implizit beschriebenen Oberfläche entlang des Gradienten innerhalb des TSDF minimiert. \cite{HATSDF} implementiert keinen Ansatz zur Integration von Schleifenschlüssen und Graphoptimierung und ist dementsprechend anfällig für akkumulative Fehler. An dieser Stelle setzt diese Arbeit nun an und integriert auf Basis der zuvor genannten Ansätze, Schleifenschlüsse in einen TSDF basierten SLAM Ansatz und die TSDF Karte entsprechend der Änderungen an der Roboter-Trajektorie zu optimieren.
 
 
 
