@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  21 NOV 2022 07:14
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.3.21)  21 NOV 2022 07:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1584,112 +1584,112 @@ Package pdftex.def Info: pics/Line-Rejector.png  used on input line 72.
 (pdftex.def)             Requested size: 429.01852pt x 206.51428pt.
  [45 <./pics/Windows_small.png> <./pics/Windows_small_limit.png>] [46 <./pics/L
 ine-Rejector.png>] [47]
-Underfull \hbox (badness 10000) in paragraph at lines 113--113
+Underfull \hbox (badness 10000) in paragraph at lines 111--111
 []|\OT1/lmr/bx/n/10.95 Prior-
  []
 
 
-Underfull \hbox (badness 5260) in paragraph at lines 113--113
+Underfull \hbox (badness 5260) in paragraph at lines 111--111
 \OT1/lmr/m/n/10.95 (+20) und sp[]ater pa-ra-me-tri-sier-bar ge-macht. Die
  []
 
 
-Underfull \hbox (badness 1052) in paragraph at lines 113--113
+Underfull \hbox (badness 1052) in paragraph at lines 111--111
 \OT1/lmr/m/n/10.95 (+20) in die-ser Ar-beit ver-wen-de-ten Default-Werte
  []
 
 
-Underfull \hbox (badness 1565) in paragraph at lines 113--113
+Underfull \hbox (badness 1565) in paragraph at lines 111--111
 \OT1/lmr/m/n/10.95 (+20) lau-ten: $[][]$.
  []
 
 
-Underfull \hbox (badness 1968) in paragraph at lines 113--114
+Underfull \hbox (badness 1968) in paragraph at lines 111--112
 []|\OT1/lmr/m/n/10.95 (+20) Der Prior-Factor wird
  []
 
 
-Overfull \hbox (2.38899pt too wide) in paragraph at lines 115--115
+Overfull \hbox (2.38899pt too wide) in paragraph at lines 113--113
 []|\OT1/lmr/bx/n/10.95 Between-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--115
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
 []|\OT1/lmr/m/n/10.95 (+20) Definiert einen re-la-ti-ven Pose-Constraint
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--115
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
 \OT1/lmr/m/n/10.95 (+20) de-fi-niert wer-den. F[]ur auf-ein-an-der-fol-gen-de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--115
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
 [][]$\OT1/lmr/m/n/10.95 (+20) ), f[]ur
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--115
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
 \OT1/lmr/m/n/10.95 (+20) Scan-Matching re-sul-tie-ren-de Fitness-Score
  []
 
 
-Underfull \hbox (badness 3148) in paragraph at lines 115--115
+Underfull \hbox (badness 3148) in paragraph at lines 113--113
 \OT1/lmr/m/n/10.95 (+20) ^^@$ ver-wen-det: $[][]$. Bei die-ser
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 []|\OT1/lmr/m/n/10.95 (+20) Dieser Fak-tor fin-det
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) der Pose-Differenzen
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) auf-ein-an-der-fol-gen-der
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) die ge-ge-be-nen-falls
  []
 
 
-Underfull \hbox (badness 1383) in paragraph at lines 115--116
+Underfull \hbox (badness 1383) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) mit GICP op-ti-mier-te,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) in-itia-le Sch[]atzung),
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) als auch f[]ur die
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) Be-schrei-bung der
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) im Scan-Matching
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) er-mit-tel-ten Pose-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 \OT1/lmr/m/n/10.95 (+20) an Schlei-fen-schl[]ussen
  []
 
@@ -1698,120 +1698,125 @@ t>
 File: pics/Flussdiagramm-Optimization-colorized.png Graphic file (type png)
 <use pics/Flussdiagramm-Optimization-colorized.png>
 Package pdftex.def Info: pics/Flussdiagramm-Optimization-colorized.png  used on
- input line 127.
+ input line 125.
 (pdftex.def)             Requested size: 300.48874pt x 443.26506pt.
 
-LaTeX Warning: Float too large for page by 11.75719pt on input line 131.
+LaTeX Warning: Float too large for page by 11.75719pt on input line 129.
 
 [48] [49 <./pics/Flussdiagramm-Optimization-colorized.png>]
 <pics/GTvsInit.png, id=891, 462.528pt x 346.896pt>
 File: pics/GTvsInit.png Graphic file (type png)
 <use pics/GTvsInit.png>
-Package pdftex.def Info: pics/GTvsInit.png  used on input line 148.
+Package pdftex.def Info: pics/GTvsInit.png  used on input line 146.
 (pdftex.def)             Requested size: 323.76738pt x 242.82553pt.
 <pics/elch.png, id=892, 819.06pt x 561.09625pt>
 File: pics/elch.png Graphic file (type png)
 <use pics/elch.png>
-Package pdftex.def Info: pics/elch.png  used on input line 158.
+Package pdftex.def Info: pics/elch.png  used on input line 156.
 (pdftex.def)             Requested size: 368.5736pt x 252.49098pt.
  [50 <./pics/GTvsInit.png>]
 <pics/GTvsGICP.png, id=916, 462.528pt x 346.896pt>
 File: pics/GTvsGICP.png Graphic file (type png)
 <use pics/GTvsGICP.png>
-Package pdftex.def Info: pics/GTvsGICP.png  used on input line 176.
+Package pdftex.def Info: pics/GTvsGICP.png  used on input line 174.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
 <pics/GTvsThis.png, id=917, 462.528pt x 346.896pt>
 File: pics/GTvsThis.png Graphic file (type png)
 <use pics/GTvsThis.png>
-Package pdftex.def Info: pics/GTvsThis.png  used on input line 182.
+Package pdftex.def Info: pics/GTvsThis.png  used on input line 180.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
 <pics/initialVsGIPVsLC.png, id=918, 462.528pt x 346.896pt>
 File: pics/initialVsGIPVsLC.png Graphic file (type png)
 <use pics/initialVsGIPVsLC.png>
-Package pdftex.def Info: pics/initialVsGIPVsLC.png  used on input line 195.
+Package pdftex.def Info: pics/initialVsGIPVsLC.png  used on input line 193.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
 <pics/GICPvsLC_error2.png, id=919, 462.528pt x 346.896pt>
 File: pics/GICPvsLC_error2.png Graphic file (type png)
 <use pics/GICPvsLC_error2.png>
-Package pdftex.def Info: pics/GICPvsLC_error2.png  used on input line 201.
+Package pdftex.def Info: pics/GICPvsLC_error2.png  used on input line 199.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
  [51 <./pics/elch.png>]
 <pics/double_walls_marked_white.png, id=935, 544.28343pt x 359.09157pt>
 File: pics/double_walls_marked_white.png Graphic file (type png)
 <use pics/double_walls_marked_white.png>
 Package pdftex.def Info: pics/double_walls_marked_white.png  used on input line
- 219.
+ 217.
 (pdftex.def)             Requested size: 227.62204pt x 150.17087pt.
 <pics/no_double_walls_cut.png, id=936, 564.15768pt x 359.09157pt>
 File: pics/no_double_walls_cut.png Graphic file (type png)
 <use pics/no_double_walls_cut.png>
-Package pdftex.def Info: pics/no_double_walls_cut.png  used on input line 225.
+Package pdftex.def Info: pics/no_double_walls_cut.png  used on input line 223.
 (pdftex.def)             Requested size: 227.62204pt x 144.88335pt.
 <pics/vorplatz_paths_3d.png, id=937, 498.663pt x 255.1131pt>
 File: pics/vorplatz_paths_3d.png Graphic file (type png)
 <use pics/vorplatz_paths_3d.png>
-Package pdftex.def Info: pics/vorplatz_paths_3d.png  used on input line 239.
+Package pdftex.def Info: pics/vorplatz_paths_3d.png  used on input line 237.
 (pdftex.def)             Requested size: 295.90587pt x 151.38348pt.
-<pics/chemnitz_no_lila.png, id=938, 886.81313pt x 666.23906pt>
-File: pics/chemnitz_no_lila.png Graphic file (type png)
-<use pics/chemnitz_no_lila.png>
-Package pdftex.def Info: pics/chemnitz_no_lila.png  used on input line 245.
-(pdftex.def)             Requested size: 159.3382pt x 119.70436pt.
- [52 <./pics/GTvsGICP.png> <./pics/GTvsThis.png>]
+
+
+pdfTeX warning: /usr/bin/pdflatex (file ./pics/chemnitz_no_lila_p.pdf): PDF inc
+lusion: found PDF version <1.7>, but at most version <1.5> allowed
+<pics/chemnitz_no_lila_p.pdf, id=938, 323.40826pt x 352.31625pt>
+File: pics/chemnitz_no_lila_p.pdf Graphic file (type pdf)
+<use pics/chemnitz_no_lila_p.pdf>
+Package pdftex.def Info: pics/chemnitz_no_lila_p.pdf  used on input line 243.
+(pdftex.def)             Requested size: 159.3382pt x 173.57726pt.
+[52 <./pics/GTvsGICP.png> <./pics/GTvsThis.png>]
 <pics/physik_double_marked.png, id=953, 572.3784pt x 365.9271pt>
 File: pics/physik_double_marked.png Graphic file (type png)
 <use pics/physik_double_marked.png>
-Package pdftex.def Info: pics/physik_double_marked.png  used on input line 262.
+Package pdftex.def Info: pics/physik_double_marked.png  used on input line 260.
 
 (pdftex.def)             Requested size: 227.62204pt x 145.51953pt.
 <pics/physik_corrected.png, id=954, 598.1547pt x 356.7729pt>
 File: pics/physik_corrected.png Graphic file (type png)
 <use pics/physik_corrected.png>
-Package pdftex.def Info: pics/physik_corrected.png  used on input line 268.
+Package pdftex.def Info: pics/physik_corrected.png  used on input line 266.
 (pdftex.def)             Requested size: 227.62204pt x 135.76564pt.
 <pics/physik_paths3d.png, id=957, 365.4453pt x 173.9298pt>
 File: pics/physik_paths3d.png Graphic file (type png)
 <use pics/physik_paths3d.png>
-Package pdftex.def Info: pics/physik_paths3d.png  used on input line 281.
+Package pdftex.def Info: pics/physik_paths3d.png  used on input line 279.
 (pdftex.def)             Requested size: 365.4444pt x 173.92937pt.
-[53 <./pics/initialVsGIPVsLC.png> <./pics/GICPvsLC_error2.png>] [54 <./pics/dou
-ble_walls_marked_white.png> <./pics/no_double_walls_cut.png> <./pics/vorplatz_p
-aths_3d.png> <./pics/chemnitz_no_lila.png (PNG copy)>])
-(./chapters/map_update.tex [55 <./pics/physik_double_marked.png> <./pics/physik
-_corrected.png>] [56 <./pics/physik_paths3d.png>] [57] [58
+ [53 <./pics/initialVsGIPVsLC.png> <./pics/GICPvsLC_error2.png>]) (./chapters/m
+ap_update.tex [54 <./pics/double_walls_marked_white.png> <./pics/no_double_wall
+s_cut.png>] [55 <./pics/vorplatz_paths_3d.png> <./pics/chemnitz_no_lila_p.pdf>]
+ [56] [57 <./pics/physik_double_marked.png> <./pics/physik_corrected.png> <./pi
+cs/physik_paths3d.png>]
+[58
 
 ]
 Kapitel 6.
 [59] [60] [61] [62] [63]
-<pics/GlobalMapUpdateTime.png, id=1033, 462.528pt x 346.896pt>
+<pics/GlobalMapUpdateTime.png, id=1040, 462.528pt x 346.896pt>
 File: pics/GlobalMapUpdateTime.png Graphic file (type png)
 <use pics/GlobalMapUpdateTime.png>
 Package pdftex.def Info: pics/GlobalMapUpdateTime.png  used on input line 68.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/PartialMapUpdateTime.png, id=1034, 469.0323pt x 346.896pt>
+<pics/PartialMapUpdateTime.png, id=1041, 469.0323pt x 346.896pt>
 File: pics/PartialMapUpdateTime.png Graphic file (type png)
 <use pics/PartialMapUpdateTime.png>
 Package pdftex.def Info: pics/PartialMapUpdateTime.png  used on input line 74.
 (pdftex.def)             Requested size: 227.62204pt x 168.3502pt.
-<pics/HistogramCCphysik128_seaborn_fixed.png, id=1039, 462.528pt x 346.896pt>
+<pics/HistogramCCphysik128_seaborn_fixed.png, id=1046, 462.528pt x 346.896pt>
 File: pics/HistogramCCphysik128_seaborn_fixed.png Graphic file (type png)
 <use pics/HistogramCCphysik128_seaborn_fixed.png>
 Package pdftex.def Info: pics/HistogramCCphysik128_seaborn_fixed.png  used on i
 nput line 88.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/Histogram_point_to_mesh.png, id=1040, 462.528pt x 346.896pt>
+<pics/Histogram_point_to_mesh.png, id=1047, 462.528pt x 346.896pt>
 File: pics/Histogram_point_to_mesh.png Graphic file (type png)
 <use pics/Histogram_point_to_mesh.png>
 Package pdftex.def Info: pics/Histogram_point_to_mesh.png  used on input line 9
 4.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/Histogram_point_to_point_hannover.png, id=1043, 462.528pt x 346.896pt>
+<pics/Histogram_point_to_point_hannover.png, id=1050, 462.528pt x 346.896pt>
 File: pics/Histogram_point_to_point_hannover.png Graphic file (type png)
 <use pics/Histogram_point_to_point_hannover.png>
 Package pdftex.def Info: pics/Histogram_point_to_point_hannover.png  used on in
 put line 107.
 (pdftex.def)             Requested size: 227.62204pt x 170.71628pt.
-<pics/Histogram_point_to_mesh_hannover.png, id=1044, 462.528pt x 346.896pt>
+<pics/Histogram_point_to_mesh_hannover.png, id=1051, 462.528pt x 346.896pt>
 File: pics/Histogram_point_to_mesh_hannover.png Graphic file (type png)
 <use pics/Histogram_point_to_mesh_hannover.png>
 Package pdftex.def Info: pics/Histogram_point_to_mesh_hannover.png  used on inp
@@ -1824,33 +1829,24 @@ annover.png> <./pics/Histogram_point_to_mesh_hannover.png>]
 Kapitel 7.
 [69
 
-] [70]
-Package hyperref Info: bookmark level for unknown todo defaults to 0 on input l
-ine 14.
- [71] [72]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 2
-8.
- (/usr/share/texmf/tex/latex/lm/ts1lmr.fd
-File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)) [73]
-(./chapters/appendix.tex [74]
+] [70] [71] [72]) [73] (./chapters/appendix.tex [74]
 Anhang A.
-<pics/physik_unten_mesh.png, id=1126, 1075.01625pt x 707.64375pt>
+<pics/physik_unten_mesh.png, id=1130, 1075.01625pt x 707.64375pt>
 File: pics/physik_unten_mesh.png Graphic file (type png)
 <use pics/physik_unten_mesh.png>
 Package pdftex.def Info: pics/physik_unten_mesh.png  used on input line 9.
 (pdftex.def)             Requested size: 537.50682pt x 353.82101pt.
-<pics/mesh_vorplatz_1.png, id=1131, 1075.01625pt x 707.64375pt>
+<pics/mesh_vorplatz_1.png, id=1135, 1075.01625pt x 707.64375pt>
 File: pics/mesh_vorplatz_1.png Graphic file (type png)
 <use pics/mesh_vorplatz_1.png>
 Package pdftex.def Info: pics/mesh_vorplatz_1.png  used on input line 20.
 (pdftex.def)             Requested size: 537.50682pt x 353.82101pt.
-<pics/mesh_vorplatz_2.png, id=1136, 1075.01625pt x 707.64375pt>
+<pics/mesh_vorplatz_2.png, id=1140, 1075.01625pt x 707.64375pt>
 File: pics/mesh_vorplatz_2.png Graphic file (type png)
 <use pics/mesh_vorplatz_2.png>
 Package pdftex.def Info: pics/mesh_vorplatz_2.png  used on input line 31.
 (pdftex.def)             Requested size: 537.50682pt x 353.82101pt.
-<pics/mesh_tree.png, id=1143, 263.7855pt x 313.8927pt>
+<pics/mesh_tree.png, id=1147, 263.7855pt x 313.8927pt>
 File: pics/mesh_tree.png Graphic file (type png)
 <use pics/mesh_tree.png>
 Package pdftex.def Info: pics/mesh_tree.png  used on input line 41.
@@ -1869,90 +1865,88 @@ File: ot1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [82] [83] [84]) [85] [86
 
 ]
-<pics/endpageV2.pdf, id=1208, 597.50786pt x 845.04686pt>
+<pics/endpageV2.pdf, id=1212, 597.50786pt x 845.04686pt>
 File: pics/endpageV2.pdf Graphic file (type pdf)
 <use pics/endpageV2.pdf>
-Package pdftex.def Info: pics/endpageV2.pdf  used on input line 169.
+Package pdftex.def Info: pics/endpageV2.pdf  used on input line 168.
 (pdftex.def)             Requested size: 597.5064pt x 845.0448pt.
 File: pics/endpageV2.pdf Graphic file (type pdf)
 <use pics/endpageV2.pdf>
-Package pdftex.def Info: pics/endpageV2.pdf  used on input line 169.
+Package pdftex.def Info: pics/endpageV2.pdf  used on input line 168.
 (pdftex.def)             Requested size: 597.5064pt x 845.0448pt.
-<pics/endpageV2.pdf, id=1211, page=1, 597.50786pt x 845.04686pt>
+<pics/endpageV2.pdf, id=1215, page=1, 597.50786pt x 845.04686pt>
 File: pics/endpageV2.pdf Graphic file (type pdf)
 <use pics/endpageV2.pdf, page 1>
-Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 169.
+Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 168.
 (pdftex.def)             Requested size: 597.5064pt x 845.0448pt.
 File: pics/endpageV2.pdf Graphic file (type pdf)
 <use pics/endpageV2.pdf, page 1>
-Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 169.
-(pdftex.def)             Requested size: 597.53374pt x 845.08348pt.
- [87]
-File: pics/endpageV2.pdf Graphic file (type pdf)
-<use pics/endpageV2.pdf, page 1>
-Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 169.
+Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 168.
 (pdftex.def)             Requested size: 597.53374pt x 845.08348pt.
 File: pics/endpageV2.pdf Graphic file (type pdf)
 <use pics/endpageV2.pdf, page 1>
-Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 169.
+Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 168.
 (pdftex.def)             Requested size: 597.53374pt x 845.08348pt.
 File: pics/endpageV2.pdf Graphic file (type pdf)
 <use pics/endpageV2.pdf, page 1>
-Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 169.
+Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 168.
 (pdftex.def)             Requested size: 597.53374pt x 845.08348pt.
- [88 <./pics/endpageV2.pdf>]
+File: pics/endpageV2.pdf Graphic file (type pdf)
+<use pics/endpageV2.pdf, page 1>
+Package pdftex.def Info: pics/endpageV2.pdf , page1 used on input line 168.
+(pdftex.def)             Requested size: 597.53374pt x 845.08348pt.
+ [87 <./pics/endpageV2.pdf>]
 
 Package natbib Warning: There were undefined citations.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 171.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 171.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 170.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 170.
 (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 171.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 171.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 170.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 170.
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 6224C875DAA6BC843D1FE335B7810E5C;7999.
 
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 171.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 170.
  ) 
 Here is how much of TeX's memory you used:
- 42790 strings out of 483016
- 913830 string characters out of 5961286
- 1373505 words of memory out of 5000000
- 56489 multiletter control sequences out of 15000+600000
- 637485 words of font info for 233 fonts, out of 8000000 for 9000
+ 42648 strings out of 483016
+ 910528 string characters out of 5961286
+ 1374440 words of memory out of 5000000
+ 56352 multiletter control sequences out of 15000+600000
+ 637206 words of font info for 233 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
- 73i,18n,127p,3545b,1066s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 73i,18n,127p,3545b,706s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/
-dvips/lm/lm-ts1.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/sh
-are/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm
-/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/share/texmf
-/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texlive/texmf-dist/fonts/type1/publ
-ic/amsfonts/euler/eufm10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx10.pfb
-></usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/typ
-e1/public/lm/lmbx9.pfb></usr/share/texmf/fonts/type1/public/lm/lmbxo10.pfb></us
-r/share/texmf/fonts/type1/public/lm/lmcsc10.pfb></usr/share/texmf/fonts/type1/p
-ublic/lm/lmex10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi10.pfb></usr/sh
-are/texmf/fonts/type1/public/lm/lmmi6.pfb></usr/share/texmf/fonts/type1/public/
-lm/lmmi7.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi8.pfb></usr/share/texm
-f/fonts/type1/public/lm/lmmi9.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10
-.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/
-type1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lmr5.pfb></us
-r/share/texmf/fonts/type1/public/lm/lmr6.pfb></usr/share/texmf/fonts/type1/publ
-ic/lm/lmr7.pfb></usr/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/share/tex
-mf/fonts/type1/public/lm/lmr9.pfb></usr/share/texmf/fonts/type1/public/lm/lmri1
-0.pfb></usr/share/texmf/fonts/type1/public/lm/lmri12.pfb></usr/share/texmf/font
-s/type1/public/lm/lmro10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.pfb
-></usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb></usr/share/texmf/fonts/type
-1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/s
-hare/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (94 pages, 18373131 bytes).
+dvips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr
+/share/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/
+lm-mathex.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rmsc.enc}</usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/euler/eufm10.pfb></usr/share/texmf/f
+onts/type1/public/lm/lmbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmbx12.
+pfb></usr/share/texmf/fonts/type1/public/lm/lmbx9.pfb></usr/share/texmf/fonts/t
+ype1/public/lm/lmbxo10.pfb></usr/share/texmf/fonts/type1/public/lm/lmcsc10.pfb>
+</usr/share/texmf/fonts/type1/public/lm/lmex10.pfb></usr/share/texmf/fonts/type
+1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi6.pfb></usr/
+share/texmf/fonts/type1/public/lm/lmmi7.pfb></usr/share/texmf/fonts/type1/publi
+c/lm/lmmi8.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi9.pfb></usr/share/te
+xmf/fonts/type1/public/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr
+12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr17.pfb></usr/share/texmf/font
+s/type1/public/lm/lmr5.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.pfb></u
+sr/share/texmf/fonts/type1/public/lm/lmr7.pfb></usr/share/texmf/fonts/type1/pub
+lic/lm/lmr8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr9.pfb></usr/share/te
+xmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf/fonts/type1/public/lm/lm
+ri12.pfb></usr/share/texmf/fonts/type1/public/lm/lmro10.pfb></usr/share/texmf/f
+onts/type1/public/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.p
+fb></usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb></usr/share/texmf/fonts/ty
+pe1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on main.pdf (93 pages, 18363391 bytes).
 PDF statistics:
- 1386 PDF objects out of 1440 (max. 8388607)
- 1114 compressed objects within 12 object streams
- 259 named destinations out of 1000 (max. 500000)
+ 1382 PDF objects out of 1440 (max. 8388607)
+ 1110 compressed objects within 12 object streams
+ 256 named destinations out of 1000 (max. 500000)
  17069 words of extra memory for PDF output out of 17280 (max. 10000000)
 
