@@ -230,14 +230,24 @@ Ein weiterer Datensatz der Universität Osnabrück ist eine Aufnahme des Vorplat
 	\label{fig:chemnitz_double_walls}
 \end{figure}
 
+
+
 \begin{figure}
-		\centering
-		\includegraphics
-			[scale=0.7]
-			{vorplatz_paths_3d}
-		\caption
-			[Caption for LOF]{Grafische Darstellung der Initialschätzung der Trajektorie im Vergleich mit dem korrigierten Pfad. Im linken Teil der Abbildung sind doppelte Objekte und Wände in der Punktwolke gekennzeichnet, die durch einen akkumulativen Fehler im SLAM-Verfahren generiert wurden. Es ist eine deutliche Anpassung der Trajektorie zu beobachten. Diese Anpassung sorgt für die in Abbildung \ref{fig:chemnitz_double_walls} erkennbare Kompensation der Fehlerakkumulation und resultiert in einem signifikant besseren Ergebnis, welches keine erkennbaren doppelten Wände ausweist. Die schräge Ausrichtung des Pfades -- und damit zusammenhängend auch der Punktwolke -- im Raum beruht auf der schrägen Position des Laserscanners. Zum Zeitpunkt der Aufnahme der Daten wurde dieser leicht schräg auf dem Kopf der Person positioniert, die die Daten aufgenommen hat. Dies gilt ebenfalls für den in Abbildung \ref{fig:physik_paths_3d} dargestellten Verlauf des Pose-Graphen.}                                                                           
-		\label{fig:vorplatz_paths_3d}
+	\centering
+	\begin{subfigure}{.65\textwidth}
+		 \centering
+  		 \includegraphics[width=1.0\linewidth]{vorplatz_paths_3d}
+  		 \centering \caption{Vergleich zwischen Initialschätzung und Korrektur.}
+  		 \label{fig:vorplatz_paths_3d1}
+	\end{subfigure}%
+	\begin{subfigure}{.35\textwidth}
+    	\centering
+  		\includegraphics[width=1.0\linewidth]{chemnitz_no_lila}
+  		\centering \caption{Vergleich zwischen Initialschätzung und Korrektur, inklusive der Darstellung von Schleifenschlüssen.}
+  		\label{fig:chemnitz_no_lila}
+	\end{subfigure}
+	\caption{Im linken Teil der Abbildung ist die Initialschätzung der Trajektorie des Roboters im Vergleich mit dem korrigierten Pfad dargestellt. Es ist eine sichtbare Anpassung der Trajektorie zu beobachten. Diese Anpassung sorgt für die in Abbildung \ref{fig:chemnitz_double_walls} erkennbare Kompensation der Fehlerakkumulation und resultiert in einem signifikant besseren Ergebnis, welches keine erkennbaren doppelten Wände ausweist. Die schräge Ausrichtung des Pfades -- und damit zusammenhängend auch der Punktwolke -- im Raum beruht auf der schrägen Position des Laserscanners. Zum Zeitpunkt der Aufnahme der Daten wurde dieser leicht schräg auf dem Kopf der Person positioniert, die die Daten aufgenommen hat. Dies gilt ebenfalls für den in Abbildung \ref{fig:physik_paths_3d} dargestellten Verlauf des Pose-Graphen. Der rechte Teil der Abbildung zeigt ebenfalls den genannten Vergleich, zeigt aber zusätzlich die identifizierten und validierten Schleifenschlüsse, anhand derer die Graph-Optimierung durchgeführt wurde. Diese sind als rote Linien eingezeichnet.}
+	\label{fig:vorplatz_paths_3d}
 \end{figure}
 
 
@@ -262,6 +272,7 @@ Bei diesem Datensatz handelt es sich um einen Teil des Physikgebäudes der Unive
 	\caption{Wie Abbildung \ref{fig:chemnitz_double_walls} zeigt auch diese Abbildung einen Vergleich der Punktwolken vor und nach Korrektur des in diesem Kapitel vorgestellten Algorithmus. Im linken Teil der Abbildung sind doppelte Objekte und Wände in der Punktwolke gekennzeichnet, die durch einen akkumulativen Fehler im SLAM-Verfahren generiert wurden. Auch hier ist eine signifikante Verbesserung der Trajektorie, erkennbar an der kontinuierlichen Punktwolke, die keine doppelten Wände oder Objekte enthält, zu beobachten.}
 	\label{fig:physik_double_walls}
 \end{figure}
+
 
 \begin{figure}
 		\centering
