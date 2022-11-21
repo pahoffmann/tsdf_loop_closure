@@ -2,8 +2,7 @@
 \babel@toc {ngerman}{}
 \contentsline {chapter}{\numberline {1}Einleitung}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Motivation}{2}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Herangehensweise}{3}{section.1.2}%
-\contentsline {subsection}{\numberline {1.2.1}Fallback}{3}{subsection.1.2.1}%
+\contentsline {section}{\numberline {1.2}Vorgehensweise}{3}{section.1.2}%
 \contentsline {chapter}{\numberline {2}Stand der Forschung}{5}{chapter.2}%
 \contentsline {chapter}{\numberline {3}Konzeptuelle Grundlagen und verwendete Datenstrukturen}{11}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Konzeptuelle Grundlagen}{11}{section.3.1}%
