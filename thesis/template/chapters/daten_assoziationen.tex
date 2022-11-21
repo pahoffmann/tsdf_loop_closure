@@ -156,8 +156,7 @@ Eine alternative algorithmische Herangehensweise an das beschriebene Problem der
 		\label{fig:Bresenham2D}
 \end{figure}
 
-Die Grundlage für die Berechnung der zum Strahl gehörigen Voxel bildet ein Startvoxel $\vec{V_{start}}$, gegeben durch die aktuell betrachtete Pose beziehungsweise Scannerposition $P_{i}$ und ein Endvoxel $\vec{V_{end}}$. Letzterer berechnet sich aus dem Schnittpunkt des betrachteten Strahls mit der Bounding-Box der lokalen Karte, gekennzeichnet durch ihren Ursprung $\vec{p_{lmap}}$ und ihre Seitenlängen $\left(s_x, s_y, s_z\right)^T$.
-\improvement{ggf. Mathematik dahinter erklären}. Basierend auf den berechneten Start- und Endvoxeln jedes Strahls können nun die dazwischenliegenden Voxel mittels Bresenham ermittelt werden. Der Pseudo-Code in Abbildung \ref{pseudo:bresenham} legt die Logik für die Bestimmung der der Voxel dar, die die Linie gegeben durch den Startvoxel $\vec{V_{start}}$ und Endvoxel $\vec{V_{end}}$ beschrieben. 
+Die Grundlage für die Berechnung der zum Strahl gehörigen Voxel bildet ein Startvoxel $\vec{V_{start}}$, gegeben durch die aktuell betrachtete Pose beziehungsweise Scannerposition $P_{i}$ und ein Endvoxel $\vec{V_{end}}$. Letzterer berechnet sich aus dem Schnittpunkt des betrachteten Strahls mit der Bounding-Box der lokalen Karte, gekennzeichnet durch ihren Ursprung $\vec{p_{lmap}}$ und ihre Seitenlängen $\left(s_x, s_y, s_z\right)^T$. Basierend auf den berechneten Start- und Endvoxeln jedes Strahls können nun die dazwischenliegenden Voxel mittels Bresenham ermittelt werden. Der Pseudo-Code in Abbildung \ref{pseudo:bresenham} legt die Logik für die Bestimmung der der Voxel dar, die die Linie gegeben durch den Startvoxel $\vec{V_{start}}$ und Endvoxel $\vec{V_{end}}$ beschrieben. 
 
 \begin{algorithm}[H]
 \caption{Bresenham Algorithmus adaptiert in 3D (nach \cite{bresenham1965algorithm})} \label{pseudo:bresenham}
@@ -222,17 +221,17 @@ Abbildung \ref{fig:bresenham_vs_raytrace} zeigt eine Gegenüberstellung der Erge
 	\centering
 	\begin{subfigure}{.5\textwidth}
  		 \centering
-  		 \includegraphics[width=.95\linewidth]{bresenham_zoom}
+  		 \includegraphics[width=.95\linewidth]{bresenham_zoom_p}
   		 \centering \caption{Assoziationen identifiziert mit Bresenham.}
   		 \label{fig:sp_bresenham}
 	\end{subfigure}%
 	\begin{subfigure}{.5\textwidth}
     	\centering
-  		\includegraphics[width=.95\linewidth]{ray_tracer_zoom}
+  		\includegraphics[width=.95\linewidth]{ray_tracer_zoom_p}
   		\centering \caption{Assoziationen identifiziert mit Ray-Tracing.}
   		\label{fig:sp_raytrace}
 	\end{subfigure}
-	\caption{Gegenüberstellung der generierten Assoziationen für einen Beispieldatensatz. Die durch Bresenham gefunden Assoziationen sind auf der linken Seite, die durch Ray-Tracing auf der rechten dargestellt. In diesem Fall wurden von Bresenham $91,74$ Prozent der Zellen assoziiert, während vom Ray-Tracing $91,97$ Prozent der Zellen assoziiert wurden. Zellen in gelb: assoziierte TSDF Zellen mit $value < 0$, Zellen in pink: assoziierte TSDF Zellen mit $value > 0$, Zellen in türkis: approximierter Nulldurchgang (Wechsel von positivem zu negativem Wert), Rest: nicht assoziierte Zellen. Zellen die nicht assoziiert werden, sind in diesem Fall größtenteils Teil von Verdeckungen oder Reflektionen des Laserscans und können als Outlier identifiziert werden.}
+	\caption{Gegenüberstellung der generierten Assoziationen für einen Beispieldatensatz. Die durch Bresenham gefunden Assoziationen sind auf der linken Seite, die durch Ray-Tracing auf der rechten dargestellt. In diesem Fall wurden von Bresenham $91.74\%$ der Zellen assoziiert, während vom Ray-Tracing $91.97\%$ der Zellen assoziiert wurden. Zellen in gelb: assoziierte TSDF Zellen mit $value < 0$, Zellen in pink: assoziierte TSDF Zellen mit $value > 0$, Zellen in türkis: approximierter Nulldurchgang (Wechsel von positivem zu negativem Wert), Rest: nicht assoziierte Zellen. Zellen die nicht assoziiert werden, sind in diesem Fall größtenteils Teil von Verdeckungen oder Reflektionen des Laserscans und können als Outlier identifiziert werden. Für beide Abbildungen ist zur Darstellung der Unterschiede ein Ausschnitt vergrößert dargestellt. Es zeigt sich, dass die Konturen der ermittelten Assoziationen beim Ray-Tracing weniger verrauscht sind. Zusätzlich ist beim Bresenham-Ansatz ein größeres Grundrauschen zu beobachten. Die Änderungen sind allerdings nur Minimal und können aus diesem Grund an dieser Stelle vernachlässigt werden.}
 	\label{fig:bresenham_vs_raytrace}
 \end{figure}
 

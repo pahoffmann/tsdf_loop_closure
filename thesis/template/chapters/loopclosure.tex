@@ -138,9 +138,7 @@ Dieser Absatz befasst sich mit der Evaluation des zuvor vorgestellten Ansatzes z
 
 \subsection{Datensatz: Hannover-1}
 
-\improvement{eingehen auf inkompatible Koordinatensystem-Situation und entsprechend notwendige Transformation}
-
-Zunächst erfolgt eine Evaluation des Hannover-1 Datensatzes. Abbildung \ref{GTvsInit} zeigt eine Gegenüberstellung der beschriebenen Ground-Truth des Datensatzes mit der durch Odometrie gegebenen Initialschätzung. Hier ist eine deutliche Differenz zwischen den beiden Pose-Graphen zu erkennen, die nicht ausschließlich durch die Integration von Schleifenschlüssen aufgelöst werden kann. Aus diesem Grund wird eine Vorregistrierung der aktuell betrachteten Initialschätzung der Pose $P_i$ mit den zuvor in den Pose-Graphen eingefügten Posen mittels GICP vorgenommen. Lediglich für die erste Pose wird die initiale Schätzung verwendet. Wie zuvor erläutert und in Abbildung \ref{fig:Windows} schematisch dargestellt ist , verbessert eine Anreicherung der Model-Punktwolke mit den Punktwolken der benachbarten Posen das Ergebnis der Registrierung maßgeblich. Diese Erkenntnis kommt auch bei der Vorregistrierung zum Einsatz. Der erörterte Vorregistrierungs-Schritt findet zusätzlich bei den anderen Datensätzen Verwendung, um eine lokale Konsistenz der Daten zu gewährleisten.
+Zunächst erfolgt eine Evaluation des Hannover-1 Datensatzes, dessen Daten zunächst vom rechtshändischen ins linkshändische Koordinatensystem transformiert werden mussten. Abbildung \ref{GTvsInit} zeigt eine Gegenüberstellung der beschriebenen Ground-Truth des Datensatzes mit der durch Odometrie gegebenen Initialschätzung. Hier ist eine deutliche Differenz zwischen den beiden Pose-Graphen zu erkennen, die nicht ausschließlich durch die Integration von Schleifenschlüssen aufgelöst werden kann. Aus diesem Grund wird eine Vorregistrierung der aktuell betrachteten Initialschätzung der Pose $P_i$ mit den zuvor in den Pose-Graphen eingefügten Posen mittels GICP vorgenommen. Lediglich für die erste Pose wird die initiale Schätzung verwendet. Wie zuvor erläutert und in Abbildung \ref{fig:Windows} schematisch dargestellt ist , verbessert eine Anreicherung der Model-Punktwolke mit den Punktwolken der benachbarten Posen das Ergebnis der Registrierung maßgeblich. Diese Erkenntnis kommt auch bei der Vorregistrierung zum Einsatz. Der erörterte Vorregistrierungs-Schritt findet zusätzlich bei den anderen Datensätzen Verwendung, um eine lokale Konsistenz der Daten zu gewährleisten.
 
 
 \begin{figure}
@@ -271,11 +269,6 @@ Die in diesem Kapitel entwickelte Lösung wurde hier zunächst vollständig abge
 \section{Kapitel-Zusammenfassung}
 
 In diesem Kapitel wurde die Detektion von Schleifenschlüssen und die darauf aufbauende Optimierung des Pose-Graphen behandelt. Dazu wurde zunächst ein Ansatz zur Detektion der Schleifenschlüsse eruiert und auf das Problem invalider beziehungsweise fehlerhafter Schleifenschlüsse eingegangen. Zur Lösung dieses Problems wurden zwei implementierte Validatoren beziehungsweise Rejector implementiert und vorgestellt. Dadurch können fehlerhafte Schleifenschlüsse identifiziert und verworfen werden. Dies führt zu einem deutlich besseren Ergebnis der Optimierung. Für die Optimierung selbst kommt die Bibliothek GTSAM zum Einsatz. Hier wurde die dazu verwendete Datenstruktur des Faktor-Graphen eingeführt und dessen Funktionsweise, insbesondere über die verwendeten Faktoren, erläutert. Der vorgestellte Ansatz liefert gute Ergebnisse und Vergleiche mit anderen Lösungsansätzen zeigen ähnliche und zum Teil bessere Ergebnisse, wie zu sehen in der Evaluation des Hannover-1 Datensatzes.
-
-
-\improvement{an dieser Stelle könnte noch eine Menge an Abbildungen folgen, die die Ergebnisse in Abhängigkeit von mehreren Ursachen beschreiben}
-\improvement{ggf. auf andere Scan-Matching Verfahren eingehen (ICP, GICP, Teaser++, VGICP)}
-\improvement{Zeitmessungen?}
 
 
 
