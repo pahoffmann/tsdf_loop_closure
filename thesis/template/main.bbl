@@ -242,31 +242,39 @@
   closure.
 \newblock {In: }\emph{arXiv preprint arXiv:1708.00783}  (2017)
 
-\vspace*{4pt}\bibitem[36]{rusu20113d}
+\vspace*{4pt}\bibitem[36]{quigley2009ros}
+\textsc{Quigley}, Morgan; \textsc{Conley}, Ken; \textsc{Gerkey}, Brian;
+  \textsc{Faust}, Josh; \textsc{Foote}, Tully; \textsc{Leibs}, Jeremy;
+  \textsc{Wheeler}, Rob; \textsc{Ng}, Andrew~Y. u.\,a.:
+\newblock ROS: an open-source Robot Operating System.
+\newblock {In: }\emph{ICRA workshop on open source software} Bd.~3 Kobe, Japan,
+  2009
+
+\vspace*{4pt}\bibitem[37]{rusu20113d}
 \textsc{Rusu}, Radu~B.; \textsc{Cousins}, Steve:
 \newblock 3d is here: Point cloud library (pcl).
 \newblock {In: }\emph{2011 IEEE international conference on robotics and
   automation} IEEE, 2011
 
-\vspace*{4pt}\bibitem[37]{ros_tf_image}
+\vspace*{4pt}\bibitem[38]{ros_tf_image}
 \textsc{Schultz}, Jarvis:
 \newblock \emph{{tf}}.
 \newblock \url{{http://wiki.ros.org/tf}}. --
 \newblock zuletzt abgerufen am: 09.10.2022
 
-\vspace*{4pt}\bibitem[38]{segal2009generalized}
+\vspace*{4pt}\bibitem[39]{segal2009generalized}
 \textsc{Segal}, Aleksandr; \textsc{Haehnel}, Dirk; \textsc{Thrun}, Sebastian:
 \newblock Generalized-icp.
 \newblock {In: }\emph{Robotics: science and systems} Bd.~2 Seattle, WA, 2009
 
-\vspace*{4pt}\bibitem[39]{shan2018lego}
+\vspace*{4pt}\bibitem[40]{shan2018lego}
 \textsc{Shan}, Tixiao; \textsc{Englot}, Brendan:
 \newblock Lego-loam: Lightweight and ground-optimized lidar odometry and
   mapping on variable terrain.
 \newblock {In: }\emph{2018 IEEE/RSJ International Conference on Intelligent
   Robots and Systems (IROS)} IEEE, 2018
 
-\vspace*{4pt}\bibitem[40]{shan2020lio}
+\vspace*{4pt}\bibitem[41]{shan2020lio}
 \textsc{Shan}, Tixiao; \textsc{Englot}, Brendan; \textsc{Meyers}, Drew;
   \textsc{Wang}, Wei; \textsc{Ratti}, Carlo; \textsc{Rus}, Daniela:
 \newblock Lio-sam: Tightly-coupled lidar inertial odometry via smoothing and
@@ -274,19 +282,19 @@
 \newblock {In: }\emph{2020 IEEE/RSJ international conference on intelligent
   robots and systems (IROS)} IEEE, 2020
 
-\vspace*{4pt}\bibitem[41]{sprickerhof2011heuristic}
+\vspace*{4pt}\bibitem[42]{sprickerhof2011heuristic}
 \textsc{Sprickerhof}, Jochen; \textsc{N{\"u}chter}, Andreas;
   \textsc{Lingemann}, Kai; \textsc{Hertzberg}, Joachim:
 \newblock A heuristic loop closing technique for large-scale 6d slam.
 \newblock {In: }\emph{Automatika} 52 (2011), Nr. 3, S. 199--222
 
-\vspace*{4pt}\bibitem[42]{taketomi2017visual}
+\vspace*{4pt}\bibitem[43]{taketomi2017visual}
 \textsc{Taketomi}, Takafumi; \textsc{Uchiyama}, Hideaki; \textsc{Ikeda}, Sei:
 \newblock Visual SLAM algorithms: A survey from 2010 to 2016.
 \newblock {In: }\emph{IPSJ Transactions on Computer Vision and Applications} 9
   (2017), Nr. 1, S. 1--11
 
-\vspace*{4pt}\bibitem[43]{tsintotas2022revisiting}
+\vspace*{4pt}\bibitem[44]{tsintotas2022revisiting}
 \textsc{Tsintotas}, Konstantinos~A.; \textsc{Bampis}, Loukas;
   \textsc{Gasteratos}, Antonios:
 \newblock The Revisiting Problem in Simultaneous Localization and Mapping: A
@@ -294,19 +302,19 @@
 \newblock {In: }\emph{IEEE Transactions on Intelligent Transportation Systems}
   (2022)
 
-\vspace*{4pt}\bibitem[44]{werner2014truncated}
+\vspace*{4pt}\bibitem[45]{werner2014truncated}
 \textsc{Werner}, Diana; \textsc{Al-Hamadi}, Ayoub; \textsc{Werner}, Philipp:
 \newblock Truncated signed distance function: experiments on voxel size.
 \newblock {In: }\emph{International Conference Image Analysis and Recognition}
   Springer, 2014
 
-\vspace*{4pt}\bibitem[45]{whelan2012kintinuous}
+\vspace*{4pt}\bibitem[46]{whelan2012kintinuous}
 \textsc{Whelan}, Thomas; \textsc{Kaess}, Michael; \textsc{Fallon}, Maurice;
   \textsc{Johannsson}, Hordur; \textsc{Leonard}, John; \textsc{McDonald}, John:
 \newblock Kintinuous: Spatially extended kinectfusion.
 \newblock   (2012)
 
-\vspace*{4pt}\bibitem[46]{xie2017graphtinker}
+\vspace*{4pt}\bibitem[47]{xie2017graphtinker}
 \textsc{Xie}, Linhai; \textsc{Wang}, Sen; \textsc{Markham}, Andrew;
   \textsc{Trigoni}, Niki:
 \newblock GraphTinker: Outlier rejection and inlier injection for pose graph
@@ -314,12 +322,12 @@
 \newblock {In: }\emph{2017 IEEE/RSJ International Conference on Intelligent
   Robots and Systems (IROS)} IEEE, 2017
 
-\vspace*{4pt}\bibitem[47]{Yang20tro-teaser}
+\vspace*{4pt}\bibitem[48]{Yang20tro-teaser}
 \textsc{Yang}, H.; \textsc{Shi}, J.; \textsc{Carlone}, L.:
 \newblock {TEASER: Fast and Certifiable Point Cloud Registration}.
 \newblock {In: }\emph{{IEEE} Trans. Robotics}  (2020)
 
-\vspace*{4pt}\bibitem[48]{zhang2014loam}
+\vspace*{4pt}\bibitem[49]{zhang2014loam}
 \textsc{Zhang}, Ji; \textsc{Singh}, Sanjiv:
 \newblock LOAM: Lidar odometry and mapping in real-time.
 \newblock {In: }\emph{Robotics: Science and Systems} Bd.~2 Berkeley, CA, 2014

@@ -2,16 +2,16 @@
 \babel@toc {ngerman}{}
 \contentsline {chapter}{\numberline {1}Einleitung}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Motivation}{2}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Vorgehensweise}{3}{section.1.2}%
+\contentsline {section}{\numberline {1.2}Vorgehensweise}{2}{section.1.2}%
 \contentsline {chapter}{\numberline {2}Stand der Forschung}{5}{chapter.2}%
 \contentsline {chapter}{\numberline {3}Konzeptuelle Grundlagen und verwendete Datenstrukturen}{11}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Konzeptuelle Grundlagen}{11}{section.3.1}%
 \contentsline {subsection}{\numberline {3.1.1}Die unterliegende Datenstruktur des Pose-Graphen}{11}{subsection.3.1.1}%
 \contentsline {subsection}{\numberline {3.1.2}Koordinatensysteme}{11}{subsection.3.1.2}%
-\contentsline {subsubsection}{Transformationen}{12}{section*.4}%
+\contentsline {subsubsection}{Transformationen}{12}{section*.3}%
 \contentsline {section}{\numberline {3.2}TSDF}{14}{section.3.2}%
 \contentsline {subsection}{\numberline {3.2.1}TSDF-Karte}{16}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}TSDF-Update}{18}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.2}TSDF-Update}{17}{subsection.3.2.2}%
 \contentsline {section}{\numberline {3.3}Eingliederung des genutzten SLAM Verfahrens}{20}{section.3.3}%
 \contentsline {section}{\numberline {3.4}Grundlegende Konzepte für die Identifikation von Schleifenschlüssen}{20}{section.3.4}%
 \contentsline {chapter}{\numberline {4}Identifikation von Datenassoziationen zum Karten-Update}{23}{chapter.4}%
@@ -20,11 +20,11 @@
 \contentsline {section}{\numberline {4.3}Detektions-Algorithmen}{24}{section.4.3}%
 \contentsline {subsection}{\numberline {4.3.1}Ray-Tracing}{24}{subsection.4.3.1}%
 \contentsline {subsection}{\numberline {4.3.2}Bresenham}{28}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}Ergebnisse der Algorithmen}{32}{subsection.4.3.3}%
-\contentsline {subsection}{\numberline {4.3.4}Evaluation}{33}{subsection.4.3.4}%
-\contentsline {section}{\numberline {4.4}Schleifenschlüsse in der Nachbearbeitung}{35}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Karten-Update mittels generierter Assoziationen}{36}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Evaluation und Zusammenfassung}{40}{section.4.6}%
+\contentsline {subsection}{\numberline {4.3.3}Ergebnisse der Algorithmen}{30}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.3.4}Evaluation}{32}{subsection.4.3.4}%
+\contentsline {section}{\numberline {4.4}Schleifenschlüsse in der Nachbearbeitung}{34}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Karten-Update mittels generierter Assoziationen}{37}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Evaluation und Zusammenfassung}{39}{section.4.6}%
 \contentsline {chapter}{\numberline {5}Schleifenschlüsse und Graph-Optimierung}{41}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Detektion von Schleifenschlüssen}{41}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Optimierung des Pose-Graphen}{47}{section.5.2}%
