@@ -19,6 +19,7 @@
 \usepackage[figuresright]{rotating} % Bilder rotieren
 \usepackage{amsmath}
 \usepackage{makecell}
+\usepackage{mathtools}
 \newcommand*\colvec[1]{\begin{pmatrix}#1\end{pmatrix}}
 
 \usepackage{xargs}                      % Use more than one optional parameter in a new commands
@@ -32,8 +33,13 @@
 \newcommandx{\improvement}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
 \newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
 
-\usepackage{algorithm, algorithmic}  % for pseudo code (cf. documentation)
+\usepackage{algorithm, algorithmicx, algpseudocode}  % for pseudo code (cf. documentation)
 \renewcommand{\algorithmiccomment}[1]{\qquad{\small // \textit{#1}}}
+\newcommand{\INDSTATE}[1][1]{\hspace{#1\algorithmicindent}}
+\let\OldStatex\Statex
+\renewcommand{\Statex}[1][3]{%  for pseudo code indentation
+  \setlength\@tempdima{\algorithmicindent}%
+  \OldStatex\hskip\dimexpr#1\@tempdima\relax}
 
 \pgfplotsset{compat=1.16} % pgfplots config
 \setquotestyle{american} % csquotes config
@@ -46,7 +52,19 @@
 	\end{equation}
 }
 
-\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+
+% Swap the definition of \abs* and \norm*, so that \abs
+% and \norm resizes the size of the brackets, and the 
+% starred version does not.
+\makeatletter
+\let\oldabs\abs
+\def\abs{\@ifstar{\oldabs}{\oldabs*}}
+%
+\let\oldnorm\norm
+\def\norm{\@ifstar{\oldnorm}{\oldnorm*}}
+\makeatother
 	
 
 \WarningFilter*{microtype}{I cannot find}
@@ -83,13 +101,13 @@
 
 \begin{document}
 
-\title{Loop Closure in TSDF basiertem SLAM} % Deckblatt
-\shorttitle{Loop Closure in TSDF basiertem SLAM} % Für Titel am unteren Rand der Seiten
+\title{Integration von Schleifenschlüssen in HATSDF-SLAM} % Deckblatt
+\shorttitle{Integration von Schleifenschlüssen in HATSDF-SLAM} % Für Titel am unteren Rand der Seiten
 
 \author{Patrick Hoffmann}
 \email{pahoffmann@uni-osnabrueck.de}
 \firstSupervisor{Prof. Dr. Mario Porrmann}
-\secondSupervisor{Alexander Mock M. Sc.}
+\secondSupervisor{Alexander Mock, M. Sc.}
 % \submitdate{August 2022}             % by default current month & year
 %signline{Osnabrück, 11. Dezember 2004} % by default "signcity, submitdate"
 
@@ -99,10 +117,7 @@
 
 \begin{prefacesection}{Zusammenfassung}
 
-Die vorliegende Arbeit beschäftigt sich mit der Implementierung und Konzeption einer Lösung zur Detektion von \textbf{Schleifenschlüssen} in einem auf \textbf{Truncated Signed Distance Funtion (TSDF)} basierenden \textbf{Simultaneaous Localization and Mapping (SLAM)} Ansatz und der nachfolgenden Optimierung der Robotertrajektorie und TSDF-Karte.
-Zur Optimierung der Trajektorie des Robters nach der Identifikation eines Schleifenschlusses kommt die Bibliothek \textbf{GTSAM} zum Einsatz.
-Es wird evaluiert ob und unter welchen Voraussetzungen eine Nachbearbeitung auf Basis einer fertigen TSDF Karte mit zugehöriger initialer Trajektorie möglich ist und zusätzlich der Einsatz in einem inkrementellen SLAM Ansatz geprüft.
-Darüber wird untersucht, inwiefern ein Teilupdate der TSDF basierten Karte möglich ist.
+Die vorliegenden Arbeit liefert eine Lösung zum Schleifenschluss-Problem in einem \emph{Truncated Signed Distance Field (TSDF)} basiertem \emph{Simultaneous Localization and Mapping (SLAM)} Ansatz. Beschrieben ist die Konzeption und Algorithmik für eine Detektion von Schleifenschlüssen und die anschließende, mehrschrittige Validierung über im Rahmen der Arbeit entwickelte Validatoren, die fehlerhafte Schleifenschlüsse aussortierten und so für eine robustere Optimierung des Pose-Graphen sorgen. Darüber hinaus sind mehrere in der Arbeit entwickelte Strategien zum Update der volumetrischen TSDF-Kartenrepräsentation dargelegt. Dabei handelt es sich um ein globales Update der Karte und zwei darauf basierte, partielle Kartenupdates, die eine deutliche laufzeittechnische Optimierung gegenüber dem globalen Update ermöglichen.
 
 \end{prefacesection}
 
@@ -110,10 +125,7 @@ Darüber wird untersucht, inwiefern ein Teilupdate der TSDF basierten Karte mög
 
 \begin{prefacesection}{Abstract}
 
-This paper deals with the implementation and design of a solution for the detection of \textbf{loop closures} in a \textbf{Truncated Signed Distance Function (TSDF)} based \textbf{Simultaneaous Localization and Mapping (SLAM)} approach and the subsequent optimization of the robot trajectory and TSDF map.
-The \textbf{GTSAM} library is used to optimize the robot's trajectory after identifying a loop closure.
-It is evaluated whether and under which conditions a postprocessing based on a finished TSDF map with associated initial trajectory is possible and additionally the use in an incremental SLAM approach is examined.
-Furthermore, it will be investigated to what extent a partial update of the TSDF based map is possible.
+The present thesis provides a solution to the loop closure problem in a \emph{Truncated Signed Distance Field (TSDF)} based \emph{Simultaneous Localization and Mapping (SLAM)} approach. Described is the design and algorithm for a loop closure detection and subsequent multi-step validation via validators developed as part of the thesis, which sorted out erroneous loop closures to provide more robust optimization of the pose graph. In addition, several strategies developed in the work are outlined for updating the volumetric TSDF map representation. These are a global update of the map and two partial map updates based upon it, which provide significant runtime optimization over the global update.
 
 \end{prefacesection}
 
@@ -144,12 +156,15 @@ Furthermore, it will be investigated to what extent a partial update of the TSDF
 
 \subfile{chapters/ausblick}
 
+\appendix
+
+\subfile{chapters/appendix}
+
 
 \bibliography{papers.bib}                                                                                                                           
 
 \cleardoublepage
 
-\improvement{Endpage für Unterschrift einbauen}
-%\includepdf[pages=-]{pics/endpage.pdf} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\includepdf[pages=-]{pics/endpageV2.pdf} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}

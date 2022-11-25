@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <loop_closure/map/attribute_data_model.h>
 #include <loop_closure/util/point.h>
+#include <loop_closure/ray_tracer/ray_tracer.h>
 
 namespace std
 {
@@ -43,3 +44,16 @@ Eigen::Vector3i to_point(const Vector3f &vec);
  */
 void update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::Vector3i &scanner_pos, const Eigen::Vector3i &up,
                  LocalMap &buffer, int tau, int max_weight, int map_resolution, int pose_index = -1);
+
+/**
+ * @brief Generate new TSDF data and weights based on the new point data and update the given map
+ *
+ * @param scan_points Points from which the TSDF values should be calculated
+ * @param scanner_pos current position of the laser scanner
+ * @param buffer map which should be updated with the new data
+ * @param tsdf_method Method which should be used for the tsdf calculation
+ * @param tau Truncation distance for the TSDF values (in map resolution)
+ * @param max_weight Maximum weight for every TSDF cell in the map
+ */
+void reverse_update_tsdf(const std::vector<Eigen::Vector3i> &scan_points, const Eigen::Vector3i &scanner_pos, const Eigen::Vector3i &up,
+                         LocalMap &buffer, int tau, int max_weight, int map_resolution, int pose_index = -1);

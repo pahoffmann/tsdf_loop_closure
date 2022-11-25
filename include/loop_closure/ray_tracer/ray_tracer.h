@@ -148,12 +148,6 @@ private:
      * @return false 
      */
     bool linePlaneIntersection(Vector3f& intersection, Vector3f ray_vector, Vector3f ray_origin, Vector3f plane_normal, Vector3f plane_coord);
-
-    /**
-     * @brief does some cleanup work in between runs.
-     * 
-     */
-    void cleanup();
 public:
 
     /**
@@ -181,6 +175,12 @@ public:
     }
 
     /**
+     * @brief does some cleanup work in between runs.
+     * 
+     */
+    void cleanup();
+
+    /**
      * @brief Starts the tracing process
      * 
      * @param mode 0: normal, 1: no association data being written, just plain scan while keeping track of hit vs non hit
@@ -200,7 +200,7 @@ public:
      * 
      * @param pose 
      */
-    void local_removal(Pose *pose);
+    void local_removal(Pose *pose, int pose_index);
 
     /**
      * @brief Get the ros marker for the current ray trace

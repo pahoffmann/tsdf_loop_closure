@@ -122,7 +122,7 @@ void Association::serialize_JSON()
 
         association_val["value"] = second.second.value();
         association_val["weight"] = second.second.weight();
-        association_val["raw"] = second.second.raw();
+        //association_val["raw"] = second.second.raw();
 
         root[index].append(association_val);
 

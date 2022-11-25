@@ -18,11 +18,11 @@
 #include <loop_closure/map/attribute_data_model.h>
 #include <omp.h>
 #include <loop_closure/params/loop_closure_params.h>
+#include <chrono>
 
 struct ActiveChunk
 {
     std::vector<TSDFEntry::RawType> data;
-    std::vector<int32_t> intersect_data;
     Vector3i pos;
     int age;
 };
@@ -166,7 +166,7 @@ public:
      * @param chunk position of the chunk that gets activated
      * @return reference to the activated chunk
      */
-    std::vector<TSDFEntry::RawType> &activate_chunk(const Vector3i &chunk, std::vector<int> *&intersections);
+    std::vector<TSDFEntry::RawType> &activate_chunk(const Vector3i &chunk);
 
     /**
      * Writes all active chunks into the HDF5 file.
@@ -290,12 +290,6 @@ public:
     void clear_association_data();
 
     /**
-     * @brief Clears the map from the intersection data which might have been written to it in a previous run
-     *
-     */
-    void clear_intersection_data();
-
-    /**
      * @brief gets the attribute data of the local map
      *        ATTENTION: depending on which constructor was called, the attribute data might not be initialized.
      *
@@ -327,4 +321,25 @@ public:
      * @return Vector3i 
      */
     Vector3i pos_from_index(int i);
+
+    /**
+     * @brief attempts to read the data of an old formatted gm
+     * 
+     */
+    std::vector<std::pair<std::string, std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>>>> read_old_format();
+
+    /**
+     * @brief writes a chunk of data to the hdf5
+     * 
+     * @param tag 
+     * @param data 
+     */
+    void write_chunk(std::string tag, std::vector<TSDFEntry::RawType> data);
+
+    /**
+     * @brief will clean the map
+     * 
+     * @param to_be_cleaned 
+     */
+    void clean_poses(std::vector<bool> to_be_cleaned);
 };

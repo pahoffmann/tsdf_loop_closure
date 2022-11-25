@@ -1,0 +1,5 @@
+<launch>
+    <node name="benchmark_node" type="benchmark_node" pkg="loop_closure" output="screen" clear_params="true">
+        <rosparam command="load" file="$(find loop_closure)/params/benchmark.yaml"/>
+    </node>
+</launch>

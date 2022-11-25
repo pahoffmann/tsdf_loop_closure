@@ -1,11 +1,12 @@
 loop_closure:
   max_icp_iterations: 200
-  max_dist_lc: 12.0     # in m
-  min_traveled_lc: 8.0 # in m
+  max_dist_lc: 15.0     # in m
+  min_traveled_lc: 15.0 # in m
   dist_between_lcs: 0.0 # in m
+  max_closures_per_pose: 3
 
-  max_prereg_icp_fitness: 0.2 # in m²
-  max_lc_icp_fitness: 0.1 # in m²
+  max_prereg_icp_fitness: 0.3 # in m²
+  max_lc_icp_fitness: 0.3 # in m²
 
   do_preregistration: true
 
@@ -23,6 +24,9 @@ loop_closure:
   between_translation_noise_y: 0.2
   between_translation_noise_z: 0.2
 
+  ground_truth_filename: "/home/patrick/data/hannover1_gt/gt_han1.dat"
+  csv_save_path: "/home/patrick/data/evaluation"
+
 map:
   # directory to save map in
   dir: "/home/patrick/maps/generated"
@@ -33,13 +37,13 @@ map:
   max_distance: 0.6
 
   # Size of one grid cell in the discretised map (in m per cell)
-  resolution: 64 #0.1 #0.03
+  resolution: 128 #0.1 #0.03
 
   # localmap size for every dimension (in m)
   size:
-    x: 40
-    y: 40
-    z: 25
+    x: 50
+    y: 50
+    z: 30
 
   # Maximum weight for one TSDF cell. This variable ensures that later changes can still have an influence to the map
   max_weight: 10.0

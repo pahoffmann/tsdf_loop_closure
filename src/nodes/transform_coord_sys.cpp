@@ -6,6 +6,7 @@
 #include <loop_closure/path/path.h>
 #include <loop_closure/params/loop_closure_params.h>
 #include <loop_closure/util/point.h>
+#include <loop_closure/util/csv_wrapper.h>
 #include <iostream>
 
 #include <pcl/point_cloud.h>
@@ -32,6 +33,8 @@ ros::Publisher initial_path_pub;
 // create a data bound between the data publisher (this node) and the data subscriber
 std::unique_ptr<bond::Bond> bond_ptr;
 
+std::unique_ptr<CSVWrapper> csv_wrapper_ptr;
+
 sensor_msgs::PointCloud2 pcl_to_ros(pcl::PointCloud<PointType>::Ptr cloud)
 {
     sensor_msgs::PointCloud2 transformed;
@@ -40,6 +43,34 @@ sensor_msgs::PointCloud2 pcl_to_ros(pcl::PointCloud<PointType>::Ptr cloud)
     transformed.header.stamp = ros::Time::now();
 
     return transformed;
+}
+
+void csv_from_path(std::string name, Path *in_path)
+{
+    auto path_object = csv_wrapper_ptr->create_object(name);
+
+    CSVWrapper::CSVRow x_coords;
+    CSVWrapper::CSVRow y_coords;
+    CSVWrapper::CSVRow z_coords;
+    CSVWrapper::CSVRow header;
+
+    int cnt = 0;
+    for(auto pose : in_path->getPoses())
+    {
+        auto translation = pose.pos;
+
+        x_coords.add(std::to_string(translation.x()));
+        y_coords.add(std::to_string(translation.y()));
+        z_coords.add(std::to_string(translation.z()));
+
+        header.add(std::to_string(cnt));
+        cnt++;
+    }
+
+    path_object->add_row(x_coords);
+    path_object->add_row(y_coords);
+    path_object->add_row(z_coords);
+    path_object->add_row(header);
 }
 
 /**
@@ -70,6 +101,7 @@ geometry_msgs::PoseStamped transform_to_ros_pose_stamped(Matrix4f &transform)
 void prepare()
 {
     path = new Path();
+    csv_wrapper_ptr.reset(new CSVWrapper("/home/patrick/data/evaluation/"));
 
     boost::filesystem::path directory_name = fs::path("/home/patrick/data/hannover1/");
 
@@ -82,12 +114,29 @@ void prepare()
     std::sort(scan_pose_filename_pairs.first.begin(), scan_pose_filename_pairs.first.end());
     std::sort(scan_pose_filename_pairs.second.begin(), scan_pose_filename_pairs.second.end());
 
+    auto path_object = csv_wrapper_ptr->create_object("initial_path");
+    CSVWrapper::CSVRow x_coords;
+    CSVWrapper::CSVRow y_coords;
+    CSVWrapper::CSVRow z_coords;
+
     for (auto pose_path : scan_pose_filename_pairs.second)
     {
         auto pose_mat = CoordSysTransform::getTransformationFromPose(pose_path);
         Pose pose(pose_mat);
         path->add_pose(pose);
+
+        auto translation = pose.pos;
+
+        x_coords.add(std::to_string(translation.x()));
+        y_coords.add(std::to_string(translation.y()));
+        z_coords.add(std::to_string(translation.z()));
     }
+
+    path_object->add_row(x_coords);
+    path_object->add_row(y_coords);
+    path_object->add_row(z_coords);
+
+    csv_wrapper_ptr->write_all();
 
     // global_scan_counter = 230;
 }
@@ -104,7 +153,7 @@ void publish_next_data()
     }
 
     // testing
-    // if (global_scan_counter > 300)
+    // if (global_scan_counter > 70)
     // {
     //     // all data is published, break the bound and shutdown
 
@@ -190,7 +239,7 @@ int main(int argc, char **argv)
     cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);
     pose_pub = n.advertise<geometry_msgs::PoseStamped>("/slam6d_pose", 0);
     filename_pub = n.advertise<std_msgs::String>("/slam6d_filename", 0);
-    initial_path_pub = n.advertise<visualization_msgs::Marker>("/initial_path", 0);
+    initial_path_pub = n.advertise<nav_msgs::Path>("/initial_path", 0);
 
     // subscribe to the ready topic
     ros::Subscriber slam6d_listener_ready_sub = n.subscribe("/slam6d_listener_ready", 1, handle_slam6d_listener_ready);
@@ -209,7 +258,7 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        initial_path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::red));
+        initial_path_pub.publish(type_transform::to_ros_path(path->getPoses()));
 
         ros::spinOnce();
         r.sleep();

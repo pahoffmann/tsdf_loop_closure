@@ -184,11 +184,13 @@ bool GTSAMWrapper::add_loop_closure_constraint(std::pair<int, int> lc_indices, p
     if (LCRejectors::reject_line_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation))
     {
         std::cout << print_prefix << "LC Rejected (LINE)" << std::endl;
+        num_line_rejects++;
         return false;
     }
     else if (LCRejectors::reject_range_loop_closure_new(path, lc_indices.first, lc_indices.second, final_transformation, params))
     {
         std::cout << print_prefix << "LC Rejected (RANGE New)" << std::endl;
+        num_range_rejects++;
         return false;
     }
     // else if (LCRejectors::reject_range_loop_closure(path, lc_indices.first, lc_indices.second, final_transformation, params))
@@ -263,6 +265,12 @@ void GTSAMWrapper::reset()
     graph.reset(new gtsam::NonlinearFactorGraph());
 }
 
+float GTSAMWrapper::get_error(gtsam::Values initial)
+{
+    return graph->error(initial);
+}
+
+
 void GTSAMWrapper::perform_pcl_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
                                    pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score)
 {
@@ -298,8 +306,9 @@ void GTSAMWrapper::perform_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud,
     // align the clouds using generalized icp
     static pcl::GeneralizedIterativeClosestPoint<PointType, PointType> g_icp;
     g_icp.setMaximumIterations(params.loop_closure.max_icp_iterations);
-    g_icp.setMaximumOptimizerIterations(100);
+    g_icp.setMaximumOptimizerIterations(params.loop_closure.max_icp_iterations);
     g_icp.setTransformationEpsilon(0.01);
+    //g_icp.setMaxCorrespondenceDistance(0.2f);
     g_icp.setMaxCorrespondenceDistance(params.loop_closure.max_dist_lc * 2);
     g_icp.setRANSACIterations(100);
     g_icp.setRANSACOutlierRejectionThreshold(params.loop_closure.max_dist_lc * 2);
@@ -684,7 +693,6 @@ void GTSAMWrapper::perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr 
         t_scan_cloud.push_back(t_point);
     }
 
-    std::cout << __LINE__ << std::endl;
 
     // Run TEASER++ registration
     // Prepare solver parameters
@@ -698,7 +706,6 @@ void GTSAMWrapper::perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr 
         teaser::RobustRegistrationSolver::ROTATION_ESTIMATION_ALGORITHM::GNC_TLS;
     params.rotation_cost_threshold = 0.005;
 
-    std::cout << __LINE__ << std::endl;
 
     // Solve with TEASER++
     teaser::RobustRegistrationSolver solver(params);
@@ -706,17 +713,12 @@ void GTSAMWrapper::perform_own_teaser_plus_plus(pcl::PointCloud<PointType>::Ptr 
     solver.solve(t_scan_cloud, t_model_cloud, pcl_correspondences);
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-    std::cout << __LINE__ << std::endl;
-
     auto solution = solver.getSolution();
 
-    std::cout << __LINE__ << std::endl;
 
     Eigen::Matrix4d solution_mat = Eigen::Matrix4d::Identity();
     solution_mat.block<3, 3>(0, 0) = solution.rotation;
     solution_mat.block<3, 1>(0, 3) = solution.translation;
-
-    std::cout << __LINE__ << std::endl;
 
     std::cout << "Rotation output: " << std::endl
               << Pose(solution_mat.cast<float>()) << std::endl;

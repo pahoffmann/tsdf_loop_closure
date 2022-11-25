@@ -466,8 +466,10 @@ void AssociationManager::greedy_associations()
         // update ray tracer data for the next trace
         ray_tracer->update_pose(associations[i].getPose());
         ray_tracer->update_association(&associations[i]);
-        // ray_tracer->start_bresenham(); // start tracing using bresenham, given the current association.
-        ray_tracer->start(); // start tracing, given the current association.
+        //ray_tracer->start_bresenham(); // start tracing using bresenham, given the current association.
+        ray_tracer->start(0); // start tracing, given the current association.
+
+        local_map_ptr->write_back();
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
@@ -610,7 +612,6 @@ void AssociationManager::cleanup()
 {
     // cleanup hdf5
     global_map_ptr->clear_association_data();
-    global_map_ptr->clear_intersection_data();
 
     // cleanup hashmaps and vectors
     level_one_data.clear();

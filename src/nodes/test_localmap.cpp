@@ -79,7 +79,7 @@ void test_localmap_void()
 {
     // create a default entry
     TSDFEntry default_entry(global_map_ptr_->get_attribute_data().get_tau(), 0);
-    default_entry.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+    default_entry.intersect(static_cast<TSDFEntryHW::IntersectionType>(TSDFEntry::IntersectStatus::INT_ZERO));
 
     float percent = 100.0f / path->get_length();
     float percent_counter = 0.0f;
@@ -163,7 +163,7 @@ void test_localmap_intersect()
                 {
                     // default the value
                     auto &tsdf = local_map_ptr_->value(x, y, z);
-                    tsdf.setIntersect(TSDFEntry::IntersectStatus::INT_ZERO);
+                    tsdf.intersect(static_cast<TSDFEntryHW::IntersectionType>(TSDFEntry::IntersectStatus::INT_ZERO));
                 }
             }
         }

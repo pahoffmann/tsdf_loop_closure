@@ -1,9 +1,64 @@
+% tsdf reconstruction %
+
 @inproceedings{lorensen_marching_1987,
 	title = {Marching {Cubes}: {A} {High} {Resolution} 3D {Surface} {Construction} {Algorithm}},
 	booktitle = {{ACM} {SIGGRAPH} '87},
 	author = {Lorensen, W. E. and Cline, H. E.},
 	year = {1987}
 }
+
+% LOOP Closure %
+
+@article{tsintotas2022revisiting,
+  title={The Revisiting Problem in Simultaneous Localization and Mapping: A Survey on Visual Loop Closure Detection},
+  author={Tsintotas, Konstantinos A and Bampis, Loukas and Gasteratos, Antonios},
+  journal={IEEE Transactions on Intelligent Transportation Systems},
+  year={2022},
+  publisher={IEEE}
+}
+
+@article{ho2006loop,
+  title={Loop closure detection in SLAM by combining visual and spatial appearance},
+  author={Ho, Kin Leong and Newman, Paul},
+  journal={Robotics and Autonomous Systems},
+  volume={54},
+  number={9},
+  pages={740--749},
+  year={2006},
+  publisher={Elsevier}
+}
+
+@article{garg2021your,
+  title={Where is your place, visual place recognition?},
+  author={Garg, Sourav and Fischer, Tobias and Milford, Michael},
+  journal={arXiv preprint arXiv:2103.06443},
+  year={2021}
+}
+
+@article{lowry2015visual,
+  title={Visual place recognition: A survey},
+  author={Lowry, Stephanie and S{\"u}nderhauf, Niko and Newman, Paul and Leonard, John J and Cox, David and Corke, Peter and Milford, Michael J},
+  journal={IEEE Transactions on Robotics},
+  volume={32},
+  number={1},
+  pages={1--19},
+  year={2015},
+  publisher={IEEE}
+}
+
+% lc rejectors
+@inproceedings{xie2017graphtinker,
+  title={GraphTinker: Outlier rejection and inlier injection for pose graph SLAM},
+  author={Xie, Linhai and Wang, Sen and Markham, Andrew and Trigoni, Niki},
+  booktitle={2017 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={6777--6784},
+  year={2017},
+  organization={IEEE}
+}
+
+
+% end LOOP Closure %
+
 
 
 @inproceedings{Thrun:2000,
@@ -16,10 +71,22 @@
   pages     = "321--328",
 }
 
-@misc{robocup,
-  author    = "RoboCup",
-  title     = "{Robot World Cup Soccer Games and Conferences}",
-  note = {\url{http://www.robocup.org}},
+@article{lu1997globally,
+  title={Globally consistent range scan alignment for environment mapping},
+  author={Lu, Feng and Milios, Evangelos},
+  journal={Autonomous robots},
+  volume={4},
+  number={4},
+  pages={333--349},
+  year={1997},
+  publisher={Springer}
+}
+
+@techreport{dellaert2012factor,
+  title={Factor graphs and GTSAM: A hands-on introduction},
+  author={Dellaert, Frank},
+  year={2012},
+  institution={Georgia Institute of Technology}
 }
 
 
@@ -77,17 +144,6 @@
   title={Kintinuous: Spatially extended kinectfusion},
   author={Whelan, Thomas and Kaess, Michael and Fallon, Maurice and Johannsson, Hordur and Leonard, John and McDonald, John},
   year={2012}
-}
-
-
-
-@inproceedings{werner2014truncated,
-  title={Truncated signed distance function: experiments on voxel size},
-  author={Werner, Diana and Al-Hamadi, Ayoub and Werner, Philipp},
-  booktitle={International Conference Image Analysis and Recognition},
-  pages={357--364},
-  year={2014},
-  organization={Springer}
 }
 
 @inproceedings{bylow2013real,
@@ -175,6 +231,42 @@
   doi={10.1109/34.982886}
   }
 
+% teaser ++  
+@article{Yang20tro-teaser,
+  title={{TEASER: Fast and Certifiable Point Cloud Registration}},
+  author={H. Yang and J. Shi and L. Carlone},
+  journal={{IEEE} Trans. Robotics},
+  pdf={https://arxiv.org/pdf/2001.07715.pdf},
+  Year = {2020} 
+}
+
+@inproceedings{zhou2016fast,
+  title={Fast global registration},
+  author={Zhou, Qian-Yi and Park, Jaesik and Koltun, Vladlen},
+  booktitle={European conference on computer vision},
+  pages={766--782},
+  year={2016},
+  organization={Springer}
+}
+
+@article{montemerlo2002fastslam,
+  title={FastSLAM: A factored solution to the simultaneous localization and mapping problem},
+  author={Montemerlo, Michael and Thrun, Sebastian and Koller, Daphne and Wegbreit, Ben and others},
+  journal={Aaai/iaai},
+  volume={593598},
+  year={2002}
+}
+
+@inproceedings{montemerlo2003fastslam,
+  title={FastSLAM 2.0: An improved particle filtering algorithm for simultaneous localization and mapping that provably converges},
+  author={Montemerlo, Michael and Thrun, Sebastian and Koller, Daphne and Wegbreit, Ben and others},
+  booktitle={IJCAI},
+  volume={3},
+  pages={1151--1156},
+  year={2003}
+}
+
+
 
 % Lio-sam %
 @inproceedings{shan2020lio,
@@ -184,6 +276,204 @@
   pages={5135--5142},
   year={2020},
   organization={IEEE}
+}
+
+% übersicht über slam
+@article{cadena2016past,
+  title={Past, present, and future of simultaneous localization and mapping: Toward the robust-perception age},
+  author={Cadena, Cesar and Carlone, Luca and Carrillo, Henry and Latif, Yasir and Scaramuzza, Davide and Neira, Jos{\'e} and Reid, Ian and Leonard, John J},
+  journal={IEEE Transactions on robotics},
+  volume={32},
+  number={6},
+  pages={1309--1332},
+  year={2016},
+  publisher={IEEE}
+}
+
+
+% 
+@article{frese2005multilevel,
+  title={A multilevel relaxation algorithm for simultaneous localization and mapping},
+  author={Frese, Udo and Larsson, Per and Duckett, Tom},
+  journal={IEEE Transactions on Robotics},
+  volume={21},
+  number={2},
+  pages={196--207},
+  year={2005},
+  publisher={IEEE}
+}
+
+@inproceedings{zhang2014loam,
+  title={LOAM: Lidar odometry and mapping in real-time.},
+  author={Zhang, Ji and Singh, Sanjiv},
+  booktitle={Robotics: Science and Systems},
+  volume={2},
+  number={9},
+  pages={1--9},
+  year={2014},
+  organization={Berkeley, CA}
+}
+
+@inproceedings{shan2018lego,
+  title={Lego-loam: Lightweight and ground-optimized lidar odometry and mapping on variable terrain},
+  author={Shan, Tixiao and Englot, Brendan},
+  booktitle={2018 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={4758--4765},
+  year={2018},
+  organization={IEEE}
+}
+
+@article{aulinas2008slam,
+  title={The SLAM problem: a survey},
+  author={Aulinas, Josep and Petillot, Yvan and Salvi, Joaquim and Llad{\'o}, Xavier},
+  journal={Artificial Intelligence Research and Development},
+  pages={363--371},
+  year={2008},
+  publisher={IOS Press}
+}
+
+@article{taketomi2017visual,
+  title={Visual SLAM algorithms: A survey from 2010 to 2016},
+  author={Taketomi, Takafumi and Uchiyama, Hideaki and Ikeda, Sei},
+  journal={IPSJ Transactions on Computer Vision and Applications},
+  volume={9},
+  number={1},
+  pages={1--11},
+  year={2017},
+  publisher={SpringerOpen}
+}
+
+
+
+
+
+
+% TSDF Stuff %
+
+
+% order: ascending by year
+
+@inproceedings{hoppe1992surface,
+  title={Surface reconstruction from unorganized points},
+  author={Hoppe, Hugues and DeRose, Tony and Duchamp, Tom and McDonald, John and Stuetzle, Werner},
+  booktitle={Proceedings of the 19th annual conference on computer graphics and interactive techniques},
+  pages={71--78},
+  year={1992}
+}
+
+@inproceedings{bajaj1995automatic,
+  title={Automatic reconstruction of surfaces and scalar fields from 3D scans},
+  author={Bajaj, Chandrajit L and Bernardini, Fausto and Xu, Guoliang},
+  booktitle={Proceedings of the 22nd annual conference on Computer graphics and interactive techniques},
+  pages={109--118},
+  year={1995}
+}
+
+% base paper: SDF
+%
+% neuer Ansatz zur Rekonstruktion von Oberflächen auf Basis einer vorzeichenbehafteten Distanzfunktion
+% erlaubt Konstruktion einer solchen auf Basis einer Reihe von Range Images, gegeben aus Tiefenbildkameras oder Lidar (Light detection and ranging) sensoren
+% ermöglicht ein inkrementelles Update, die repräsentation gerichteter Ungenauigkeit, die Möglichkeit Lücken in der Rekonstruktion zu füllen und robust gegen Outlier zu sein
+% neben diesen noch weitere (wünschenswerte) Eigenschaften: 
+% - inkrementelles Update unabhängig von der Reihenfolge der Anwendung der Scans -> kein Bias
+% stellen zusätzlich die Algorithmik vor, Löcher innerhalb der Repräsentation zu schließen
+
+@inproceedings{curless1996volumetric,
+  title={A volumetric method for building complex models from range images},
+  author={Curless, Brian and Levoy, Marc},
+  booktitle={Proceedings of the 23rd annual conference on Computer graphics and interactive techniques},
+  pages={303--312},
+  year={1996}
+}
+
+@inproceedings{breen19983d,
+  title={3D scan conversion of CSG models into distance volumes},
+  author={Breen, David E and Mauch, Sean and Whitaker, Ross T},
+  booktitle={Proceedings of the 1998 IEEE symposium on Volume visualization},
+  pages={7--14},
+  year={1998}
+}
+
+% mauch tsdf
+@article{mauch2000fast,
+  title={A fast algorithm for computing the closest point and distance transform},
+  author={Mauch, Sean},
+  journal={Go online to http://www. acm. caltech. edu/seanm/software/cpt/cpt. pdf},
+  year={2000}
+}
+
+@book{mauch2003efficient,
+  title={Efficient algorithms for solving static Hamilton-Jacobi equations},
+  author={Mauch, Sean Patrick},
+  year={2003},
+  publisher={California Institute of Technology}
+}
+
+% adaptive signed distance
+@inproceedings{frisken2000adaptively,
+  title={Adaptively sampled distance fields: A general representation of shape for computer graphics},
+  author={Frisken, Sarah F and Perry, Ronald N and Rockwood, Alyn P and Jones, Thouis R},
+  booktitle={Proceedings of the 27th annual conference on Computer graphics and interactive techniques},
+  pages={249--254},
+  year={2000}
+}
+
+@INPROCEEDINGS{novotny2005representation,
+  author={Novotny, P. and Sramek, M.},
+  booktitle={Fourth International Workshop on Volume Graphics, 2005.}, 
+  title={Representation of objects with sharp details in truncated distance fields}, 
+  year={2005},
+  volume={},
+  number={},
+  pages={109-233},
+  doi={10.1109/VG.2005.194104}
+}
+
+@ARTICLE{jones2006distance,
+  author={Jones, M.W. and Baerentzen, J.A. and Sramek, M.},
+  journal={IEEE Transactions on Visualization and Computer Graphics}, 
+  title={3D distance fields: a survey of techniques and applications}, 
+  year={2006},
+  volume={12},
+  number={4},
+  pages={581-599},
+  doi={10.1109/TVCG.2006.56}
+}
+
+
+@inproceedings{bastos2008gpu,
+  title={GPU-accelerated adaptively sampled distance fields},
+  author={Bastos, Thiago and Celes, Waldemar},
+  booktitle={2008 IEEE International Conference on Shape Modeling and Applications},
+  pages={171--178},
+  year={2008},
+  organization={IEEE}
+}
+
+
+@inproceedings{newcombe2011kinectfusion,
+  title={Kinectfusion: Real-time dense surface mapping and tracking},
+  author={Newcombe, Richard A and Izadi, Shahram and Hilliges, Otmar and Molyneaux, David and Kim, David and Davison, Andrew J and Kohi, Pushmeet and Shotton, Jamie and Hodges, Steve and Fitzgibbon, Andrew},
+  booktitle={2011 10th IEEE international symposium on mixed and augmented reality},
+  pages={127--136},
+  year={2011},
+  organization={Ieee}
+}
+
+@inproceedings{werner2014truncated,
+  title={Truncated signed distance function: experiments on voxel size},
+  author={Werner, Diana and Al-Hamadi, Ayoub and Werner, Philipp},
+  booktitle={International Conference Image Analysis and Recognition},
+  pages={357--364},
+  year={2014},
+  organization={Springer}
+}
+
+
+@inproceedings{Canelhas2017TruncatedSD,
+  title={Truncated Signed Distance Fields Applied To Robotics},
+  author={Daniel Ricao Canelhas},
+  year={2017}
 }
 
 % Hatsdf slam %
@@ -196,19 +486,6 @@ number={},
 pages={1-7},  
 doi={10.1109/ECMR50962.2021.9568815
 }}
-
-% TSDF Stuff %
-@inproceedings{newcombe2011kinectfusion,
-  title={Kinectfusion: Real-time dense surface mapping and tracking},
-  author={Newcombe, Richard A and Izadi, Shahram and Hilliges, Otmar and Molyneaux, David and Kim, David and Davison, Andrew J and Kohi, Pushmeet and Shotton, Jamie and Hodges, Steve and Fitzgibbon, Andrew},
-  booktitle={2011 10th IEEE international symposium on mixed and augmented reality},
-  pages={127--136},
-  year={2011},
-  organization={Ieee}
-}
-
-
-
 
 
 % LOOP CLOSURE PAPERS %
@@ -259,12 +536,71 @@ doi={10.1109/ECMR50962.2021.9568815
 }
 
 
+% k-d Tree
+@article{bentley1975multidimensional,
+  title={Multidimensional binary search trees used for associative searching},
+  author={Bentley, Jon Louis},
+  journal={Communications of the ACM},
+  volume={18},
+  number={9},
+  pages={509--517},
+  year={1975},
+  publisher={ACM New York, NY, USA}
+}
 
+% PCL
+@inproceedings{rusu20113d,
+  title={3d is here: Point cloud library (pcl)},
+  author={Rusu, Radu Bogdan and Cousins, Steve},
+  booktitle={2011 IEEE international conference on robotics and automation},
+  pages={1--4},
+  year={2011},
+  organization={IEEE}
+}
 
+% Levenberg
+@article{marquardt1963algorithm,
+  title={An algorithm for least-squares estimation of nonlinear parameters},
+  author={Marquardt, Donald W},
+  journal={Journal of the society for Industrial and Applied Mathematics},
+  volume={11},
+  number={2},
+  pages={431--441},
+  year={1963},
+  publisher={SIAM}
+}
 
+% Marquardt
+@article{levenberg1944method,
+  title={A method for the solution of certain non-linear problems in least squares},
+  author={Levenberg, Kenneth},
+  journal={Quarterly of applied mathematics},
+  volume={2},
+  number={2},
+  pages={164--168},
+  year={1944}
+}
 
+@inproceedings{noto2000method,
+  title={A method for the shortest path search by extended Dijkstra algorithm},
+  author={Noto, Masato and Sato, Hiroaki},
+  booktitle={Smc 2000 conference proceedings. 2000 ieee international conference on systems, man and cybernetics.'cybernetics evolving to systems, humans, organizations, and their complex interactions'(cat. no. 0},
+  volume={3},
+  pages={2316--2320},
+  year={2000},
+  organization={IEEE}
+}
 
-
+@inproceedings{quigley2009ros,
+  title={ROS: an open-source Robot Operating System},
+  author={Quigley, Morgan and Conley, Ken and Gerkey, Brian and Faust, Josh and Foote, Tully and Leibs, Jeremy and Wheeler, Rob and Ng, Andrew Y and others},
+  booktitle={ICRA workshop on open source software},
+  volume={3},
+  number={3.2},
+  pages={5},
+  year={2009},
+  organization={Kobe, Japan}
+}
 
 
 @misc{ros_tf_image,
@@ -273,3 +609,28 @@ doi={10.1109/ECMR50962.2021.9568815
   url = "{http://wiki.ros.org/tf}",
   note = "zuletzt abgerufen am: 09.10.2022" 
 }
+
+@misc{hdf5,
+  author    = "HDF-Group",
+  title     = "{THE JDF5 LIBRARY FILE AND FORMAT}",
+  url = "{https://www.hdfgroup.org/solutions/hdf5/}",
+  note = "zuletzt abgerufen am: 02.11.2022" 
+}
+
+@misc{cloudcompare,
+  author    = "CloudCompare",
+  title     = "{CloudCompare - home}",
+  url = "{https://www.cloudcompare.org/main.html}",
+  note = "zuletzt abgerufen am: 16.11.2022" 
+}
+
+@misc{kinect,
+  author    = "Wikipedia",
+  title     = "{Kinect}",
+  url = "{https://en.wikipedia.org/wiki/Kinect}",
+  note = "zuletzt abgerufen am: 16.11.2022" 
+}
+
+
+
+

@@ -44,6 +44,9 @@
 #include <loop_closure/gtsam/gtsam_wrapper.h>
 #include <loop_closure/util/lc_evaluator.h>
 #include <loop_closure/map/map_updater.h>
+#include <loop_closure/coordinate_systems/coord_sys_transform.h>
+#include <loop_closure/util/csv_wrapper.h>
+#include <loop_closure/util/evaluation.h>
 
 // transform between ros and eigen
 #include <tf2/convert.h>
@@ -75,9 +78,13 @@ RayTracer *tracer;
 std::shared_ptr<LocalMap> local_map_ptr;
 std::shared_ptr<GlobalMap> global_map_ptr;
 std::unique_ptr<GTSAMWrapper> gtsam_wrapper_ptr;
+std::shared_ptr<CSVWrapper> csv_wrapper_ptr;
 Path *path;
 Path *optimized_path;
 Path *gicp_path;
+Path *ground_truth;
+Path *initial_path; // holds the initial path
+
 int side_length_xy;
 int side_length_z;
 
@@ -105,6 +112,7 @@ Matrix4f last_loop_transform_diff;
 ros::Publisher path_pub;
 ros::Publisher gicp_path_pub;
 ros::Publisher optimized_path_pub;
+ros::Publisher ground_truth_path_pub;
 ros::Publisher loop_pub;
 ros::Publisher tsdf_pub;
 ros::Publisher ready_flag_pub;      // publisher used to signal to it's subscribers, that the node is back in idle mode
@@ -116,7 +124,8 @@ ros::Publisher global_scan_pub;     // result of icp
 ros::Publisher input_cloud_pub;     // publishes the input cloud
 ros::Publisher tsdf_cloud_pub;
 ros::Publisher lc_candidate_publisher; // publishes loop closure candidates
-ros::Publisher normal_publisher;       // publishes loop closure candidates
+ros::Publisher normal_publisher;
+ros::Publisher rays_publisher;
 
 // Ros messages
 nav_msgs::Path ros_path;
@@ -126,6 +135,39 @@ sensor_msgs::PointCloud2 icp_pcl_msg;
 
 // Boncpp
 std::unique_ptr<bond::Bond> bond_ptr;
+
+// Evaluation
+
+// translation error against ground truth
+CSVWrapper::CSVObject *translation_error;
+CSVWrapper::CSVRow translation_header_row;
+CSVWrapper::CSVRow relative_translation_error_row;
+CSVWrapper::CSVRow absolute_translation_error_row;
+CSVWrapper::CSVRow absolute_translation_error_xy_row;
+CSVWrapper::CSVRow loop_closure_at_index_row; // 0: no, 1: yeeeees
+
+// gtsam graph error
+CSVWrapper::CSVObject *graph_error;
+CSVWrapper::CSVRow graph_error_header;
+CSVWrapper::CSVRow graph_error_row;
+
+// global map update time
+CSVWrapper::CSVObject *global_map_update_time;
+CSVWrapper::CSVRow global_map_update_header;
+CSVWrapper::CSVRow global_shift_time;
+CSVWrapper::CSVRow global_update_time;
+CSVWrapper::CSVRow global_removal_time;
+CSVWrapper::CSVRow global_visualization_time;
+
+// partial map update time measurement
+
+CSVWrapper::CSVObject *partial_map_update_time;
+CSVWrapper::CSVRow partial_map_update_header;
+CSVWrapper::CSVRow partial_shift_time;
+CSVWrapper::CSVRow partial_removal_time;
+CSVWrapper::CSVRow partial_update_time;
+CSVWrapper::CSVRow partial_total_time;
+CSVWrapper::CSVRow partial_visualization_time;
 
 #pragma endregion
 
@@ -139,6 +181,7 @@ void init_obj()
     global_map_ptr.reset(new GlobalMap(params.map));
     local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
     gtsam_wrapper_ptr.reset(new GTSAMWrapper(params));
+    csv_wrapper_ptr.reset(new CSVWrapper(params.loop_closure.csv_save_path, ','));
 
     // init ray tracer
     tracer = new RayTracer(params, local_map_ptr, global_map_ptr);
@@ -147,8 +190,14 @@ void init_obj()
     path = new Path();
     path->attach_raytracer(tracer);
 
+    ground_truth = new Path();
+    ground_truth->attach_raytracer(tracer);
+
     gicp_path = new Path();
     gicp_path->attach_raytracer(tracer);
+
+    initial_path = new Path();
+    initial_path->attach_raytracer(tracer);
 
     // create evaluator
     evaluator.reset(new Evaluator(path));
@@ -161,6 +210,12 @@ void init_obj()
     last_loop_old_pose.quat = Eigen::Quaternionf::Identity();
     last_loop_transform_diff = Matrix4f::Identity();
     last_initial_estimate = Matrix4f::Identity();
+
+    // evaluation
+    translation_error = csv_wrapper_ptr->create_object("translation_error");
+    graph_error = csv_wrapper_ptr->create_object("graph_error");
+    global_map_update_time = csv_wrapper_ptr->create_object("global_update_time");
+    partial_map_update_time = csv_wrapper_ptr->create_object("partial_update_time");
 }
 
 void fill_optimized_path(gtsam::Values values)
@@ -219,6 +274,12 @@ bool is_viable_lc(std::pair<int, int> candidate_pair)
         }
     }
 
+    // TODO:    CHECK IF THE CURRENT LC IS ON A LINE, POSSIBLY DENY THEM
+    // if(LCRejectors::is_line(path, candidate_pair.first, candidate_pair.second, 1.5f))
+    // {
+    //     return false;
+    // }
+
     return true;
 }
 
@@ -272,7 +333,7 @@ void broadcast_robot_pose(Pose &pose)
     br.sendTransform(transformStamped);
 }
 
-void broadcast_robot_path(Path *path)
+void broadcast_robot_path(Path *path, std::string base_child_frame_name = "pose_")
 {
     // std::cout << "Broadcasting transform.. " << std::endl;
 
@@ -286,7 +347,7 @@ void broadcast_robot_path(Path *path)
 
         transformStamped.header.stamp = ros::Time::now();
         transformStamped.header.frame_id = "map";
-        transformStamped.child_frame_id = "pose_" + std::to_string(idx);
+        transformStamped.child_frame_id = base_child_frame_name + std::to_string(idx);
         transformStamped.transform.translation.x = current->pos.x();
         transformStamped.transform.translation.y = current->pos.y();
         transformStamped.transform.translation.z = current->pos.z();
@@ -300,18 +361,56 @@ void broadcast_robot_path(Path *path)
     }
 }
 
+void publish_ground_truth()
+{
+    std::cout << "Reading and publishing Ground Truth from file: " << params.loop_closure.ground_truth_filename << std::endl;
+
+    // ground truth:
+    if (params.loop_closure.ground_truth_filename != "")
+    {
+        auto poses = CoordSysTransform::getPosesFromSlam6D_GT(params.loop_closure.ground_truth_filename);
+
+        std::cout << "Got " << poses.size() << "poses from coord sys transform" << std::endl;
+
+        for (auto pose : poses)
+        {
+            Pose tmp(pose);
+            // std::cout << "Pose " << ground_truth->get_length() << std::endl << tmp << std::endl;
+            ground_truth->add_pose(tmp);
+        }
+
+        auto path_marker = type_transform::to_ros_path(ground_truth->getPoses()); // ROSViewhelper::initPathMarker(ground_truth);
+        std::cout << "In the GT marker, there are " << path_marker.poses.size() << " poses" << std::endl;
+        ground_truth_path_pub.publish(path_marker);
+
+        // broadcast_robot_path(ground_truth, "gt_");
+    }
+}
+
 void partial_update()
 {
     // make sure, the data ist consistant
     local_map_ptr->write_back();
 
     // updateeee
-    Map_Updater::partial_map_update(path, optimized_path, 0.064, 2, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, tracer);
+    Map_Updater::partial_map_update_reverse(path, optimized_path, params.map.resolution / 1000.0f, 2, dataset_clouds,
+                                            global_map_ptr.get(), local_map_ptr.get(), params, true, partial_map_update_header, partial_shift_time,
+                                            partial_removal_time, partial_update_time, partial_total_time);
+
+    std::chrono::steady_clock::time_point partial_update_vis_time_start = std::chrono::steady_clock::now();
 
     auto marker_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
 
     tsdf_pub.publish(marker);
+    std::chrono::steady_clock::time_point partial_update_vis_time_end = std::chrono::steady_clock::now();
+    float partial_update_vis_time =
+        std::chrono::duration_cast<std::chrono::microseconds>(partial_update_vis_time_end - partial_update_vis_time_start).count() / 1000.0f;
+
+    if (partial_map_update_header.data.size() != partial_visualization_time.data.size())
+    {
+        partial_visualization_time.add(std::to_string(partial_update_vis_time));
+    }
 
     if (bond_ptr->isBroken())
     {
@@ -321,12 +420,114 @@ void partial_update()
     }
 }
 
+void csv_from_path(std::string name, Path *in_path)
+{
+    auto path_object = csv_wrapper_ptr->create_object(name);
+
+    CSVWrapper::CSVRow x_coords;
+    CSVWrapper::CSVRow y_coords;
+    CSVWrapper::CSVRow z_coords;
+    CSVWrapper::CSVRow header;
+
+    int cnt = 0;
+    for (auto pose : in_path->getPoses())
+    {
+        auto translation = pose.pos;
+
+        x_coords.add(std::to_string(translation.x()));
+        y_coords.add(std::to_string(translation.y()));
+        z_coords.add(std::to_string(translation.z()));
+
+        header.add(std::to_string(cnt));
+        cnt++;
+    }
+
+    path_object->add_row(x_coords);
+    path_object->add_row(y_coords);
+    path_object->add_row(z_coords);
+    path_object->add_row(header);
+}
+
+void transform_and_save_clouds(bool diff = true)
+{
+    auto save_path = boost::filesystem::path("/home/patrick/data/evaluation/pointdata");
+    size_t n_zero = std::to_string(path->get_length()).length();
+
+    if (!boost::filesystem::exists(save_path))
+    {
+        boost::filesystem::create_directory(save_path);
+    }
+
+    for (int i = 0; i < path->get_length(); i++)
+    {
+        // calc cloud transform
+        auto initial_pose = initial_path->at(i);
+        auto path_pose = path->at(i);
+
+        auto init_trans = initial_pose->getTransformationMatrix();
+        auto path_trans = path_pose->getTransformationMatrix();
+
+        auto transform = getTransformationMatrixBetween(path_trans, init_trans);
+
+        // if we dont take the difference, aka the clouds are not already pretransformed, we simply transform with the current pose
+        if (!diff)
+        {
+            transform = path_trans;
+        }
+
+        pcl::PointCloud<PointType>::Ptr save_cloud;
+        save_cloud.reset(new pcl::PointCloud<PointType>());
+
+        pcl::transformPointCloud(*dataset_clouds[i], *save_cloud, transform);
+
+        std::string filename = std::string(n_zero - std::min(n_zero, std::to_string(i).length()), '0') + std::to_string(i);
+
+        std::cout << "Saving to: " << save_path.string() + "/" + filename + ".pcd" << std::endl;
+        pcl::io::savePCDFile(save_path.string() + "/" + filename + ".pcd", *save_cloud);
+    }
+}
+
 /**
  * @brief callback if the bond from data publisher to the current node is broken
  *
  */
 void clear_and_update_tsdf()
 {
+    // evaluation:
+    translation_error->set_header(translation_header_row);
+    translation_error->add_row(relative_translation_error_row);
+    translation_error->add_row(absolute_translation_error_row);
+    translation_error->add_row(absolute_translation_error_xy_row);
+    translation_error->add_row(loop_closure_at_index_row);
+
+    graph_error->set_header(graph_error_header);
+    graph_error->add_row(graph_error_row);
+
+    global_map_update_time->set_header(global_map_update_header);
+    global_map_update_time->add_row(global_update_time);
+    global_map_update_time->add_row(global_shift_time);
+    global_map_update_time->add_row(global_removal_time);
+    global_map_update_time->add_row(global_visualization_time);
+
+    partial_map_update_time->set_header(partial_map_update_header);
+    partial_map_update_time->add_row(partial_total_time);
+    partial_map_update_time->add_row(partial_update_time);
+    partial_map_update_time->add_row(partial_removal_time);
+    partial_map_update_time->add_row(partial_shift_time);
+    partial_map_update_time->add_row(partial_visualization_time);
+
+    csv_from_path("ground_truth", ground_truth);
+    csv_from_path("final_path", path);
+
+    csv_wrapper_ptr->write_all();
+
+    transform_and_save_clouds(false);
+
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << "Number of rejected Lines: " << gtsam_wrapper_ptr->get_num_line_rejects() << std::endl;
+    std::cout << "Number of rejected Ranges: " << gtsam_wrapper_ptr->get_num_range_rejects() << std::endl;
+    std::cout << "-----------------------------" << std::endl;
+
     std::cout << "[Slam6D_Listener] Cleanup and write new tsdf" << std::endl;
 
     // write data
@@ -337,14 +538,13 @@ void clear_and_update_tsdf()
     auto previous_filename_path = params.map.filename;
     params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + "final").string() + previous_filename_path.extension().string());
 
-    boost::filesystem::remove(previous_filename_path);
-
     // reset pointers
     global_map_ptr.reset(new GlobalMap(params.map));
     local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
     std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
-    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final");
+    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final",
+                                 global_map_update_header, global_shift_time, global_update_time);
 
     auto marker_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
@@ -394,10 +594,27 @@ void enrich_pointcloud(pcl::PointCloud<PointType>::Ptr cloud_ptr, int pose_index
         pcl::transformPointCloud(*dataset_clouds[i], tmp_cloud, index_pose_to_model);
         // enrich
 
-        std::cout << "Cloud size before enlargement: " << cloud_ptr->size() << std::endl;
+        // std::cout << "Cloud size before enlargement: " << cloud_ptr->size() << std::endl;
         *cloud_ptr = *cloud_ptr + tmp_cloud;
-        std::cout << "Cloud size after enlargement: " << cloud_ptr->size() << std::endl;
+        // std::cout << "Cloud size after enlargement: " << cloud_ptr->size() << std::endl;
     }
+}
+
+float get_current_graph_error()
+{
+    gtsam::Values initial;
+
+    // fill initial values with path positions
+    for (int i = 0; i < path->get_length(); i++)
+    {
+        auto current_pose = path->at(i);
+        gtsam::Rot3 rot3(path->at(i)->rotationMatrixFromQuaternion().cast<double>());
+        gtsam::Point3 point3(current_pose->pos.x(), current_pose->pos.y(), current_pose->pos.z());
+
+        initial.insert(i, gtsam::Pose3(rot3, point3));
+    }
+
+    return gtsam_wrapper_ptr->get_error(initial);
 }
 
 /**
@@ -407,6 +624,11 @@ void enrich_pointcloud(pcl::PointCloud<PointType>::Ptr cloud_ptr, int pose_index
  */
 void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_ptr, const geometry_msgs::PoseStampedConstPtr &pose_ptr)
 {
+
+    translation_header_row.add(std::to_string(path->get_length()));
+    relative_translation_error_row.add(std::to_string(Evaluation::calc_relative_translation_error(path, ground_truth)));
+    absolute_translation_error_row.add(std::to_string(Evaluation::calc_absolute_translation_error(path, ground_truth)));
+    absolute_translation_error_xy_row.add(std::to_string(Evaluation::calc_absolute_translation_error(path, ground_truth, true, true)));
 
 #pragma region FUNCTION_VARIABLES
     // message used to show, that the processing of the last message pair is done and the node awaits new data
@@ -427,14 +649,14 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     pcl::fromROSMsg(*cloud_ptr.get(), *input_cloud.get());
 
     // filter input cloud with a statistical outlier filter:
-    std::cout << "[SLAM6D_LISTENER] Start input cloud filtering: " << std::endl;
-    std::cout << "[SLAM6D_LISTENER] Size before filtering: " << input_cloud->size() << std::endl;
-    pcl::StatisticalOutlierRemoval<PointType> sor;
-    sor.setInputCloud(input_cloud);
-    sor.setMeanK(50);
-    sor.setStddevMulThresh(1.0);
-    sor.filter(*input_cloud);
-    std::cout << "[SLAM6D_LISTENER] Size after filtering: " << input_cloud->size() << std::endl;
+    // std::cout << "[SLAM6D_LISTENER] Start input cloud filtering: " << std::endl;
+    // std::cout << "[SLAM6D_LISTENER] Size before filtering: " << input_cloud->size() << std::endl;
+    // pcl::StatisticalOutlierRemoval<PointType> sor;
+    // sor.setInputCloud(input_cloud);
+    // sor.setMeanK(50);
+    // sor.setStddevMulThresh(1.0);
+    // sor.filter(*input_cloud);
+    // std::cout << "[SLAM6D_LISTENER] Size after filtering: " << input_cloud->size() << std::endl;
 
     // save cloud
     dataset_clouds.push_back(input_cloud);
@@ -451,6 +673,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // input_pose.quat = tmp_quat.cast<float>();
     // input_pose.pos = tmp_point.cast<float>();
 
+    // immediately add to initial path
+    initial_path->add_pose(input_pose);
+
     std::cout << "New Pose with index: " << path->get_length() << ":" << std::endl
               << input_pose << std::endl;
 
@@ -461,6 +686,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // fitness score from preregistration (-1.0f = default)
     float prereg_fitness_score = -1.0f;
+
+    // path->add_pose(input_pose);
+    // broadcast_robot_pose(input_pose);
+    // broadcast_robot_path(path);
 
     if (path->get_length() > 0)
     {
@@ -500,7 +729,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             }
             else if (path->get_length() > 2)
             {
-                enrich_pointcloud(model_cloud, path->get_length() - 1, 2, 0);
+                enrich_pointcloud(model_cloud, path->get_length() - 1, 3, 0);
             }
 
             // this is the transformation from the model coordinate system to the input poses.
@@ -516,9 +745,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             // gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score, 0.2);
             gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score, 2.5f);
             // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
-            // gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            //  gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            //  gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
+            //  gtsam_wrapper_ptr->perform_pcl_normal_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
 
             // only if ICP converges and the resulting fitness-score is really low (e.g. MSD < 0.1) we proceed with the preregistration
             if (converged && prereg_fitness_score <= params.loop_closure.max_prereg_icp_fitness)
@@ -547,10 +776,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
                 new_scan_to_model = getTransformationMatrixBetween(last_pose->getTransformationMatrix(), new_scan_to_map_pose.getTransformationMatrix());
 
                 path->add_pose(new_scan_to_map_pose);
-                // path->add_pose(new_scan_to_map);
-
                 gicp_path->add_pose(new_scan_to_map_pose);
-
                 gtsam_pose_delta = new_scan_to_model;
             }
             else // if it is not converged we simply add the initial estimate.
@@ -591,11 +817,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     input_cloud_tf.header.frame_id = "robot";
     input_cloud_pub.publish(input_cloud_tf);
 
-    // publish normals for the input cloud
-    // auto normal_marker = ROSViewhelper::visualize_pcl_normals(input_cloud);
-    // normal_marker.header.frame_id = "robot";
-    // normal_publisher.publish(normal_marker);
-
 #pragma endregion
 
 #pragma region TSDF_UPDATE
@@ -620,6 +841,21 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // Shift
     Vector3i input_3d_pos = real_to_map(input_pose_mat.block<3, 1>(0, 3));
 
+    auto lmap_center_diff_abs = (local_map_ptr->get_pos() - input_3d_pos).cwiseAbs();
+    Eigen::Vector3f l_map_half_f = local_map_ptr->get_size().cast<float>();
+    l_map_half_f *= 0.25f;
+    Eigen::Vector3i l_map_half = l_map_half_f.cast<int>();
+
+    std::cout << "Localmap-size / 2: " << std::endl
+              << l_map_half << std::endl;
+    std::cout << "input_3d_pos: " << std::endl
+              << input_3d_pos << std::endl;
+
+    // if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
+    // {
+    //     local_map_ptr->shift(input_3d_pos);
+    // }
+
     local_map_ptr->shift(input_3d_pos);
 
     Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
@@ -627,7 +863,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     Eigen::Vector3i up = transform_point(Eigen::Vector3i(0, 0, MATRIX_RESOLUTION), rot);
 
     // create TSDF Volume
-    update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution);
+    update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
     local_map_ptr->write_back();
 
 #pragma endregion
@@ -635,14 +871,18 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 #pragma region CLOUD_GM_VIS
     auto gm_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
     tsdf_pub.publish(marker);
+
+    // reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
+    // gm_data = global_map_ptr->get_full_data();
+    // marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    // tsdf_pub.publish(marker);
 
     sensor_msgs::PointCloud2 filtered_ros_cloud;
     pcl::toROSMsg(*tsdf_cloud, filtered_ros_cloud);
     tsdf_cloud_pub.publish(filtered_ros_cloud);
 
-    path_pub.publish(ROSViewhelper::initPathMarker(path, Colors::ColorNames::lime));
+    path_pub.publish(type_transform::to_ros_path(path->getPoses()));
     gicp_path_pub.publish(ROSViewhelper::initPathMarker(gicp_path, Colors::ColorNames::teal));
 
 #pragma endregion
@@ -657,6 +897,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         Matrix4f pose_mat = path->at(0)->getTransformationMatrix();
         gtsam_wrapper_ptr->add_prior_constraint(pose_mat);
 
+        graph_error_header.add("1");
+        graph_error_row.add(std::to_string(get_current_graph_error()));
+        loop_closure_at_index_row.add(std::to_string(0));
         ready_flag_pub.publish(ready_msg);
 
         return;
@@ -691,6 +934,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         std::cout << "No loop found when inserting Pose with index" << path->get_length() - 1 << ":" << std::endl
                   << *path->at(path->get_length() - 1) << std::endl;
 
+        graph_error_header.add(std::to_string(path->get_length()));
+        graph_error_row.add(std::to_string(get_current_graph_error()));
+        loop_closure_at_index_row.add(std::to_string(0));
+
         ready_flag_pub.publish(ready_msg);
 
         return;
@@ -702,19 +949,9 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     for (auto lc_pair : lc_pairs)
     {
-
-        // std::cout << "Found LC Candidate between pose " << lc_pair.first << " and " << lc_pair.second << std::endl;
-
         // check if the detected loop might be viable considering already found loops
-        if (!is_viable_lc(lc_pair))
+        if (is_viable_lc(lc_pair))
         {
-            // std::cout << "LC pair not viable!" << std::endl;
-
-            continue;
-        }
-        else
-        {
-            // std::cout << "Possible LC found between " << lc_pair.first << " and " << lc_pair.second << std::endl;
             lc_candidate_pairs.push_back(std::make_pair(Matrix4f::Identity(), lc_pair));
         }
     }
@@ -776,8 +1013,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
         global_scan_cloud.reset(new pcl::PointCloud<PointType>(*dataset_clouds[lc_pair.second.second]));
 
         // enrich clouds
-        enrich_pointcloud(model_cloud, lc_pair.second.first, 2, 2);
-        enrich_pointcloud(global_model_cloud, lc_pair.second.first, 2, 2);
+        enrich_pointcloud(model_cloud, lc_pair.second.first, 3, 3);
+        enrich_pointcloud(global_model_cloud, lc_pair.second.first, 3, 3);
 
         // transform into the global coord system and display them there.
         pcl::transformPointCloud(*global_model_cloud, *global_model_cloud, prev_to_map);
@@ -819,7 +1056,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
             lc_index_pairs.push_back(std::make_pair(final_transformation, lc_pair.second));
             lc_fitness_scores.push_back(fitness_score);
 
-            if(num_converged >= 2)
+            if (num_converged >= params.loop_closure.max_closures_per_pose)
             {
                 break;
             }
@@ -829,9 +1066,19 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // if the lc found did not converge, we skip everything else
     if (!converged)
     {
+        graph_error_header.add(std::to_string(path->get_length()));
+        graph_error_row.add(std::to_string(get_current_graph_error()));
+        loop_closure_at_index_row.add(std::to_string(0));
+
         ready_flag_pub.publish(ready_msg);
 
         return;
+    }
+    else
+    {
+        graph_error_header.add(std::to_string(path->get_length()));
+        graph_error_row.add(std::to_string(get_current_graph_error()));
+        loop_closure_at_index_row.add(std::to_string(1));
     }
 
 #pragma endregion
@@ -857,9 +1104,13 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     // VERY IMPORTANT: perform graph optimization using the last initial estimate
     auto new_values = gtsam_wrapper_ptr->perform_optimization(initial);
 
+    // fill the optimized path based on the gtsam return values
     fill_optimized_path(new_values);
-
     optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
+
+    // do a partial update of the global map
+    partial_update();
+    // reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
 
     // copy values from optimized path back to the path
     path = new Path(*optimized_path);
@@ -874,42 +1125,48 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
-    // std::cout << "Cells previous: " << gm_data.size() << std::endl;
+    // GLOBAL MAP UPDATE
+    // std::chrono::steady_clock::time_point removal_time_start = std::chrono::steady_clock::now();
 
-    // clear and update the tsdf
-    map_update_counter++;
+    // map_update_counter++;
+    // auto previous_filename_path = params.map.filename;
 
-    if ((map_update_counter - 1) % 10 == 0)
-    {
-        auto previous_filename_path = params.map.filename;
-        // create new map
-        std::string new_stem = previous_filename_path.stem().string();
-        if (map_update_counter == 1)
-        {
-            new_stem += "_" + std::to_string(map_update_counter);
-        }
-        else
-        {
-            new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
-        }
+    // // create new map
+    // std::string new_stem = previous_filename_path.stem().string();
+    // if (map_update_counter == 1)
+    // {
+    //     new_stem += "_" + std::to_string(map_update_counter);
+    // }
+    // else
+    // {
+    //     new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
+    // }
 
-        params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
+    // params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
 
-        // delete old map
-        boost::filesystem::remove(previous_filename_path);
+    // // delete old map
+    // boost::filesystem::remove(previous_filename_path);
 
-        // reset pointers
-        global_map_ptr.reset(new GlobalMap(params.map));
-        local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
-        Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter));
-        gm_data = global_map_ptr->get_full_data();
+    // // reset pointers
+    // global_map_ptr.reset(new GlobalMap(params.map));
+    // local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
-        marker = ROSViewhelper::marker_from_gm_read(gm_data);
-        // auto marker = ROSViewhelper::initTSDFmarkerPose(local_map_ptr, new Pose(pose));
-        tsdf_pub.publish(marker);
-    }
+    // std::chrono::steady_clock::time_point removal_time_end = std::chrono::steady_clock::now();
+    // float removal_time = std::chrono::duration_cast<std::chrono::microseconds>(removal_time_end - removal_time_start).count() / 1000.0f;
 
-    // partial_update();
+    // Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter),
+    //                              global_map_update_header, global_shift_time, global_update_time);
+
+    // // Visualize Map
+    // std::chrono::steady_clock::time_point visualization_time_start = std::chrono::steady_clock::now();
+    // gm_data = global_map_ptr->get_full_data();
+    // marker = ROSViewhelper::marker_from_gm_read(gm_data);
+    // tsdf_pub.publish(marker);
+    // std::chrono::steady_clock::time_point visualization_time_end = std::chrono::steady_clock::now();
+    // float visualization_time = std::chrono::duration_cast<std::chrono::microseconds>(visualization_time_end - visualization_time_start).count() / 1000.0f;
+
+    // global_removal_time.add(std::to_string(removal_time));
+    // global_visualization_time.add(std::to_string(visualization_time));
 
     ready_flag_pub.publish(ready_msg);
 }
@@ -942,8 +1199,9 @@ int main(int argc, char **argv)
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(40), slam6d_cloud_sub, slam6d_pose_sub);
     sync.registerCallback(boost::bind(&handle_slam6d_cloud_callback, _1, _2));
 
+    path_pub = n.advertise<nav_msgs::Path>("/path", 1);
     optimized_path_pub = n.advertise<visualization_msgs::Marker>("/optimized_path", 1);
-    path_pub = n.advertise<visualization_msgs::Marker>("/path", 1);
+    ground_truth_path_pub = n.advertise<nav_msgs::Path>("/ground_truth", 1);
     gicp_path_pub = n.advertise<visualization_msgs::Marker>("/gicp_path", 1);
     loop_pub = n.advertise<visualization_msgs::Marker>("/loop", 1);
     approx_pcl_pub_cur = n.advertise<sensor_msgs::PointCloud2>("/approx_pcl_cur", 1);
@@ -960,6 +1218,9 @@ int main(int argc, char **argv)
     ready_flag_pub = n.advertise<std_msgs::String>("/slam6d_listener_ready", 1);
     lc_candidate_publisher = n.advertise<visualization_msgs::Marker>("/lc_candidates", 1);
     normal_publisher = n.advertise<visualization_msgs::Marker>("/input_cloud_normals", 1);
+    rays_publisher = n.advertise<visualization_msgs::Marker>("/rays", 1);
+
+    // publish_ground_truth();
 
     // bond
     std::string id = "42";
@@ -967,6 +1228,7 @@ int main(int argc, char **argv)
     bond_ptr->setHeartbeatTimeout(1000000);
     bond_ptr->start();
     bond_ptr->setBrokenCallback(clear_and_update_tsdf);
+    bond_ptr->setFormedCallback(publish_ground_truth);
 
     ros::spin();
 

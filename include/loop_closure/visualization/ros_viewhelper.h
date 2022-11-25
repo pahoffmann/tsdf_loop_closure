@@ -183,7 +183,7 @@ namespace ROSViewhelper
                     auto tsdf = local_map->value(x, y, z);
                     auto value = tsdf.value();
                     auto weight = tsdf.weight();
-                    auto intersect = tsdf.getIntersect();
+                    auto intersect = tsdf.intersect();
 
                     // if there is an intersect...
                     if (intersect != TSDFEntry::IntersectStatus::NO_INT)
@@ -318,7 +318,7 @@ namespace ROSViewhelper
                         auto tsdf = local_map->value(x, y, z);
                         auto value = tsdf.value();
                         auto weight = tsdf.weight();
-                        auto intersect = tsdf.getIntersect();
+                        auto intersect = tsdf.intersect();
 
                         // just the cells, which actually have a weight and a value other than (and including) the default one
                         if (weight > 0 && value < 600)
@@ -339,7 +339,7 @@ namespace ROSViewhelper
                             else
                             {
                                 // insert into hashmap and proceed
-                                map[seed] = intersect;
+                                map[seed] = static_cast<TSDFEntry::IntersectStatus>(intersect);
                             }
 
                             // more time measuring
@@ -518,10 +518,11 @@ namespace ROSViewhelper
             {
                 for (int z = pose->pos.z() + (-1 * (local_map_ptr_->get_size().z() - 1) / 2); z < pose->pos.z() + ((local_map_ptr_->get_size().z() - 1) / 2); z++)
                 {
+                    if(!local_map_ptr_->in_bounds(x, y, z)) continue;
                     auto tsdf = local_map_ptr_->value(x, y, z);
                     auto value = tsdf.value();
                     auto weight = tsdf.weight();
-                    auto intersect = tsdf.getIntersect();
+                    auto intersect = tsdf.intersect();
 
                     // just the cells, which actually have a weight and a value other than (and including) the default one
                     if (weight > 0 && value < 600)
@@ -834,19 +835,44 @@ namespace ROSViewhelper
         points_marker.action = visualization_msgs::Marker::ADD;
         points_marker.scale.x = points_marker.scale.y = points_marker.scale.z = MAP_RESOLUTION * 1.0 * 0.001; // 1.0 is the relative size of the marker
 
+        auto intersectColor = Colors::color_from_name(Colors::ColorNames::fuchsia);
+        auto intersectNegColor = Colors::color_from_name(Colors::ColorNames::yellow);
+        auto intersectZeroColor = Colors::color_from_name(Colors::ColorNames::aqua);
+        auto redTSDFColor = Colors::color_from_name(Colors::ColorNames::maroon);
+        auto greenTSDFColor = Colors::color_from_name(Colors::ColorNames::green);
+
         for (auto data_pt : data)
         {
             auto real_point = map_to_real(data_pt.first);
             auto tsdf = data_pt.second;
 
-            points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
+            if(tsdf.weight() < 0) continue;
 
-            if (tsdf.value() < 0)
+            TSDFEntry::IntersectStatus status = static_cast<TSDFEntry::IntersectStatus>(tsdf.intersect());
+
+            if (status == TSDFEntry::IntersectStatus::INT)
             {
+                points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
+                points_marker.colors.push_back(intersectColor);
+            }
+            else if (status == TSDFEntry::IntersectStatus::INT_NEG)
+            {
+                points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
+                points_marker.colors.push_back(intersectNegColor);
+            }
+            else if (status == TSDFEntry::IntersectStatus::INT_ZERO)
+            {
+                points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
+                points_marker.colors.push_back(intersectZeroColor);
+            }
+            else if (tsdf.value() < 0 && tsdf.weight() > 0)
+            {
+                points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
                 points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::maroon));
             }
-            else //if(tsdf.value() >= 0 && tsdf.value() < 600)
+            else if (tsdf.value() >= 0 && tsdf.value() < 600 && tsdf.weight() > 0)
             {
+                points_marker.points.push_back(type_transform::eigen_point_to_ros_point(real_point));
                 points_marker.colors.push_back(Colors::color_from_name(Colors::ColorNames::green));
             }
         }

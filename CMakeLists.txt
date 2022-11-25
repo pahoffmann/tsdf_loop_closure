@@ -116,55 +116,55 @@ add_definitions(${PCL_DEFINITIONS})
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_executable(loop_closure src/nodes/loop_closure_node.cpp 
-                        src/map/global_map.cpp 
-                        src/map/local_map.cpp 
-                        src/ray_tracer/ray_tracer.cpp
-                        src/path/path.cpp
-                        src/data_association/association.cpp
-                        src/data_association/association_manager.cpp
-                        src/path/path_exploration.cpp
-                        src/map/attribute_data_model.cpp)
+# add_executable(loop_closure src/nodes/loop_closure_node.cpp 
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp 
+#                         src/ray_tracer/ray_tracer.cpp
+#                         src/path/path.cpp
+#                         src/data_association/association.cpp
+#                         src/data_association/association_manager.cpp
+#                         src/path/path_exploration.cpp
+#                         src/map/attribute_data_model.cpp)
 
-add_executable(path_listener src/nodes/path_listener.cpp 
-                        src/map/global_map.cpp 
-                        src/map/local_map.cpp
-                        src/map/attribute_data_model.cpp)
+# add_executable(path_listener src/nodes/path_listener.cpp 
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp
+#                         src/map/attribute_data_model.cpp)
 
 
-add_executable(test_lc_detection src/nodes/test_lc_detection.cpp 
-                        src/path/path.cpp
-                        src/ray_tracer/ray_tracer.cpp
-                        src/map/global_map.cpp 
-                        src/map/local_map.cpp
-                        src/map/attribute_data_model.cpp)
+# add_executable(test_lc_detection src/nodes/test_lc_detection.cpp 
+#                         src/path/path.cpp
+#                         src/ray_tracer/ray_tracer.cpp
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp
+#                         src/map/attribute_data_model.cpp)
 
-add_executable(test_map_update src/nodes/test_map_update.cpp 
-                        src/map/global_map.cpp 
-                        src/map/local_map.cpp 
-                        src/ray_tracer/ray_tracer.cpp
-                        src/path/path.cpp
-                        src/data_association/association.cpp
-                        src/data_association/association_manager.cpp
-                        src/path/path_exploration.cpp
-                        src/map/attribute_data_model.cpp)
+# add_executable(test_map_update src/nodes/test_map_update.cpp 
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp 
+#                         src/ray_tracer/ray_tracer.cpp
+#                         src/path/path.cpp
+#                         src/data_association/association.cpp
+#                         src/data_association/association_manager.cpp
+#                         src/path/path_exploration.cpp
+#                         src/map/attribute_data_model.cpp)
 
-add_executable(test_localmap src/nodes/test_localmap.cpp 
-                        src/map/global_map.cpp 
-                        src/map/local_map.cpp 
-                        src/ray_tracer/ray_tracer.cpp
-                        src/path/path.cpp
-                        src/data_association/association.cpp
-                        src/data_association/association_manager.cpp
-                        src/path/path_exploration.cpp
-                        src/map/attribute_data_model.cpp)
+# add_executable(test_localmap src/nodes/test_localmap.cpp 
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp 
+#                         src/ray_tracer/ray_tracer.cpp
+#                         src/path/path.cpp
+#                         src/data_association/association.cpp
+#                         src/data_association/association_manager.cpp
+#                         src/path/path_exploration.cpp
+#                         src/map/attribute_data_model.cpp)
 
-add_executable(test_map_cleanup src/nodes/test_map_cleanup.cpp 
-                        src/map/global_map.cpp 
-                        src/map/local_map.cpp 
-                        src/ray_tracer/ray_tracer.cpp
-                        src/path/path.cpp
-                        src/map/attribute_data_model.cpp)
+# add_executable(test_map_cleanup src/nodes/test_map_cleanup.cpp 
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp 
+#                         src/ray_tracer/ray_tracer.cpp
+#                         src/path/path.cpp
+#                         src/map/attribute_data_model.cpp)
 
 #pcd tsdf update test
 add_executable(pcd2tsdf src/nodes/pcd2tsdf.cpp 
@@ -180,7 +180,8 @@ add_executable(transform_coord_sys src/nodes/transform_coord_sys.cpp
                         src/map/local_map.cpp 
                         src/map/attribute_data_model.cpp
                         src/ray_tracer/ray_tracer.cpp
-                        src/path/path.cpp)
+                        src/path/path.cpp
+                        src/util/csv_wrapper.cpp)
 
 add_executable(pcd_hdf5_publisher src/nodes/data_publishers/pcd_hdf5_publisher.cpp 
                         src/util/runtime_evaluator.cpp
@@ -188,7 +189,8 @@ add_executable(pcd_hdf5_publisher src/nodes/data_publishers/pcd_hdf5_publisher.c
                         src/map/local_map.cpp 
                         src/map/attribute_data_model.cpp
                         src/ray_tracer/ray_tracer.cpp
-                        src/path/path.cpp)
+                        src/path/path.cpp
+                        src/util/csv_wrapper.cpp)
 
 add_executable(slam6d_listener src/nodes/slam6d_listener.cpp 
                         src/util/runtime_evaluator.cpp
@@ -202,21 +204,61 @@ add_executable(slam6d_listener src/nodes/slam6d_listener.cpp
                         src/path/path.cpp
                         src/gtsam/gtsam_wrapper.cpp
                         src/util/lc_evaluator.cpp
-                        src/map/map_updater.cpp)
+                        src/map/map_updater.cpp
+                        src/util/csv_wrapper.cpp)
 
-add_executable(test_partial_update src/nodes/test_partial_update.cpp 
-                        src/util/runtime_evaluator.cpp
+# add_executable(test_partial_update src/nodes/test_partial_update.cpp 
+#                         src/util/runtime_evaluator.cpp
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp
+#                         src/util/update_tsdf.cpp
+#                         src/map/attribute_data_model.cpp
+#                         src/ray_tracer/ray_tracer.cpp
+#                         src/data_association/association.cpp
+#                         src/data_association/association_manager.cpp
+#                         src/path/path.cpp
+#                         src/gtsam/gtsam_wrapper.cpp
+#                         src/util/lc_evaluator.cpp
+#                         src/map/map_updater.cpp)
+
+add_executable(convert_global_map src/nodes/convert_global_map.cpp
                         src/map/global_map.cpp 
                         src/map/local_map.cpp
-                        src/util/update_tsdf.cpp
                         src/map/attribute_data_model.cpp
                         src/ray_tracer/ray_tracer.cpp
-                        src/data_association/association.cpp
-                        src/data_association/association_manager.cpp
                         src/path/path.cpp
-                        src/gtsam/gtsam_wrapper.cpp
-                        src/util/lc_evaluator.cpp
-                        src/map/map_updater.cpp)
+                        src/util/csv_wrapper.cpp)
+
+
+# add_executable(benchmark_node src/nodes/benchmark_node.cpp 
+#                         src/util/runtime_evaluator.cpp
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp
+#                         src/util/update_tsdf.cpp
+#                         src/map/attribute_data_model.cpp
+#                         src/ray_tracer/ray_tracer.cpp
+#                         src/data_association/association.cpp
+#                         src/data_association/association_manager.cpp
+#                         src/path/path.cpp
+#                         src/gtsam/gtsam_wrapper.cpp
+#                         src/util/lc_evaluator.cpp
+#                         src/map/map_updater.cpp
+#                         src/util/csv_wrapper.cpp)
+
+# add_executable(benchmark_loop_closures src/nodes/benchmark_loop_closures.cpp 
+#                         src/util/runtime_evaluator.cpp
+#                         src/map/global_map.cpp 
+#                         src/map/local_map.cpp
+#                         src/util/update_tsdf.cpp
+#                         src/map/attribute_data_model.cpp
+#                         src/ray_tracer/ray_tracer.cpp
+#                         src/data_association/association.cpp
+#                         src/data_association/association_manager.cpp
+#                         src/path/path.cpp
+#                         src/gtsam/gtsam_wrapper.cpp
+#                         src/util/lc_evaluator.cpp
+#                         src/map/map_updater.cpp
+#                         src/util/csv_wrapper.cpp)
 
                   
 # currently only for the test node.
@@ -225,19 +267,19 @@ add_executable(test_partial_update src/nodes/test_partial_update.cpp
 include_directories(include)
 
 # dynamic reconfigure
-add_dependencies(loop_closure loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
-add_dependencies(test_map_update loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
-add_dependencies(test_localmap loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
-add_dependencies(test_map_cleanup loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+# add_dependencies(loop_closure loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+# add_dependencies(test_map_update loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+# add_dependencies(test_localmap loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
+# add_dependencies(test_map_cleanup loop_closure_gencfg ${catkin_EXPORTED_TARGETS})
 
 
 # enable / disable debug by commenting either line for the specific target
-target_compile_definitions(loop_closure PRIVATE DEBUG)
-target_compile_definitions(test_map_update PRIVATE DEBUG)
-target_compile_definitions(test_localmap PRIVATE DEBUG)
-target_compile_definitions(test_map_cleanup PRIVATE DEBUG)
-target_compile_definitions(slam6d_listener PRIVATE DEBUG)
-target_compile_definitions(test_partial_update PRIVATE DEBUG)
+# target_compile_definitions(loop_closure PRIVATE DEBUG)
+# target_compile_definitions(test_map_update PRIVATE DEBUG)
+# target_compile_definitions(test_localmap PRIVATE DEBUG)
+# target_compile_definitions(test_map_cleanup PRIVATE DEBUG)
+# target_compile_definitions(slam6d_listener PRIVATE DEBUG)
+# target_compile_definitions(test_partial_update PRIVATE DEBUG)
 
 # compile definition for debug in testing environment
 add_compile_definitions(TEST_DEBUG=1)
@@ -248,74 +290,74 @@ add_compile_definitions(DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
 ## Specify libraries to link a library or executable target against
 
-target_link_libraries(loop_closure
-  ${catkin_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${HDF5_HL_LIBRARIES}
-  Eigen3::Eigen
-  ${JSONCPP_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${Boost_LIBRARIES}
-  OpenMP::OpenMP_CXX
-  gtsam
-)
+# target_link_libraries(loop_closure
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   ${JSONCPP_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+#   gtsam
+# )
 
-target_link_libraries(path_listener
-  ${catkin_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${HDF5_HL_LIBRARIES}
-  Eigen3::Eigen
-  ${JSONCPP_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${Boost_LIBRARIES}
-  OpenMP::OpenMP_CXX
-)
+# target_link_libraries(path_listener
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   ${JSONCPP_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+# )
 
-target_link_libraries(test_lc_detection
-  ${catkin_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${HDF5_HL_LIBRARIES}
-  Eigen3::Eigen
-  ${JSONCPP_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${Boost_LIBRARIES}
-  OpenMP::OpenMP_CXX
-  gtsam
-)
+# target_link_libraries(test_lc_detection
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   ${JSONCPP_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+#   gtsam
+# )
 
 
-target_link_libraries(test_map_update
-  ${catkin_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${HDF5_HL_LIBRARIES}
-  Eigen3::Eigen
-  ${JSONCPP_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${Boost_LIBRARIES}
-  OpenMP::OpenMP_CXX
-)
+# target_link_libraries(test_map_update
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   ${JSONCPP_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+# )
 
-target_link_libraries(test_localmap
-  ${catkin_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${HDF5_HL_LIBRARIES}
-  Eigen3::Eigen
-  ${JSONCPP_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${Boost_LIBRARIES}
-  OpenMP::OpenMP_CXX
-)
+# target_link_libraries(test_localmap
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   ${JSONCPP_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+# )
 
-target_link_libraries(test_map_cleanup
-  ${catkin_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${HDF5_HL_LIBRARIES}
-  Eigen3::Eigen
-  ${JSONCPP_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${Boost_LIBRARIES}
-  OpenMP::OpenMP_CXX
-)
+# target_link_libraries(test_map_cleanup
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   ${JSONCPP_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+# )
 
 target_link_libraries(pcd2tsdf PUBLIC
   ${catkin_LIBRARIES}
@@ -362,19 +404,60 @@ target_link_libraries(slam6d_listener
   gtsam
 )
 
-target_link_libraries(test_partial_update
+# target_link_libraries(test_partial_update
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   teaserpp::teaser_registration
+#   teaserpp::teaser_features
+#   teaserpp::teaser_io
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+#   gtsam
+# )
+
+target_link_libraries(convert_global_map
   ${catkin_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${HDF5_HL_LIBRARIES}
   Eigen3::Eigen
-  teaserpp::teaser_registration
-  teaserpp::teaser_features
-  teaserpp::teaser_io
   ${PCL_LIBRARIES}
   ${Boost_LIBRARIES}
   OpenMP::OpenMP_CXX
   gtsam
 )
+
+# target_link_libraries(benchmark_node
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   ${JSONCPP_LIBRARIES}
+#   teaserpp::teaser_registration
+#   teaserpp::teaser_features
+#   teaserpp::teaser_io
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+#   gtsam
+# )
+
+# target_link_libraries(benchmark_loop_closures
+#   ${catkin_LIBRARIES}
+#   ${HDF5_LIBRARIES}
+#   ${HDF5_HL_LIBRARIES}
+#   Eigen3::Eigen
+#   ${JSONCPP_LIBRARIES}
+#   teaserpp::teaser_registration
+#   teaserpp::teaser_features
+#   teaserpp::teaser_io
+#   ${PCL_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   OpenMP::OpenMP_CXX
+#   gtsam
+# )
 
 ## Tests ##
 

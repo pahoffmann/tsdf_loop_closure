@@ -1,11 +1,11 @@
 loop_closure:
-  max_icp_iterations: 100
+  max_icp_iterations: 30
   max_dist_lc: 10.0     # in m
-  min_traveled_lc: 4.0 # in m
+  min_traveled_lc: 10.0 # in m
   dist_between_lcs: 0.0 # in m
 
   max_prereg_icp_fitness: 0.1 # in m²
-  max_lc_icp_fitness: 0.3 # in m²
+  max_lc_icp_fitness: 1.0 # in m²
 
   do_preregistration: false
 
@@ -22,6 +22,7 @@ loop_closure:
   between_translation_noise_x: 0.064
   between_translation_noise_y: 0.064
   between_translation_noise_z: 0.064
+  csv_save_path: "/home/patrick/data/evaluation"
 
 map:
   # directory to save map in
@@ -33,7 +34,7 @@ map:
   max_distance: 0.6
 
   # Size of one grid cell in the discretised map (in m per cell)
-  resolution: 64 #0.1 #0.03
+  resolution: 128 #0.1 #0.03
 
   # localmap size for every dimension (in m)
   size:

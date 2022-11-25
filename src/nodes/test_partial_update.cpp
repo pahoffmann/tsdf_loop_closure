@@ -184,9 +184,6 @@ int main(int argc, char **argv)
     auto gm_data = global_map_ptr_->get_full_data();
     tsdf_map_full_before = ROSViewhelper::marker_from_gm_read(gm_data);
 
-    // map used to store the data, which needs to be removed
-    boost::unordered_map<Vector3i, TSDFEntry> cell_deletion_map;
-
     // translate the whole path
     auto translated_path = path->translate_ret(Vector3f(10.0f, 0.0f, 0.0f), 0, path->get_length() - 1);
 
@@ -196,7 +193,7 @@ int main(int argc, char **argv)
         auto pose = path->at(i);
 
         auto bb_marker = ROSViewhelper::getBoundingBoxMarker(map_to_real(local_map_ptr_->get_size()), pose);
-        ray_tracer->local_removal(pose, cell_deletion_map);
+        ray_tracer->local_removal(pose, i);
 
         // Association *ass = new Association(*pose, i, global_map_ptr_, params.loop_closure.json_dirname);
 

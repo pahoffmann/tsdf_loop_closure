@@ -1,0 +1,5 @@
+<launch>
+    <node name="convert_global_map" type="convert_global_map" pkg="loop_closure" output="screen" clear_params="true">
+        <rosparam command="load" file="$(find loop_closure)/params/convert_gm.yaml"/>
+    </node>
+</launch>

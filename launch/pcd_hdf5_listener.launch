@@ -1,6 +1,6 @@
 <launch>
     <node name="slam6d_listener" type="slam6d_listener" pkg="loop_closure" output="screen" clear_params="true">
-        <rosparam command="load" file="$(find loop_closure)/params/slam6d_listening.yaml"/>
+        <rosparam command="load" file="$(find loop_closure)/params/general_params.yaml"/>
     </node>
     <include file="$(find loop_closure)/launch/pcd_hdf5_publisher.launch"/>
     <!--include file="$(find loop_closure)/launch/update_tsdf_pcd.launch"/-->

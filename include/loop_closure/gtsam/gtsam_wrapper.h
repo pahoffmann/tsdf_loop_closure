@@ -37,6 +37,10 @@ private:
     std::unique_ptr<gtsam::NonlinearFactorGraph> graph;
     LoopClosureParams params;
 
+    // eval
+    int num_line_rejects = 0;
+    int num_range_rejects = 0;
+
     // declare noises for the prior, in between and loop_closure constraints
     // SIEHE:
     // https://gtsam.org/tutorials/intro.html#magicparlabel-65728
@@ -106,6 +110,16 @@ public:
      */
     GTSAMWrapper(LoopClosureParams &input_params);
     ~GTSAMWrapper() = default;
+
+    inline int get_num_line_rejects() const
+    {
+        return num_line_rejects;
+    }
+
+    inline int get_num_range_rejects() const
+    {
+        return num_range_rejects;
+    }
 
     /**
      * @brief adds a prior constraint for the initial pose of the graph
@@ -190,7 +204,7 @@ public:
      * @param fitness_score
      */
     void perform_adaptive_pcl_gicp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
-                          pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score, float max_corr_dist = -1.0f);
+                                   pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score, float max_corr_dist = -1.0f);
 
     /**
      * @brief performs generalized icp between the two pointclouds, will return information about the performance of the gicp
@@ -215,4 +229,6 @@ public:
      */
     void perform_pcl_normal_icp(pcl::PointCloud<PointType>::Ptr model_cloud, pcl::PointCloud<PointType>::Ptr scan_cloud,
                                 pcl::PointCloud<PointType>::Ptr result, bool &converged, Matrix4f &final_transformation, float &fitness_score);
+
+    float get_error(gtsam::Values initial);
 };

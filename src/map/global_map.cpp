@@ -30,6 +30,8 @@ GlobalMap::GlobalMap(const MapParams &input_params)
     params = input_params;
 
     write_meta(params);
+
+    default_chunk_data = std::vector<TSDFEntry::RawType>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, initial_tsdf_value_.raw());
 }
 
 GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, TSDFEntry::WeightType initial_weight, bool use_attributes)
@@ -100,7 +102,6 @@ GlobalMap::GlobalMap(std::string name, TSDFEntry::ValueType initial_tsdf_value, 
     if (has_path())
     {
         clear_association_data();
-        clear_intersection_data();
     }
 
     // init default chunk
@@ -143,16 +144,7 @@ int GlobalMap::index_from_pos(Vector3i pos, const Vector3i &chunkPos)
     return (pos.x() * CHUNK_SIZE * CHUNK_SIZE + pos.y() * CHUNK_SIZE + pos.z());
 }
 
-/**
- * @todo this is the problem, why no intersection data is written to the global map:
- * when activating a chunk, we simply return a vector of rawtypes, which does not include the intersection status, therefore
- * we can neither write, nor read any intersection data
- *
- * The current approach here is to also write/read the intersection data for visualiuation by overriding a pointer to intersection data.
- * A pointer pointing to no memory is readjusted to point at the specific intersection data in the active chunks, or it is gathered from the hdf5.
- * when a chunk is supposed to be removed from the active chunks, the intersection data is also written to hdf5
- */
-std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunkPos, std::vector<int> *&intersections)
+std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunkPos)
 {
     int index = -1;
     int n = active_chunks_.size();
@@ -176,14 +168,6 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
 
         HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
 
-        // create group if not exists
-        // if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
-        // {
-        //     file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
-        // }
-
-        // HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
-
         auto tag = tag_from_chunk_pos(chunkPos);
 
         if (g.exist(tag))
@@ -191,27 +175,11 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
             // read chunk from file
             HighFive::DataSet d = g.getDataSet(tag);
             d.read(newChunk.data);
-
-            // if (g_int.exist(tag))
-            // {
-            //     // read chunk from file
-            //     HighFive::DataSet d = g_int.getDataSet(tag);
-            //     d.read(newChunk.intersect_data);
-            // }
-            // else
-            // {
-            //     newChunk.intersect_data = std::vector<int>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, TSDFEntry::IntersectStatus::NO_INT);
-            // }
         }
         else
         {
             // create new chunk
             newChunk.data = std::vector<TSDFEntry::RawType>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, initial_tsdf_value_.raw());
-            newChunk.intersect_data = std::vector<int>(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, TSDFEntry::IntersectStatus::NO_INT);
-            /*std::stringstream ss;
-            ss << "A new chunk was created, this should never happen. At least during path exploration " << std::endl << chunkPos << std::endl << "Tag: " << tag << std::endl;
-            std::cout << ss.str() << std::endl;
-            throw std::logic_error(ss.str());*/
         }
 
         // put new chunk into active_chunks_
@@ -248,19 +216,6 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
                 g.createDataSet(tag, active_chunks_[index].data);
             }
 
-            // now write the intersection data accordingly
-            // if (g_int.exist(tag))
-            // {
-            //     // std::cout << "[GlobalMap::::::::::: activate_chunk] - WRITE" << std::endl;
-            //     auto d = g_int.getDataSet(tag);
-            //     d.write(active_chunks_[index].intersect_data);
-            // }
-            // else
-            // {
-            //     std::cout << "[GlobalMap::::::::::: activate_chunk] - CREATE" << std::endl;
-            //     g_int.createDataSet(tag, active_chunks_[index].intersect_data);
-            // }
-
             // overwrite with new chunk
             active_chunks_[index] = newChunk;
         }
@@ -279,51 +234,31 @@ std::vector<TSDFEntry::RawType> &GlobalMap::activate_chunk(const Vector3i &chunk
     // age of the newly added chunk is zero
     active_chunks_[index].age = 0;
 
-    // point intersect pointer ref to intersection data of new chunk
-    intersections = &(active_chunks_[index].intersect_data);
-
-    if (intersections == NULL)
-    {
-        throw std::logic_error("Intersections NULL");
-    }
-
     return active_chunks_[index].data;
 }
 
 TSDFEntry GlobalMap::get_value(const Vector3i &pos)
 {
     Vector3i chunkPos = floor_divide(pos, CHUNK_SIZE);
-    std::vector<int> *int_status;
-    const auto &chunk = activate_chunk(chunkPos, int_status);
+    const auto &chunk = activate_chunk(chunkPos);
 
     int index = index_from_pos(pos, chunkPos);
 
     auto entry = TSDFEntry(chunk[index]);
-    entry.setIntersect(static_cast<TSDFEntry::IntersectStatus>(int_status->operator[](index)));
     return entry;
 }
 
 void GlobalMap::set_value(const Vector3i &pos, const TSDFEntry &value)
 {
     Vector3i chunkPos = floor_divide(pos, CHUNK_SIZE);
-    std::vector<int> *int_status;
-    auto &chunk = activate_chunk(chunkPos, int_status);
+    auto &chunk = activate_chunk(chunkPos);
     int index = index_from_pos(pos, chunkPos);
     chunk[index] = value.raw();
-    int_status->operator[](index) = value.getIntersect();
 }
 
 void GlobalMap::write_back()
 {
     HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
-
-    // create intersections group, if not exists.
-    // if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
-    // {
-    //     file_->createGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
-    // }
-
-    // HighFive::Group g_int = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
 
     for (auto &chunk : active_chunks_)
     {
@@ -338,17 +273,6 @@ void GlobalMap::write_back()
         {
             g.createDataSet(tag, chunk.data);
         }
-
-        // if intersection data is already written, get the dataset and override, else just create a new ds
-        // if (g_int.exist(tag))
-        // {
-        //     auto d = g_int.getDataSet(tag);
-        //     d.write(chunk.intersect_data);
-        // }
-        // else
-        // {
-        //     g_int.createDataSet(tag, chunk.intersect_data);
-        // }
     }
     file_->flush();
 }
@@ -426,12 +350,6 @@ std::vector<Vector3i> GlobalMap::all_chunk_poses(Vector3i l_map_size)
 
     for (auto name : object_names)
     {
-        // skip intersection data
-        if (name.find(std::string("int")) != std::string::npos)
-        {
-            continue;
-        }
-
         if (!g.exist(name))
         {
             throw std::logic_error("Error when reading chunks from h5");
@@ -694,8 +612,6 @@ std::vector<Vector3i> GlobalMap::cleanup_artifacts()
 
     for (int i = 0; i < chunks.size(); i++)
     {
-        // std::vector<int> *int_status;
-
         // if the current chunk is empty, go to the next one
         if (empty_vec[i])
         {
@@ -870,32 +786,6 @@ void GlobalMap::clear_association_data()
     file_->flush();
 }
 
-void GlobalMap::clear_intersection_data()
-{
-    // delete any intersection data associated with the current hdf5
-
-    if (!file_->exist(hdf5_constants::INTERSECTIONS_GROUP_NAME))
-    {
-        return;
-    }
-
-    auto g = file_->getGroup(hdf5_constants::INTERSECTIONS_GROUP_NAME);
-
-    auto object_names = g.listObjectNames();
-
-    for (auto name : object_names)
-    {
-        std::string channel_name = std::string(hdf5_constants::INTERSECTIONS_GROUP_NAME) + "/" + name;
-
-        // delete the dataset
-        int status = H5Ldelete(file_->getId(), channel_name.data(), H5P_DEFAULT);
-    }
-
-    std::cout << "[GlobalMap - clear_intersection_data] Cleared" << std::endl;
-
-    file_->flush();
-}
-
 std::vector<bool> GlobalMap::chunks_empty()
 {
     auto chunks = all_chunk_poses();
@@ -986,6 +876,94 @@ std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
     return ret;
 }
 
+// parallelized, possibly broken
+/**
+std::vector<std::pair<Vector3i, TSDFEntry>> GlobalMap::get_full_data()
+{
+
+    int thread_count = omp_get_max_threads();
+
+    std::cout << "Num threads: " << thread_count << std::endl;
+    std::vector<int> counter_vec(thread_count, 0);
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    std::vector<std::pair<Vector3i, TSDFEntry>> ret_final;
+    std::vector<std::vector<std::pair<Vector3i, TSDFEntry>>> ret(thread_count);
+
+    auto chunks = all_chunk_poses();
+
+    auto group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    int default_counter = 0;
+
+#pragma omp parallel for num_threads(thread_count) schedule(static)
+    for (int i = 0; i < chunks.size(); i++)
+    {
+        auto chunk = chunks[i];
+
+        auto chunk_pos = chunk * CHUNK_SIZE;
+
+        auto tag = tag_from_chunk_pos(chunk);
+
+        auto ds = group.getDataSet(tag);
+
+        std::vector<TSDFEntry::RawType> data;
+        ds.read(data);
+
+        // std::cout << "[GlobalMap - get_full_data()] Read " << data.size() << " entries from h5!" << std::endl;
+
+        // now determine all <Vector3i, TSDFEntry> entries
+
+// #pragma omp parallel for num_threads(thread_count) schedule(static)
+        for (int j = 0; j < data.size(); j++)
+        {
+            int thread_idx = omp_get_thread_num();
+            //std::cout << "thread index: " << thread_idx << std::endl;
+
+            TSDFEntry tmp_tsdf(data[j]);
+
+            // skip default values
+            if (tmp_tsdf.value() == params.tau || tmp_tsdf.weight() == 0)
+            {
+                counter_vec[thread_idx]++;
+                continue;
+            }
+
+            // determine x, y and z from index
+            Vector3i index_pos = pos_from_index(j);
+
+            // currently pos is a relative pos. to make it absolute, we add the chunk pos;
+            index_pos += chunk_pos;
+
+            ret[thread_idx].push_back(std::make_pair(index_pos, tmp_tsdf));
+        }
+    }
+
+    int final_size = 0;
+
+    for (int i = 0; i < ret.size(); i++)
+    {
+        final_size += ret[i].size();
+    }
+
+    ret_final.reserve(final_size);
+
+    // insert the thread stuff
+    for (int i = 0; i < ret.size(); i++)
+    {
+        ret_final.insert(ret_final.end(), ret[i].begin(), ret[i].end());
+    }
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    std::cout << "[GlobalMap - get_full_data()] Read " << ret_final.size() << " values from the whole globalmap" << std::endl;
+    std::cout << "[GlobalMap - get_full_data()] Read " << default_counter << " default values from the whole globalmap" << std::endl;
+    std::cout << "[GlobalMap - get_full_data()] Took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms fo the data aquisition" << std::endl;
+
+    return ret_final;
+}
+*/
+
 Vector3i GlobalMap::pos_from_index(int i)
 {
     int tmp = i;
@@ -1016,4 +994,130 @@ void GlobalMap::write_meta(const MapParams &params)
     g.createAttribute("max_weight", params.max_weight);
 
     file_->flush();
+}
+
+std::vector<std::pair<std::string, std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>>>> GlobalMap::read_old_format()
+{
+    struct TSDFValueHWOld
+    {
+        using ValueType = int16_t;
+        using WeightType = int16_t;
+
+        ValueType value;
+        WeightType weight;
+    };
+
+    union
+    {
+        uint32_t raw;
+        TSDFValueHWOld tsdf;
+    } old_data;
+
+    auto chunks = all_chunk_poses();
+
+    auto group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    int default_counter = 0;
+
+    std::vector<std::pair<std::string, std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>>>> converted_data;
+
+    for (int i = 0; i < chunks.size(); i++)
+    {
+        auto chunk = chunks[i];
+
+        auto chunk_pos = chunk * CHUNK_SIZE;
+
+        auto tag = tag_from_chunk_pos(chunk);
+
+        auto ds = group.getDataSet(tag);
+
+        // old format: 2 * 16 bit
+        std::vector<uint32_t> data;
+        ds.read(data);
+
+        std::vector<std::pair<TSDFEntry::ValueType, TSDFEntry::WeightType>> chunk_converted;
+
+        for (auto entry : data)
+        {
+            old_data.raw = entry;
+
+            TSDFEntry new_entry(old_data.tsdf.value, old_data.tsdf.weight);
+            chunk_converted.push_back(std::make_pair(new_entry.value(), new_entry.weight()));
+        }
+
+        converted_data.push_back(std::make_pair(tag, chunk_converted));
+
+        std::cout << "[GlobalMap - convert_old_format()] Read " << data.size() << " entries from h5!" << std::endl;
+    }
+
+    return converted_data;
+}
+
+void GlobalMap::write_chunk(std::string tag, std::vector<TSDFEntry::RawType> data)
+{
+    HighFive::Group g = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    if (g.exist(tag))
+    {
+        // read chunk from file
+        HighFive::DataSet d = g.getDataSet(tag);
+        d.write(data);
+    }
+    else
+    {
+        // create new chunk
+        auto d = g.createDataSet(tag, data);
+    }
+}
+
+void GlobalMap::clean_poses(std::vector<bool> to_be_cleaned)
+{
+    auto chunks = all_chunk_poses();
+
+    auto group = file_->getGroup(hdf5_constants::MAP_GROUP_NAME);
+
+    for (int i = 0; i < chunks.size(); i++)
+    {
+        //std::cout << "Cleaning chunk " << i << " of " << chunks.size() << std::endl;
+        auto chunk = chunks[i];
+
+
+        auto chunk_pos = chunk * CHUNK_SIZE;
+
+        auto tag = tag_from_chunk_pos(chunk);
+
+        auto ds = group.getDataSet(tag);
+
+        std::vector<TSDFEntry::RawType> data;
+        ds.read(data);
+
+        if(data == default_chunk_data)
+        {
+            //std::cout << "Default chunk skipped" << std::endl;
+            continue;
+        }
+
+        for (int j = 0; j < data.size(); j++)
+        {
+            TSDFEntry tmp_tsdf(data[j]);
+
+            if(tmp_tsdf.pose_index() < 0) continue;
+
+            if(to_be_cleaned[tmp_tsdf.pose_index()])
+            {
+                tmp_tsdf.value(params.tau);
+                tmp_tsdf.weight(0);
+                tmp_tsdf.intersect(0);
+                tmp_tsdf.pose_index(-1);
+            }
+            
+            data[j] = tmp_tsdf.raw();
+        }
+
+        ds.write(data);
+
+        // std::cout << "Finished reading data from chunk " << i << std::endl;
+    }
+
+    active_chunks_.clear();
 }

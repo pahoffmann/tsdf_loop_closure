@@ -7,42 +7,101 @@
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\vspace*{4pt}\bibitem[1]{Besl:1992}
+\vspace*{4pt}\bibitem[1]{aulinas2008slam}
+\textsc{Aulinas}, Josep; \textsc{Petillot}, Yvan; \textsc{Salvi}, Joaquim;
+  \textsc{Llad{\'o}}, Xavier:
+\newblock The SLAM problem: a survey.
+\newblock {In: }\emph{Artificial Intelligence Research and Development}
+  (2008), S. 363--371
+
+\vspace*{4pt}\bibitem[2]{bajaj1995automatic}
+\textsc{Bajaj}, Chandrajit~L.; \textsc{Bernardini}, Fausto; \textsc{Xu},
+  Guoliang:
+\newblock Automatic reconstruction of surfaces and scalar fields from 3D scans.
+\newblock {In: }\emph{Proceedings of the 22nd annual conference on Computer
+  graphics and interactive techniques}, 1995
+
+\vspace*{4pt}\bibitem[3]{bentley1975multidimensional}
+\textsc{Bentley}, Jon~L.:
+\newblock Multidimensional binary search trees used for associative searching.
+\newblock {In: }\emph{Communications of the ACM} 18 (1975), Nr. 9, S. 509--517
+
+\vspace*{4pt}\bibitem[4]{Besl:1992}
 \textsc{Besl}, P.; \textsc{McKay}, N.:
 \newblock {A Method for Registration of 3-D Shapes}.
 \newblock {In: }\emph{IEEE Transactions on Pattern Analysis and Machine
   Intelligence} 14 (1992), Februar, Nr. 2, S. 239--256
 
-\vspace*{4pt}\bibitem[2]{besl1992method}
+\vspace*{4pt}\bibitem[5]{besl1992method}
 \textsc{Besl}, Paul~J.; \textsc{McKay}, Neil~D.:
 \newblock Method for registration of 3-D shapes.
 \newblock {In: }\emph{Sensor fusion IV: control paradigms and data structures}
   Bd. 1611 Spie, 1992
 
-\vspace*{4pt}\bibitem[3]{borrmann2008globally}
+\vspace*{4pt}\bibitem[6]{borrmann2008globally}
 \textsc{Borrmann}, Dorit; \textsc{Elseberg}, Jan; \textsc{Lingemann}, Kai;
   \textsc{N{\"u}chter}, Andreas; \textsc{Hertzberg}, Joachim:
 \newblock Globally consistent 3D mapping with scan matching.
 \newblock {In: }\emph{Robotics and Autonomous Systems} 56 (2008), Nr. 2, S.
   130--142
 
-\vspace*{4pt}\bibitem[4]{bresenham1965algorithm}
+\vspace*{4pt}\bibitem[7]{breen19983d}
+\textsc{Breen}, David~E.; \textsc{Mauch}, Sean; \textsc{Whitaker}, Ross~T.:
+\newblock 3D scan conversion of CSG models into distance volumes.
+\newblock {In: }\emph{Proceedings of the 1998 IEEE symposium on Volume
+  visualization}, 1998
+
+\vspace*{4pt}\bibitem[8]{bresenham1965algorithm}
 \textsc{Bresenham}, Jack~E.:
 \newblock Algorithm for computer control of a digital plotter.
 \newblock {In: }\emph{IBM Systems journal} 4 (1965), Nr. 1, S. 25--30
 
-\vspace*{4pt}\bibitem[5]{chen1992object}
+\vspace*{4pt}\bibitem[9]{cadena2016past}
+\textsc{Cadena}, Cesar; \textsc{Carlone}, Luca; \textsc{Carrillo}, Henry;
+  \textsc{Latif}, Yasir; \textsc{Scaramuzza}, Davide; \textsc{Neira}, Jos{\'e};
+  \textsc{Reid}, Ian; \textsc{Leonard}, John~J.:
+\newblock Past, present, and future of simultaneous localization and mapping:
+  Toward the robust-perception age.
+\newblock {In: }\emph{IEEE Transactions on robotics} 32 (2016), Nr. 6, S.
+  1309--1332
+
+\vspace*{4pt}\bibitem[10]{Canelhas2017TruncatedSD}
+\textsc{Canelhas}, Daniel~R.:
+\newblock Truncated Signed Distance Fields Applied To Robotics, 2017
+
+\vspace*{4pt}\bibitem[11]{chen1992object}
 \textsc{Chen}, Yang; \textsc{Medioni}, G{\'e}rard:
 \newblock Object modelling by registration of multiple range images.
 \newblock {In: }\emph{Image and vision computing} 10 (1992), Nr. 3, S. 145--155
 
-\vspace*{4pt}\bibitem[6]{chetverikov2005robust}
-\textsc{Chetverikov}, Dmitry; \textsc{Stepanov}, Dmitry; \textsc{Krsek}, Pavel:
-\newblock Robust Euclidean alignment of 3D point sets: the trimmed iterative
-  closest point algorithm.
-\newblock {In: }\emph{Image and vision computing} 23 (2005), Nr. 3, S. 299--309
+\vspace*{4pt}\bibitem[12]{cloudcompare}
+\textsc{CloudCompare}:
+\newblock \emph{{CloudCompare - home}}.
+\newblock \url{{https://www.cloudcompare.org/main.html}}. --
+\newblock zuletzt abgerufen am: 16.11.2022
 
-\vspace*{4pt}\bibitem[7]{HATSDF}
+\vspace*{4pt}\bibitem[13]{curless1996volumetric}
+\textsc{Curless}, Brian; \textsc{Levoy}, Marc:
+\newblock A volumetric method for building complex models from range images.
+\newblock {In: }\emph{Proceedings of the 23rd annual conference on Computer
+  graphics and interactive techniques}, 1996
+
+\vspace*{4pt}\bibitem[14]{dellaert2012factor}
+\textsc{Dellaert}, Frank:
+\newblock Factor graphs and GTSAM: A hands-on introduction / Georgia Institute
+  of Technology.
+\newblock 2012. --
+\newblock Forschungsbericht
+
+\vspace*{4pt}\bibitem[15]{dissanayake2001solution}
+\textsc{Dissanayake}, MWM~G.; \textsc{Newman}, Paul; \textsc{Clark}, Steve;
+  \textsc{Durrant-Whyte}, Hugh~F.; \textsc{Csorba}, Michael:
+\newblock A solution to the simultaneous localization and map building (SLAM)
+  problem.
+\newblock {In: }\emph{IEEE Transactions on robotics and automation} 17 (2001),
+  Nr. 3, S. 229--241
+
+\vspace*{4pt}\bibitem[16]{HATSDF}
 \textsc{Eisoldt}, Marc; \textsc{Flottmann}, Marcel; \textsc{Gaal}, Julian;
   \textsc{Buschermöhle}, Pascal; \textsc{Hinderink}, Steffen;
   \textsc{Hillmann}, Malte; \textsc{Nitschmann}, Adrian; \textsc{Hoffmann},
@@ -51,14 +110,40 @@
   SoCs.
 \newblock {In: }\emph{2021 European Conference on Mobile Robots (ECMR)}, 2021
 
-\vspace*{4pt}\bibitem[8]{he2017iterative}
+\vspace*{4pt}\bibitem[17]{frisken2000adaptively}
+\textsc{Frisken}, Sarah~F.; \textsc{Perry}, Ronald~N.; \textsc{Rockwood},
+  Alyn~P.; \textsc{Jones}, Thouis~R.:
+\newblock Adaptively sampled distance fields: A general representation of shape
+  for computer graphics.
+\newblock {In: }\emph{Proceedings of the 27th annual conference on Computer
+  graphics and interactive techniques}, 2000
+
+\vspace*{4pt}\bibitem[18]{garg2021your}
+\textsc{Garg}, Sourav; \textsc{Fischer}, Tobias; \textsc{Milford}, Michael:
+\newblock Where is your place, visual place recognition?
+\newblock {In: }\emph{arXiv preprint arXiv:2103.06443}  (2021)
+
+\vspace*{4pt}\bibitem[19]{hdf5}
+\textsc{HDF-Group}:
+\newblock \emph{{THE JDF5 LIBRARY FILE AND FORMAT}}.
+\newblock \url{{https://www.hdfgroup.org/solutions/hdf5/}}. --
+\newblock zuletzt abgerufen am: 02.11.2022
+
+\vspace*{4pt}\bibitem[20]{he2017iterative}
 \textsc{He}, Ying; \textsc{Liang}, Bin; \textsc{Yang}, Jun; \textsc{Li},
   Shunzhi; \textsc{He}, Jin:
 \newblock An iterative closest points algorithm for registration of 3D laser
   scanner point clouds with geometric features.
 \newblock {In: }\emph{Sensors} 17 (2017), Nr. 8, S. 1862
 
-\vspace*{4pt}\bibitem[9]{izadi2011kinectfusion}
+\vspace*{4pt}\bibitem[21]{ho2006loop}
+\textsc{Ho}, Kin~L.; \textsc{Newman}, Paul:
+\newblock Loop closure detection in SLAM by combining visual and spatial
+  appearance.
+\newblock {In: }\emph{Robotics and Autonomous Systems} 54 (2006), Nr. 9, S.
+  740--749
+
+\vspace*{4pt}\bibitem[22]{izadi2011kinectfusion}
 \textsc{Izadi}, Shahram; \textsc{Kim}, David; \textsc{Hilliges}, Otmar;
   \textsc{Molyneaux}, David; \textsc{Newcombe}, Richard; \textsc{Kohli},
   Pushmeet; \textsc{Shotton}, Jamie; \textsc{Hodges}, Steve; \textsc{Freeman},
@@ -68,20 +153,88 @@
 \newblock {In: }\emph{Proceedings of the 24th annual ACM symposium on User
   interface software and technology}, 2011
 
-\vspace*{4pt}\bibitem[10]{lorensen_marching_1987}
+\vspace*{4pt}\bibitem[23]{jones2006distance}
+\textsc{Jones}, M.W.; \textsc{Baerentzen}, J.A.; \textsc{Sramek}, M.:
+\newblock 3D distance fields: a survey of techniques and applications.
+\newblock {In: }\emph{IEEE Transactions on Visualization and Computer Graphics}
+  12 (2006), Nr. 4, S. 581--599.
+\newblock \url{http://dx.doi.org/10.1109/TVCG.2006.56}. --
+\newblock DOI 10.1109/TVCG.2006.56
+
+\vspace*{4pt}\bibitem[24]{levenberg1944method}
+\textsc{Levenberg}, Kenneth:
+\newblock A method for the solution of certain non-linear problems in least
+  squares.
+\newblock {In: }\emph{Quarterly of applied mathematics} 2 (1944), Nr. 2, S.
+  164--168
+
+\vspace*{4pt}\bibitem[25]{lorensen_marching_1987}
 \textsc{Lorensen}, W.~E.; \textsc{Cline}, H.~E.:
 \newblock Marching {Cubes}: {A} {High} {Resolution} 3D {Surface} {Construction}
   {Algorithm}.
 \newblock {In: }\emph{{ACM} {SIGGRAPH} '87}, 1987
 
-\vspace*{4pt}\bibitem[11]{mccormac2018fusion++}
+\vspace*{4pt}\bibitem[26]{lowry2015visual}
+\textsc{Lowry}, Stephanie; \textsc{S{\"u}nderhauf}, Niko; \textsc{Newman},
+  Paul; \textsc{Leonard}, John~J.; \textsc{Cox}, David; \textsc{Corke}, Peter;
+  \textsc{Milford}, Michael~J.:
+\newblock Visual place recognition: A survey.
+\newblock {In: }\emph{IEEE Transactions on Robotics} 32 (2015), Nr. 1, S. 1--19
+
+\vspace*{4pt}\bibitem[27]{lu1997globally}
+\textsc{Lu}, Feng; \textsc{Milios}, Evangelos:
+\newblock Globally consistent range scan alignment for environment mapping.
+\newblock {In: }\emph{Autonomous robots} 4 (1997), Nr. 4, S. 333--349
+
+\vspace*{4pt}\bibitem[28]{marquardt1963algorithm}
+\textsc{Marquardt}, Donald~W.:
+\newblock An algorithm for least-squares estimation of nonlinear parameters.
+\newblock {In: }\emph{Journal of the society for Industrial and Applied
+  Mathematics} 11 (1963), Nr. 2, S. 431--441
+
+\vspace*{4pt}\bibitem[29]{mauch2003efficient}
+\textsc{Mauch}, Sean~P.:
+\newblock \emph{Efficient algorithms for solving static Hamilton-Jacobi
+  equations}.
+\newblock California Institute of Technology, 2003
+
+\vspace*{4pt}\bibitem[30]{mccormac2018fusion++}
 \textsc{McCormac}, John; \textsc{Clark}, Ronald; \textsc{Bloesch}, Michael;
   \textsc{Davison}, Andrew; \textsc{Leutenegger}, Stefan:
 \newblock Fusion++: Volumetric object-level slam.
 \newblock {In: }\emph{2018 international conference on 3D vision (3DV)} IEEE,
   2018
 
-\vspace*{4pt}\bibitem[12]{prisacariu2017infinitam}
+\vspace*{4pt}\bibitem[31]{montemerlo2002fastslam}
+\textsc{Montemerlo}, Michael; \textsc{Thrun}, Sebastian; \textsc{Koller},
+  Daphne; \textsc{Wegbreit}, Ben u.\,a.:
+\newblock FastSLAM: A factored solution to the simultaneous localization and
+  mapping problem.
+\newblock {In: }\emph{Aaai/iaai} 593598 (2002)
+
+\vspace*{4pt}\bibitem[32]{montemerlo2003fastslam}
+\textsc{Montemerlo}, Michael; \textsc{Thrun}, Sebastian; \textsc{Koller},
+  Daphne; \textsc{Wegbreit}, Ben u.\,a.:
+\newblock FastSLAM 2.0: An improved particle filtering algorithm for
+  simultaneous localization and mapping that provably converges.
+\newblock {In: }\emph{IJCAI} Bd.~3, 2003
+
+\vspace*{4pt}\bibitem[33]{noto2000method}
+\textsc{Noto}, Masato; \textsc{Sato}, Hiroaki:
+\newblock A method for the shortest path search by extended Dijkstra algorithm.
+\newblock {In: }\emph{Smc 2000 conference proceedings. 2000 ieee international
+  conference on systems, man and cybernetics.'cybernetics evolving to systems,
+  humans, organizations, and their complex interactions'(cat. no. 0} Bd.~3
+  IEEE, 2000
+
+\vspace*{4pt}\bibitem[34]{novotny2005representation}
+\textsc{Novotny}, P.; \textsc{Sramek}, M.:
+\newblock Representation of objects with sharp details in truncated distance
+  fields.
+\newblock {In: }\emph{Fourth International Workshop on Volume Graphics, 2005.},
+  2005
+
+\vspace*{4pt}\bibitem[35]{prisacariu2017infinitam}
 \textsc{Prisacariu}, Victor~A.; \textsc{K{\"a}hler}, Olaf; \textsc{Golodetz},
   Stuart; \textsc{Sapienza}, Michael; \textsc{Cavallari}, Tommaso;
   \textsc{Torr}, Philip~H.; \textsc{Murray}, David~W.:
@@ -89,18 +242,39 @@
   closure.
 \newblock {In: }\emph{arXiv preprint arXiv:1708.00783}  (2017)
 
-\vspace*{4pt}\bibitem[13]{ros_tf_image}
+\vspace*{4pt}\bibitem[36]{quigley2009ros}
+\textsc{Quigley}, Morgan; \textsc{Conley}, Ken; \textsc{Gerkey}, Brian;
+  \textsc{Faust}, Josh; \textsc{Foote}, Tully; \textsc{Leibs}, Jeremy;
+  \textsc{Wheeler}, Rob; \textsc{Ng}, Andrew~Y. u.\,a.:
+\newblock ROS: an open-source Robot Operating System.
+\newblock {In: }\emph{ICRA workshop on open source software} Bd.~3 Kobe, Japan,
+  2009
+
+\vspace*{4pt}\bibitem[37]{rusu20113d}
+\textsc{Rusu}, Radu~B.; \textsc{Cousins}, Steve:
+\newblock 3d is here: Point cloud library (pcl).
+\newblock {In: }\emph{2011 IEEE international conference on robotics and
+  automation} IEEE, 2011
+
+\vspace*{4pt}\bibitem[38]{ros_tf_image}
 \textsc{Schultz}, Jarvis:
 \newblock \emph{{tf}}.
 \newblock \url{{http://wiki.ros.org/tf}}. --
 \newblock zuletzt abgerufen am: 09.10.2022
 
-\vspace*{4pt}\bibitem[14]{segal2009generalized}
+\vspace*{4pt}\bibitem[39]{segal2009generalized}
 \textsc{Segal}, Aleksandr; \textsc{Haehnel}, Dirk; \textsc{Thrun}, Sebastian:
 \newblock Generalized-icp.
 \newblock {In: }\emph{Robotics: science and systems} Bd.~2 Seattle, WA, 2009
 
-\vspace*{4pt}\bibitem[15]{shan2020lio}
+\vspace*{4pt}\bibitem[40]{shan2018lego}
+\textsc{Shan}, Tixiao; \textsc{Englot}, Brendan:
+\newblock Lego-loam: Lightweight and ground-optimized lidar odometry and
+  mapping on variable terrain.
+\newblock {In: }\emph{2018 IEEE/RSJ International Conference on Intelligent
+  Robots and Systems (IROS)} IEEE, 2018
+
+\vspace*{4pt}\bibitem[41]{shan2020lio}
 \textsc{Shan}, Tixiao; \textsc{Englot}, Brendan; \textsc{Meyers}, Drew;
   \textsc{Wang}, Wei; \textsc{Ratti}, Carlo; \textsc{Rus}, Daniela:
 \newblock Lio-sam: Tightly-coupled lidar inertial odometry via smoothing and
@@ -108,22 +282,54 @@
 \newblock {In: }\emph{2020 IEEE/RSJ international conference on intelligent
   robots and systems (IROS)} IEEE, 2020
 
-\vspace*{4pt}\bibitem[16]{sprickerhof2011heuristic}
+\vspace*{4pt}\bibitem[42]{sprickerhof2011heuristic}
 \textsc{Sprickerhof}, Jochen; \textsc{N{\"u}chter}, Andreas;
   \textsc{Lingemann}, Kai; \textsc{Hertzberg}, Joachim:
 \newblock A heuristic loop closing technique for large-scale 6d slam.
 \newblock {In: }\emph{Automatika} 52 (2011), Nr. 3, S. 199--222
 
-\vspace*{4pt}\bibitem[17]{werner2014truncated}
+\vspace*{4pt}\bibitem[43]{taketomi2017visual}
+\textsc{Taketomi}, Takafumi; \textsc{Uchiyama}, Hideaki; \textsc{Ikeda}, Sei:
+\newblock Visual SLAM algorithms: A survey from 2010 to 2016.
+\newblock {In: }\emph{IPSJ Transactions on Computer Vision and Applications} 9
+  (2017), Nr. 1, S. 1--11
+
+\vspace*{4pt}\bibitem[44]{tsintotas2022revisiting}
+\textsc{Tsintotas}, Konstantinos~A.; \textsc{Bampis}, Loukas;
+  \textsc{Gasteratos}, Antonios:
+\newblock The Revisiting Problem in Simultaneous Localization and Mapping: A
+  Survey on Visual Loop Closure Detection.
+\newblock {In: }\emph{IEEE Transactions on Intelligent Transportation Systems}
+  (2022)
+
+\vspace*{4pt}\bibitem[45]{werner2014truncated}
 \textsc{Werner}, Diana; \textsc{Al-Hamadi}, Ayoub; \textsc{Werner}, Philipp:
 \newblock Truncated signed distance function: experiments on voxel size.
 \newblock {In: }\emph{International Conference Image Analysis and Recognition}
   Springer, 2014
 
-\vspace*{4pt}\bibitem[18]{whelan2012kintinuous}
+\vspace*{4pt}\bibitem[46]{whelan2012kintinuous}
 \textsc{Whelan}, Thomas; \textsc{Kaess}, Michael; \textsc{Fallon}, Maurice;
   \textsc{Johannsson}, Hordur; \textsc{Leonard}, John; \textsc{McDonald}, John:
 \newblock Kintinuous: Spatially extended kinectfusion.
 \newblock   (2012)
+
+\vspace*{4pt}\bibitem[47]{xie2017graphtinker}
+\textsc{Xie}, Linhai; \textsc{Wang}, Sen; \textsc{Markham}, Andrew;
+  \textsc{Trigoni}, Niki:
+\newblock GraphTinker: Outlier rejection and inlier injection for pose graph
+  SLAM.
+\newblock {In: }\emph{2017 IEEE/RSJ International Conference on Intelligent
+  Robots and Systems (IROS)} IEEE, 2017
+
+\vspace*{4pt}\bibitem[48]{Yang20tro-teaser}
+\textsc{Yang}, H.; \textsc{Shi}, J.; \textsc{Carlone}, L.:
+\newblock {TEASER: Fast and Certifiable Point Cloud Registration}.
+\newblock {In: }\emph{{IEEE} Trans. Robotics}  (2020)
+
+\vspace*{4pt}\bibitem[49]{zhang2014loam}
+\textsc{Zhang}, Ji; \textsc{Singh}, Sanjiv:
+\newblock LOAM: Lidar odometry and mapping in real-time.
+\newblock {In: }\emph{Robotics: Science and Systems} Bd.~2 Berkeley, CA, 2014
 
 \end{thebibliography}
