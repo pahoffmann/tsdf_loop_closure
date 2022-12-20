@@ -81,8 +81,9 @@ The datasets itself are not delivered with this package, but to be found on the 
 They are located on the glumanda server under:
 
 ###   
-    ~/pahoffmann
-    ~/warpsense
+    ~/pahoffmann/hannover1
+    ~/pahoffmann/vorplatz
+    ~/pahoffmann/physik_unten
 
 Copy those datasets to your local system and interchange the respective paths in the configs. After building the ros workspace, the algorithm can be started using the stated roslaunch commands. The output should be visible in the RVIZ program.
 

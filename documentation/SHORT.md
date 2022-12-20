@@ -7,7 +7,10 @@ Kidding. If the prerequisits are matched ([Readme.md](../README.md)), so all lib
 ###
     catkin_make -DCMAKE_BUILD_TYPE=Release
 
-Afterwards, download the "physik_unten" or "vorplatz" dataset (.h5 and folder with .pcd's) from the glumanda server and place them at a dedicated location on your local machine.
+Afterwards, download the "physik_unten" or "vorplatz" dataset (.h5 and folder with .pcd's) from the glumanda server and place them at a dedicated location on your local machine. Location on glumanda:
+
+###
+    ~/pahoffmann/physik_unten
 
 Open the general configuration file: [Configuration](../params/general_params.yaml) and replace the five parameters:
 
