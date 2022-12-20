@@ -52,7 +52,7 @@ struct LoopClosureParams
     nh.param<std::string>("loop_closure/json_dirname", loop_closure.json_dirname, "/home/patrick/maps/generated/json");
 
     // ground truth filename
-    nh.param<std::string>("loop_closure/ground_truth_filename", loop_closure.ground_truth_filename, "/home/patrick/data/hannover1_gt/gt_han1.dat");
+    nh.param<std::string>("loop_closure/ground_truth_filename", loop_closure.ground_truth_filename, "");
     // path, where to save the generated csv for evaluation
     nh.param<std::string>("loop_closure/csv_save_path", loop_closure.csv_save_path, "/home/patrick/data/evaluation");
 

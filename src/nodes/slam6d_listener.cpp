@@ -625,11 +625,13 @@ float get_current_graph_error()
  */
 void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_ptr, const geometry_msgs::PoseStampedConstPtr &pose_ptr)
 {
-
-    translation_header_row.add(std::to_string(path->get_length()));
-    relative_translation_error_row.add(std::to_string(Evaluation::calc_relative_translation_error(path, ground_truth)));
-    absolute_translation_error_row.add(std::to_string(Evaluation::calc_absolute_translation_error(path, ground_truth)));
-    absolute_translation_error_xy_row.add(std::to_string(Evaluation::calc_absolute_translation_error(path, ground_truth, true, true)));
+    if (ground_truth->get_length() == path->get_length())
+    {
+        translation_header_row.add(std::to_string(path->get_length()));
+        relative_translation_error_row.add(std::to_string(Evaluation::calc_relative_translation_error(path, ground_truth)));
+        absolute_translation_error_row.add(std::to_string(Evaluation::calc_absolute_translation_error(path, ground_truth)));
+        absolute_translation_error_xy_row.add(std::to_string(Evaluation::calc_absolute_translation_error(path, ground_truth, true, true)));
+    }
 
 #pragma region FUNCTION_VARIABLES
     // message used to show, that the processing of the last message pair is done and the node awaits new data
@@ -847,11 +849,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     std::cout << "input_3d_pos: " << std::endl
               << input_3d_pos << std::endl;
 
-    // if (lmap_center_diff_abs.x() > l_map_half.x() || lmap_center_diff_abs.y() > l_map_half.y() || lmap_center_diff_abs.z() > l_map_half.z())
-    // {
-    //     local_map_ptr->shift(input_3d_pos);
-    // }
-
     local_map_ptr->shift(input_3d_pos);
 
     Eigen::Matrix4i rot = Eigen::Matrix4i::Identity();
@@ -868,11 +865,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     auto gm_data = global_map_ptr->get_full_data();
     auto marker = ROSViewhelper::marker_from_gm_read(gm_data);
     tsdf_pub.publish(marker);
-
-    // reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
-    // gm_data = global_map_ptr->get_full_data();
-    // marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // tsdf_pub.publish(marker);
 
     sensor_msgs::PointCloud2 filtered_ros_cloud;
     pcl::toROSMsg(*tsdf_cloud, filtered_ros_cloud);
