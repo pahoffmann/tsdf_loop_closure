@@ -1,5 +1,5 @@
 <launch>
     <node name="transform_coord_sys" type="transform_coord_sys" pkg="loop_closure" output="screen" clear_params="true">
-        <rosparam command="load" file="$(find loop_closure)/params/loop_closure.yaml"/>
+        <rosparam command="load" file="$(find loop_closure)/params/slam6d_listening.yaml"/>
     </node>
 </launch>

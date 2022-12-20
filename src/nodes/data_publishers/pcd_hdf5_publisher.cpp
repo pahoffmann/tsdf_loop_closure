@@ -180,8 +180,9 @@ void prepare()
 {
     path = new Path();
 
-    map_ptr.reset(new GlobalMap("/home/patrick/data/physik_unten/physik_unten.h5"));
-    //map_ptr.reset(new GlobalMap("/home/patrick/data/vorplatz/vorplatz.h5"));
+    map_ptr.reset(new GlobalMap(params.dataset_params.data_set.h5_file_name));
+    // map_ptr.reset(new GlobalMap("/home/patrick/data/physik_unten/physik_unten.h5"));
+    // map_ptr.reset(new GlobalMap("/home/patrick/data/vorplatz/vorplatz.h5"));
 
     auto poses = map_ptr->get_path();
 
@@ -196,7 +197,8 @@ void prepare()
     csv_wrapper_ptr->write_all();
     csv_wrapper_ptr.release();
 
-    boost::filesystem::path directory_name = fs::path("/home/patrick/data/physik_unten/physik_unten");
+    boost::filesystem::path directory_name = fs::path(params.dataset_params.data_set.pcd_cloud_location);
+    // boost::filesystem::path directory_name = fs::path("/home/patrick/data/physik_unten/physik_unten");
     // boost::filesystem::path directory_name = fs::path("/home/patrick/data/vorplatz/vorplatz_19_10");
 
     std::cout << "[PCD_HDF5_PUBLISHER] Using dataset in folder: " << directory_name.string() << std::endl;

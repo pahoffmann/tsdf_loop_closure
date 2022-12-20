@@ -58,4 +58,4 @@ The configs are:
 [General](../params/general_params.yaml)
 [Slam6D](../params/slam6d_listening.yaml)
 
-Each of the configuration files share the same configurable fields, with most of them not needing to be adapted. Generally speaking, only an adaption of the dataset location is necessary to start the process.
+Each of the configuration files share close to the same configurable fields, with most of them not needing to be adapted. Generally speaking, only an adaption of the dataset location is necessary to start the process.

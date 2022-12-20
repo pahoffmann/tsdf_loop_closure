@@ -101,9 +101,12 @@ geometry_msgs::PoseStamped transform_to_ros_pose_stamped(Matrix4f &transform)
 void prepare()
 {
     path = new Path();
-    csv_wrapper_ptr.reset(new CSVWrapper("/home/patrick/data/evaluation/"));
+    
+    //csv_wrapper_ptr.reset(new CSVWrapper("/home/patrick/data/evaluation/"));
+    csv_wrapper_ptr.reset(new CSVWrapper(params.loop_closure.csv_save_path));
 
-    boost::filesystem::path directory_name = fs::path("/home/patrick/data/hannover1/");
+    // boost::filesystem::path directory_name = fs::path("/home/patrick/data/hannover1/");
+    boost::filesystem::path directory_name = fs::path(params.dataset_params.data_set.hannover1_location);
 
     std::cout << "[TRANSFORM_COORD_SYS] Using dataset in folder: " << directory_name.string() << std::endl;
 
@@ -233,7 +236,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::NodeHandle nh("~");
 
-    params = LoopClosureParams(params);
+    params = LoopClosureParams(nh);
 
     // init publishers
     cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/slam6d_cloud", 0);

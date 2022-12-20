@@ -62,3 +62,5 @@ This is a bug in Ubuntu 18.04 and beyond, as described in https://github.com/bor
 # Get it running
 
 [Run.md](documentation/RUN.md)
+
+If you are not interested in any Background and are just interested in getting it run asap, there is a short instruction under: [Short.md](documentation/SHORT.md)

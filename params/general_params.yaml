@@ -1,8 +1,13 @@
+data_set:
+  pcd_cloud_location: "" # location of the pointclouds in PCD file format (e.g. "/home/patrick/data/physik_unten/physik_unten")
+  h5_file_name: "" # location of the h5, which contains the poses associated with the pointclouds (e.g. "/home/patrick/data/physik_unten/physik_unten.h5")
+
 loop_closure:
   max_icp_iterations: 30
   max_dist_lc: 10.0     # in m
   min_traveled_lc: 10.0 # in m
   dist_between_lcs: 0.0 # in m
+  max_closures_per_pose: 2
 
   max_prereg_icp_fitness: 0.1 # in m²
   max_lc_icp_fitness: 1.0 # in m²
@@ -22,6 +27,7 @@ loop_closure:
   between_translation_noise_x: 0.064
   between_translation_noise_y: 0.064
   between_translation_noise_z: 0.064
+
   csv_save_path: "/home/patrick/data/evaluation" # file path to save csv data for evaluation
 
 map:

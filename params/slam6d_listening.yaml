@@ -1,3 +1,6 @@
+data_set:
+    hannover1_location: "" # location to the hannover1 dataset (e.g. "/home/patrick/data/hannover1/")
+
 loop_closure:
   max_icp_iterations: 200
   max_dist_lc: 15.0     # in m

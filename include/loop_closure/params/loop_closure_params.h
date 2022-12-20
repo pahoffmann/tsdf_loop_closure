@@ -1,6 +1,7 @@
 #pragma once
 #include "map_params.h"
 #include "ray_tracer_params.h"
+#include "dataset_params.h"
 
 /**
  * @file params.h
@@ -23,6 +24,7 @@ struct LoopClosureParams
     // load map params
     map.load(nh);
     ray_tracer.load(nh);
+    dataset_params.load(nh);
 
     // load lc related params
 
@@ -111,4 +113,5 @@ struct LoopClosureParams
 
   MapParams map;
   RayTracerParams ray_tracer;
+  DatasetParams dataset_params;
 };
