@@ -34,6 +34,22 @@ Provides 3d objects like matrices and vectors used for 3d maths
 
     * sudo apt-get install libeigen3-dev
 
+## Teaser++
+
+Currently not used, though part of the prerequisits, wip project to optimize scan matching
+
+### Installation:
+
+* https://github.com/MIT-SPARK/TEASER-plusplus
+
+## Fast-GICP:
+
+Library used as another option to the pcl GICP
+
+* not used in the default parametrization of the algorithm
+* include as ROS-Package in Workspace
+* see: https://github.com/SMRT-AIST/fast_gicp
+
 # Troubleshooting #
 
 ## GTSAM ##
