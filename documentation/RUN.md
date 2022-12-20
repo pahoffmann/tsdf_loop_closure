@@ -59,3 +59,23 @@ The configs are:
 [Slam6D](../params/slam6d_listening.yaml)
 
 Each of the configuration files share close to the same configurable fields, with most of them not needing to be adapted. Generally speaking, only an adaption of the dataset location is necessary to start the process.
+These fields are to be found under the "data_set" section in the configs.
+
+### Datasets
+
+The datasets itself are not delivered with this package, but to be found on the glumanda server of the university of osnabrueck. For those, who have got access to this server, i prepared multiple datasets to try out this algorithm:
+
+* Datensatz des Physik Gebäudes der Uni Osnabrück
+* Datensatz des Vorplatzes des Chemnitzer Opernhauses
+* Hannover1 Datensatz der Uni Osnabrück
+
+They are located on the glumanda server under:
+
+###   
+    ~/pahoffmann
+    ~/warpsense
+
+Copy those datasets to your local system and interchange the respective paths in the configs. After building the ros workspace, the algorithm can be started using the stated roslaunch commands. The output should be visible in the RVIZ program.
+
+Please don't hesitate to ask questions, if an error occurs:
+pahoffmann@uni-osnabrueck.de

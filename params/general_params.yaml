@@ -51,6 +51,8 @@ map:
   # Maximum weight for one TSDF cell. This variable ensures that later changes can still have an influence to the map
   max_weight: 10.0
 
+  partial_update: true
+
 ray_tracer:
   #general ray_tracer stuff
   hor_res: 1024

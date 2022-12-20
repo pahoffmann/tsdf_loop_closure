@@ -297,8 +297,8 @@ void refill_graph()
 
 /**
  * @brief will broadcast the current robots pose as a transform
- * 
- * @param pose 
+ *
+ * @param pose
  */
 void broadcast_robot_pose(Pose &pose)
 {
@@ -325,9 +325,9 @@ void broadcast_robot_pose(Pose &pose)
 
 /**
  * @brief will broadcast the current path (including all poses and their transforms)
- * 
- * @param path 
- * @param base_child_frame_name 
+ *
+ * @param path
+ * @param base_child_frame_name
  */
 void broadcast_robot_path(Path *path, std::string base_child_frame_name = "pose_")
 {
@@ -644,6 +644,8 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     pcl::fromROSMsg(*cloud_ptr.get(), *input_cloud.get());
 
+    // this filter has been proven as unreliable (at least in this parametrization), that's why it is not used atm
+
     // filter input cloud with a statistical outlier filter:
     // std::cout << "[SLAM6D_LISTENER] Start input cloud filtering: " << std::endl;
     // std::cout << "[SLAM6D_LISTENER] Size before filtering: " << input_cloud->size() << std::endl;
@@ -666,8 +668,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     tf::poseMsgToEigen(pose_ptr->pose, tmp_pose);
 
     input_pose = Pose(tmp_pose.matrix().cast<float>());
-    // input_pose.quat = tmp_quat.cast<float>();
-    // input_pose.pos = tmp_point.cast<float>();
 
     // immediately add to initial path
     initial_path->add_pose(input_pose);
@@ -682,10 +682,6 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
     // fitness score from preregistration (-1.0f = default)
     float prereg_fitness_score = -1.0f;
-
-    // path->add_pose(input_pose);
-    // broadcast_robot_pose(input_pose);
-    // broadcast_robot_path(path);
 
     if (path->get_length() > 0)
     {
@@ -738,8 +734,7 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
             // try matching the clouds in the scan system -> we obtain P_scan' -> P_scan (final transformation of ICP)
             // with P_scan' = actual position of the robot when capturing the current scan (according to icp)
-            // gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score, 0.2);
-            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score, 2.5f);
+            gtsam_wrapper_ptr->perform_pcl_gicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             // gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             //  gtsam_wrapper_ptr->perform_pcl_icp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
             //  gtsam_wrapper_ptr->perform_vgicp(model_cloud, scan_cloud, result_cloud, converged, final_transformation, prereg_fitness_score);
@@ -1105,8 +1100,10 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
     optimized_path_pub.publish(ROSViewhelper::initPathMarker(optimized_path, Colors::ColorNames::fuchsia));
 
     // do a partial update of the global map
-    partial_update();
-    // reverse_update_tsdf(points_original, input_3d_pos, up, *local_map_ptr, params.map.tau, params.map.max_weight, params.map.resolution, path->get_length() - 1);
+    if (params.map.partial_update)
+    {
+        partial_update();
+    }
 
     // copy values from optimized path back to the path
     path = new Path(*optimized_path);
@@ -1121,48 +1118,51 @@ void handle_slam6d_cloud_callback(const sensor_msgs::PointCloud2ConstPtr &cloud_
 
 #pragma endregion
 
-    // GLOBAL MAP UPDATE
-    // std::chrono::steady_clock::time_point removal_time_start = std::chrono::steady_clock::now();
+    // GLOBAL MAP UPDATE (if parameterized)
+    if (!params.map.partial_update)
+    {
+        std::chrono::steady_clock::time_point removal_time_start = std::chrono::steady_clock::now();
 
-    // map_update_counter++;
-    // auto previous_filename_path = params.map.filename;
+        map_update_counter++;
+        auto previous_filename_path = params.map.filename;
 
-    // // create new map
-    // std::string new_stem = previous_filename_path.stem().string();
-    // if (map_update_counter == 1)
-    // {
-    //     new_stem += "_" + std::to_string(map_update_counter);
-    // }
-    // else
-    // {
-    //     new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
-    // }
+        // create new map
+        std::string new_stem = previous_filename_path.stem().string();
+        if (map_update_counter == 1)
+        {
+            new_stem += "_" + std::to_string(map_update_counter);
+        }
+        else
+        {
+            new_stem = new_stem.substr(0, new_stem.find_last_of("_")) + "_" + std::to_string(map_update_counter);
+        }
 
-    // params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
+        params.map.filename = previous_filename_path.parent_path() / boost::filesystem::path(new_stem + previous_filename_path.extension().string());
 
-    // // delete old map
-    // boost::filesystem::remove(previous_filename_path);
+        // delete old map
+        boost::filesystem::remove(previous_filename_path);
 
-    // // reset pointers
-    // global_map_ptr.reset(new GlobalMap(params.map));
-    // local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+        // reset pointers
+        global_map_ptr.reset(new GlobalMap(params.map));
+        local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
-    // std::chrono::steady_clock::time_point removal_time_end = std::chrono::steady_clock::now();
-    // float removal_time = std::chrono::duration_cast<std::chrono::microseconds>(removal_time_end - removal_time_start).count() / 1000.0f;
+        std::chrono::steady_clock::time_point removal_time_end = std::chrono::steady_clock::now();
+        float removal_time = std::chrono::duration_cast<std::chrono::microseconds>(removal_time_end - removal_time_start).count() / 1000.0f;
 
-    // Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter),
-    //                              global_map_update_header, global_shift_time, global_update_time);
+        Map_Updater::full_map_update(optimized_path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, std::to_string(map_update_counter),
+                                     global_map_update_header, global_shift_time, global_update_time);
 
-    // // Visualize Map
-    // std::chrono::steady_clock::time_point visualization_time_start = std::chrono::steady_clock::now();
-    // gm_data = global_map_ptr->get_full_data();
-    // marker = ROSViewhelper::marker_from_gm_read(gm_data);
-    // tsdf_pub.publish(marker);
-    // std::chrono::steady_clock::time_point visualization_time_end = std::chrono::steady_clock::now();
-    // float visualization_time = std::chrono::duration_cast<std::chrono::microseconds>(visualization_time_end - visualization_time_start).count() / 1000.0f;
+        // Visualize Map
+        std::chrono::steady_clock::time_point visualization_time_start = std::chrono::steady_clock::now();
+        gm_data = global_map_ptr->get_full_data();
+        marker = ROSViewhelper::marker_from_gm_read(gm_data);
+        tsdf_pub.publish(marker);
+        std::chrono::steady_clock::time_point visualization_time_end = std::chrono::steady_clock::now();
+        float visualization_time = std::chrono::duration_cast<std::chrono::microseconds>(visualization_time_end - visualization_time_start).count() / 1000.0f;
 
-    // global_removal_time.add(std::to_string(removal_time));
-    // global_visualization_time.add(std::to_string(visualization_time));
+        global_removal_time.add(std::to_string(removal_time));
+        global_visualization_time.add(std::to_string(visualization_time));
+    }
 
     ready_flag_pub.publish(ready_msg);
 }
@@ -1215,8 +1215,6 @@ int main(int argc, char **argv)
     lc_candidate_publisher = n.advertise<visualization_msgs::Marker>("/lc_candidates", 1);
     normal_publisher = n.advertise<visualization_msgs::Marker>("/input_cloud_normals", 1);
     rays_publisher = n.advertise<visualization_msgs::Marker>("/rays", 1);
-
-    // publish_ground_truth();
 
     // bond
     std::string id = "42";

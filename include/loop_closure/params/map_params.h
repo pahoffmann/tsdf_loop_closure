@@ -52,6 +52,7 @@ struct MapParams
     size.z() = size1d;
     nh.param<int>("map/initial_weight", initial_weight, 0);
     nh.param<bool>("map/refinement", refinement, true);
+    nh.param<bool>("map/partial_update", partial_update, true); // defines if a partial or a global update of the tsdf is supposed to happen
 
     std::string temp;
 
@@ -128,4 +129,5 @@ struct MapParams
   Eigen::Vector3i size;
   bool refinement;
   std::string id;
+  bool partial_update;
 };
