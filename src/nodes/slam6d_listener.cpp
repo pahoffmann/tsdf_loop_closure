@@ -446,7 +446,7 @@ void csv_from_path(std::string name, Path *in_path)
 
 void transform_and_save_clouds(bool diff = true)
 {
-    auto save_path = boost::filesystem::path("/home/patrick/data/evaluation/pointdata");
+    auto save_path = boost::filesystem::path(params.loop_closure.csv_save_path + "/pointdata");
     size_t n_zero = std::to_string(path->get_length()).length();
 
     if (!boost::filesystem::exists(save_path))
@@ -524,28 +524,33 @@ void clear_and_update_tsdf()
     std::cout << "Number of rejected Ranges: " << gtsam_wrapper_ptr->get_num_range_rejects() << std::endl;
     std::cout << "-----------------------------" << std::endl;
 
-    std::cout << "[Slam6D_Listener] Cleanup and write new tsdf" << std::endl;
+    // do a full map update if the update method is not partial
+    if (!params.map.partial_update)
+    {
+        std::cout << "[Slam6D_Listener] Cleanup and write new tsdf" << std::endl;
 
-    // write data
-    local_map_ptr->write_back();
-    std::cout << "Old map has been written to: " << params.map.filename.string() << std::endl;
+        // write data
+        local_map_ptr->write_back();
+        std::cout << "Old map has been written to: " << params.map.filename.string() << std::endl;
 
-    // update filename
-    auto previous_filename_path = params.map.filename;
-    params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + "final").string() + previous_filename_path.extension().string());
+        // update filename
+        auto previous_filename_path = params.map.filename;
+        params.map.filename = previous_filename_path.parent_path() / (boost::filesystem::path(previous_filename_path.stem().string() + "_" + "final").string() + previous_filename_path.extension().string());
 
-    // reset pointers
-    global_map_ptr.reset(new GlobalMap(params.map));
-    local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
+        // reset pointers
+        global_map_ptr.reset(new GlobalMap(params.map));
+        local_map_ptr.reset(new LocalMap(params.map.size.x(), params.map.size.y(), params.map.size.y(), global_map_ptr));
 
-    std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
-    Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final",
-                                 global_map_update_header, global_shift_time, global_update_time);
+        std::cout << "Start generating the updated map as: " << params.map.filename.string() << std::endl;
 
-    auto marker_data = global_map_ptr->get_full_data();
-    auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
+        Map_Updater::full_map_update(path, dataset_clouds, global_map_ptr.get(), local_map_ptr.get(), params, "final",
+                                     global_map_update_header, global_shift_time, global_update_time);
 
-    tsdf_pub.publish(marker);
+        auto marker_data = global_map_ptr->get_full_data();
+        auto marker = ROSViewhelper::marker_from_gm_read(marker_data);
+
+        tsdf_pub.publish(marker);
+    }
 
     if (bond_ptr->isBroken())
     {

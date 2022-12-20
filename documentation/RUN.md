@@ -61,6 +61,15 @@ The configs are:
 Each of the configuration files share close to the same configurable fields, with most of them not needing to be adapted. Generally speaking, only an adaption of the dataset location is necessary to start the process.
 These fields are to be found under the "data_set" section in the configs.
 
+Further parameters that need to be changed:
+
+* /map/dir
+  * folder, where the generated .h5 is saved
+* /loop_closure/ground_truth_filename
+  * filename of the ground truth of the hannover1 dataset
+* /loop_closure/csv_save_path
+  * path to save evaluation data and resulting clouds to
+
 ### Datasets
 
 The datasets itself are not delivered with this package, but to be found on the glumanda server of the university of osnabrueck. For those, who have got access to this server, i prepared multiple datasets to try out this algorithm:

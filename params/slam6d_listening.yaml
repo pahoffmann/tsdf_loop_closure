@@ -27,12 +27,12 @@ loop_closure:
   between_translation_noise_y: 0.2
   between_translation_noise_z: 0.2
 
-  ground_truth_filename: "/home/patrick/data/hannover1_gt/gt_han1.dat"
-  csv_save_path: "/home/patrick/data/evaluation"
+  ground_truth_filename: ""  # e.g. "/home/patrick/data/hannover1_gt/gt_han1.dat"
+  csv_save_path: ""
 
 map:
   # directory to save map in
-  dir: "/home/patrick/maps/generated"
+  dir: "" # e.g. "/home/patrick/maps/generated"
 
   comment: ""
 
