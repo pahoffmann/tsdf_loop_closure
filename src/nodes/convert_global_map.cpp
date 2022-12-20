@@ -1,7 +1,7 @@
 /**
- * @file path_listener.cpp
+ * @file convert_global_map.cpp
  * @author Patrick Hoffmann (pahoffmann@uni-osnabrueck.de)
- * @brief
+ * @brief Will convert a global map from the old format (2 byte) to the new format (4 byte)
  * @version 0.1
  * @date 2022-09-21
  *

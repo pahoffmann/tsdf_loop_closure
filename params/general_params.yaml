@@ -22,7 +22,7 @@ loop_closure:
   between_translation_noise_x: 0.064
   between_translation_noise_y: 0.064
   between_translation_noise_z: 0.064
-  csv_save_path: "/home/patrick/data/evaluation"
+  csv_save_path: "/home/patrick/data/evaluation" # file path to save csv data for evaluation
 
 map:
   # directory to save map in

@@ -259,26 +259,14 @@ bool is_viable_lc(std::pair<int, int> candidate_pair)
     }
 
     // the first index of the candidate pair needs to be greater than the already found pair
-    // [TODO] eval this solution
     for (auto lc_pair : lc_index_pairs)
     {
-        // if (candidate_pair.first < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.first, lc_pair.second.second) < params.loop_closure.min_traveled_lc)
-        // {
-        //     return false;
-        // }
-
         // check validity
         if (candidate_pair.second < lc_pair.second.second || path->get_distance_between_path_poses(lc_pair.second.second, candidate_pair.second) < params.loop_closure.dist_between_lcs)
         {
             return false;
         }
     }
-
-    // TODO:    CHECK IF THE CURRENT LC IS ON A LINE, POSSIBLY DENY THEM
-    // if(LCRejectors::is_line(path, candidate_pair.first, candidate_pair.second, 1.5f))
-    // {
-    //     return false;
-    // }
 
     return true;
 }
@@ -300,18 +288,20 @@ void refill_graph()
         gtsam_wrapper_ptr->add_in_between_contraint(diff_mat, i, i + 1);
     }
 
-    // readd a lc constraints?
+    // readd a lc constraints
     for (int i = 0; i < lc_index_pairs.size(); i++)
     {
-        // gtsam_wrapper_ptr->add_in_between_contraint(lc_index_pairs[i].first, lc_index_pairs[i].second.second, lc_index_pairs[i].second.first, lc_fitness_scores[i]);
         gtsam_wrapper_ptr->add_in_between_contraint(lc_index_pairs[i].first, lc_index_pairs[i].second.second, lc_index_pairs[i].second.first);
     }
 }
 
+/**
+ * @brief will broadcast the current robots pose as a transform
+ * 
+ * @param pose 
+ */
 void broadcast_robot_pose(Pose &pose)
 {
-    // std::cout << "Broadcasting transform.. " << std::endl;
-
     static tf2_ros::TransformBroadcaster br;
 
     geometry_msgs::TransformStamped transformStamped;
@@ -333,10 +323,14 @@ void broadcast_robot_pose(Pose &pose)
     br.sendTransform(transformStamped);
 }
 
+/**
+ * @brief will broadcast the current path (including all poses and their transforms)
+ * 
+ * @param path 
+ * @param base_child_frame_name 
+ */
 void broadcast_robot_path(Path *path, std::string base_child_frame_name = "pose_")
 {
-    // std::cout << "Broadcasting transform.. " << std::endl;
-
     static tf2_ros::StaticTransformBroadcaster path_br;
 
     for (int idx = 0; idx < path->get_length(); idx++)
@@ -361,6 +355,10 @@ void broadcast_robot_path(Path *path, std::string base_child_frame_name = "pose_
     }
 }
 
+/**
+ * @brief Function publishes the ground truth (if delivered)
+ *        Currently solely implemented for the Hannover1 dataset as a benchmark
+ */
 void publish_ground_truth()
 {
     std::cout << "Reading and publishing Ground Truth from file: " << params.loop_closure.ground_truth_filename << std::endl;
@@ -382,8 +380,6 @@ void publish_ground_truth()
         auto path_marker = type_transform::to_ros_path(ground_truth->getPoses()); // ROSViewhelper::initPathMarker(ground_truth);
         std::cout << "In the GT marker, there are " << path_marker.poses.size() << " poses" << std::endl;
         ground_truth_path_pub.publish(path_marker);
-
-        // broadcast_robot_path(ground_truth, "gt_");
     }
 }
 
