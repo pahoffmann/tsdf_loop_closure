@@ -35,3 +35,27 @@ The once interesting for execution are:
 [PcdListener](../launch/pcd_hdf5_listener.launch)
 [Slam6DListener](../launch/slam6d_listener.launch)
 
+When executing these files, no additional parameters need to be added:
+
+###
+    roslaunch loop_closure slam6d_listener.launch
+    roslaunch loop_closure pcd_hdf5_listener.launch
+
+Each command will start the respective publisher and listener and connect them using bondcpp. The current state of the algorithm can then be observed using rviz. To get a quick start, this package already provides a rviz configuration explicitly designed for this visualization:
+
+[Rviz-Config](../slam6d.rviz)
+
+Before launching, a few parametrization steps need to be executed first:
+
+### Configuration
+
+The main configuration is done Using [RosParam](http://wiki.ros.org/rosparam). Currently, there are two main configs providing the necessary parameters to run the code.
+
+There is a generalized config specifically tailored to results of Fastsense or Warpsense and one used for the Hannover1 Dataset. This is necessary, because both types of initial estimations have a completely different foundation, with the Hannover1 Datset solely consisting of a Odometry estimation and the Results of Warpsense of Fastsense being generally way more accurate. This leaves a bigger margin for optimization in terms of the Hannover1 dataset or similar datasets.
+
+The configs are:
+
+[General](../params/general_params.yaml)
+[Slam6D](../params/slam6d_listening.yaml)
+
+Each of the configuration files share the same configurable fields, with most of them not needing to be adapted. Generally speaking, only an adaption of the dataset location is necessary to start the process.
