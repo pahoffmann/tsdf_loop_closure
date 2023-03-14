@@ -1,4 +1,8 @@
-# loop_closure
+# tsdf_loop_closure
+
+The software provided with this repository can be used as an approach to solve the loop closure
+problem for TSDF based SLAM approaches. Further it solves the loop closure problem for lidar based SLAM
+approaches in general by providing a general graph based solution to the loop closure problem.
 
 
 # REQUIREMENTS (Tested on Ubuntu 20.04)
