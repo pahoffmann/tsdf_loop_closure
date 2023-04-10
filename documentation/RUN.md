@@ -21,7 +21,7 @@ The nodes of interest, which are currently in use are:
 
 
 ### Approach
-The transform coord-sys publisher is used to read pointcloud and pose data from the Hannover1 Dataset (see: [Hannover1](http://kos.informatik.uni-osnabrueck.de/3Dscans/)). The PcdHDF5Publisher reads pointcloud data in form of PCDs and takes poses saved in an existing HDF5-File, which is the initial path estimation. This data can come from either be the result of the current Fastsense implementation ([FastSense](https://gitlab.informatik.uni-osnabrueck.de/FastSense/fastsense)) or the current warpsense implementation ([WarpSense](https://gitlab.informatik.uni-osnabrueck.de/FastSense/warpsense)). For both cases, data exists on the Glumanda-Server: glumanda.informatik.uni-osnabrueck.de.
+The transform coord-sys publisher is used to read pointcloud and pose data from the Hannover1 Dataset (see: [Hannover1](http://kos.informatik.uni-osnabrueck.de/3Dscans/)). The PcdHDF5Publisher reads pointcloud data in form of PCDs and takes poses saved in an existing HDF5-File, which is the initial path estimation. This data can come from either be the result of the current Fastsense implementation ([FastSense](https://github.com/pahoffmann/projectgroup_fastsense)) or the current warpsense implementation ([WarpSense](https://github.com/juliangaal/warpsense)). For both cases, data exists and may be aquired by sending an email to the maintainer of this repository.
 
 The data of the publishers is then read by the SLAM6D-Listener, which is attached to the publishers using [Bondcpp](http://wiki.ros.org/bondcpp) (a ros package). The data is interpreted by the listener and an optimization of the inital path estimation using loop closures takes place. Furthermore, a TSDF-based map is generated and optimized, when a loop is identified.
 
@@ -72,18 +72,11 @@ Further parameters that need to be changed:
 
 ### Datasets
 
-The datasets itself are not delivered with this package, but to be found on the glumanda server of the university of osnabrueck. For those, who have got access to this server, i prepared multiple datasets to try out this algorithm:
+The datasets itself are not delivered with this package, but may be requested. They include:
 
 * Datensatz des Physik Gebäudes der Uni Osnabrück
 * Datensatz des Vorplatzes des Chemnitzer Opernhauses
 * Hannover1 Datensatz der Uni Osnabrück
-
-They are located on the glumanda server under:
-
-###   
-    ~/pahoffmann/hannover1
-    ~/pahoffmann/vorplatz
-    ~/pahoffmann/physik_unten
 
 Copy those datasets to your local system and interchange the respective paths in the configs. After building the ros workspace, the algorithm can be started using the stated roslaunch commands. The output should be visible in the RVIZ program.
 
